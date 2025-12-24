@@ -1,59 +1,40 @@
 import { useProfile } from "@/hooks/business/useProfile";
-import { canUseCobrancaAutomatica, canUseNotificacoes, canUsePrePassageiro, canViewGastos, canViewRelatorios } from "@/utils/domain/plano/accessRules";
 import { useSession } from "./useSession";
 
 /**
  * Hook centralizado para verificação de permissões e regras de acesso do usuário.
- * Abstrai a necessidade de acessar plano.slug diretamente nos componentes.
+ * Embu Express: Baseado em Roles (admin, motoboy, super_admin, financeiro).
  */
 export function usePermissions() {
   const { user } = useSession();
-  // Role extraction from Auth (Strict source of truth per architecture V3)
-  const role = user?.app_metadata?.role as string | undefined;
+  const { profile, isLoading, refreshProfile } = useProfile(user?.id);
+  
+  // Extração de Role
+  const roleName = profile?.role?.name;
+  const isAdmin = roleName === 'admin' || roleName === 'super_admin';
+  const isMotoboy = roleName === 'motoboy';
+  const isFinanceiro = roleName === 'financeiro';
 
-  const { profile, plano, isLoading, refreshProfile } = useProfile(user?.id);
-
-  // Regras de Visualização (Páginas/Módulos)
-  const canViewModuleGastos = canViewGastos(plano);
-  const canViewModuleRelatorios = canViewRelatorios(plano);
-
-  // Regras de Funcionalidades (Features)
-  const canUseAutomatedCharges = canUseCobrancaAutomatica(plano);
-  const canUseNotifications = canUseNotificacoes(plano);
-  const canUseQuickStart = canUsePrePassageiro(plano);
-
-  // Regras de Edição e Ações
-  // Exemplo: Pode editar cobrança se tiver plano válido (geral)
-  // Pode ser refinado para regras mais complexas
-  const canEditCobranca = !!plano?.isValidPlan; 
-  const canCreateCobranca = !!plano?.isValidPlan;
-
-  // Helpers de Limites
-  // Se futuramente precisarmos de limites (ex: max de passageiros), exportamos aqui também
-  const isFreePlan = plano?.isFreePlan ?? false;
+  // Regras de Visualização (Simplificadas para o MVP)
+  const canViewAdminPanel = isAdmin || isFinanceiro;
+  const canManageEmployees = isAdmin;
+  const canManageClients = isAdmin;
 
   return {
     isLoading,
     
-    // Modules
-    canViewModuleGastos,
-    canViewModuleRelatorios,
+    // Role Helpers
+    isAdmin,
+    isMotoboy,
+    isFinanceiro,
+    roleName,
 
-    // Features
-    canUseAutomatedCharges,
-    canUseNotifications,
-    canUseQuickStart,
-
-    // Actions
-    canEditCobranca,
-    canCreateCobranca,
-
-    // State
-    isFreePlan,
+    // Permissions
+    canViewAdminPanel,
+    canManageEmployees,
+    canManageClients,
     
-    // Raw Data (Use com cautela, prefira as flags acima)
-    plano,
-    role,
+    // Raw Data
     profile,
     refetchProfile: refreshProfile
   };

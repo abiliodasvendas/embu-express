@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { messages } from "@/constants/messages";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,40 +56,30 @@ export default function AlterarSenhaDialog({
   });
 
   const handleSubmit = async (data: FormData) => {
-    if (!profile?.cpfcnpj) {
-      toast.error("erro.operacao", {
+    if (!profile?.cpf || !profile?.email) {
+      toast.error(messages.erro.operacao, {
         description: "Não foi possível identificar o usuário logado.",
       });
       return;
     }
 
     if (data.senhaAtual === data.novaSenha) {
-      toast.error("erro.operacao", {
+      toast.error(messages.erro.operacao, {
         description: "A nova senha deve ser diferente da senha atual.",
       });
       return;
     }
 
     try {
-      const { data: usuario, error: userError } = await supabase
-        .from("usuarios")
-        .select("email")
-        .eq("cpfcnpj", profile.cpfcnpj)
-        .maybeSingle();
-
-      if (userError || !usuario?.email) {
-        throw new Error(
-          "Não foi possível encontrar o e-mail vinculado ao usuário."
-        );
-      }
+      const email = profile.email;
 
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: usuario.email,
+        email: email,
         password: data.senhaAtual,
       });
 
       if (signInError) {
-        toast.error("auth.erro.senhaIncorreta", {
+        toast.error(messages.auth.erro.senhaIncorreta, {
           description: "A senha atual informada está incorreta.",
         });
         return;
@@ -100,7 +91,7 @@ export default function AlterarSenhaDialog({
 
       if (updateError) throw updateError;
 
-      toast.success("auth.sucesso.senhaAlterada", {
+      toast.success(messages.auth.sucesso.senhaAlterada, {
         description: "Você será desconectado para acessar com a nova senha.",
       });
 
@@ -109,7 +100,7 @@ export default function AlterarSenhaDialog({
       await supabase.auth.signOut();
       window.location.href = "/login";
     } catch (err: any) {
-      toast.error("erro.operacao", {
+      toast.error(messages.erro.operacao, {
         description: err.message || "Ocorreu um erro ao tentar alterar a senha.",
       });
     }

@@ -5,11 +5,8 @@
  * Tanto o título quanto a descrição podem ser chaves de mensagem ou texto customizado
  * 
  * Exemplos:
- * - toast.success('veiculo.sucesso.criado')
  * - toast.error('erro.generico', { description: 'Detalhes do erro' })
  * - toast.info('sistema.info.cepNaoEncontrado', { description: 'sistema.info.cepNaoEncontradoDescricao' })
- * - toast.success('Veículo criado com sucesso!') // mensagem customizada
- * - toast.success('veiculo.sucesso.criado', { description: 'Descrição customizada' }) // título chave, descrição customizada
  */
 
 import { getMessage, type MessageKey } from "@/constants/messages";

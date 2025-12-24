@@ -10,17 +10,17 @@ const sizes = {
   'mipmap-xxxhdpi': 192
 };
 
-const logoPath = path.join(__dirname, '../public/assets/logo2-van360.png');
+const logoPath = path.join(__dirname, '../public/assets/logo-embuexpress.png');
 const androidResPath = path.join(__dirname, '../android/app/src/main/res');
 
-console.log('📱 Gerador de Ícones Android para Van360\n');
+console.log('📱 Gerador de Ícones Android para Embu Express\n');
 
 // Verificar se o logo existe
 if (!fs.existsSync(logoPath)) {
   console.error('❌ Logo não encontrado em:', logoPath);
   console.log('\n💡 Solução:');
   console.log('1. Use o Android Asset Studio online: https://romannurik.github.io/AndroidAssetStudio/icons-launcher.html');
-  console.log('2. Faça upload do logo: public/assets/logo-van360.png');
+  console.log('2. Faça upload do logo: public/assets/logo-embuexpress.png');
   console.log('3. Configure:');
   console.log('   - Background: Cor sólida #1E40AF (azul)');
   console.log('   - Foreground: Seu logo');

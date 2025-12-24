@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.tibis.van360',
-  appName: 'Van360',
+  appId: 'com.tibis.embuexpress',
+  appName: 'Embu Express',
   webDir: 'dist',
   plugins: {
     CapacitorUpdater: {

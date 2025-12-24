@@ -4,8 +4,6 @@ import { useSearchParams } from "react-router-dom";
 export interface UseFiltersOptions {
   searchParam?: string;
   statusParam?: string;
-  escolaParam?: string;
-  veiculoParam?: string;
   periodoParam?: string;
   mesParam?: string;
   anoParam?: string;
@@ -18,10 +16,6 @@ export interface UseFiltersReturn {
   setSearchTerm: (value: string) => void;
   selectedStatus: string;
   setSelectedStatus: (value: string) => void;
-  selectedEscola?: string;
-  setSelectedEscola?: (value: string) => void;
-  selectedVeiculo?: string;
-  setSelectedVeiculo?: (value: string) => void;
   selectedPeriodo?: string;
   setSelectedPeriodo?: (value: string) => void;
   selectedMes?: number;
@@ -34,8 +28,6 @@ export interface UseFiltersReturn {
   setFilters: (newFilters: {
     search?: string;
     status?: string;
-    escola?: string;
-    veiculo?: string;
     periodo?: string;
     mes?: number;
     ano?: number;
@@ -48,8 +40,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const {
     searchParam = "search",
     statusParam = "status",
-    escolaParam = "escola",
-    veiculoParam = "veiculo",
     periodoParam = "periodo",
     mesParam,
     anoParam,
@@ -65,20 +55,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
 
   const [selectedStatus, setSelectedStatusState] = useState(() => {
     return syncWithUrl ? searchParams.get(statusParam) ?? "todos" : "todos";
-  });
-
-  const [selectedEscola, setSelectedEscolaState] = useState<string | undefined>(
-    () => {
-      if (!escolaParam) return undefined;
-      return syncWithUrl ? searchParams.get(escolaParam) ?? "todas" : "todas";
-    }
-  );
-
-  const [selectedVeiculo, setSelectedVeiculoState] = useState<
-    string | undefined
-  >(() => {
-    if (!veiculoParam) return undefined;
-    return syncWithUrl ? searchParams.get(veiculoParam) ?? "todos" : "todos";
   });
 
   const [selectedPeriodo, setSelectedPeriodoState] = useState<
@@ -108,7 +84,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     string | undefined
   >(() => {
     if (!categoriaParam) return undefined;
-    return syncWithUrl ? searchParams.get(categoriaParam) ?? "todas" : "todas";
+    return syncWithUrl ? searchParams.get(categoriaParam) ?? "todos" : "todos";
   });
 
   const setSearchTerm = useCallback(
@@ -123,7 +99,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             newParams.delete(searchParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, searchParam, setSearchParams]
@@ -141,48 +117,10 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             newParams.delete(statusParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, statusParam, setSearchParams]
-  );
-
-  const setSelectedEscola = useCallback(
-    (value: string) => {
-      if (!escolaParam) return;
-      setSelectedEscolaState(value);
-      if (syncWithUrl) {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          if (value && value !== "todas") {
-            newParams.set(escolaParam, value);
-          } else {
-            newParams.delete(escolaParam);
-          }
-          return newParams;
-        });
-      }
-    },
-    [syncWithUrl, escolaParam, setSearchParams]
-  );
-
-  const setSelectedVeiculo = useCallback(
-    (value: string) => {
-      if (!veiculoParam) return;
-      setSelectedVeiculoState(value);
-      if (syncWithUrl) {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          if (value && value !== "todos") {
-            newParams.set(veiculoParam, value);
-          } else {
-            newParams.delete(veiculoParam);
-          }
-          return newParams;
-        });
-      }
-    },
-    [syncWithUrl, veiculoParam, setSearchParams]
   );
 
   const setSelectedPeriodo = useCallback(
@@ -198,7 +136,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             newParams.delete(periodoParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, periodoParam, setSearchParams]
@@ -213,7 +151,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           const newParams = new URLSearchParams(prev);
           newParams.set(mesParam, value.toString());
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, mesParam, setSearchParams]
@@ -228,7 +166,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           const newParams = new URLSearchParams(prev);
           newParams.set(anoParam, value.toString());
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, anoParam, setSearchParams]
@@ -241,13 +179,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
-          if (value && value !== "todas") {
+          if (value && value !== "todos") {
             newParams.set(categoriaParam, value);
           } else {
             newParams.delete(categoriaParam);
           }
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [syncWithUrl, categoriaParam, setSearchParams]
@@ -256,40 +194,32 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const clearFilters = useCallback(() => {
     setSearchTermState("");
     setSelectedStatusState("todos");
-    if (selectedEscola !== undefined) setSelectedEscolaState("todas");
-    if (selectedVeiculo !== undefined) setSelectedVeiculoState("todos");
     if (selectedPeriodo !== undefined) setSelectedPeriodoState("todos");
     if (selectedMes !== undefined) setSelectedMesState(new Date().getMonth() + 1);
     if (selectedAno !== undefined) setSelectedAnoState(new Date().getFullYear());
-    if (selectedCategoria !== undefined) setSelectedCategoriaState("todas");
+    if (selectedCategoria !== undefined) setSelectedCategoriaState("todos");
 
     if (syncWithUrl) {
       setSearchParams((prev) => {
         const newParams = new URLSearchParams(prev);
         newParams.delete(searchParam);
         newParams.delete(statusParam);
-        if (escolaParam) newParams.delete(escolaParam);
-        if (veiculoParam) newParams.delete(veiculoParam);
         if (periodoParam) newParams.delete(periodoParam);
         if (mesParam) newParams.delete(mesParam);
         if (anoParam) newParams.delete(anoParam);
         if (categoriaParam) newParams.delete(categoriaParam);
         return newParams;
-      });
+      }, { replace: true });
     }
   }, [
     syncWithUrl,
     searchParam,
     statusParam,
-    escolaParam,
-    veiculoParam,
     periodoParam,
     mesParam,
     anoParam,
     categoriaParam,
     setSearchParams,
-    selectedEscola,
-    selectedVeiculo,
     selectedPeriodo,
     selectedMes,
     selectedAno,
@@ -302,17 +232,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
 
     const urlSearch = searchParams.get(searchParam) ?? "";
     const urlStatus = searchParams.get(statusParam) ?? "todos";
-    const urlEscola = escolaParam ? searchParams.get(escolaParam) ?? "todas" : undefined;
-    const urlVeiculo = veiculoParam ? searchParams.get(veiculoParam) ?? "todos" : undefined;
     const urlPeriodo = periodoParam ? searchParams.get(periodoParam) ?? "todos" : undefined;
     const urlMes = mesParam ? searchParams.get(mesParam) : undefined;
     const urlAno = anoParam ? searchParams.get(anoParam) : undefined;
-    const urlCategoria = categoriaParam ? searchParams.get(categoriaParam) ?? "todas" : undefined;
+    const urlCategoria = categoriaParam ? searchParams.get(categoriaParam) ?? "todos" : undefined;
 
     if (urlSearch !== searchTerm) setSearchTermState(urlSearch);
     if (urlStatus !== selectedStatus) setSelectedStatusState(urlStatus);
-    if (escolaParam && urlEscola !== selectedEscola) setSelectedEscolaState(urlEscola);
-    if (veiculoParam && urlVeiculo !== selectedVeiculo) setSelectedVeiculoState(urlVeiculo);
     if (periodoParam && urlPeriodo !== selectedPeriodo) setSelectedPeriodoState(urlPeriodo);
     if (mesParam && urlMes && parseInt(urlMes) !== selectedMes) setSelectedMesState(parseInt(urlMes));
     if (anoParam && urlAno && parseInt(urlAno) !== selectedAno) setSelectedAnoState(parseInt(urlAno));
@@ -322,8 +248,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     syncWithUrl,
     searchParam,
     statusParam,
-    escolaParam,
-    veiculoParam,
     periodoParam,
     mesParam,
     anoParam,
@@ -334,8 +258,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     (newFilters: {
       search?: string;
       status?: string;
-      escola?: string;
-      veiculo?: string;
       periodo?: string;
       mes?: number;
       ano?: number;
@@ -344,8 +266,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       // Update local state
       if (newFilters.search !== undefined) setSearchTermState(newFilters.search);
       if (newFilters.status !== undefined) setSelectedStatusState(newFilters.status);
-      if (newFilters.escola !== undefined && escolaParam) setSelectedEscolaState(newFilters.escola);
-      if (newFilters.veiculo !== undefined && veiculoParam) setSelectedVeiculoState(newFilters.veiculo);
       if (newFilters.periodo !== undefined && periodoParam) setSelectedPeriodoState(newFilters.periodo);
       if (newFilters.mes !== undefined && mesParam) setSelectedMesState(newFilters.mes);
       if (newFilters.ano !== undefined && anoParam) setSelectedAnoState(newFilters.ano);
@@ -365,16 +285,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
             else newParams.delete(statusParam);
           }
 
-          if (newFilters.escola !== undefined && escolaParam) {
-            if (newFilters.escola && newFilters.escola !== "todas") newParams.set(escolaParam, newFilters.escola);
-            else newParams.delete(escolaParam);
-          }
-
-          if (newFilters.veiculo !== undefined && veiculoParam) {
-            if (newFilters.veiculo && newFilters.veiculo !== "todos") newParams.set(veiculoParam, newFilters.veiculo);
-            else newParams.delete(veiculoParam);
-          }
-
           if (newFilters.periodo !== undefined && periodoParam) {
             if (newFilters.periodo && newFilters.periodo !== "todos") newParams.set(periodoParam, newFilters.periodo);
             else newParams.delete(periodoParam);
@@ -389,20 +299,18 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           }
 
           if (newFilters.categoria !== undefined && categoriaParam) {
-            if (newFilters.categoria && newFilters.categoria !== "todas") newParams.set(categoriaParam, newFilters.categoria);
+            if (newFilters.categoria && newFilters.categoria !== "todos") newParams.set(categoriaParam, newFilters.categoria);
             else newParams.delete(categoriaParam);
           }
 
           return newParams;
-        });
+        }, { replace: true });
       }
     },
     [
       syncWithUrl,
       searchParam,
       statusParam,
-      escolaParam,
-      veiculoParam,
       periodoParam,
       mesParam,
       anoParam,
@@ -414,24 +322,14 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const hasActiveFilters =
     !!searchTerm ||
     selectedStatus !== "todos" ||
-    (selectedEscola !== undefined && selectedEscola !== "todas") ||
-    (selectedVeiculo !== undefined && selectedVeiculo !== "todos") ||
     (selectedPeriodo !== undefined && selectedPeriodo !== "todos") ||
-    (selectedCategoria !== undefined && selectedCategoria !== "todas");
+    (selectedCategoria !== undefined && selectedCategoria !== "todos");
 
   return {
     searchTerm,
     setSearchTerm,
     selectedStatus,
     setSelectedStatus,
-    ...(selectedEscola !== undefined && {
-      selectedEscola,
-      setSelectedEscola,
-    }),
-    ...(selectedVeiculo !== undefined && {
-      selectedVeiculo,
-      setSelectedVeiculo,
-    }),
     ...(selectedPeriodo !== undefined && {
       selectedPeriodo,
       setSelectedPeriodo,
@@ -453,5 +351,3 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     hasActiveFilters,
   };
 }
-
-

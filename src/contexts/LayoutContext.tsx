@@ -1,21 +1,7 @@
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
-import PlanosDialog from "@/components/dialogs/PlanosDialog";
-import { PlanUpgradeDialog, PlanUpgradeDialogProps } from "@/components/dialogs/PlanUpgradeDialog";
-import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
-import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_PROFISSIONAL } from "@/constants";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { Escola } from "@/types/escola";
-import { Veiculo } from "@/types/veiculo";
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-
-type OpenPlanUpgradeDialogProps = Omit<PlanUpgradeDialogProps, "open" | "onOpenChange"> & { 
-  onClose?: () => void;
-  title?: string;
-  description?: string;
-};
 
 interface OpenConfirmationDialogProps {
   title: string;
@@ -27,29 +13,13 @@ interface OpenConfirmationDialogProps {
   isLoading?: boolean;
 }
 
-interface OpenEscolaFormProps {
-  onSuccess?: (escola: Escola, keepOpen?: boolean) => void;
-  editingEscola?: Escola | null;
-  allowBatchCreation?: boolean;
-}
-
-interface OpenVeiculoFormProps {
-  onSuccess?: (veiculo: Veiculo) => void;
-  editingVeiculo?: Veiculo | null;
-}
-
 interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
   pageSubtitle: string;
   setPageSubtitle: (subtitle: string) => void;
-  openPlanosDialog: () => void;
-  openPlanUpgradeDialog: (props?: OpenPlanUpgradeDialogProps) => void;
-  isPlanUpgradeDialogOpen: boolean;
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
   closeConfirmationDialog: () => void;
-  openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
-  openVeiculoFormDialog: (props?: OpenVeiculoFormProps) => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -57,23 +27,14 @@ const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
   const [pageSubtitle, setPageSubtitle] = useState('Por favor, aguarde.');
-  const [isPlanosDialogOpen, setIsPlanosDialogOpen] = useState(false);
   
   // Sync document title with page title
   useEffect(() => {
     if (pageTitle && pageTitle !== 'Carregando...') {
-       document.title = `${pageTitle} | Van360`;
+       document.title = `${pageTitle} | Embu Express`;
     }
   }, [pageTitle]);
   
-  // Novo Plan Upgrade Dialog State (Unificado)
-  const [planUpgradeDialogState, setPlanUpgradeDialogState] = useState<{
-      open: boolean;
-      props?: OpenPlanUpgradeDialogProps;
-  }>({
-      open: false
-  });
-
   // Confirmation Dialog State
   const [confirmationDialogState, setConfirmationDialogState] = useState<{
     open: boolean;
@@ -82,61 +43,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-  // Escola Form Dialog State
-  const [escolaFormDialogState, setEscolaFormDialogState] = useState<{
-    open: boolean;
-    props?: OpenEscolaFormProps;
-  }>({
-    open: false,
-  });
-
-  // Veiculo Form Dialog State
-  const [veiculoFormDialogState, setVeiculoFormDialogState] = useState<{
-    open: boolean;
-    props?: OpenVeiculoFormProps;
-  }>({
-    open: false,
-  });
-
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   
-  // Carregar dados de franquia globalmente se o dialog estiver aberto
-  // Isso garante que temos os números "Limite X de Y" atualizados
-  const { limits } = usePlanLimits({
-      userUid: user?.id,
-      profile
-  });
-
-  const openPlanosDialog = () => setIsPlanosDialogOpen(true);
-  
-  const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
-      let defaultTab = props?.defaultTab;
-      
-      // Inferência inteligente de aba baseada na feature/dor
-      if (!defaultTab && props?.feature) {
-          switch (props.feature) {
-              case FEATURE_COBRANCA_AUTOMATICA:
-              case FEATURE_RELATORIOS:
-              case FEATURE_NOTIFICACOES:
-                  defaultTab = PLANO_PROFISSIONAL;
-                  break;
-              case FEATURE_LIMITE_PASSAGEIROS:
-              case FEATURE_GASTOS:
-                  defaultTab = "essencial";
-                  break;
-          }
-      }
-
-      setPlanUpgradeDialogState({
-          open: true,
-          props: {
-              ...props,
-              defaultTab
-          }
-      });
-  };
-
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {
     setConfirmationDialogState({
       open: true,
@@ -148,58 +57,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     setConfirmationDialogState((prev) => ({ ...prev, open: false }));
   };
 
-  const openEscolaFormDialog = (props?: OpenEscolaFormProps) => {
-    setEscolaFormDialogState({
-      open: true,
-      props,
-    });
-  };
-
-  const openVeiculoFormDialog = (props?: OpenVeiculoFormProps) => {
-    setVeiculoFormDialogState({
-      open: true,
-      props,
-    });
-  };
-
   return (
     <LayoutContext.Provider value={{ 
       pageTitle, 
       setPageTitle, 
       pageSubtitle, 
       setPageSubtitle, 
-      openPlanosDialog,
-      openPlanUpgradeDialog,
-      isPlanUpgradeDialogOpen: planUpgradeDialogState.open,
       openConfirmationDialog,
       closeConfirmationDialog,
-      openEscolaFormDialog,
-      openVeiculoFormDialog
     }}>
       {children}
-      <PlanosDialog 
-        isOpen={isPlanosDialogOpen} 
-        onOpenChange={setIsPlanosDialogOpen} 
-      />
       
-      {planUpgradeDialogState.open && (
-         <PlanUpgradeDialog
-            open={planUpgradeDialogState.open}
-            onOpenChange={(open) => {
-                setPlanUpgradeDialogState(prev => ({ ...prev, open }));
-                if (!open) {
-                    planUpgradeDialogState.props?.onClose?.();
-                }
-            }}
-            defaultTab={planUpgradeDialogState.props?.defaultTab}
-            feature={planUpgradeDialogState.props?.feature}
-            targetPassengerCount={planUpgradeDialogState.props?.targetPassengerCount}
-            onSuccess={planUpgradeDialogState.props?.onSuccess}
-            title={planUpgradeDialogState.props?.title}
-            description={planUpgradeDialogState.props?.description}
-         />
-      )}
-
       {confirmationDialogState.props && (
         <ConfirmationDialog
           open={confirmationDialogState.open}
@@ -216,32 +84,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
       
-      <EscolaFormDialog
-        isOpen={escolaFormDialogState.open}
-        onClose={() => setEscolaFormDialogState(prev => ({ ...prev, open: false }))}
-        onSuccess={(escola, keepOpen) => {
-            if (!keepOpen) {
-                setEscolaFormDialogState(prev => ({ ...prev, open: false }));
-            }
-            escolaFormDialogState.props?.onSuccess?.(escola, keepOpen);
-        }}
-        editingEscola={escolaFormDialogState.props?.editingEscola}
-        profile={profile}
-        allowBatchCreation={
-          escolaFormDialogState.props?.allowBatchCreation
-        }
-      />
-
-      <VeiculoFormDialog
-        isOpen={veiculoFormDialogState.open}
-        onClose={() => setVeiculoFormDialogState(prev => ({ ...prev, open: false }))}
-        onSuccess={(veiculo) => {
-            setVeiculoFormDialogState(prev => ({ ...prev, open: false }));
-            veiculoFormDialogState.props?.onSuccess?.(veiculo);
-        }}
-        editingVeiculo={veiculoFormDialogState.props?.editingVeiculo}
-        profile={profile}
-      />
     </LayoutContext.Provider>
   );
 };

@@ -29,7 +29,7 @@ export function KPICard({
   colorClass,
   bgClass,
   className,
-  countLabel = "Passageiro",
+  countLabel,
   countVisible = true,
   countText,
   restricted,

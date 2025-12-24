@@ -8,10 +8,7 @@ interface StatusBadgeProps {
    */
   status: boolean | string;
   
-  /**
-   * Data de vencimento (apenas para status de cobrança)
-   */
-  dataVencimento?: string | Date;
+
 
   /**
    * Define explicitamente labels customizadas para true/false
@@ -24,9 +21,8 @@ interface StatusBadgeProps {
 
 export function StatusBadge({
   status,
-  dataVencimento,
   trueLabel = "Ativo",
-  falseLabel = "Inativo", // Em alguns contextos pode ser "Desativada" (Escola)
+  falseLabel = "Inativo",
   className,
 }: StatusBadgeProps) {
 
@@ -55,9 +51,9 @@ export function StatusBadge({
     );
   }
 
-  // Caso 2: Status String (Cobrança)
-  const colorClass = getStatusColor(status, dataVencimento ? dataVencimento.toString() : "");
-  const text = getStatusText(status, dataVencimento ? dataVencimento.toString() : "");
+  // Caso 2: Status String
+  const colorClass = getStatusColor(status);
+  const text = getStatusText(status);
 
   return (
     <Badge

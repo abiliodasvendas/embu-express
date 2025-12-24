@@ -1,5 +1,6 @@
 import { FormControl, FormItem, FormLabel, FormMessage, useFormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { messages } from "@/constants/messages";
 import { cepService } from "@/services/cepService";
 import { cepMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
@@ -119,12 +120,12 @@ export function CepInput<T extends FieldValues>({
             }, 100);
           }
         } else {
-          toast.info("sistema.info.cepNaoEncontrado", {
-            description: "sistema.info.cepNaoEncontradoDescricao",
+          toast.info(messages.sistema.info.cepNaoEncontrado, {
+            description: messages.sistema.info.cepNaoEncontradoDescricao,
           });
         }
       } catch (error: any) {
-        toast.error("sistema.erro.consultarCep", {
+        toast.error(messages.sistema.erro.consultarCep, {
           description: error.message || "Não foi possível concluir a operação.",
         });
       } finally {

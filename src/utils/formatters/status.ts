@@ -1,64 +1,34 @@
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
-import { checkCobrancaEmAtraso } from "./cobranca";
-import { formatDate } from "./date";
+/**
+ * Formata cores e textos de status para o componente StatusBadge
+ */
 
-export const formatProfile = (profile: string): string => {
-  if (profile === "admin") {
-    return "Admin";
-  }
-  return "Motorista";
+export const getStatusColor = (status: string) => {
+  const s = status.toLowerCase();
+
+  // Status de Cliente/Funcionário
+  if (s === "ativo") return "bg-emerald-50 text-emerald-700 border-emerald-100";
+  if (s === "inativo") return "bg-slate-50 text-slate-600 border-slate-200";
+
+  // Status de Ponto
+  if (s === "verde") return "bg-green-500 text-white border-transparent";
+  if (s === "amarelo") return "bg-yellow-500 text-white border-transparent";
+  if (s === "vermelho") return "bg-red-500 text-white border-transparent";
+  if (s === "cinza") return "bg-gray-400 text-white border-transparent";
+
+  return "bg-gray-50 text-gray-600 border-gray-200";
 };
 
-export const formatStatus = (origem: string): string => {
-  if (origem === PASSAGEIRO_COBRANCA_STATUS_PAGO) {
-    return "Pago";
-  }
-  return "Pendente";
+export const getStatusText = (status: string) => {
+  const s = status.toLowerCase();
+
+  const map: Record<string, string> = {
+    ativo: "Ativo",
+    inativo: "Inativo",
+    verde: "Verde",
+    amarelo: "Amarelo",
+    vermelho: "Vermelho",
+    cinza: "N/A",
+  };
+
+  return map[s] || status;
 };
-
-export const getStatusText = (status: string, dataVencimento: string) => {
-  if (status === PASSAGEIRO_COBRANCA_STATUS_PAGO) return "Pago";
-
-  const vencimento = formatDate(dataVencimento);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-
-  const diffTime = hoje.getTime() - vencimento.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (vencimento < hoje) {
-    return `Em atraso`;
-  } else if (diffDays === 0) {
-    return "Vence hoje";
-  }
-
-  return "A vencer";
-};
-
-export const getStatusColor = (status: string, dataVencimento: string) => {
-  if (status === PASSAGEIRO_COBRANCA_STATUS_PAGO) {
-    return "bg-green-100 text-green-800 hover:bg-green-200";
-  }
-
-  if (checkCobrancaEmAtraso(dataVencimento)) {
-    return "bg-red-100 text-red-800 hover:bg-red-200";
-  }
-
-  // Verificar se vence hoje
-  const vencimento = formatDate(dataVencimento);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  vencimento.setHours(0, 0, 0, 0);
-  
-  const diffTime = hoje.getTime() - vencimento.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    // Vence hoje: gradiente de laranja para vermelho (mais perceptível)
-    return "bg-gradient-to-r from-white via-orange-100 to-red-200 text-orange-900 hover:from-white hover:via-orange-200 hover:to-red-300";
-  }
-
-  // A vencer: laranja
-  return "bg-orange-100 text-orange-800 hover:bg-orange-200";
-};
-

@@ -1,51 +1,170 @@
+import { ClientForm } from "@/components/clients/ClientForm";
+import { ClientList } from "@/components/clients/ClientList";
+import { ClientsToolbar } from "@/components/clients/ClientsToolbar";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { ListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
-import { Building2 } from "lucide-react";
-import { useEffect } from "react";
+import { useFilters } from "@/hooks/ui/useFilters";
+import { useClients, useCreateClient, useDeleteClient, useToggleClientStatus } from "@/hooks/useClients";
+import { Client } from "@/types/client";
+import { mockGenerator } from "@/utils/mocks/generator";
+import { Users, Zap } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function Clients() {
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedStatus,
+    setSelectedStatus,
+    clearFilters,
+    hasActiveFilters,
+  } = useFilters();
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+
+  const { data: clients, isLoading, refetch } = useClients({ searchTerm, status: selectedStatus });
+  const toggleStatus = useToggleClientStatus();
+  const deleteClient = useDeleteClient();
+  const createClient = useCreateClient();
 
   useEffect(() => {
     setPageTitle("Gestão de Clientes");
   }, [setPageTitle]);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight text-transparent">Clientes</h2>
-        <Button className="gap-2">
-          <Building2 className="h-4 w-4" />
-          Novo Cliente
-        </Button>
-      </div>
+  const pullToRefreshReload = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Listagem de Clientes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome Fantasia</TableHead>
-                <TableHead>Razão Social</TableHead>
-                <TableHead>CNPJ</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
-                  Nenhum cliente cadastrado.
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
+    setIsFormOpen(true);
+  };
+
+  const handleAdd = () => {
+    setEditingClient(null);
+    setIsFormOpen(true);
+  };
+
+  const handleQuickCreate = async () => {
+    const fakeClient = mockGenerator.client();
+    try {
+      await createClient.mutateAsync({
+        ...fakeClient,
+        ...fakeClient,
+        status: "ativo",
+        silent: true 
+      });
+      // toast.success("Cliente fake criado com sucesso!"); // Silent mode handles this or we rely on UI update
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleToggleStatus = (client: Client) => {
+    const novoStatus = client.status === "ativo" ? "inativo" : "ativo";
+    toggleStatus.mutate({ id: client.id, status: novoStatus });
+  };
+
+  const handleDelete = (client: Client) => {
+    openConfirmationDialog({
+      title: messages.dialogo.remover.titulo,
+      description: `Tem certeza que deseja remover o cliente "${client.nome_fantasia}"? Esta ação não pode ser desfeita.`,
+      confirmText: messages.dialogo.remover.botao,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await deleteClient.mutateAsync(client.id);
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
+  };
+
+  const isActionLoading = toggleStatus.isPending || deleteClient.isPending || createClient.isPending;
+
+  return (
+    <>
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+        <div className="space-y-6">
+          <Card className="border-none shadow-none bg-transparent">
+            <CardHeader className="p-0">
+                <div className="flex justify-end mb-4 md:hidden">
+                  <Button
+                    onClick={handleQuickCreate}
+                    variant="outline"
+                    className="gap-2 text-uppercase w-full font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11"
+                  >
+                    <Zap className="h-4 w-4" />
+                    GERAR CLIENTE FAKE
+                  </Button>
+                </div>
+                <div className="hidden md:flex justify-end mb-4">
+                  <Button
+                    onClick={handleQuickCreate}
+                    variant="outline"
+                    className="gap-2 text-uppercase font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11 px-6"
+                  >
+                    <Zap className="h-4 w-4" />
+                    GERAR CLIENTE FAKE
+                  </Button>
+                </div>
+            </CardHeader>
+            <CardContent className="px-0">
+              <div className="mb-6">
+                <ClientsToolbar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  selectedStatus={selectedStatus}
+                  onStatusChange={setSelectedStatus}
+                  onRegister={handleAdd}
+                  onQuickCreate={handleQuickCreate}
+                />
+              </div>
+
+              {isLoading ? (
+                <ListSkeleton />
+              ) : clients && clients.length > 0 ? (
+                <ClientList
+                  clients={clients}
+                  onEdit={handleEdit}
+                  onToggleStatus={handleToggleStatus}
+                  onDelete={handleDelete}
+                />
+              ) : (
+                <UnifiedEmptyState
+                  icon={Users}
+                  title={messages.emptyState.cliente.titulo}
+                  description={
+                    searchTerm
+                      ? messages.emptyState.cliente.semResultados
+                      : messages.emptyState.cliente.descricao
+                  }
+                  action={!searchTerm ? { label: "Cadastrar Cliente", onClick: handleAdd } : undefined}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </PullToRefreshWrapper>
+
+      <ClientForm
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        editingClient={editingClient}
+      />
+
+      <LoadingOverlay active={isActionLoading} text="Processando..." />
+    </>
   );
 }

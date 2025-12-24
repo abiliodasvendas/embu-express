@@ -3,9 +3,7 @@ import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
 
 interface AppSidebarProps {
-  role: "motorista";
   onLinkClick?: () => void;
-  plano?: any;
 }
 
 

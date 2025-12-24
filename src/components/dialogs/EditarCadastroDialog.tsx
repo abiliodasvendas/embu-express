@@ -1,4 +1,3 @@
-import { PhoneInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,11 +15,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { messages } from "@/constants/messages";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
-import { cpfSchema, emailSchema, phoneSchema } from "@/schemas/common";
-import { cpfMask, phoneMask } from "@/utils/masks";
+import { cpfSchema, emailSchema } from "@/schemas/common";
+import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,10 +35,8 @@ interface EditarCadastroDialogProps {
 }
 
 const schema = z.object({
-  nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  apelido: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  cpfcnpj: cpfSchema,
-  telefone: phoneSchema,
+  nome_completo: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+  cpf: cpfSchema,
   email: emailSchema,
 });
 
@@ -54,10 +52,8 @@ export default function EditarCadastroDialog({
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      nome: "",
-      apelido: "",
-      cpfcnpj: "",
-      telefone: "",
+      nome_completo: "",
+      cpf: "",
       email: "",
     },
   });
@@ -66,10 +62,8 @@ export default function EditarCadastroDialog({
   React.useEffect(() => {
     if (profile) {
       form.reset({
-        nome: profile.nome || "",
-        apelido: profile.apelido || "",
-        cpfcnpj: cpfMask(profile.cpfcnpj) || "",
-        telefone: profile.telefone ? phoneMask(profile.telefone) : "",
+        nome_completo: profile.nome_completo || "",
+        cpf: profile.cpf ? cpfMask(profile.cpf) : "",
         email: profile.email || "",
       });
     }
@@ -77,44 +71,25 @@ export default function EditarCadastroDialog({
 
   const handleSubmit = async (data: FormData) => {
     try {
-      const nome = cleanString(data.nome, true);
-      const apelido = cleanString(data.apelido || "", true);
-      const telefone = data.telefone.replace(/\D/g, "");
+      const nome_completo = cleanString(data.nome_completo, true);
 
-      const { data: existingUsers, error: existingError } = await supabase
-        .from("usuarios")
-        .select("id, telefone")
-        .eq("telefone", telefone)
-        .neq("id", profile.id);
-
-      if (existingError) throw existingError;
-
-      if (existingUsers && existingUsers.length > 0) {
-        toast.error("cadastro.erro.atualizar");
-        return;
-      }
-
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("usuarios")
         .update({
-          nome,
-          apelido,
-          telefone,
+          nome_completo,
           updated_at: new Date().toISOString(),
         })
         .eq("id", profile.id);
 
       if (error) throw error;
 
-      toast.success("cadastro.sucesso.perfilAtualizado", {
-        description: "cadastro.sucesso.perfilAtualizadoDescricao",
-      });
+      toast.success(messages.usuario.sucesso.perfilAtualizado);
 
       await refreshProfile();
       onClose();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Ocorreu um erro ao salvar as alterações.";
-      toast.error("cadastro.erro.atualizar", {
+      toast.error(messages.usuario.erro.atualizacao, {
         description: errorMessage,
       });
     }
@@ -157,7 +132,7 @@ export default function EditarCadastroDialog({
             >
               <FormField
                 control={form.control}
-                name="nome"
+                name="nome_completo"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 font-medium ml-1">Nome completo</FormLabel>
@@ -178,41 +153,7 @@ export default function EditarCadastroDialog({
 
               <FormField
                 control={form.control}
-                name="apelido"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                        <Input 
-                          placeholder="Ex: Tio Fulano" 
-                          {...field} 
-                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="telefone"
-                render={({ field }) => (
-                  <PhoneInput
-                    field={field}
-                    label="WhatsApp"
-                    placeholder="(00) 00000-0000"
-                    inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                  />
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="cpfcnpj"
+                name="cpf"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 font-medium ml-1">CPF</FormLabel>

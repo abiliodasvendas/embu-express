@@ -8,13 +8,10 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const publicPaths = [
     "/",
     "/login",
-    "/cadastro",
     "/nova-senha",
   ];
 
-  const isPublic =
-    publicPaths.includes(location.pathname) ||
-    location.pathname.startsWith("/cadastro-passageiro");
+  const isPublic = publicPaths.includes(location.pathname);
     
     // Enquanto ainda carrega sessão, mostra spinner
     if (loading) {
@@ -36,7 +33,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }
 
   // 🔹 Se já está logado e tentar acessar login/cadastro → manda pro início
-  if (session && ["/login", "/cadastro", "/"].includes(location.pathname)) {
+  if (session && ["/login", "/"].includes(location.pathname)) {
     return <Navigate to="/inicio" replace />;
   }
 

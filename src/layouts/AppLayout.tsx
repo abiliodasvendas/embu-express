@@ -9,7 +9,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 
 export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
-  const { profile, isLoading, plano, role } = usePermissions();
+  const { profile, isLoading, isAdmin, roleName } = usePermissions();
   const navigate = useNavigate();
 
   // Bloquear indexação de todas as páginas protegidas (área logada)
@@ -60,31 +60,25 @@ export default function AppLayout() {
     );
   }
 
-  const currentRole = (role || "motorista") as "motorista";
+  const currentRole = roleName || "motoboy";
 
   return (
     <LayoutProvider>
       <div className="min-h-screen bg-gray-50">
-        <AppNavbar plano={plano} role={currentRole} />
+        <AppNavbar role={currentRole} />
 
         <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white">
-          <div className="flex h-20 items-center gap-3 px-6">
+          <div className="flex h-20 items-center justify-center border-b border-gray-50">
             <img
-              src="/assets/logo-van360.png"
+              src="/assets/logo-embuexpress.png"
               alt="Embu Express"
               className="h-12 cursor-pointer"
               title="Embu Express"
               onClick={() => navigate("/controle-ponto")}
             />
-            <div>
-              <p className="text-sm font-semibold text-slate-900">
-                Embu Express
-              </p>
-              <p className="text-xs text-slate-500">Gestão Logística</p>
-            </div>
           </div>
           <div className="flex-1 overflow-y-auto px-5 py-6">
-            <AppSidebar plano={plano} role={currentRole} />
+            <AppSidebar />
           </div>
         </aside>
 

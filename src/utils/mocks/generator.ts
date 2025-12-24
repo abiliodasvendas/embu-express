@@ -10,61 +10,34 @@ const nomes = [
 
 const sobrenomes = [
   "Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes",
-  "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira", "Barbosa"
+  "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira", "Barbosa",
+  "Mendes", "Teixeira", "Moreira", "Cardoso", "Pinheiro", "Borges", "Santana", "Arruda", "Macedo", "Guimarães"
 ];
 
 const ruas = [
   "Rua das Flores", "Avenida Paulista", "Rua Augusta", "Avenida Brasil", "Rua da Consolação",
-  "Rua Oscar Freire", "Avenida Faria Lima", "Rua Haddock Lobo", "Rua Bela Cintra", "Alameda Santos"
+  "Rua Oscar Freire", "Avenida Faria Lima", "Rua Haddock Lobo", "Rua Bela Cintra", "Alameda Santos",
+  "Rua da Mooca", "Avenida Brigadeiro Faria Lima", "Rua Teodoro Sampaio", "Rua Cardeal Arcoverde"
 ];
 
 const bairros = [
-  "Centro", "Jardins", "Vila Madalena", "Pinheiros", "Moema", "Itaim Bibi", "Brooklin", "Vila Olímpia", "Perdizes", "Pompeia"
+  "Centro", "Jardins", "Vila Madalena", "Pinheiros", "Moema", "Itaim Bibi", "Brooklin", "Vila Olímpia", "Perdizes", "Pompeia",
+  "Santana", "Tatuapé", "Belenzinho", "Ipiranga", "Saúde", "Vila Mariana"
 ];
 
 const cidades = [
   { nome: "São Paulo", estado: "SP" },
+  { nome: "Santo André", estado: "SP" },
+  { nome: "São Bernardo do Campo", estado: "SP" },
+  { nome: "São Caetano do Sul", estado: "SP" },
+  { nome: "Osasco", estado: "SP" },
+  { nome: "Guarulhos", estado: "SP" },
   { nome: "Rio de Janeiro", estado: "RJ" },
   { nome: "Belo Horizonte", estado: "MG" },
   { nome: "Curitiba", estado: "PR" },
   { nome: "Porto Alegre", estado: "RS" }
 ];
 
-const escolas = [
-  {
-    nome: "Ibrahim Nobre",
-    cep: "04410-080",
-    logradouro: "Rua das Flores",
-    numero: "123",
-    bairro: "Centro",
-    cidade: "São Paulo",
-    estado: "SP",
-    referencia: "",
-  },
-  {
-    nome: "Joanna Abraão",
-    cep: "01310-100",
-    logradouro: "Avenida Paulista",
-    numero: "1578",
-    bairro: "Bela Vista",
-    cidade: "São Paulo",
-    estado: "SP",
-    referencia: "Próximo ao MASP",
-  },
-];
-
-const veiculos = [
-  {
-    placa: "ABC-1234",
-    modelo: "Chevrolet Onix",
-    marca: "Chevrolet",
-  },
-  {
-    placa: "DEF-5678",
-    modelo: "Volkswagen Gol",
-    marca: "Volkswagen",
-  },
-];
 
 /**
  * Gera um número aleatório entre min e max (inclusivo)
@@ -171,13 +144,88 @@ export const generateAddress = () => {
   };
 };
 
+/**
+ * Gera um CNPJ válido formatado ou não
+ */
+export const generateCNPJ = (formatted = true): string => {
+  const n = Array.from({ length: 8 }, () => randomNumber(0, 9));
+  const n9 = 0;
+  const n10 = 0;
+  const n11 = 0;
+  const n12 = 1; // 0001
+  
+  const cnpj = [...n, n9, n10, n11, n12];
+  
+  const w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let sum1 = cnpj.reduce((acc, val, i) => acc + val * w1[i], 0);
+  let d1 = 11 - (sum1 % 11);
+  if (d1 >= 10) d1 = 0;
+  cnpj.push(d1);
+
+  const w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let sum2 = cnpj.reduce((acc, val, i) => acc + val * w2[i], 0);
+  let d2 = 11 - (sum2 % 11);
+  if (d2 >= 10) d2 = 0;
+  cnpj.push(d2);
+
+  const res = cnpj.join("");
+  if (formatted) {
+    return res.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+  }
+  return res;
+};
+
+/**
+ * Gera dados fictícios para um cliente
+ */
+export const generateClientData = () => {
+  const empresas = ["Tech", "Global", "Express", "Logistics", "Brasil", "Digital", "Solutions", "Trans", "Cargo", "Flow"];
+  const sufixos = ["Ltda", "S.A.", "EPP", "ME"];
+  
+  const nomeBase = empresas[randomNumber(0, empresas.length - 1)];
+  const sufixo = sufixos[randomNumber(0, sufixos.length - 1)];
+  const complemento = empresas[randomNumber(0, empresas.length - 1)];
+  
+  const nomeFantasia = `${nomeBase} ${complemento}`;
+  const razaoSocial = `${nomeFantasia} ${sufixo}`;
+  
+  return {
+    nome_fantasia: nomeFantasia,
+    razao_social: razaoSocial,
+    cnpj: generateCNPJ(),
+    ...generateAddress(),
+    status: "ativo" as const,
+  };
+};
+
+/**
+ * Gera dados fictícios para um funcionário
+ */
+export const generateEmployeeData = (clienteId?: string | number) => {
+  const nomeCompleto = generateName();
+  
+  return {
+    nome_completo: nomeCompleto,
+    email: generateEmail(nomeCompleto),
+    cpf: generateCPF(),
+    perfil_id: randomNumber(1, 3), // 1: Admin, 2: Funcionario, 3: Motorista
+    cliente_id: clienteId ? (typeof clienteId === "string" ? parseInt(clienteId) : clienteId) : null,
+    ativo: true,
+    turnos: [
+      { hora_inicio: "08:00:00", hora_fim: "12:00:00" },
+      { hora_inicio: "13:00:00", hora_fim: "18:00:00" }
+    ]
+  };
+};
+
 export const mockGenerator = {
   cpf: generateCPF,
+  cnpj: generateCNPJ,
   name: generateName,
   email: generateEmail,
   phone: generatePhone,
   cep: generateCEP,
   address: generateAddress,
-  escola: () => escolas[randomNumber(0, escolas.length - 1)],
-  veiculo: () => veiculos[randomNumber(0, veiculos.length - 1)],
+  client: generateClientData,
+  employee: generateEmployeeData,
 };

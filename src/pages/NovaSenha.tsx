@@ -13,12 +13,12 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Lock } from "lucide-react";
@@ -27,6 +27,7 @@ import { ArrowLeft, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 // Utils
+import { messages } from "@/constants/messages";
 import { useSEO } from "@/hooks/useSEO";
 import { toast } from "@/utils/notifications/toast";
 
@@ -64,26 +65,26 @@ export default function NovaSenha() {
 
       if (error) {
         if (error.code === "same_password") {
-          toast.error("erro.operacao", {
+          toast.error(messages.erro.operacao, {
             description: "A nova senha deve ser diferente da senha atual.",
           });
           return;
         }
 
-        toast.error("erro.operacao", {
+        toast.error(messages.erro.operacao, {
           description: error.message,
         });
         return;
       }
 
-      toast.success("auth.sucesso.senhaRedefinida", {
+      toast.success(messages.auth.sucesso.senhaRedefinida, {
         description: "Redirecionando para o sistema...",
       });
 
       setTimeout(() => navigate("/inicio", { replace: true }), 1200);
     } catch (err: any) {
       setLoading(false);
-      toast.error("erro.generico", {
+      toast.error(messages.erro.generico, {
         description: err.message || "Tente novamente mais tarde.",
       });
     }
@@ -93,8 +94,8 @@ export default function NovaSenha() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-blue-50 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-4 sm:p-8">
       <div className="w-full max-w-md mb-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
         <img
-          src="/assets/logo-van360.png"
-          alt="Van360"
+          src="/assets/logo-embuexpress.png"
+          alt="Embu Express"
           className="h-20 w-auto mb-4 select-none drop-shadow-sm"
         />
       </div>

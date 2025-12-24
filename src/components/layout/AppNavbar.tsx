@@ -19,19 +19,17 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
 import {
   ChevronDown,
   Lock,
   LogOut,
   Menu,
-  Receipt,
-  UserPen,
+  UserPen
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { redirect, useNavigate } from "react-router-dom";
 
-export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
+export function AppNavbar({ role }: { role: string }) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { pageTitle } = useLayout();
   const [openAlterarSenha, setOpenAlterarSenha] = useState(false);
@@ -49,8 +47,6 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
     try {
       await supabase.auth.signOut();
 
-      clearLoginStorageMotorista();
-
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -64,12 +60,12 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
   };
 
   const userInitial = useMemo(() => {
-    return profile?.nome.charAt(0)?.toUpperCase();
-  }, [profile?.nome]);
+    return profile?.nome_completo?.charAt(0)?.toUpperCase();
+  }, [profile?.nome_completo]);
 
   const userFirstName = useMemo(() => {
-    return profile?.nome.split(" ")[0];
-  }, [profile?.nome]);
+    return profile?.nome_completo?.split(" ")[0];
+  }, [profile?.nome_completo]);
 
   return (
     <>
@@ -91,10 +87,10 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                   <SheetHeader className="flex flex-col items-center justify-center py-6 border-b border-gray-100">
                     <SheetTitle className="text-lg font-semibold tracking-wide">
                       <img
-                        src="/assets/logo-van360.png"
-                        alt="Van360"
+                        src="/assets/logo-embuexpress.png"
+                        alt="Embu Express"
                         className="h-14 cursor-pointer"
-                        title="Van360"
+                        title="Embu Express"
                         onClick={() => {
                           navigate("/controle-ponto");
                           setIsSheetOpen(false);
@@ -104,9 +100,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                   </SheetHeader>
                   <div className="p-5">
                     <AppSidebar
-                      role={role}
                       onLinkClick={() => setIsSheetOpen(false)}
-                      plano={plano}
                     />
                   </div>
                 </SheetContent>
@@ -131,9 +125,6 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuItem onClick={() => navigate("/assinatura")}>
-                  <Receipt className="mr-2 h-4 w-4" /> Minha Assinatura
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setOpenEditarCadasto(true)}>
                   <UserPen className="mr-2 h-4 w-4" /> Editar Perfil
                 </DropdownMenuItem>

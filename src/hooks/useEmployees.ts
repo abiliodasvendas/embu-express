@@ -1,0 +1,89 @@
+import { messages } from "@/constants/messages";
+import { funcionarioApi } from "@/services/api/funcionario.api";
+import { toast } from "@/utils/notifications/toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+export function useEmployees(filters?: { searchTerm?: string; status?: string; role?: string }) {
+  return useQuery({
+    queryKey: ["employees", filters],
+    queryFn: () => funcionarioApi.listFuncionarios(filters),
+  });
+}
+
+export function useRoles() {
+  return useQuery({
+    queryKey: ["perfis"],
+    queryFn: () => funcionarioApi.listPerfis(),
+  });
+}
+
+export function useCreateEmployee() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any & { silent?: boolean }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { silent, ...employeeData } = data;
+      return funcionarioApi.createFuncionario(employeeData);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      if (!variables.silent) {
+        toast.success(messages.funcionario.sucesso.criado);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(messages.funcionario.erro.criar, {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useUpdateEmployee() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: any) => funcionarioApi.updateFuncionario(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      toast.success(messages.funcionario.sucesso.atualizado);
+    },
+    onError: (error: any) => {
+      toast.error(messages.funcionario.erro.atualizar, {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useToggleEmployeeStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ativo }: { id: string; ativo: boolean }) => 
+      funcionarioApi.updateFuncionario(id, { ativo }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      toast.success(messages.funcionario.sucesso.status);
+    },
+    onError: (error: any) => {
+      toast.error(messages.funcionario.erro.toggleStatus, {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useDeleteEmployee() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => funcionarioApi.deleteFuncionario(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      toast.success(messages.funcionario.sucesso.excluido);
+    },
+    onError: (error: any) => {
+      toast.error(messages.funcionario.erro.excluir, {
+        description: error.message,
+      });
+    },
+  });
+}

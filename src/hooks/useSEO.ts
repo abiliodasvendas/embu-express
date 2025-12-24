@@ -8,7 +8,7 @@ import { useEffect } from "react";
  * @param options.description - Descrição da página (opcional)
  */
 export function useSEO({
-  noindex = false,
+  noindex = true,
   title,
   description,
 }: {

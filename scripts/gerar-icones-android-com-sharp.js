@@ -11,11 +11,12 @@ const sizes = {
   'mipmap-xxxhdpi': 192
 };
 
-const logoPath = path.join(__dirname, '../public/assets/logo-van360.png');
+const logoPath = path.join(__dirname, '../public/assets/logo-embuexpress.png');
 const androidResPath = path.join(__dirname, '../android/app/src/main/res');
 
 async function generateIcons() {
-  console.log('📱 Gerando ícones Android para Van360\n');
+  console.log('📱 Gerando ícones Android para   console.log('📱 Gerando ícones Android para Embu Express\n');
+\n');
 
   // Verificar se o logo existe
   if (!fs.existsSync(logoPath)) {

@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 
 // Utils
+import { messages } from "@/constants/messages";
 import { useSEO } from "@/hooks/useSEO";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
@@ -36,7 +37,7 @@ import { toast } from "@/utils/notifications/toast";
 export default function Login() {
   // Permitir indexação da página de login
   useSEO({
-    noindex: false,
+    noindex: true,
     title: "Login - Embu Express | Área Administrativa",
     description: "Acesse a área administrativa do Embu Express.",
   });
@@ -62,22 +63,22 @@ export default function Login() {
   const handleForgotPassword = useCallback(async () => {
     const cpfDigits = form.getValues("cpfcnpj")?.replace(/\D/g, "");
     if (!cpfDigits) {
-      toast.info("Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.");
+      toast.info(messages.auth.info.informeCpfDescricao);
       return;
     }
 
     try {
       setRefreshing(true);
 
-      const { data: usuario, error } = await supabase
+      const { data: usuario, error } = await (supabase as any)
         .from("usuarios")
         .select("email")
-        .eq("cpfcnpj", cpfDigits)
+        .eq("cpf", cpfDigits)
         .single();
 
       if (error || !usuario?.email) {
-        toast.error("CPF não encontrado", {
-          description: "Verifique o CPF digitado ou entre em contato com o suporte.",
+        toast.error(messages.auth.erro.cpfNaoEncontrado, {
+          description: messages.auth.erro.cpfNaoEncontradoDescricao,
         });
         return;
       }
@@ -108,11 +109,11 @@ export default function Login() {
 
       if (resetError) throw resetError;
 
-      toast.success("E-mail enviado", {
+      toast.success(messages.auth.sucesso.emailEnviado, {
         description: `Enviamos o link para ${maskedEmail}. Verifique sua caixa de entrada e o spam.`,
       });
     } catch (err: any) {
-      toast.error("Erro ao enviar e-mail", {
+      toast.error(messages.auth.erro.emailEnviado, {
         description: "Tente novamente em alguns minutos ou entre em contato com o suporte.",
       });
     } finally {
@@ -125,10 +126,13 @@ export default function Login() {
 
     try {
       const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
-      const { data: usuario, error: usuarioError } = await supabase
+      const { data: usuario, error: usuarioError } = await (supabase as any)
         .from("usuarios")
-        .select("email")
-        .eq("cpfcnpj", cpfcnpjDigits)
+        .select(`
+          email,
+          perfil:perfis (nome)
+        `)
+        .eq("cpf", cpfcnpjDigits)
         .single();
 
       if (usuarioError || !usuario) {
@@ -161,29 +165,29 @@ export default function Login() {
         return;
       }
 
-      // Role extraction from Auth Metadata
-      const role = authData.session?.user?.app_metadata?.role as string | undefined;
-      
-      if (role === "admin") {
-        localStorage.setItem("app_role", "admin");
+      const roleName = (usuario.perfil as any)?.nome;
+      const allowedAdminRoles = ["admin", "super_admin"];
+
+      if (roleName && allowedAdminRoles.includes(roleName)) {
+        localStorage.setItem("app_role", roleName);
         navigate("/controle-ponto", { replace: true });
-      } else if (role === "motoboy") {
+      } else if (roleName === "motoboy") {
         await supabase.auth.signOut();
-        toast.info("App Mobile em desenvolvimento", {
-            description: "Aguarde o lançamento da versão para motoboys."
+        toast.info(messages.auth.info.appMobileDesenvolvimento, {
+            description: messages.auth.info.aguardeLancamento
         });
         setLoading(false);
       } else {
         await supabase.auth.signOut();
-        toast.error("Acesso não autorizado", {
+        toast.error(messages.auth.erro.naoAutorizado, {
             description: "Seu perfil não possui permissão para acessar esta área."
         });
         setLoading(false);
       }
       
     } catch (error: any) {
-      toast.error("Erro ao fazer login", {
-        description: error.message || "Tente novamente.",
+      toast.error(messages.auth.erro.login, {
+        description: error.message || messages.erro.generico,
       });
       form.setError("root", {
         type: "manual",
@@ -198,13 +202,10 @@ export default function Login() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-blue-50 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-3 sm:p-8">
         <div className="w-full max-w-md mb-4 sm:mb-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
           <img
-            src="/assets/logo-van360.png"
+            src="/assets/logo-embuexpress.png"
             alt="Embu Express"
             className="h-16 sm:h-20 w-auto mb-2 sm:mb-4 select-none drop-shadow-sm"
           />
-          <p className="text-gray-500 text-center text-xs sm:text-sm font-medium uppercase tracking-wider">
-            Logística & Controle de Ponto
-          </p>
         </div>
 
         <Card className="w-full max-w-md shadow-2xl border-0 rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500">
@@ -214,9 +215,6 @@ export default function Login() {
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
                   Área Administrativa
                 </h1>
-                <p className="text-gray-500 text-xs sm:text-sm">
-                  Acesse sua conta para gerenciar a operação
-                </p>
               </div>
 
               <form
@@ -313,19 +311,6 @@ export default function Login() {
                   >
                     Esqueci minha senha
                   </button>
-                  
-                  <div className="w-full border-t border-gray-100 my-1 sm:my-2"></div>
-
-                  <p className="text-[0.85rem] text-gray-600">
-                    Não tem uma conta?{" "}
-                    <button
-                      type="button"
-                      onClick={() => navigate("/cadastro")}
-                      className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-all"
-                    >
-                      Solicitar acesso
-                    </button>
-                  </p>
                 </div>
               </form>
             </Form>

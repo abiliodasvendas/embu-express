@@ -1,0 +1,79 @@
+import { PlanoData } from "@/utils/domain/plano/accessRules";
+import { useMemo } from "react";
+import { usePassageiroContagem } from "../api/usePassageiroContagem";
+import { useProfile } from "./useProfile";
+
+interface UsePlanLimitsProps {
+  userUid?: string; // Auth UID
+  profile?: any; // Pre-fetched profile
+  plano?: PlanoData | null; // Pre-fetched plano
+  currentPassengerCount?: number; // For manual checks
+}
+
+export function usePlanLimits({ userUid, profile: profileProp, plano: planoProp, currentPassengerCount }: UsePlanLimitsProps = {}) {
+  const { profile: fetchedProfile, plano: fetchedPlano } = useProfile(profileProp ? undefined : userUid);
+  
+  const profile = profileProp || fetchedProfile;
+  const plano = planoProp || fetchedPlano;
+
+  // --- Passenger Limits ---
+  const passengerLimit = useMemo(() => {
+    return profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? 
+           plano?.planoProfissional?.limite_passageiros ?? 
+           null;
+  }, [profile, plano]);
+
+  const remainingPassengers = useMemo(() => {
+    if (passengerLimit === null) return null;
+    return Math.max(0, Number(passengerLimit) - (currentPassengerCount || 0));
+  }, [passengerLimit, currentPassengerCount]);
+
+  const hasPassengerLimit = (plano?.isFreePlan ?? true) && passengerLimit !== null;
+  const isPassengerLimitReached = hasPassengerLimit && (remainingPassengers !== null && remainingPassengers <= 0);
+
+  const usuarioId = profile?.id;
+  
+  const { data: billingCountData } = usePassageiroContagem(
+    usuarioId,
+    { enviar_cobranca_automatica: "true" },
+    { enabled: !!usuarioId }
+  );
+
+  const franchiseLimit = profile?.assinaturas_usuarios?.[0]?.franquia_contratada_cobrancas || 0;
+  const usedFranchise = (billingCountData as any)?.count || 0;
+  const remainingFranchise = Math.max(0, franchiseLimit - usedFranchise);
+  const canEnableAutomaticBilling = remainingFranchise > 0;
+
+  return {
+    plano,
+    profile,
+    limits: {
+      passengers: {
+        limit: passengerLimit ? Number(passengerLimit) : null,
+        used: currentPassengerCount,
+        remaining: remainingPassengers,
+        hasLimit: hasPassengerLimit,
+        isReached: isPassengerLimitReached,
+        checkAvailability: (simulateAddition = false) => {
+            if (!hasPassengerLimit) return true;
+            const current = remainingPassengers ?? 0;
+            return simulateAddition ? current > 0 : current >= 0;
+        }
+      },
+      franchise: {
+        limit: franchiseLimit,
+        used: usedFranchise,
+        remaining: remainingFranchise,
+        canEnable: canEnableAutomaticBilling,
+        /**
+         * Verifica se é possível ativar a cobrança para um passageiro específico.
+         * @param isAlreadyActive - Passar true se estiver editando um passageiro que JÁ tem cobrança ativa (para não contar 2x)
+         */
+        checkAvailability: (isAlreadyActive: boolean = false) => {
+          const adjustedUsed = isAlreadyActive ? Math.max(0, usedFranchise - 1) : usedFranchise;
+          return (franchiseLimit - adjustedUsed) > 0;
+        }
+      }
+    }
+  };
+}

@@ -1,32 +1,32 @@
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { PERFIL_MOTOBOY } from "@/constants";
@@ -42,17 +42,17 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-    Briefcase,
-    Clock,
-    Loader2,
-    Mail,
-    Plus,
-    Trash2,
-    User,
-    Users,
-    Wand2,
-    X,
-    Zap
+  Briefcase,
+  Clock,
+  Loader2,
+  Mail,
+  Plus,
+  Trash2,
+  User,
+  Users,
+  Wand2,
+  X,
+  Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -186,7 +186,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
       const mockData = mockGenerator.employee(clientId);
       const finalData = {
         ...mockData,
-        perfil_id: roles && roles.length > 0 ? roles[0].id : 2, 
+        perfil_id: roles && roles.length > 0 ? roles[1].id : 2, 
         cliente_id: mockData.cliente_id,
       };
 

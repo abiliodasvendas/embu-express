@@ -54,7 +54,10 @@ export default function Clients() {
     setIsFormOpen(true);
   };
 
+  const [isQuickCreateLoading, setIsQuickCreateLoading] = useState(false);
+
   const handleQuickCreate = async () => {
+    setIsQuickCreateLoading(true);
     const fakeClient = mockGenerator.client();
     try {
       await createClient.mutateAsync({
@@ -66,6 +69,8 @@ export default function Clients() {
       // toast.success("Cliente fake criado com sucesso!"); // Silent mode handles this or we rely on UI update
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsQuickCreateLoading(false);
     }
   };
 
@@ -91,7 +96,7 @@ export default function Clients() {
     });
   };
 
-  const isActionLoading = toggleStatus.isPending || deleteClient.isPending || createClient.isPending;
+  const isActionLoading = toggleStatus.isPending || deleteClient.isPending || createClient.isPending || isQuickCreateLoading;
 
   return (
     <>

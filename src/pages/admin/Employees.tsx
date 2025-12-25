@@ -49,7 +49,10 @@ export default function Employees() {
   const { data: clients } = useClients();
   const { mutateAsync: createClientAsync } = useCreateClient();
 
+  const [isQuickCreateLoading, setIsQuickCreateLoading] = useState(false);
+
   const handleQuickCreate = async () => {
+    setIsQuickCreateLoading(true);
     try {
       let clientId = clients?.[0]?.id;
       
@@ -65,7 +68,7 @@ export default function Employees() {
       const mockData = mockGenerator.employee(clientId);
       const finalData = {
         ...mockData,
-        perfil_id: roles && roles.length > 0 ? roles[0].id : 2, 
+        perfil_id: roles && roles.length > 0 ? roles[1].id : 2, 
         cliente_id: mockData.cliente_id,
       };
 
@@ -76,6 +79,8 @@ export default function Employees() {
       // toast.success("Funcionário criado rapidamente!");
     } catch (error: any) {
       toast.error("Erro no Quick Create", { description: error.message });
+    } finally {
+      setIsQuickCreateLoading(false);
     }
   };
 
@@ -118,7 +123,7 @@ export default function Employees() {
     });
   };
 
-  const isActionLoading = toggleStatus.isPending || deleteEmployee.isPending;
+  const isActionLoading = toggleStatus.isPending || deleteEmployee.isPending || isQuickCreateLoading;
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>

@@ -18,17 +18,20 @@ export function ClientList({ clients, onEdit, onDelete, onToggleStatus }: Client
       label: "Editar",
       icon: <Edit2 className="h-4 w-4" />,
       onClick: () => onEdit(client),
+      swipeColor: "bg-blue-500",
     },
     {
-      label: client.status === "ativo" ? "Inativar" : "Ativar",
+      label: client.status === "ativo" ? "Inativar" : "Reativar",
       icon: <Eye className="h-4 w-4" />,
       onClick: () => onToggleStatus(client),
+      swipeColor: client.status === "ativo" ? "bg-amber-500" : "bg-emerald-500",
     },
     {
       label: "Remover",
       icon: <Trash2 className="h-4 w-4" />,
       onClick: () => onDelete(client),
       variant: "destructive" as const,
+      swipeColor: "bg-red-500",
     },
   ];
 
@@ -43,10 +46,10 @@ export function ClientList({ clients, onEdit, onDelete, onToggleStatus }: Client
           <MobileActionItem key={client.id} actions={actions} showHint={index === 0}>
             <div
               onClick={() => onEdit(client)}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform relative"
             >
               <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="min-w-0">
+                <div className="min-w-0 pr-20">
                   <p className="font-bold text-gray-900 text-sm truncate">
                     {client.nome_fantasia}
                   </p>
@@ -54,7 +57,7 @@ export function ClientList({ clients, onEdit, onDelete, onToggleStatus }: Client
                     <p className="text-xs text-muted-foreground">{client.cnpj}</p>
                   )}
                 </div>
-                <StatusBadge status={client.status === "ativo"} />
+                <StatusBadge status={client.status === "ativo"} className="absolute top-4 right-4" />
               </div>
               {client.razao_social && (
                 <p className="text-xs text-gray-500 truncate">{client.razao_social}</p>

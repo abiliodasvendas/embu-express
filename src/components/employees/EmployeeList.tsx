@@ -2,6 +2,7 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { useSession } from "@/hooks/business/useSession";
 import { Usuario } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
 import { Edit2, Eye, Trash2, User } from "lucide-react";
@@ -19,24 +20,43 @@ export function EmployeeList({
   onToggleStatus,
   onDelete,
 }: EmployeeListProps) {
-  const getActions = (employee: Usuario) => [
-    {
-      label: "Editar",
-      icon: <Edit2 className="h-4 w-4" />,
-      onClick: () => onEdit(employee),
-    },
-    {
-      label: employee.ativo ? "Inativar" : "Ativar",
-      icon: <Eye className="h-4 w-4" />,
-      onClick: () => onToggleStatus(employee),
-    },
-    {
-      label: "Remover",
-      icon: <Trash2 className="h-4 w-4" />,
-      onClick: () => onDelete(employee),
-      variant: "destructive" as const,
-    },
-  ];
+  const { user } = useSession();
+
+  const getActions = (employee: Usuario) => {
+    const isCurrentUser = user?.id === employee.id;
+    const actions = [
+      {
+        label: "Editar",
+        icon: <Edit2 className="h-4 w-4" />,
+        onClick: () => onEdit(employee),
+        swipeColor: "bg-blue-500",
+      },
+      {
+        label: employee.ativo ? "Inativar" : "Reativar",
+        icon: <Eye className="h-4 w-4" />,
+        onClick: () => onToggleStatus(employee),
+        disabled: isCurrentUser,
+        swipeColor: employee.ativo ? "bg-amber-500" : "bg-emerald-500",
+      },
+      {
+        label: "Remover",
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: () => onDelete(employee),
+        variant: "destructive" as const,
+        disabled: isCurrentUser,
+        swipeColor: "bg-red-500",
+      },
+    ];
+
+    if (isCurrentUser) {
+      // Allow editing self, but hide other dangerous actions
+      return actions
+        .filter(a => a.label === "Editar")
+        .map(a => ({ ...a, label: "Editar (Você)" }));
+    }
+
+    return actions;
+  };
 
   return (
     <ResponsiveDataList
@@ -52,7 +72,7 @@ export function EmployeeList({
               className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
             >
               <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 pr-20"> {/* Added pr-20 to avoid overlap with absolute badge */}
                   <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
                     <User className="h-5 w-5" />
                   </div>
@@ -61,7 +81,7 @@ export function EmployeeList({
                     <p className="text-xs text-muted-foreground truncate">{employee.email}</p>
                   </div>
                 </div>
-                <StatusBadge status={employee.ativo} />
+                <StatusBadge status={employee.ativo} className="absolute top-4 right-4" />
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t border-gray-50">

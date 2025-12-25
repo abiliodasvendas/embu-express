@@ -31,8 +31,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { PERFIL_MOTOBOY } from "@/constants";
 import { messages } from "@/constants/messages";
-import { useClients, useCreateClient } from "@/hooks/useClients";
-import { useCreateEmployee, useRoles, useUpdateEmployee } from "@/hooks/useEmployees";
+import { useClients, useCreateClient, useCreateEmployee, useRoles, useUpdateEmployee } from "@/hooks";
 import { cpfSchema, emailSchema } from "@/schemas/common";
 import { Perfil, Usuario } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -65,7 +64,11 @@ interface EmployeeFormProps {
   editingEmployee?: Usuario | null;
 }
 
-export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormProps) {
+export function EmployeeFormDialog({
+  isOpen,
+  onClose,
+  editingEmployee = null,
+}: EmployeeFormProps) {
   const allSections = ["dados-pessoais", "dados-profissionais", "turnos"];
   const [openAccordionItems, setOpenAccordionItems] = useState(allSections);
   

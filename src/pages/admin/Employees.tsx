@@ -1,7 +1,7 @@
-import { EmployeeForm } from "@/components/employees/EmployeeForm";
-import { EmployeeList } from "@/components/employees/EmployeeList";
-import { EmployeesToolbar } from "@/components/employees/EmployeesToolbar";
+import { EmployeeFormDialog } from "@/components/dialogs/EmployeeFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { EmployeeList } from "@/components/features/employee/EmployeeList";
+import { EmployeesToolbar } from "@/components/features/employee/EmployeesToolbar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useClients, useCreateClient, useCreateEmployee, useDeleteEmployee, useEmployees, useRoles, useToggleEmployeeStatus } from "@/hooks";
 import { useFilters } from "@/hooks/ui/useFilters";
-import { useClients, useCreateClient } from "@/hooks/useClients";
-import { useCreateEmployee, useDeleteEmployee, useEmployees, useRoles, useToggleEmployeeStatus } from "@/hooks/useEmployees";
 import { Usuario } from "@/types/database";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -29,6 +28,7 @@ export default function Employees() {
     selectedCategoria: selectedPerfilId,
     setSelectedCategoria: setSelectedPerfilId,
     clearFilters,
+    setFilters,
   } = useFilters({
     categoriaParam: "perfil_id",
   });
@@ -162,6 +162,7 @@ export default function Employees() {
                     onRoleChange={setSelectedPerfilId || (() => {})}
                     onRegister={handleAdd}
                     onQuickCreate={handleQuickCreate}
+                    onApplyFilters={setFilters}
                   />
               </div>
 
@@ -191,7 +192,7 @@ export default function Employees() {
         </div>
       </PullToRefreshWrapper>
 
-      <EmployeeForm
+      <EmployeeFormDialog
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         editingEmployee={editingEmployee}

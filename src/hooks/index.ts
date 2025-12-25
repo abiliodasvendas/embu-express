@@ -10,8 +10,12 @@ export { useFilters } from "./ui/useFilters";
 export { useLoadingState } from "./ui/useLoadingState";
 
 // Embu Express Hooks
-export { useClients } from "./useClients";
+export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClient } from "./api/useClientMutations";
+export { useClients } from "./api/useClients";
+export { useCreateEmployee, useDeleteEmployee, useToggleEmployeeStatus, useUpdateEmployee } from "./api/useEmployeeMutations";
+export { useEmployees, useRoles } from "./api/useEmployees";
+export { useClientActions } from "./business/useClientActions";
+export { useEmployeeActions } from "./business/useEmployeeActions";
 export { useDebounce } from "./useDebounce";
-export { useEmployees } from "./useEmployees";
 export { useTimeTracking } from "./useTimeTracking";
 

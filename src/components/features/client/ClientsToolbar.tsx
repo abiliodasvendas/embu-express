@@ -16,12 +16,11 @@ import {
 } from "@/components/ui/select";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
+  SheetTrigger
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -37,17 +36,20 @@ interface ClientsToolbarProps {
   onStatusChange: (value: string) => void;
   onRegister: () => void;
   onQuickCreate?: () => void;
+  onApplyFilters: (filters: { status?: string }) => void;
 }
 
 const FilterContent = ({ 
   selectedStatus, 
   onStatusChange, 
   onClear, 
+  onApply,
   isSheet = false 
 }: { 
   selectedStatus: string;
   onStatusChange: (val: string) => void;
   onClear: () => void;
+  onApply?: () => void;
   isSheet?: boolean; 
 }) => (
   <div className={cn("space-y-6", isSheet ? "px-6" : "p-4")}>
@@ -80,11 +82,12 @@ const FilterContent = ({
         Limpar
       </Button>
       {isSheet && (
-        <SheetClose asChild>
-          <Button className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white">
-            Aplicar Filtros
-          </Button>
-        </SheetClose>
+        <Button 
+          onClick={onApply}
+          className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white"
+        >
+          Aplicar Filtros
+        </Button>
       )}
     </div>
   </div>
@@ -97,6 +100,7 @@ export function ClientsToolbar({
   onStatusChange,
   onRegister,
   onQuickCreate,
+  onApplyFilters,
 }: ClientsToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -132,7 +136,7 @@ export function ClientsToolbar({
   };
 
   const applyMobileFilters = () => {
-    onStatusChange(mobileStatus);
+    onApplyFilters({ status: mobileStatus });
     setIsSheetOpen(false);
   };
 

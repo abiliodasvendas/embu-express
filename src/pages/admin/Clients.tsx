@@ -1,7 +1,7 @@
-import { ClientForm } from "@/components/clients/ClientForm";
-import { ClientList } from "@/components/clients/ClientList";
-import { ClientsToolbar } from "@/components/clients/ClientsToolbar";
+import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { ClientList } from "@/components/features/client/ClientList";
+import { ClientsToolbar } from "@/components/features/client/ClientsToolbar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useClients, useCreateClient, useDeleteClient, useToggleClientStatus } from "@/hooks";
 import { useFilters } from "@/hooks/ui/useFilters";
-import { useClients, useCreateClient, useDeleteClient, useToggleClientStatus } from "@/hooks/useClients";
 import { Client } from "@/types/client";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { Users, Zap } from "lucide-react";
@@ -25,6 +25,7 @@ export default function Clients() {
     selectedStatus,
     setSelectedStatus,
     clearFilters,
+    setFilters,
     hasActiveFilters,
   } = useFilters();
 
@@ -135,6 +136,7 @@ export default function Clients() {
                   onStatusChange={setSelectedStatus}
                   onRegister={handleAdd}
                   onQuickCreate={handleQuickCreate}
+                  onApplyFilters={setFilters}
                 />
               </div>
 
@@ -164,7 +166,7 @@ export default function Clients() {
         </div>
       </PullToRefreshWrapper>
 
-      <ClientForm
+      <ClientFormDialog
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         editingClient={editingClient}

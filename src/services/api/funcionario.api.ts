@@ -11,6 +11,9 @@ export const funcionarioApi = {
   updateFuncionario: (id: string, data: Partial<Usuario> & { turnos?: Partial<UsuarioTurno>[] }): Promise<Usuario> =>
     apiClient.put(`/usuarios/${id}`, data).then(res => res.data),
 
+  toggleStatus: (id: string, novoStatus: boolean): Promise<{ ativo: boolean }> =>
+    apiClient.patch(`/usuarios/${id}/toggle-ativo`, { novoStatus }).then(res => res.data),
+
   deleteFuncionario: (id: string): Promise<void> =>
     apiClient.delete(`/usuarios/${id}`).then(res => res.data),
     

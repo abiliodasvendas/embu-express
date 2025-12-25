@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
-import { useCreateClient, useUpdateClient } from "@/hooks/useClients";
+import { useCreateClient, useUpdateClient } from "@/hooks";
 import { cepSchema, cnpjSchema } from "@/schemas/common";
 import { Client } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -91,13 +91,23 @@ const clientSchema = z
 
 type ClientFormData = z.infer<typeof clientSchema>;
 
-interface ClientFormProps {
+interface ClientFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingClient?: Client | null;
+  onSuccess?: () => void;
+  profile?: any;
+  allowBatchCreation?: boolean;
 }
 
-export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) {
+export function ClientFormDialog({
+  isOpen,
+  onClose,
+  editingClient = null,
+  onSuccess, // Add this if missing
+  profile, // Add this if missing
+  allowBatchCreation = false, // Add this if missing
+}: ClientFormDialogProps) {
   const [openAccordionItems, setOpenAccordionItems] = useState(["dados-cliente", "endereco"]);
   const [isCepLoading, setIsCepLoading] = useState(false);
   

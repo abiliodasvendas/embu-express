@@ -13,6 +13,9 @@ export const clienteApi = {
   updateCliente: (id: number, data: any) =>
     apiClient.put(`/clientes/${id}`, data).then(res => res.data),
 
+  toggleStatus: (id: number, novoStatus: boolean) =>
+    apiClient.patch(`/clientes/${id}/toggle-ativo`, { novoStatus }).then(res => res.data),
+
 
 
   deleteCliente: (id: number) =>

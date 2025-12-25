@@ -1,22 +1,7 @@
 import { messages } from "@/constants/messages";
 import { funcionarioApi } from "@/services/api/funcionario.api";
 import { toast } from "@/utils/notifications/toast";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-export function useEmployees(filters?: { searchTerm?: string; ativo?: string; perfil_id?: string }) {
-  return useQuery({
-    queryKey: ["employees", filters],
-    queryFn: () => funcionarioApi.listFuncionarios(filters),
-    placeholderData: keepPreviousData,
-  });
-}
-
-export function useRoles() {
-  return useQuery({
-    queryKey: ["perfis"],
-    queryFn: () => funcionarioApi.listPerfis(),
-  });
-}
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateEmployee() {
   const queryClient = useQueryClient();
@@ -60,7 +45,7 @@ export function useToggleEmployeeStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ativo }: { id: string; ativo: boolean }) => 
-      funcionarioApi.updateFuncionario(id, { ativo }),
+      funcionarioApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       toast.success(messages.funcionario.sucesso.status);

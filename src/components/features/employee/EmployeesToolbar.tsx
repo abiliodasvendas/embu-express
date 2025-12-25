@@ -22,9 +22,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useRoles } from "@/hooks";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useRoles } from "@/hooks/useEmployees";
 import { cn } from "@/lib/utils";
 import { getPerfilLabel } from "@/utils/formatters";
 import { Plus, Search } from "lucide-react";
@@ -39,6 +39,7 @@ interface EmployeesToolbarProps {
   onRoleChange: (value: string) => void;
   onRegister: () => void;
   onQuickCreate?: () => void;
+  onApplyFilters: (filters: { status?: string; categoria?: string }) => void;
 }
 
 const FilterControls = ({
@@ -138,6 +139,7 @@ export function EmployeesToolbar({
   onRoleChange,
   onRegister,
   onQuickCreate,
+  onApplyFilters,
 }: EmployeesToolbarProps) {
   const isMobile = useIsMobile();
   const { data: roles } = useRoles();
@@ -182,8 +184,10 @@ export function EmployeesToolbar({
   };
 
   const applyMobileFilters = () => {
-    onStatusChange(mobileStatus);
-    onRoleChange(mobileRole);
+    onApplyFilters({
+      status: mobileStatus,
+      categoria: mobileRole,
+    });
     setIsSheetOpen(false);
   };
 

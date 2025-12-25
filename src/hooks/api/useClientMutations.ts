@@ -2,14 +2,7 @@ import { messages } from "@/constants/messages";
 import { clienteApi } from "@/services/api/cliente.api";
 import { Client } from "@/types/database";
 import { toast } from "@/utils/notifications/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-export function useClients(filters?: { searchTerm?: string; ativo?: string }) {
-  return useQuery({
-    queryKey: ["clients", filters],
-    queryFn: () => clienteApi.listClientes(filters),
-  });
-}
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateClient() {
   const queryClient = useQueryClient();
@@ -50,7 +43,7 @@ export function useToggleClientStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) => 
-      clienteApi.updateCliente(id, { ativo }),
+      clienteApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(messages.cliente.sucesso.status);

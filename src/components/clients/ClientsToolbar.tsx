@@ -1,31 +1,32 @@
+import { FilterButton } from "@/components/common/FilterButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
-import { Filter, ListFilter, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
 
@@ -37,6 +38,57 @@ interface ClientsToolbarProps {
   onRegister: () => void;
   onQuickCreate?: () => void;
 }
+
+const FilterContent = ({ 
+  selectedStatus, 
+  onStatusChange, 
+  onClear, 
+  isSheet = false 
+}: { 
+  selectedStatus: string;
+  onStatusChange: (val: string) => void;
+  onClear: () => void;
+  isSheet?: boolean; 
+}) => (
+  <div className={cn("space-y-6", isSheet ? "px-6" : "p-4")}>
+    <div className="space-y-2">
+      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Status</Label>
+      <Select value={selectedStatus} onValueChange={onStatusChange}>
+        <SelectTrigger className={cn(
+          "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium",
+          isSheet && "h-12 bg-white"
+        )}>
+          <SelectValue placeholder="Status" />
+        </SelectTrigger>
+        <SelectContent className="z-[10001] rounded-xl border-gray-100">
+          <SelectItem value="todos">Todos Status</SelectItem>
+          <SelectItem value="ativo">Ativos</SelectItem>
+          <SelectItem value="inativo">Inativos</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className={cn("flex items-center gap-3 pt-4", isSheet && "pb-6")}>
+      <Button 
+        variant="outline" 
+        onClick={onClear} 
+        className={cn(
+          "flex-1 h-11 rounded-xl text-slate-500 font-bold border-gray-200 hover:bg-gray-50 transition-all active:scale-95",
+          isSheet && "h-12"
+        )}
+      >
+        Limpar
+      </Button>
+      {isSheet && (
+        <SheetClose asChild>
+          <Button className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white">
+            Aplicar Filtros
+          </Button>
+        </SheetClose>
+      )}
+    </div>
+  </div>
+);
 
 export function ClientsToolbar({
   searchTerm,
@@ -51,6 +103,9 @@ export function ClientsToolbar({
   const [localSearch, setLocalSearch] = useState(searchTerm);
   const debouncedSearch = useDebounce(localSearch, 500);
 
+  // Local state for mobile filters (deferred application)
+  const [mobileStatus, setMobileStatus] = useState(selectedStatus);
+
   React.useEffect(() => {
     onSearchChange(debouncedSearch);
   }, [debouncedSearch, onSearchChange]);
@@ -62,6 +117,13 @@ export function ClientsToolbar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
+  // Sync mobile local state when opening sheet or when props change
+  React.useEffect(() => {
+    if (isSheetOpen) {
+      setMobileStatus(selectedStatus);
+    }
+  }, [isSheetOpen, selectedStatus]);
+
   const hasActiveFilters = searchTerm !== "" || selectedStatus !== "todos";
 
   const clearFilters = () => {
@@ -69,68 +131,14 @@ export function ClientsToolbar({
     onStatusChange("todos");
   };
 
-  const FilterContent = ({ isSheet = false }) => (
-    <div className={cn("space-y-6", isSheet ? "px-6" : "p-4")}>
-      <div className="space-y-2">
-        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Status</Label>
-        <Select value={selectedStatus} onValueChange={onStatusChange}>
-          <SelectTrigger className={cn(
-            "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium",
-            isSheet && "h-12 bg-white"
-          )}>
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent className="z-[10001] rounded-xl border-gray-100">
-            <SelectItem value="todos">Todos Status</SelectItem>
-            <SelectItem value="ativo">Ativos</SelectItem>
-            <SelectItem value="inativo">Inativos</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+  const applyMobileFilters = () => {
+    onStatusChange(mobileStatus);
+    setIsSheetOpen(false);
+  };
 
-      <div className={cn("flex items-center gap-3 pt-4", isSheet && "pb-6")}>
-        <Button 
-          variant="outline" 
-          onClick={clearFilters} 
-          className={cn(
-            "flex-1 h-11 rounded-xl text-slate-500 font-bold border-gray-200 hover:bg-gray-50 transition-all active:scale-95",
-            isSheet && "h-12"
-          )}
-        >
-          Limpar
-        </Button>
-        {isSheet && (
-          <SheetClose asChild>
-            <Button className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white">
-              Aplicar Filtros
-            </Button>
-          </SheetClose>
-        )}
-      </div>
-    </div>
-  );
-
-  const FilterButton = React.forwardRef<HTMLButtonElement, React.ComponentPropsWithoutRef<typeof Button>>(
-    (props, ref) => (
-      <Button 
-        {...props}
-        ref={ref}
-        variant="outline" 
-        className={cn(
-          "h-11 rounded-xl border-gray-200 bg-white gap-2 px-4 md:px-5 font-bold transition-all shadow-sm active:scale-95",
-          isMobile && "flex-1 h-11",
-          hasActiveFilters ? "text-blue-600 border-blue-100 bg-blue-50/50" : "text-slate-600 hover:bg-slate-50"
-        )}
-      >
-        {isMobile ? <Filter className="h-4 w-4 mr-1" /> : <ListFilter className="h-4 w-4" />}
-        <span>Filtros</span>
-        {hasActiveFilters && (
-          <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-in zoom-in-50" />
-        )}
-      </Button>
-    )
-  );
-  FilterButton.displayName = "FilterButton";
+  const clearMobileFilters = () => {
+    setMobileStatus("todos");
+  };
 
   return (
     <div className="flex flex-col md:flex-row items-center gap-3 mb-4">
@@ -148,7 +156,10 @@ export function ClientsToolbar({
         {isMobile ? (
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <FilterButton />
+              <FilterButton 
+                hasActiveFilters={hasActiveFilters}
+                isMobile={isMobile}
+              />
             </SheetTrigger>
             <SheetContent 
               side="bottom" 
@@ -162,14 +173,23 @@ export function ClientsToolbar({
                 </SheetDescription>
               </SheetHeader>
               <div className="flex-1 overflow-y-auto">
-                <FilterContent isSheet={true} />
+                <FilterContent 
+                  isSheet={true} 
+                  selectedStatus={mobileStatus}
+                  onStatusChange={setMobileStatus}
+                  onClear={clearMobileFilters}
+                  onApply={applyMobileFilters}
+                />
               </div>
             </SheetContent>
           </Sheet>
         ) : (
           <Popover>
             <PopoverTrigger asChild>
-              <FilterButton />
+              <FilterButton 
+                hasActiveFilters={hasActiveFilters}
+                isMobile={isMobile}
+              />
             </PopoverTrigger>
             <PopoverContent 
               className="w-[280px] p-0 rounded-2xl shadow-2xl border-gray-100 overflow-hidden" 
@@ -177,7 +197,11 @@ export function ClientsToolbar({
               sideOffset={8}
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
-              <FilterContent />
+              <FilterContent 
+                selectedStatus={selectedStatus}
+                onStatusChange={onStatusChange}
+                onClear={clearFilters}
+              />
             </PopoverContent>
           </Popover>
         )}
@@ -190,7 +214,7 @@ export function ClientsToolbar({
           )}
         >
           <Plus className="h-4 w-4" />
-          <span>{isMobile ? "Cadastrar" : "Novo Cliente"}</span>
+          <span>{isMobile ? "Cadastrar" : "Cadastrar Cliente"}</span>
         </Button>
       </div>
     </div>

@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { useSession } from "@/hooks/business/useSession";
 import { Usuario } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
-import { Edit2, Eye, Trash2, User } from "lucide-react";
+import { Edit2, ToggleLeft, ToggleRight, Trash2, User } from "lucide-react";
 
 interface EmployeeListProps {
   employees: Usuario[];
@@ -33,7 +33,7 @@ export function EmployeeList({
       },
       {
         label: employee.ativo ? "Inativar" : "Reativar",
-        icon: <Eye className="h-4 w-4" />,
+        icon: employee.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
         onClick: () => onToggleStatus(employee),
         disabled: isCurrentUser,
         swipeColor: employee.ativo ? "bg-amber-500" : "bg-emerald-500",

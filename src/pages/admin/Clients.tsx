@@ -31,7 +31,10 @@ export default function Clients() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
-  const { data: clients, isLoading, refetch } = useClients({ searchTerm, status: selectedStatus });
+  const { data: clients, isLoading, refetch } = useClients({ 
+    searchTerm: searchTerm || undefined, 
+    ativo: selectedStatus === "todos" ? undefined : selectedStatus === "ativo" ? "true" : "false" 
+  });
   const toggleStatus = useToggleClientStatus();
   const deleteClient = useDeleteClient();
   const createClient = useCreateClient();
@@ -62,8 +65,7 @@ export default function Clients() {
     try {
       await createClient.mutateAsync({
         ...fakeClient,
-        ...fakeClient,
-        status: "ativo",
+        ativo: true,
         silent: true 
       });
       // toast.success("Cliente fake criado com sucesso!"); // Silent mode handles this or we rely on UI update
@@ -75,8 +77,7 @@ export default function Clients() {
   };
 
   const handleToggleStatus = (client: Client) => {
-    const novoStatus = client.status === "ativo" ? "inativo" : "ativo";
-    toggleStatus.mutate({ id: client.id, status: novoStatus });
+    toggleStatus.mutate({ id: client.id, ativo: !client.ativo });
   };
 
   const handleDelete = (client: Client) => {

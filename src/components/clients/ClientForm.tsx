@@ -32,13 +32,13 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
 import { useCreateClient, useUpdateClient } from "@/hooks/useClients";
-import { cepSchema } from "@/schemas/common";
+import { cepSchema, cnpjSchema } from "@/schemas/common";
 import { Client } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { cnpjMask } from "@/utils/masks";
+import { cepMask, cnpjMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { isValidCNPJ, validateEnderecoFields } from "@/utils/validators";
+import { validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, FileText, Hash, Loader2, MapPin, Wand2, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -48,18 +48,16 @@ import { z } from "zod";
 const clientSchema = z
   .object({
     nome_fantasia: z.string().min(1, "Nome Fantasia é obrigatório"),
-    razao_social: z.string().optional(),
-    cnpj: z.string().optional().refine((val) => !val || isValidCNPJ(val), {
-      message: "CNPJ inválido",
-    }),
-    cep: cepSchema.or(z.literal("")).optional(),
-    logradouro: z.string().optional(),
-    numero: z.string().optional(),
+    razao_social: z.string().min(1, "Razão Social é obrigatória"),
+    cnpj: cnpjSchema,
+    cep: cepSchema.or(z.literal("")).refine((val) => !!val, "CEP é obrigatório"),
+    logradouro: z.string().min(1, "Logradouro é obrigatório"),
+    numero: z.string().min(1, "Número é obrigatório"),
     complemento: z.string().optional(),
-    bairro: z.string().optional(),
-    cidade: z.string().optional(),
-    estado: z.string().optional(),
-    status: z.enum(["ativo", "inativo"]).default("ativo"),
+    bairro: z.string().min(1, "Bairro é obrigatório"),
+    cidade: z.string().min(1, "Cidade é obrigatória"),
+    estado: z.string().min(2, "Estado é obrigatório"),
+    ativo: z.boolean().default(true),
   })
   .superRefine((data, ctx) => {
     const validation = validateEnderecoFields(
@@ -100,7 +98,7 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) {
-  const [openAccordionItems, setOpenAccordionItems] = useState(["dados-cliente"]);
+  const [openAccordionItems, setOpenAccordionItems] = useState(["dados-cliente", "endereco"]);
   const [isCepLoading, setIsCepLoading] = useState(false);
   
   const createClient = useCreateClient();
@@ -119,7 +117,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
       bairro: "",
       cidade: "",
       estado: "",
-      status: "ativo",
+      ativo: true,
     },
   });
 
@@ -127,11 +125,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
   const logradouro = form.watch("logradouro");
   const numero = form.watch("numero");
 
-  useEffect(() => {
-    if (isOpen) {
-      form.trigger(["cep", "logradouro", "numero"]);
-    }
-  }, [cep, logradouro, numero, isOpen, form]);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -139,15 +133,15 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
         form.reset({
           nome_fantasia: editingClient.nome_fantasia,
           razao_social: editingClient.razao_social || "",
-          cnpj: editingClient.cnpj || "",
-          cep: editingClient.cep || "",
+          cnpj: cnpjMask(editingClient.cnpj || ""),
+          cep: cepMask(editingClient.cep || ""),
           logradouro: editingClient.logradouro || "",
           numero: editingClient.numero || "",
           complemento: editingClient.complemento || "",
           bairro: editingClient.bairro || "",
           cidade: editingClient.cidade || "",
           estado: editingClient.estado || "",
-          status: editingClient.status,
+          ativo: editingClient.ativo,
         });
         setOpenAccordionItems(["dados-cliente", "endereco"]);
       } else {
@@ -162,9 +156,9 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
           bairro: "",
           cidade: "",
           estado: "",
-          status: "ativo",
+          ativo: true,
         });
-        setOpenAccordionItems(["dados-cliente"]);
+        setOpenAccordionItems(["dados-cliente", "endereco"]);
       }
     }
   }, [isOpen, editingClient, form]);
@@ -183,9 +177,13 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
   const handleQuickCreate = async () => {
     try {
       const mockData = mockGenerator.client();
-      await createClient.mutateAsync(mockData);
+      const clientData = {
+        ...mockData,
+        ativo: true,
+      };
+      await createClient.mutateAsync(clientData as any);
       toast.success("Cliente criado rapidamente!");
-      onClose();
+      safeCloseDialog(() => onClose());
     } catch (error: any) {
       toast.error("Erro no Quick Create", { description: error.message });
     }
@@ -196,9 +194,9 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
       const data = {
         nome_fantasia: values.nome_fantasia,
         razao_social: values.razao_social,
-        cnpj: values.cnpj,
-        status: values.status,
-        cep: values.cep,
+        cnpj: values.cnpj.replace(/\D/g, ""),
+        ativo: values.ativo,
+        cep: values.cep.replace(/\D/g, ""),
         logradouro: values.logradouro,
         numero: values.numero,
         complemento: values.complemento,
@@ -212,7 +210,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
       } else {
         await createClient.mutateAsync(data);
       }
-      onClose();
+      safeCloseDialog(() => onClose());
     } catch (error) {
       console.error(error);
     }
@@ -226,6 +224,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
         className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
+        {/* ... (dialog header not changing) ... */}
         <div className="bg-primary p-4 text-center relative shrink-0">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
@@ -292,7 +291,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                       name="nome_fantasia"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome Fantasia *</FormLabel>
+                          <FormLabel>Nome Fantasia <span className="text-red-500">*</span></FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Building2 className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
@@ -310,7 +309,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                         name="razao_social"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Razão Social</FormLabel>
+                            <FormLabel>Razão Social <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <FileText className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
@@ -327,7 +326,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                         name="cnpj"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>CNPJ</FormLabel>
+                            <FormLabel>CNPJ <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Hash className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
@@ -335,7 +334,10 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                                   placeholder="00.000.000/0000-00"
                                   className="pl-12 h-11 rounded-xl bg-gray-50"
                                   {...field}
-                                  onChange={(e) => field.onChange(cnpjMask(e.target.value))}
+                                  onChange={(e) => {
+                                    field.onChange(cnpjMask(e.target.value));
+                                    form.trigger("cnpj");
+                                  }}
                                 />
                               </div>
                             </FormControl>
@@ -347,7 +349,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
 
                     <FormField
                       control={form.control}
-                      name="status"
+                      name="ativo"
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50">
                           <div className="space-y-0.5">
@@ -358,8 +360,8 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                           </div>
                           <FormControl>
                             <Switch 
-                              checked={field.value === "ativo"} 
-                              onCheckedChange={(checked) => field.onChange(checked ? "ativo" : "inativo")} 
+                              checked={field.value} 
+                              onCheckedChange={field.onChange} 
                             />
                           </FormControl>
                         </FormItem>
@@ -395,7 +397,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                         name="logradouro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Logradouro</FormLabel>
+                            <FormLabel>Logradouro <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -413,7 +415,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                         name="numero"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Número</FormLabel>
+                            <FormLabel>Número <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -446,11 +448,12 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                         name="bairro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-3">
-                            <FormLabel>Bairro</FormLabel>
+                            <FormLabel>Bairro <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary"
+                                disabled={isCepLoading}
                               />
                             </FormControl>
                             <FormMessage />
@@ -462,11 +465,12 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                         name="cidade"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Cidade</FormLabel>
+                            <FormLabel>Cidade <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary"
+                                disabled={isCepLoading}
                               />
                             </FormControl>
                             <FormMessage />
@@ -478,7 +482,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
                         name="estado"
                         render={({ field }) => (
                           <FormItem className="md:col-span-1">
-                            <FormLabel>UF</FormLabel>
+                            <FormLabel>UF <span className="text-red-500">*</span></FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200" disabled={isCepLoading}>
@@ -507,7 +511,7 @@ export function ClientForm({ isOpen, onClose, editingClient }: ClientFormProps) 
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={() => safeCloseDialog(() => onClose())}
             disabled={isPending}
             className="h-11 rounded-xl"
           >

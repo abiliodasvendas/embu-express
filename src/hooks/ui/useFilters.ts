@@ -26,7 +26,7 @@ export interface UseFiltersReturn {
   setSelectedCategoria?: (value: string) => void;
   clearFilters: () => void;
   setFilters: (newFilters: {
-    search?: string;
+    searchTerm?: string;
     status?: string;
     periodo?: string;
     mes?: number;
@@ -256,7 +256,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
 
   const setFilters = useCallback(
     (newFilters: {
-      search?: string;
+      searchTerm?: string;
       status?: string;
       periodo?: string;
       mes?: number;
@@ -264,7 +264,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       categoria?: string;
     }) => {
       // Update local state
-      if (newFilters.search !== undefined) setSearchTermState(newFilters.search);
+      if (newFilters.searchTerm !== undefined) setSearchTermState(newFilters.searchTerm);
       if (newFilters.status !== undefined) setSelectedStatusState(newFilters.status);
       if (newFilters.periodo !== undefined && periodoParam) setSelectedPeriodoState(newFilters.periodo);
       if (newFilters.mes !== undefined && mesParam) setSelectedMesState(newFilters.mes);
@@ -275,8 +275,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
           
-          if (newFilters.search !== undefined) {
-            if (newFilters.search) newParams.set(searchParam, newFilters.search);
+          if (newFilters.searchTerm !== undefined) {
+            if (newFilters.searchTerm) newParams.set(searchParam, newFilters.searchTerm);
             else newParams.delete(searchParam);
           }
 

@@ -26,20 +26,20 @@ export default function Employees() {
     setSearchTerm,
     selectedStatus,
     setSelectedStatus,
-    selectedCategoria: selectedRole,
-    setSelectedCategoria: setSelectedRole,
+    selectedCategoria: selectedPerfilId,
+    setSelectedCategoria: setSelectedPerfilId,
     clearFilters,
   } = useFilters({
-    categoriaParam: "role",
+    categoriaParam: "perfil_id",
   });
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Usuario | null>(null);
 
   const { data: employees, isLoading, refetch } = useEmployees({ 
-    searchTerm, 
-    status: selectedStatus,
-    role: selectedRole === "todos" ? undefined : selectedRole
+    searchTerm: searchTerm || undefined,
+    ativo: selectedStatus === "todos" ? undefined : selectedStatus === "ativo" ? "true" : "false",
+    perfil_id: selectedPerfilId === "todos" ? undefined : selectedPerfilId
   });
 
   const toggleStatus = useToggleEmployeeStatus();
@@ -153,16 +153,16 @@ export default function Employees() {
             </CardHeader>
             <CardContent className="px-0">
               <div className="mb-6">
-                <EmployeesToolbar
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  selectedStatus={selectedStatus}
-                  onStatusChange={setSelectedStatus}
-                  selectedRole={selectedRole || "todos"}
-                  onRoleChange={setSelectedRole || (() => {})}
-                  onRegister={handleAdd}
-                  onQuickCreate={handleQuickCreate}
-                />
+                  <EmployeesToolbar
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    selectedStatus={selectedStatus}
+                    onStatusChange={setSelectedStatus}
+                    selectedRole={selectedPerfilId || "todos"}
+                    onRoleChange={setSelectedPerfilId || (() => {})}
+                    onRegister={handleAdd}
+                    onQuickCreate={handleQuickCreate}
+                  />
               </div>
 
               {isLoading ? (

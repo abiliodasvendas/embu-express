@@ -4,7 +4,7 @@ import { Client } from "@/types/database";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export function useClients(filters?: { searchTerm?: string; status?: string }) {
+export function useClients(filters?: { searchTerm?: string; ativo?: string }) {
   return useQuery({
     queryKey: ["clients", filters],
     queryFn: () => clienteApi.listClientes(filters),
@@ -49,8 +49,8 @@ export function useUpdateClient() {
 export function useToggleClientStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: number; status: "ativo" | "inativo" }) => 
-      clienteApi.toggleStatus(id, status),
+    mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) => 
+      clienteApi.updateCliente(id, { ativo }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(messages.cliente.sucesso.status);

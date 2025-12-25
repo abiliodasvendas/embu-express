@@ -194,7 +194,7 @@ export const generateClientData = () => {
     razao_social: razaoSocial,
     cnpj: generateCNPJ(),
     ...generateAddress(),
-    status: "ativo" as const,
+    ativo: true,
   };
 };
 

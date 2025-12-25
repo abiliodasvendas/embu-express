@@ -14,7 +14,7 @@ export interface Client {
   bairro?: string;
   cidade?: string;
   estado?: string;
-  status: "ativo" | "inativo";
+  ativo: boolean;
   created_at?: string;
   updated_at?: string;
 }

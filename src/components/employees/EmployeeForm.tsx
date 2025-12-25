@@ -1,32 +1,32 @@
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { PERFIL_MOTOBOY } from "@/constants";
@@ -42,45 +42,22 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Briefcase,
-  Clock,
-  Loader2,
-  Mail,
-  Plus,
-  Trash2,
-  User,
-  Users,
-  Wand2,
-  X,
-  Zap
+    Briefcase,
+    Clock,
+    Loader2,
+    Mail,
+    Plus,
+    Trash2,
+    User,
+    Users,
+    Wand2,
+    X,
+    Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
-const employeeSchema = z.object({
-  nome_completo: z.string().min(1, "Nome completo é obrigatório"),
-  email: emailSchema,
-  cpf: cpfSchema,
-  perfil_id: z.string().min(1, "Cargo é obrigatório"),
-  cliente_id: z.string().optional().nullable(),
-  ativo: z.boolean().default(true),
-  turnos: z.array(z.object({
-    hora_inicio: z.string().min(1, "Obrigatório"),
-    hora_fim: z.string().min(1, "Obrigatório"),
-  })).min(1, "Ao menos um turno é necessário"),
-}).superRefine((data, ctx) => {
-  // Logic to check if role is motoboy would ideally be here, 
-  // but since we only have the ID in the schema, we'll handle validation 
-  // through the form's state or a custom check if we can resolve the ID to name.
-  // However, for simplicity and since we are in a refactor phase, 
-  // we will handle the "mandatory" part in the UI/onSubmit for now 
-  // or pass the roles to the validator if possible.
-  // Actually, we can just do a simple refine if we know which ID corresponds to motoboy.
-  // But since IDs can vary, we'll use a more flexible approach in the UI.
-});
-
-type EmployeeFormData = z.infer<typeof employeeSchema>;
 
 interface EmployeeFormProps {
   isOpen: boolean;
@@ -96,6 +73,32 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
   const { data: clients } = useClients();
   const createEmployee = useCreateEmployee();
   const updateEmployee = useUpdateEmployee();
+
+  const employeeSchema = z.object({
+    nome_completo: z.string().min(1, "Nome completo é obrigatório"),
+    email: emailSchema,
+    cpf: cpfSchema,
+    perfil_id: z.string().min(1, "Cargo é obrigatório"),
+    cliente_id: z.string().optional().nullable(),
+    ativo: z.boolean().default(true),
+    turnos: z.array(z.object({
+      hora_inicio: z.string().min(1, "Obrigatório"),
+      hora_fim: z.string().min(1, "Obrigatório"),
+    })).min(1, "Ao menos um turno é necessário"),
+  }).superRefine((data, ctx) => {
+    if (roles) {
+        const selectedPerfil = roles.find(r => r.id.toString() === data.perfil_id);
+        if (selectedPerfil?.nome === PERFIL_MOTOBOY && !data.cliente_id) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Cliente é obrigatório para motoboys",
+                path: ["cliente_id"],
+            });
+        }
+    }
+  });
+
+  type EmployeeFormData = z.infer<typeof employeeSchema>;
 
   const form = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),
@@ -161,7 +164,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
       cpf: mockData.cpf,
       perfil_id: roles && roles.length > 0 ? roles[0].id.toString() : "",
       cliente_id: mockData.cliente_id?.toString() || null,
-      ativo: mockData.ativo,
+      ativo: true, // Mock data usually active
       turnos: mockData.turnos.map(t => ({
         hora_inicio: t.hora_inicio.substring(0, 5),
         hora_fim: t.hora_fim.substring(0, 5)
@@ -192,7 +195,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
 
       await createEmployee.mutateAsync(finalData as any);
       toast.success("Funcionário criado rapidamente!");
-      onClose();
+      safeCloseDialog(() => onClose());
     } catch (error: any) {
       toast.error("Erro no Quick Create", { description: error.message });
     }
@@ -203,15 +206,10 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
       const selectedPerfil = roles?.find(r => r.id.toString() === values.perfil_id);
       const isMotoboy = selectedPerfil?.nome === PERFIL_MOTOBOY;
 
-      if (isMotoboy && !values.cliente_id) {
-        form.setError("cliente_id", { message: "Cliente é obrigatório para motoboys" });
-        return;
-      }
-
       const data = {
         ...values,
         perfil_id: parseInt(values.perfil_id),
-        cliente_id: isMotoboy && values.cliente_id ? parseInt(values.cliente_id) : null,
+        cliente_id: values.cliente_id ? parseInt(values.cliente_id) : null,
       };
 
       if (editingEmployee) {
@@ -219,7 +217,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
       } else {
         await createEmployee.mutateAsync(data as any);
       }
-      onClose();
+      safeCloseDialog(() => onClose());
     } catch (error) {
       console.error(error);
     }
@@ -229,11 +227,6 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
   const selectedPerfil = roles?.find(r => r.id.toString() === selectedPerfilId);
   const isMotoboy = selectedPerfil?.nome === PERFIL_MOTOBOY;
 
-  useEffect(() => {
-    if (!isMotoboy && form.getValues("cliente_id")) {
-      form.setValue("cliente_id", null);
-    }
-  }, [isMotoboy, form]);
 
   const isPending = createEmployee.isPending || updateEmployee.isPending;
 
@@ -310,7 +303,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
                         name="nome_completo"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Nome Completo *</FormLabel>
+                            <FormLabel>Nome Completo <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <Input placeholder="Nome completo" className="h-11 rounded-xl bg-gray-50" {...field} />
                             </FormControl>
@@ -324,7 +317,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>E-mail *</FormLabel>
+                            <FormLabel>E-mail <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Mail className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
@@ -341,7 +334,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
                         name="cpf"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>CPF *</FormLabel>
+                            <FormLabel>CPF <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <Input
                                 placeholder="000.000.000-00"
@@ -372,7 +365,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
                         name="perfil_id"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Cargo / Permissão *</FormLabel>
+                            <FormLabel>Cargo / Permissão <span className="text-red-500">*</span></FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
@@ -392,39 +385,40 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
                         )}
                       />
 
-                      {isMotoboy && (
-                        <FormField
-                          control={form.control}
-                          name="cliente_id"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Cliente Atual *</FormLabel>
-                              <Select 
-                                onValueChange={(val) => field.onChange(val === "null" ? null : val)} 
-                                value={field.value || "null"}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
-                                    <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-muted-foreground" />
-                                      <SelectValue placeholder="Selecione o cliente" />
-                                    </div>
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="null">Nenhum cliente selecionado</SelectItem>
-                                  {clients?.map((client) => (
-                                    <SelectItem key={client.id} value={client.id.toString()}>
-                                      {client.nome_fantasia}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
+                      <FormField
+                        control={form.control}
+                        name="cliente_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Cliente Atual 
+                              {isMotoboy && <span className="text-red-500"> *</span>}
+                            </FormLabel>
+                            <Select 
+                              onValueChange={(val) => field.onChange(val === "null" ? null : val)} 
+                              value={field.value || "null"}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
+                                  <div className="flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                    <SelectValue placeholder="Selecione o cliente" />
+                                  </div>
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="null">Nenhum cliente selecionado</SelectItem>
+                                {clients?.map((client) => (
+                                  <SelectItem key={client.id} value={client.id.toString()}>
+                                    {client.nome_fantasia}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
                     <FormField
@@ -523,7 +517,7 @@ export function EmployeeForm({ isOpen, onClose, editingEmployee }: EmployeeFormP
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={() => safeCloseDialog(() => onClose())}
             disabled={isPending}
             className="h-11 rounded-xl"
           >

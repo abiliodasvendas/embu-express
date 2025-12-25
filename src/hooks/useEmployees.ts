@@ -1,12 +1,13 @@
 import { messages } from "@/constants/messages";
 import { funcionarioApi } from "@/services/api/funcionario.api";
 import { toast } from "@/utils/notifications/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export function useEmployees(filters?: { searchTerm?: string; status?: string; role?: string }) {
+export function useEmployees(filters?: { searchTerm?: string; ativo?: string; perfil_id?: string }) {
   return useQuery({
     queryKey: ["employees", filters],
     queryFn: () => funcionarioApi.listFuncionarios(filters),
+    placeholderData: keepPreviousData,
   });
 }
 

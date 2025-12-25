@@ -1,9 +1,10 @@
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Client } from "@/types/client";
-import { Edit2, Eye, Trash2 } from "lucide-react";
+import { cnpjMask } from "@/utils/masks";
+import { Edit2, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import { ActionsDropdown } from "../common/ActionsDropdown";
 
 interface ClientListProps {
   clients: Client[];
@@ -21,10 +22,10 @@ export function ClientList({ clients, onEdit, onDelete, onToggleStatus }: Client
       swipeColor: "bg-blue-500",
     },
     {
-      label: client.status === "ativo" ? "Inativar" : "Reativar",
-      icon: <Eye className="h-4 w-4" />,
+      label: client.ativo ? "Inativar" : "Reativar",
+      icon: client.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
       onClick: () => onToggleStatus(client),
-      swipeColor: client.status === "ativo" ? "bg-amber-500" : "bg-emerald-500",
+      swipeColor: client.ativo ? "bg-amber-500" : "bg-emerald-500",
     },
     {
       label: "Remover",
@@ -54,10 +55,10 @@ export function ClientList({ clients, onEdit, onDelete, onToggleStatus }: Client
                     {client.nome_fantasia}
                   </p>
                   {client.cnpj && (
-                    <p className="text-xs text-muted-foreground">{client.cnpj}</p>
+                    <p className="text-xs text-muted-foreground">{cnpjMask(client.cnpj)}</p>
                   )}
                 </div>
-                <StatusBadge status={client.status === "ativo"} className="absolute top-4 right-4" />
+                <StatusBadge status={client.ativo} className="absolute top-4 right-4" />
               </div>
               {client.razao_social && (
                 <p className="text-xs text-gray-500 truncate">{client.razao_social}</p>
@@ -102,13 +103,13 @@ export function ClientList({ clients, onEdit, onDelete, onToggleStatus }: Client
                     <p className="font-bold text-gray-900 text-sm">{client.nome_fantasia}</p>
                   </td>
                   <td className="px-6 py-4 align-middle text-sm text-gray-600">
-                    {client.cnpj || "-"}
+                    {client.cnpj ? cnpjMask(client.cnpj) : "-"}
                   </td>
                   <td className="px-6 py-4 align-middle text-sm text-gray-600">
                     {client.razao_social || "-"}
                   </td>
                   <td className="px-6 py-4 align-middle">
-                    <StatusBadge status={client.status === "ativo"} />
+                    <StatusBadge status={client.ativo} />
                   </td>
                   <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
                     <ActionsDropdown actions={actions} />

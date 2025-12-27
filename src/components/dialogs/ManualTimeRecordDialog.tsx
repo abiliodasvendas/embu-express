@@ -8,9 +8,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useCreatePonto } from "@/hooks/api/usePontoMutations";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
-import { funcionarioApi } from "@/services/api/funcionario.api"; // Import API
+import { funcionarioApi } from "@/services/api/funcionario.api";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query"; // Import useQuery
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Check, ChevronsUpDown, Clock, Loader2, Plus } from "lucide-react";
@@ -91,9 +91,9 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
         usuario_id: values.usuario_id,
         data_referencia: values.data,
         entrada_hora: entradaIso,
+        entrada_km: 0, // Default 0 for admin manual entry to satisfy DB constraint
         saida_hora: saidaIso,
-        // criado_por: "admin_manual", // ERROR: Backend expects UUID. Sending null or letting backend handle it.
-        // Se tivermos contexto de auth, usaríamos user.id. Por enquanto, omitir.
+        saida_km: values.saida_hora ? 0 : null, // Default 0 if closed, null if open
       });
 
       handleClose();
@@ -111,7 +111,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
         {/* Header */}
         <div className="bg-blue-600 p-6 text-center relative shrink-0">
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors" onClick={handleClose}>
-                <Plus className="h-6 w-6 rotate-45" /> {/* Using Plus rotated as Close icon for style or X */}
+                <Plus className="h-6 w-6 rotate-45" /> 
                 <span className="sr-only">Close</span>
             </DialogClose>
 

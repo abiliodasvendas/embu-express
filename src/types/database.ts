@@ -74,4 +74,9 @@ export interface RegistroPonto {
   updated_at?: string;
   // Relacionamentos (virtual)
   usuario?: Usuario;
+  detalhes_calculo?: {
+    entrada?: { turno_base: string; diff_minutos: number; tolerancia: number };
+    saida?: { turno_base: string; diff_minutos: number; tolerancia: number };
+  };
+  saldo_minutos?: number | null;
 }

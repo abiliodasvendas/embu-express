@@ -48,6 +48,8 @@ export function useToggleEmployeeStatus() {
       funcionarioApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["active-employees-filter"] });
+      queryClient.invalidateQueries({ queryKey: ["active-employees-combo"] });
       toast.success(messages.funcionario.sucesso.status);
     },
     onError: (error: any) => {
@@ -64,6 +66,9 @@ export function useDeleteEmployee() {
     mutationFn: (id: string) => funcionarioApi.deleteFuncionario(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["active-employees-filter"] });
+      queryClient.invalidateQueries({ queryKey: ["active-employees-combo"] });
+      queryClient.invalidateQueries({ queryKey: ["time-records"] });
       toast.success(messages.funcionario.sucesso.excluido);
     },
     onError: (error: any) => {

@@ -218,6 +218,91 @@ export const generateEmployeeData = (clienteId?: string | number) => {
   };
 };
 
+
+/**
+ * Gera um registro de ponto fictício para o funcionário na data especificada
+ */
+/**
+ * Gera um registro de ponto fictício para o funcionário na data especificada e turno
+ */
+export const generateTimeRecord = (usuarioId: string, date: string, turno?: { hora_inicio: string, hora_fim: string }, scenarioOverride?: number) => {
+  // Cenários: 
+  // 1. Normal
+  // 2. Atraso Leve 
+  // 3. Atraso Grave
+  // 4. Hora Extra (Saída)
+  // 5. Hora Extra Excessiva
+  // 6. Trabalhando Agora
+  
+  const scenario = scenarioOverride || randomNumber(1, 6);
+  let entrada = turno?.hora_inicio || "08:00:00"; 
+  let saida: string | null = turno?.hora_fim || "18:00:00"; 
+  
+  // Variação básica de minutos para parecer natural
+  const addMinutes = (time: string, minutes: number) => {
+    const [h, m, s] = time.split(":").map(Number);
+    const d = new Date();
+    d.setHours(h, m + minutes, s);
+    return d.toTimeString().split(" ")[0];
+  };
+
+  if (scenario === 1) {
+      // Normal
+      entrada = addMinutes(entrada, randomNumber(-5, 0)); // Chega adiantado ou em ponto
+      saida = addMinutes(saida!, randomNumber(0, 5));
+  } else if (scenario === 2) {
+      // Atraso Leve (6 a 14 min) - Deve dar AMARELO
+      entrada = addMinutes(entrada, randomNumber(6, 14));
+  } else if (scenario === 3) {
+      // Atraso Grave (> 16 min) - Deve dar VERMELHO
+      entrada = addMinutes(entrada, randomNumber(16, 60));
+  } else if (scenario === 4) {
+      // Hora Extra (15 to 60 min after end) - Deve dar AMARELO na saida
+      saida = addMinutes(saida!, randomNumber(15, 60));
+  } else if (scenario === 5) {
+      // HE Excessiva (> 2h) - Deve dar VERMELHO na saida
+      saida = addMinutes(saida!, randomNumber(121, 180));
+  } else if (scenario === 6) {
+      // Trabalhando
+      entrada = addMinutes(entrada, randomNumber(-5, 5)); 
+      saida = null;
+  }
+
+  // Converter para ISO String (Data Referencia + Hora)
+  const toISO = (time: string | null, forceNextDay: boolean = false) => {
+      if (!time) return null;
+      
+      let finalDate = date;
+      if (forceNextDay) {
+          const d = new Date(date);
+          d.setDate(d.getDate() + 1);
+          finalDate = d.toISOString().split('T')[0];
+      }
+      
+      return `${finalDate}T${time}-03:00`;
+  };
+
+  // Detectar se virou a noite (Saída menor que Entrada)
+  // Ex: Entrada 19:00, Saída 00:25
+  const isOvernight = saida && entrada && saida < entrada;
+
+  return {
+    usuario_id: usuarioId,
+    data_referencia: date,
+    entrada_hora: toISO(entrada),
+    saida_hora: toISO(saida, !!isOvernight),
+    entrada_km: randomNumber(10000, 50000),
+    saida_km: saida ? randomNumber(50050, 50200) : null,
+    entrada_lat: -23.550520,
+    entrada_long: -46.633308,
+    saida_lat: -23.550520,
+    saida_long: -46.633308,
+    status_entrada: null, // Backend calcula
+    status_saida: null,   // Backend calcula
+    observacao: `Registro gerado automaticamente (Turno ${turno?.hora_inicio || '?'} - Cenário ${scenario})`
+  };
+};
+
 export const mockGenerator = {
   cpf: generateCPF,
   cnpj: generateCNPJ,
@@ -228,4 +313,5 @@ export const mockGenerator = {
   address: generateAddress,
   client: generateClientData,
   employee: generateEmployeeData,
+  timeRecord: generateTimeRecord,
 };

@@ -45,7 +45,9 @@ const EmployeeMobileItem = ({
               <h3 className="font-bold text-gray-900 text-sm truncate">
                 {employee.nome_completo}
               </h3>
-              <p className="text-xs text-muted-foreground truncate">{employee.email}</p>
+               {employee.cliente?.nome_fantasia && (
+                <p className="text-xs text-blue-600 font-medium line-clamp-1">{employee.cliente.nome_fantasia}</p>
+               )}
             </div>
           </div>
           <StatusBadge status={employee.ativo} className="absolute top-4 right-4" />
@@ -56,17 +58,22 @@ const EmployeeMobileItem = ({
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
               Cargo
             </p>
-            <p className="font-medium text-gray-700 text-xs">
+            <p className="font-medium text-gray-700 text-xs text-left">
               {getPerfilLabel(employee.perfil?.nome)}
             </p>
           </div>
           <div>
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-              Cliente Atual
+              Turnos
             </p>
-            <p className="font-medium text-gray-700 text-xs truncate">
-              {employee.cliente?.nome_fantasia || "-"}
-            </p>
+             <div className="flex flex-wrap gap-1 mt-0.5">
+                {employee.turnos?.map((t, i) => (
+                    <span key={i} className="text-[10px] font-medium text-gray-500 bg-gray-100/50 px-1.5 py-0.5 rounded border border-gray-200/50">
+                        {t.hora_inicio.substring(0, 5)} - {t.hora_fim.substring(0, 5)}
+                    </span>
+                ))}
+                {!employee.turnos?.length && <span className="text-[10px] text-gray-400">Sem turno</span>}
+              </div>
           </div>
         </div>
       </div>
@@ -87,6 +94,19 @@ const EmployeeTableRow = ({
 }) => {
   const actions = useEmployeeActions({ employee, onEdit, onToggleStatus, onDelete });
 
+  const renderTurnos = (turnos: any[]) => {
+    if (!turnos || turnos.length === 0) return <span className="text-gray-400">-</span>;
+    return (
+        <div className="flex flex-col gap-1">
+            {turnos.map((t, i) => (
+                <div key={i} className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 w-fit whitespace-nowrap">
+                    {t.hora_inicio.substring(0, 5)} - {t.hora_fim.substring(0, 5)}
+                </div>
+            ))}
+        </div>
+    );
+  };
+
   return (
     <tr
       onClick={() => onEdit(employee)}
@@ -101,15 +121,18 @@ const EmployeeTableRow = ({
             <p className="font-bold text-gray-900 text-sm line-clamp-1">
               {employee.nome_completo}
             </p>
-            <p className="text-xs text-muted-foreground line-clamp-1">{employee.email}</p>
+             {employee.cliente?.nome_fantasia && (
+                <p className="text-xs text-blue-600 font-medium line-clamp-1">{employee.cliente.nome_fantasia}</p>
+             )}
           </div>
         </div>
       </td>
       <td className="px-6 py-4 align-middle text-sm text-gray-600">
         {getPerfilLabel(employee.perfil?.nome)}
       </td>
-      <td className="px-6 py-4 align-middle text-sm text-gray-600">
-        {employee.cliente?.nome_fantasia || "-"}
+      {/* Client Column Removed */}
+      <td className="px-6 py-4 align-middle">
+        {renderTurnos(employee.turnos)}
       </td>
       <td className="px-6 py-4 align-middle">
         <StatusBadge status={employee.ativo} />
@@ -152,8 +175,9 @@ export function EmployeeList({
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Cargo
               </th>
+              {/* Client Column Removed */}
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Cliente Atual
+                Turnos
               </th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Status
@@ -179,4 +203,3 @@ export function EmployeeList({
     </ResponsiveDataList>
   );
 }
-

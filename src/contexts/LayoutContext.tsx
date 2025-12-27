@@ -1,6 +1,7 @@
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useDialogClose } from "@/hooks/ui/useDialogClose";
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface OpenConfirmationDialogProps {
@@ -27,7 +28,8 @@ const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
   const [pageSubtitle, setPageSubtitle] = useState('Por favor, aguarde.');
-  
+  const { closeDialog } = useDialogClose();
+
   // Sync document title with page title
   useEffect(() => {
     if (pageTitle && pageTitle !== 'Carregando...') {
@@ -54,7 +56,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const closeConfirmationDialog = () => {
-    setConfirmationDialogState((prev) => ({ ...prev, open: false }));
+    closeDialog(() => {
+      setConfirmationDialogState((prev) => ({ ...prev, open: false }));
+    });
   };
 
   return (

@@ -99,6 +99,82 @@ export function EmployeeFormDialog({
             });
         }
     }
+
+    // Validação de Conflito de Turnos e Regras de Negócio
+    if (data.turnos?.length > 0) {
+      const toMinutes = (time: string) => {
+        const [h, m] = time.split(":").map(Number);
+        return h * 60 + m;
+      };
+
+      const getIntervals = (t: { hora_inicio: string; hora_fim: string }) => {
+        const start = toMinutes(t.hora_inicio);
+        const end = toMinutes(t.hora_fim);
+        if (start < end) {
+            return [[start, end]];
+        } else {
+            // Overnight: [Start, 1440] AND [0, End]
+            return [[start, 1440], [0, end]];
+        }
+      };
+
+      for (let i = 0; i < data.turnos.length; i++) {
+        const t = data.turnos[i];
+        const start = toMinutes(t.hora_inicio);
+        const end = toMinutes(t.hora_fim);
+
+        // Rule 1: Duration Check (>= 60 mins)
+        // Handle overnight duration
+        let duration = 0;
+        if (start < end) {
+            duration = end - start;
+        } else {
+            duration = (1440 - start) + end;
+        }
+
+        if (duration < 60) {
+             ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Turno deve ter no mínimo 1 hora",
+                path: ["turnos", i, "hora_fim"],
+            });
+        }
+
+        // Rule 2: Overlaps
+        for (let j = i + 1; j < data.turnos.length; j++) {
+            const t1 = data.turnos[i];
+            const t2 = data.turnos[j];
+
+            const intervals1 = getIntervals(t1);
+            const intervals2 = getIntervals(t2);
+
+            let hasOverlap = false;
+
+            for (const [s1, e1] of intervals1) {
+                for (const [s2, e2] of intervals2) {
+                    if (s1 < e2 && s2 < e1) {
+                        hasOverlap = true;
+                        break;
+                    }
+                }
+                if (hasOverlap) break;
+            }
+
+            if (hasOverlap) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Conflito com outro turno",
+                    path: ["turnos", j, "hora_inicio"],
+                });
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Conflito com outro turno",
+                    path: ["turnos", i, "hora_inicio"],
+                });
+            }
+        }
+      }
+    }
   });
 
   type EmployeeFormData = z.infer<typeof employeeSchema>;
@@ -516,13 +592,13 @@ export function EmployeeFormDialog({
           </Form>
         </div>
 
-        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+        <div className="p-4 border-t bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => safeCloseDialog(() => onClose())}
             disabled={isPending}
-            className="h-11 rounded-xl"
+            className="h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-100 font-medium"
           >
             Cancelar
           </Button>
@@ -530,7 +606,7 @@ export function EmployeeFormDialog({
             type="submit"
             onClick={form.handleSubmit(onSubmit, onFormError)}
             disabled={isPending}
-            className="h-11 rounded-xl shadow-lg transition-all active:scale-95"
+            className="h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg transition-all active:scale-95"
           >
             {isPending ? (
               <Loader2 className="h-5 w-5 animate-spin" />

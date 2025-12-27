@@ -1,16 +1,163 @@
+import { ManualTimeRecordDialog } from "@/components/dialogs/ManualTimeRecordDialog";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { TimeTrackingList } from "@/components/features/timetracking/TimeTrackingList";
+import { TimeTrackingToolbar } from "@/components/features/timetracking/TimeTrackingToolbar";
+import { ListSkeleton } from "@/components/skeletons";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { FILTER_OPTIONS } from "@/constants/ponto";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useEffect } from "react";
+import { useTimeRecords } from "@/hooks/api/useTimeRecords";
+import { apiClient } from "@/services/api/client";
+import { funcionarioApi } from "@/services/api/funcionario.api";
+import { mockGenerator } from "@/utils/mocks/generator";
+import { toast } from "@/utils/notifications/toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { CalendarX } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function TimeTracking() {
   const { setPageTitle } = useLayout();
+  const queryClient = useQueryClient();
+  
+  // State
+  const [date, setDate] = useState<Date>(new Date());
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
+  const [filters, setFilters] = useState({
+      statusEntrada: FILTER_OPTIONS.TODOS,
+      statusSaida: FILTER_OPTIONS.TODOS,
+      usuarioId: FILTER_OPTIONS.TODOS
+  });
+
+  // Fetch Active Employees for Filter
+  // REMOVED to avoid fetching on load. Toolbar/Dialog should handle their own.
+  // No initial fetch to active employees here anymore. Optimized. 
+  
+  /* 
+  const { data: funcionarios } = useQuery({
+      queryKey: ["active-employees"],
+      queryFn: () => funcionarioApi.listFuncionarios({ ativo: "true" })
+  });
+  */
+
+  // Data Hooks
+  const { data: records, isLoading, refetch } = useTimeRecords({
+      date: format(date, "yyyy-MM-dd"),
+      searchTerm,
+      usuarioId: filters.usuarioId,
+      statusEntrada: filters.statusEntrada,
+      statusSaida: filters.statusSaida
+  });
+
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     setPageTitle("Controle de Ponto");
   }, [setPageTitle]);
 
+  const handleFiltersChange = (key: string, value: string) => {
+      setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleGenerateMockData = async () => {
+      try {
+          setIsGenerating(true);
+          
+          // 1. Try to get from Cache first
+          // Possible keys: 
+          // ["active-employees-filter"] (Toolbar)
+          // ["active-employees-combo"] (Dialog)
+          // ["employees", { ativo: "true" }] (Main List if filtered)
+          
+          let empList = queryClient.getQueryData<any[]>(["active-employees-filter"]);
+          
+          if (!empList) {
+             empList = queryClient.getQueryData<any[]>(["active-employees-combo"]);
+          }
+
+          if (!empList) {
+             // Try strict match for employees page
+             empList = queryClient.getQueryData<any[]>(["employees", { ativo: "true" }]);
+          }
+
+          // Fallback: Fetch from API
+          if (!empList) {
+             empList = await funcionarioApi.listFuncionarios({ ativo: "true" });
+          }
+          
+          if (!empList || empList.length === 0) {
+              toast.error("Nenhum funcionário ativo encontrado para gerar dados.");
+              setIsGenerating(false);
+              return;
+          }
+
+          // 2. Gerar registros para cada um PARA CADA TURNO
+          let scenarioCounter = 1;
+          const promises = empList.flatMap((func: any) => {
+              // Se não tiver turnos, gera um padrão 08:00 - 18:00
+              const turnos = func.turnos && func.turnos.length > 0 
+                  ? func.turnos 
+                  : [{ hora_inicio: "08:00:00", hora_fim: "18:00:00" }];
+
+              return turnos.map((turno: any) => {
+                  // Cycle scenarios 1 to 6
+                  const scenario = scenarioCounter;
+                  scenarioCounter = scenarioCounter >= 6 ? 1 : scenarioCounter + 1;
+
+                  const payload = mockGenerator.timeRecord(func.id, format(date, "yyyy-MM-dd"), turno, scenario);
+                  return apiClient.post("/pontos", payload);
+              });
+          });
+
+          await Promise.all(promises);
+          
+          toast.success(`${empList.length} registros gerados com sucesso!`);
+          refetch();
+      } catch (error) {
+          console.error("Erro ao gerar dados:", error);
+          toast.error("Erro ao gerar dados fakes.");
+      } finally {
+          setIsGenerating(false);
+      }
+  };
+
   return (
-    <div className="flex items-center justify-center h-[50vh]">
-      <h1 className="text-2xl font-bold text-gray-400">Controle de Ponto</h1>
+    <div className="space-y-6">
+      <TimeTrackingToolbar 
+        date={date}
+        onDateChange={setDate}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        onGenerateMockData={handleGenerateMockData}
+        isGenerating={isGenerating}
+        onRegister={() => setIsManualEntryOpen(true)}
+      />
+
+      {isLoading ? (
+          <ListSkeleton />
+      ) : !records || records.length === 0 ? (
+          <UnifiedEmptyState 
+            icon={CalendarX}
+            title="Nenhum registro encontrado"
+            description="Nenhum ponto registrado para esta data ou filtros."
+          />
+      ) : (
+          <TimeTrackingList records={records} />
+      )}
+
+      <ManualTimeRecordDialog 
+        isOpen={isManualEntryOpen} 
+        onClose={() => setIsManualEntryOpen(false)} 
+      />
+
+      {/* Global Action Loader */}
+      <LoadingOverlay 
+        active={isGenerating} 
+        text="Gerando dados..." 
+      />
     </div>
   );
 }

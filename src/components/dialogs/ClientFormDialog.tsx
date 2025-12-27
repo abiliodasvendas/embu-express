@@ -517,13 +517,13 @@ export function ClientFormDialog({
           </Form>
         </div>
 
-        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+        <div className="p-4 border-t bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => safeCloseDialog(() => onClose())}
             disabled={isPending}
-            className="h-11 rounded-xl"
+            className="h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-100 font-medium"
           >
             Cancelar
           </Button>
@@ -531,7 +531,7 @@ export function ClientFormDialog({
             type="submit"
             onClick={form.handleSubmit(onSubmit, onFormError)}
             disabled={isPending}
-            className="h-11 rounded-xl shadow-lg transition-all active:scale-95"
+            className="h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg transition-all active:scale-95"
           >
             {isPending ? (
               <Loader2 className="h-5 w-5 animate-spin" />

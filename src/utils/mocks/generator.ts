@@ -5,7 +5,9 @@
 // Listas de dados para geração aleatória
 const nomes = [
   "Miguel", "Arthur", "Gael", "Théo", "Heitor", "Ravi", "Davi", "Bernardo", "Noah", "Gabriel",
-  "Helena", "Alice", "Laura", "Maria Alice", "Sophia", "Manuela", "Maitê", "Liz", "Cecília", "Isabella"
+  "Samuel", "Pedro", "Anthony", "Isaac", "Benício", "Benjamin", "Matheus", "Lucas", "Joaquim", "Nicolas",
+  "Henrique", "Murilo", "Lorenzo", "Gustavo", "Felipe", "João", "Pietro", "Daniel", "Enzo", "Leonardo",
+  "Caio", "Rafael", "Francisco", "Antônio", "Enzo Gabriel", "João Miguel", "João Pedro", "Eduardo"
 ];
 
 const sobrenomes = [

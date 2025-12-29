@@ -16,7 +16,7 @@ export function useClients(filters?: { searchTerm?: string; ativo?: string; incl
     queryKey: ["clients", cleanedFilters],
     queryFn: () => clienteApi.listClientes(cleanedFilters as any),
     staleTime: options?.staleTime ?? 1000 * 60 * 5, // 5 minutes default cache
-    refetchOnMount: options?.refetchOnMount,
+    refetchOnMount: options?.refetchOnMount ?? true, // Default to true to fix navigation staleness
     refetchOnWindowFocus: options?.refetchOnWindowFocus,
     enabled: options?.enabled,
   });

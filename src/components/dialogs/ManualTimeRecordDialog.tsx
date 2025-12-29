@@ -183,6 +183,30 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                         </PopoverContent>
                     </Popover>
                     <FormMessage />
+                    <FormMessage />
+                    <div className="flex items-start gap-2 mt-2 px-1">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-1.5 shrink-0">Turno(s):</span>
+                        <div className="flex flex-wrap gap-1.5">
+                            {field.value ? (
+                                (() => {
+                                    const selectedEmp = employees.find(e => e.id.toString() === field.value);
+                                    if (selectedEmp?.turnos && selectedEmp.turnos.length > 0) {
+                                        return selectedEmp.turnos.map((turno) => (
+                                            <span 
+                                                key={turno.id}
+                                                className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 w-fit whitespace-nowrap"
+                                            >
+                                                {turno.hora_inicio.slice(0, 5)} - {turno.hora_fim.slice(0, 5)}
+                                            </span>
+                                        ));
+                                    }
+                                    return <span className="text-xs text-gray-400 mt-1 italic">Sem turno definido</span>;
+                                })()
+                            ) : (
+                                <span className="text-xs text-gray-400 mt-1">-</span>
+                            )}
+                        </div>
+                    </div>
                     </FormItem>
                 )}
                 />

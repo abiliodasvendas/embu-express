@@ -25,12 +25,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { STATUS_PONTO } from "@/constants/ponto";
-import { useClients } from "@/hooks";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { cn } from "@/lib/utils";
-import { funcionarioApi } from "@/services/api/funcionario.api";
 import { getStatusLabel } from "@/utils/ponto";
-import { useQuery } from "@tanstack/react-query";
 import { Plus, Wand2 } from "lucide-react";
 import { useState } from "react";
 
@@ -48,6 +45,8 @@ interface TimeTrackingToolbarProps {
   onGenerateMockData: () => void;
   isGenerating?: boolean;
   onRegister: () => void;
+  employees: any[];
+  clients: any[];
 }
 
 export function TimeTrackingToolbar({
@@ -59,17 +58,10 @@ export function TimeTrackingToolbar({
   onFiltersChange,
   onGenerateMockData,
   isGenerating,
-  onRegister
+  onRegister,
+  employees,
+  clients
 }: TimeTrackingToolbarProps) {
-  // Internal Fetch for Filters
-  const { data: funcionarios = [] } = useQuery({
-      queryKey: ["active-employees-filter"],
-      queryFn: () => funcionarioApi.listFuncionarios({ ativo: "true" }),
-      staleTime: 1000 * 60 * 5, // 5 min cache
-  });
-
-  const { data: clients = [] } = useClients();
-
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -212,7 +204,7 @@ export function TimeTrackingToolbar({
         <div className="flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
             <Combobox 
-                options={funcionarios.map(f => ({ value: f.id.toString(), label: f.nome_completo }))}
+                options={employees.map(f => ({ value: f.id.toString(), label: f.nome_completo }))}
                 value={filters.usuarioId === "todos" ? "" : filters.usuarioId}
                 onSelect={(val) => onFiltersChange("usuarioId", val || "todos")}
                 placeholder="Buscar funcionário..."

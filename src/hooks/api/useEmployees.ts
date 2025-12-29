@@ -15,3 +15,13 @@ export function useRoles() {
     queryFn: () => funcionarioApi.listPerfis(),
   });
 }
+
+export function useActiveEmployees(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["active-employees-filter"],
+    queryFn: () => funcionarioApi.listFuncionarios({ ativo: "true" }),
+    staleTime: 1000 * 60 * 5, // 5 min cache
+    refetchOnMount: true, // Check for invalidation on mount
+    enabled: options?.enabled,
+  });
+}

@@ -3,26 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
-import { useRoles } from "@/hooks";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
@@ -40,6 +32,7 @@ interface EmployeesToolbarProps {
   onRegister: () => void;
   onQuickCreate?: () => void;
   onApplyFilters: (filters: { status?: string; categoria?: string }) => void;
+  roles: any[];
 }
 
 const FilterControls = ({
@@ -140,9 +133,9 @@ export function EmployeesToolbar({
   onRegister,
   onQuickCreate,
   onApplyFilters,
+  roles,
 }: EmployeesToolbarProps) {
   const isMobile = useIsMobile();
-  const { data: roles } = useRoles();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Local state for debouncing search

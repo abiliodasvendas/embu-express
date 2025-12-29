@@ -56,7 +56,7 @@ const TimeRecordMobileItem = ({
 
   return (
     <MobileActionItem actions={actions}>
-      <div onClick={() => onDetails(record)} className="cursor-pointer bg-white rounded-2xl shadow-sm border border-gray-100 p-4 transition-all active:scale-[0.98]">
+      <div onClick={() => onDetails(record)} className="cursor-pointer bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all active:scale-[0.98]">
             <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-50">
                <div className="flex flex-col gap-0.5">
                  <span className="text-sm font-bold text-gray-900">{record.usuario?.nome_completo}</span>
@@ -138,7 +138,7 @@ const TimeRecordMobileItem = ({
                                {calculateTotalTime(record.entrada_hora, record.saida_hora)}
                            </div>
                        ) : (
-                           <span className="text-blue-600 animate-pulse">Em andamento...</span>
+                           <span>Em andamento</span>
                        )}
                    </div>
               </div>

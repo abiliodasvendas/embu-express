@@ -5,12 +5,10 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useCreatePonto } from "@/hooks/api/usePontoMutations";
+import { useActiveEmployees, useCreatePonto } from "@/hooks";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
-import { funcionarioApi } from "@/services/api/funcionario.api";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Check, ChevronsUpDown, Clock, Loader2, Plus } from "lucide-react";
@@ -37,12 +35,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
   const [openCombobox, setOpenCombobox] = useState(false);
 
   // Fetch employees only when dialog is open
-  const { data: employees = [] } = useQuery({
-      queryKey: ["active-employees-filter"], // Share cache with Toolbar
-      queryFn: () => funcionarioApi.listFuncionarios({ ativo: "true" }),
-      enabled: isOpen,
-      staleTime: 1000 * 60 * 5 // Cache for 5 min
-  });
+  const { data: employees = [] } = useActiveEmployees({ enabled: isOpen });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

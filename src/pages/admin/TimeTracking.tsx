@@ -6,6 +6,7 @@ import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FILTER_OPTIONS } from "@/constants/ponto";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useActiveEmployees, useClients } from "@/hooks";
 import { useTimeRecords } from "@/hooks/api/useTimeRecords";
 import { apiClient } from "@/services/api/client";
 import { funcionarioApi } from "@/services/api/funcionario.api";
@@ -41,7 +42,12 @@ export default function TimeTracking() {
   });
   */
 
-  // Data Hooks
+  // Data Hooks - Active Employees for Filter
+  const { data: activeEmployees = [] } = useActiveEmployees();
+
+  const { data: clients = [] } = useClients();
+
+  // Data Hooks - Time Records
   const { data: records, isLoading, refetch } = useTimeRecords({
       date: format(date, "yyyy-MM-dd"),
       searchTerm,
@@ -134,6 +140,8 @@ export default function TimeTracking() {
         onGenerateMockData={handleGenerateMockData}
         isGenerating={isGenerating}
         onRegister={() => setIsManualEntryOpen(true)}
+        employees={activeEmployees}
+        clients={clients}
       />
 
       {isLoading ? (

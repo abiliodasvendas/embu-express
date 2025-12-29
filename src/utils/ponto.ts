@@ -7,7 +7,7 @@ export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida')
         case "AMARELO": return type === 'entrada' ? "Atraso" : "Hora Extra";
         case "ANTECIPADA": return "Saída Antecipada";
         case "VERMELHO": return type === 'entrada' ? "Atraso Crítico" : "HE Excessiva";
-        case "CINZA": return "Indefinido";
+        case "CINZA": return "Aguardando";
         case "EM_ANDAMENTO": return "Em Andamento";
         default: return status;
     }

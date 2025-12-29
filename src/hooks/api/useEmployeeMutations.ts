@@ -13,6 +13,8 @@ export function useCreateEmployee() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["active-employees-filter"] });
+      queryClient.invalidateQueries({ queryKey: ["active-employees-combo"] });
       if (!variables.silent) {
         toast.success(messages.funcionario.sucesso.criado);
       }
@@ -31,6 +33,8 @@ export function useUpdateEmployee() {
     mutationFn: ({ id, ...data }: any) => funcionarioApi.updateFuncionario(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["active-employees-filter"] });
+      queryClient.invalidateQueries({ queryKey: ["active-employees-combo"] });
       toast.success(messages.funcionario.sucesso.atualizado);
     },
     onError: (error: any) => {

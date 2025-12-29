@@ -163,6 +163,7 @@ export default function Employees() {
                     onRegister={handleAdd}
                     onQuickCreate={handleQuickCreate}
                     onApplyFilters={setFilters}
+                    roles={roles || []}
                   />
               </div>
 

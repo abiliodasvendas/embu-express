@@ -201,16 +201,16 @@ export const generateClientData = () => {
 };
 
 /**
- * Gera dados fictícios para um funcionário
+ * Gera dados fictícios para um colaborador
  */
-export const generateEmployeeData = (clienteId?: string | number) => {
+export const generateCollaboratorData = (clienteId?: string | number) => {
   const nomeCompleto = generateName();
   
   return {
     nome_completo: nomeCompleto,
     email: generateEmail(nomeCompleto),
     cpf: generateCPF(),
-    perfil_id: randomNumber(1, 3), // 1: Admin, 2: Funcionario, 3: Motorista
+    perfil_id: randomNumber(1, 3), // 1: Admin, 2: Colaborador, 3: Motorista
     cliente_id: clienteId ? (typeof clienteId === "string" ? parseInt(clienteId) : clienteId) : null,
     ativo: true,
     turnos: [
@@ -222,10 +222,10 @@ export const generateEmployeeData = (clienteId?: string | number) => {
 
 
 /**
- * Gera um registro de ponto fictício para o funcionário na data especificada
+ * Gera um registro de ponto fictício para o colaborador na data especificada
  */
 /**
- * Gera um registro de ponto fictício para o funcionário na data especificada e turno
+ * Gera um registro de ponto fictício para o colaborador na data especificada e turno
  */
 export const generateTimeRecord = (usuarioId: string, date: string, turno?: { hora_inicio: string, hora_fim: string }, scenarioOverride?: number) => {
   // Cenários: 
@@ -314,6 +314,6 @@ export const mockGenerator = {
   cep: generateCEP,
   address: generateAddress,
   client: generateClientData,
-  employee: generateEmployeeData,
+  collaborator: generateCollaboratorData,
   timeRecord: generateTimeRecord,
 };

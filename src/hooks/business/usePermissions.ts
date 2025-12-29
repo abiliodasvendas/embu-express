@@ -10,14 +10,14 @@ export function usePermissions() {
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
   
   // Extração de Role
-  const roleName = profile?.role?.name;
+  const roleName = profile?.perfil?.nome;
   const isAdmin = roleName === 'admin' || roleName === 'super_admin';
   const isMotoboy = roleName === 'motoboy';
   const isFinanceiro = roleName === 'financeiro';
 
   // Regras de Visualização (Simplificadas para o MVP)
   const canViewAdminPanel = isAdmin || isFinanceiro;
-  const canManageEmployees = isAdmin;
+  const canManageCollaborators = isAdmin;
   const canManageClients = isAdmin;
 
   return {
@@ -31,7 +31,7 @@ export function usePermissions() {
 
     // Permissions
     canViewAdminPanel,
-    canManageEmployees,
+    canManageCollaborators,
     canManageClients,
     
     // Raw Data

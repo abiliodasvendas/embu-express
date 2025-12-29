@@ -110,7 +110,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDel
         {/* Scrollable Body */}
         <div className="p-6 bg-white flex-1 overflow-y-auto space-y-6">
             
-            {/* Employee Info */}
+            {/* Colaborador Info */}
             <div className="text-center pb-4 border-b border-gray-100">
                 <h3 className="text-lg font-bold text-gray-900">{record.usuario?.nome_completo}</h3>
                 <p className="text-sm text-gray-500">{record.usuario?.cliente?.nome_fantasia}</p>

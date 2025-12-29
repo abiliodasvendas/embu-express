@@ -7,10 +7,10 @@ import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FILTER_OPTIONS } from "@/constants/ponto";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useActiveEmployees, useClients } from "@/hooks";
+import { useActiveCollaborators, useClients } from "@/hooks";
 import { useTimeRecords } from "@/hooks/api/useTimeRecords";
 import { apiClient } from "@/services/api/client";
-import { funcionarioApi } from "@/services/api/funcionario.api";
+import { colaboradorApi } from "@/services/api/colaborador.api";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,19 +32,8 @@ export default function TimeTracking() {
       usuarioId: FILTER_OPTIONS.TODOS
   });
 
-  // Fetch Active Employees for Filter
-  // REMOVED to avoid fetching on load. Toolbar/Dialog should handle their own.
-  // No initial fetch to active employees here anymore. Optimized. 
-  
-  /* 
-  const { data: funcionarios } = useQuery({
-      queryKey: ["active-employees"],
-      queryFn: () => funcionarioApi.listFuncionarios({ ativo: "true" })
-  });
-  */
-
-  // Data Hooks - Active Employees for Filter
-  const { data: activeEmployees = [] } = useActiveEmployees();
+  // Data Hooks - Active Collaborators for Filter
+  const { data: activeCollaborators = [] } = useActiveCollaborators();
 
   const { data: clients = [] } = useClients(undefined, { staleTime: 0, refetchOnWindowFocus: true });
 
@@ -71,30 +60,24 @@ export default function TimeTracking() {
       try {
           setIsGenerating(true);
           
-          // 1. Try to get from Cache first
-          // Possible keys: 
-          // ["active-employees-filter"] (Toolbar)
-          // ["active-employees-combo"] (Dialog)
-          // ["employees", { ativo: "true" }] (Main List if filtered)
-          
-          let empList = queryClient.getQueryData<any[]>(["active-employees-filter"]);
+          let empList = queryClient.getQueryData<any[]>(["active-collaborators-filter"]);
           
           if (!empList) {
-             empList = queryClient.getQueryData<any[]>(["active-employees-combo"]);
+             empList = queryClient.getQueryData<any[]>(["active-collaborators-combo"]);
           }
 
           if (!empList) {
-             // Try strict match for employees page
-             empList = queryClient.getQueryData<any[]>(["employees", { ativo: "true" }]);
+             // Try strict match for collaborators page
+             empList = queryClient.getQueryData<any[]>(["collaborators", { ativo: "true" }]);
           }
 
           // Fallback: Fetch from API
           if (!empList) {
-             empList = await funcionarioApi.listFuncionarios({ ativo: "true" });
+             empList = await colaboradorApi.listColaboradores({ ativo: "true" });
           }
           
           if (!empList || empList.length === 0) {
-              toast.error("Nenhum funcionário ativo encontrado para gerar dados.");
+              toast.error("Nenhum colaborador ativo encontrado para gerar dados.");
               setIsGenerating(false);
               return;
           }
@@ -142,7 +125,7 @@ export default function TimeTracking() {
             onGenerateMockData={handleGenerateMockData}
             isGenerating={isGenerating}
             onRegister={() => setIsManualEntryOpen(true)}
-            employees={activeEmployees}
+            collaborators={activeCollaborators}
             clients={clients}
         />
 

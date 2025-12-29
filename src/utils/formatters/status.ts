@@ -7,7 +7,7 @@ export const getStatusColor = (status?: string | boolean | null) => {
   
   const s = String(status).toLowerCase();
 
-  // Status de Cliente/Funcionário
+  // Status de Cliente/Colaborador
   if (s === "ativo" || s === "true") return "bg-emerald-50 text-emerald-700 border-emerald-100";
   if (s === "inativo" || s === "false") return "bg-slate-50 text-slate-600 border-slate-200";
 

@@ -11,6 +11,7 @@ import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
 
 import { lazyLoad } from "@/utils/lazyLoad";
+import { Collaborators } from "./pages/admin/Collaborators";
 
 // Lazy loading de rotas principais
 const Login = lazyLoad(() => import("./pages/Login"));
@@ -18,7 +19,6 @@ const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
 
 // Admin - Embu Express
 const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
-const Employees = lazyLoad(() => import("./pages/admin/Employees"));
 const Clients = lazyLoad(() => import("./pages/admin/Clients"));
 
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -99,7 +99,7 @@ const App = () => {
               }
             >
               <Route path="controle-ponto" element={<TimeTracking />} />
-              <Route path="funcionarios" element={<Employees />} />
+              <Route path="colaboradores" element={<Collaborators />} />
               <Route path="clientes" element={<Clients />} />
               
               {/* Fallback para a home do admin */}

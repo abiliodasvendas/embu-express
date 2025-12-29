@@ -12,11 +12,11 @@ export { useLoadingState } from "./ui/useLoadingState";
 // Embu Express Hooks
 export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClient } from "./api/useClientMutations";
 export { useClients } from "./api/useClients";
-export { useCreateEmployee, useDeleteEmployee, useToggleEmployeeStatus, useUpdateEmployee } from "./api/useEmployeeMutations";
-export { useActiveEmployees, useEmployees, useRoles } from "./api/useEmployees";
+export { useCreateCollaborator, useDeleteCollaborator, useToggleCollaboratorStatus, useUpdateCollaborator } from "./api/useCollaboratorMutations";
+export { useActiveCollaborators, useCollaborators, useRoles } from "./api/useCollaborators";
 export { useCreatePonto, useDeletePonto, useUpdatePonto } from "./api/usePontoMutations";
 export { useClientActions } from "./business/useClientActions";
-export { useEmployeeActions } from "./business/useEmployeeActions";
+export { useCollaboratorActions } from "./business/useCollaboratorActions";
 export { useDebounce } from "./useDebounce";
 export { useTimeTracking } from "./useTimeTracking";
 

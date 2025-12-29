@@ -2,15 +2,15 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { useEmployeeActions } from "@/hooks/business/useEmployeeActions";
+import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { Usuario } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
 
-interface EmployeeListProps {
-  employees: Usuario[];
-  onEdit: (employee: Usuario) => void;
-  onToggleStatus: (employee: Usuario) => void;
-  onDelete: (employee: Usuario) => void;
+interface CollaboratorListProps {
+  collaborators: Usuario[];
+  onEdit: (collaborator: Usuario) => void;
+  onToggleStatus: (collaborator: Usuario) => void;
+  onDelete: (collaborator: Usuario) => void;
 }
 
 const getAvatarStyles = (isActive: boolean) => {
@@ -20,43 +20,43 @@ const getAvatarStyles = (isActive: boolean) => {
   return "bg-gray-100 text-gray-500";
 };
 
-const EmployeeMobileItem = ({
-  employee,
+const CollaboratorMobileItem = ({
+  collaborator,
   index,
   onEdit,
   onToggleStatus,
   onDelete,
 }: {
-  employee: Usuario;
+  collaborator: Usuario;
   index: number;
-  onEdit: (employee: Usuario) => void;
-  onToggleStatus: (employee: Usuario) => void;
-  onDelete: (employee: Usuario) => void;
+  onEdit: (collaborator: Usuario) => void;
+  onToggleStatus: (collaborator: Usuario) => void;
+  onDelete: (collaborator: Usuario) => void;
 }) => {
-  const actions = useEmployeeActions({ employee, onEdit, onToggleStatus, onDelete });
+  const actions = useCollaboratorActions({ collaborator, onEdit, onToggleStatus, onDelete });
 
   return (
     <MobileActionItem actions={actions} showHint={index === 0}>
       <div
-        onClick={() => onEdit(employee)}
+        onClick={() => onEdit(collaborator)}
         className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
       >
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-3 pr-20">
             {/* Added pr-20 to avoid overlap with absolute badge */}
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(employee.ativo)}`}>
-              {employee.nome_completo.charAt(0)}
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(collaborator.ativo)}`}>
+              {collaborator.nome_completo.charAt(0)}
             </div>
             <div className="min-w-0">
               <h3 className="font-bold text-gray-900 text-sm truncate">
-                {employee.nome_completo}
+                {collaborator.nome_completo}
               </h3>
-               {employee.cliente?.nome_fantasia && (
-                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{employee.cliente.nome_fantasia}</p>
+               {collaborator.cliente?.nome_fantasia && (
+                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{collaborator.cliente.nome_fantasia}</p>
                )}
             </div>
           </div>
-          <StatusBadge status={employee.ativo} className="absolute top-4 right-4" />
+          <StatusBadge status={collaborator.ativo} className="absolute top-4 right-4" />
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t border-gray-50">
@@ -65,7 +65,7 @@ const EmployeeMobileItem = ({
               Cargo
             </p>
             <p className="font-medium text-gray-700 text-xs text-left">
-              {getPerfilLabel(employee.perfil?.nome)}
+              {getPerfilLabel(collaborator.perfil?.nome)}
             </p>
           </div>
           <div>
@@ -73,12 +73,12 @@ const EmployeeMobileItem = ({
               Turnos
             </p>
              <div className="flex flex-wrap gap-1 mt-0.5">
-                {employee.turnos?.map((t, i) => (
+                {collaborator.turnos?.map((t, i) => (
                     <span key={i} className="text-[10px] font-medium text-gray-500 bg-gray-100/50 px-1.5 py-0.5 rounded border border-gray-200/50">
                         {t.hora_inicio.substring(0, 5)} - {t.hora_fim.substring(0, 5)}
                     </span>
                 ))}
-                {!employee.turnos?.length && <span className="text-[10px] text-gray-400">Sem turno</span>}
+                {!collaborator.turnos?.length && <span className="text-[10px] text-gray-400">Sem turno</span>}
               </div>
           </div>
         </div>
@@ -87,18 +87,18 @@ const EmployeeMobileItem = ({
   );
 };
 
-const EmployeeTableRow = ({
-  employee,
+const CollaboratorTableRow = ({
+  collaborator,
   onEdit,
   onToggleStatus,
   onDelete,
 }: {
-  employee: Usuario;
-  onEdit: (employee: Usuario) => void;
-  onToggleStatus: (employee: Usuario) => void;
-  onDelete: (employee: Usuario) => void;
+  collaborator: Usuario;
+  onEdit: (collaborator: Usuario) => void;
+  onToggleStatus: (collaborator: Usuario) => void;
+  onDelete: (collaborator: Usuario) => void;
 }) => {
-  const actions = useEmployeeActions({ employee, onEdit, onToggleStatus, onDelete });
+  const actions = useCollaboratorActions({ collaborator, onEdit, onToggleStatus, onDelete });
 
   const renderTurnos = (turnos: any[]) => {
     if (!turnos || turnos.length === 0) return <span className="text-gray-400">-</span>;
@@ -115,33 +115,33 @@ const EmployeeTableRow = ({
 
   return (
     <tr
-      onClick={() => onEdit(employee)}
+      onClick={() => onEdit(collaborator)}
       className="hover:bg-gray-50/80 transition-colors cursor-pointer"
     >
       <td className="py-4 pl-6 align-middle">
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${getAvatarStyles(employee.ativo)}`}>
-            {employee.nome_completo.charAt(0)}
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${getAvatarStyles(collaborator.ativo)}`}>
+            {collaborator.nome_completo.charAt(0)}
           </div>
           <div>
             <p className="font-bold text-gray-900 text-sm line-clamp-1">
-              {employee.nome_completo}
+              {collaborator.nome_completo}
             </p>
-             {employee.cliente?.nome_fantasia && (
-                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{employee.cliente.nome_fantasia}</p>
+             {collaborator.cliente?.nome_fantasia && (
+                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{collaborator.cliente.nome_fantasia}</p>
              )}
           </div>
         </div>
       </td>
       <td className="px-6 py-4 align-middle text-sm text-gray-600">
-        {getPerfilLabel(employee.perfil?.nome)}
+        {getPerfilLabel(collaborator.perfil?.nome)}
       </td>
       {/* Client Column Removed */}
       <td className="px-6 py-4 align-middle">
-        {renderTurnos(employee.turnos)}
+        {renderTurnos(collaborator.turnos)}
       </td>
       <td className="px-6 py-4 align-middle">
-        <StatusBadge status={employee.ativo} />
+        <StatusBadge status={collaborator.ativo} />
       </td>
       <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
         <ActionsDropdown actions={actions} />
@@ -150,20 +150,20 @@ const EmployeeTableRow = ({
   );
 };
 
-export function EmployeeList({
-  employees,
+export function CollaboratorList({
+  collaborators,
   onEdit,
   onToggleStatus,
   onDelete,
-}: EmployeeListProps) {
+}: CollaboratorListProps) {
   return (
     <ResponsiveDataList
-      data={employees}
+      data={collaborators}
       mobileContainerClassName="space-y-3"
-      mobileItemRenderer={(employee, index) => (
-        <EmployeeMobileItem
-          key={employee.id}
-          employee={employee}
+      mobileItemRenderer={(collaborator, index) => (
+        <CollaboratorMobileItem
+          key={collaborator.id}
+          collaborator={collaborator}
           index={index}
           onEdit={onEdit}
           onToggleStatus={onToggleStatus}
@@ -176,7 +176,7 @@ export function EmployeeList({
           <thead className="bg-gray-50/50">
             <tr className="border-b border-gray-100 text-left">
               <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Funcionário
+                Colaborador
               </th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Cargo
@@ -194,10 +194,10 @@ export function EmployeeList({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {employees.map((employee) => (
-              <EmployeeTableRow
-                key={employee.id}
-                employee={employee}
+            {collaborators.map((collaborator) => (
+              <CollaboratorTableRow
+                key={collaborator.id}
+                collaborator={collaborator}
                 onEdit={onEdit}
                 onToggleStatus={onToggleStatus}
                 onDelete={onDelete}

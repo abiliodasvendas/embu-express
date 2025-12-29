@@ -23,7 +23,7 @@ import { getPerfilLabel } from "@/utils/formatters";
 import { Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface EmployeesToolbarProps {
+interface CollaboratorsToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   selectedStatus: string;
@@ -152,7 +152,7 @@ const FilterControls = ({
   </div>
 );
 
-export function EmployeesToolbar({
+export function CollaboratorsToolbar({
   searchTerm,
   onSearchChange,
   selectedStatus,
@@ -166,7 +166,7 @@ export function EmployeesToolbar({
   clients,
   selectedClient,
   onClientChange,
-}: EmployeesToolbarProps) {
+}: CollaboratorsToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -230,6 +230,8 @@ export function EmployeesToolbar({
     <div className="flex flex-col gap-4 mb-4">
       {/* Main Toolbar Row(s) */}
       <div className="flex flex-col md:flex-row items-center gap-3 order-2 md:order-none">
+
+
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -257,10 +259,10 @@ export function EmployeesToolbar({
               >
                 <SheetHeader className="text-left mb-4 px-6">
                   <SheetTitle className="text-xl font-bold">
-                    Filtrar Funcionários
+                    Filtrar Colaboradores
                   </SheetTitle>
                   <SheetDescription className="text-gray-500">
-                    Refine a lista de funcionários pelas opções abaixo.
+                    Refine a lista de colaboradores pelas opções abaixo.
                   </SheetDescription>
                 </SheetHeader>
                 <div className="flex-1 overflow-y-auto">
@@ -310,6 +312,8 @@ export function EmployeesToolbar({
             </Popover>
           )}
 
+
+
           <Button
             onClick={onRegister}
             className={cn(
@@ -318,7 +322,7 @@ export function EmployeesToolbar({
             )}
           >
             <Plus className="h-4 w-4" />
-            <span>{isMobile ? "Cadastrar" : "Cadastrar Funcionário"}</span>
+            <span>{isMobile ? "Cadastrar" : "Cadastrar Colaborador"}</span>
           </Button>
         </div>
       </div>

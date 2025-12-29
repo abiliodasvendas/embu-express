@@ -305,7 +305,7 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
           <table className="w-full">
             <thead className="bg-gray-50/50">
               <tr className="border-b border-gray-100 text-left">
-                <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider w-[40%]">Funcionário</th>
+                <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider w-[40%]">Colaborador</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Entrada</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Saída</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Saldo / Total</th>

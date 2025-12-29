@@ -7,8 +7,8 @@ const pagesItems = [
         icon: Clock,
     },
     {
-        title: "Funcionários",
-        href: "/funcionarios",
+        title: "Colaboradores",
+        href: "/colaboradores",
         icon: Users,
     },
     {

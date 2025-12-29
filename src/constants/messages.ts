@@ -42,20 +42,20 @@ export const messages = {
     },
   },
 
-  // ========== FUNCIONÁRIOS ==========
-  funcionario: {
+  // ========== COLABORADORES ==========
+  colaborador: {
     erro: {
-      carregar: "Erro ao carregar funcionários.",
-      criar: "Erro ao cadastrar funcionário.",
-      atualizar: "Erro ao atualizar funcionário.",
-      excluir: "Erro ao excluir funcionário.",
-      toggleStatus: "Erro ao atualizar status do funcionário.",
+      carregar: "Erro ao carregar colaboradores.",
+      criar: "Erro ao cadastrar colaborador.",
+      atualizar: "Erro ao atualizar colaborador.",
+      excluir: "Erro ao excluir colaborador.",
+      toggleStatus: "Erro ao atualizar status do colaborador.",
     },
     sucesso: {
-      criado: "Funcionário cadastrado com sucesso.",
-      atualizado: "Funcionário atualizado com sucesso.",
-      excluido: "Funcionário removido com sucesso.",
-      status: "Status do funcionário atualizado com sucesso.",
+      criado: "Colaborador cadastrado com sucesso.",
+      atualizado: "Colaborador atualizado com sucesso.",
+      excluido: "Colaborador removido com sucesso.",
+      status: "Status do colaborador atualizado com sucesso.",
     },
   },
 
@@ -158,9 +158,9 @@ export const messages = {
       descricao: "Cadastre seu primeiro cliente para começar a gestão.",
       semResultados: "Não encontramos resultados para sua busca.",
     },
-    funcionario: {
-      titulo: "Nenhum funcionário encontrado",
-      descricao: "Cadastre seu primeiro funcionário para começar a gestão.",
+    colaborador: {
+      titulo: "Nenhum colaborador encontrado",
+      descricao: "Cadastre seu primeiro colaborador para começar a gestão.",
       semResultados: "Não encontramos resultados para sua busca.",
     },
     ponto: {
@@ -198,8 +198,8 @@ export type MessageKey =
   | `sucesso.${keyof typeof messages.sucesso}`
   | `cliente.erro.${keyof typeof messages.cliente.erro}`
   | `cliente.sucesso.${keyof typeof messages.cliente.sucesso}`
-  | `funcionario.erro.${keyof typeof messages.funcionario.erro}`
-  | `funcionario.sucesso.${keyof typeof messages.funcionario.sucesso}`
+  | `colaborador.erro.${keyof typeof messages.colaborador.erro}`
+  | `colaborador.sucesso.${keyof typeof messages.colaborador.sucesso}`
   | `ponto.erro.${keyof typeof messages.ponto.erro}`
   | `auth.erro.${keyof typeof messages.auth.erro}`
   | `auth.sucesso.${keyof typeof messages.auth.sucesso}`
@@ -211,7 +211,7 @@ export type MessageKey =
   | `usuario.erro.${keyof typeof messages.usuario.erro}`
   | `usuario.sucesso.${keyof typeof messages.usuario.sucesso}`
   | `emptyState.cliente.${keyof typeof messages.emptyState.cliente}`
-  | `emptyState.funcionario.${keyof typeof messages.emptyState.funcionario}`
+  | `emptyState.colaborador.${keyof typeof messages.emptyState.colaborador}`
   | `emptyState.ponto.${keyof typeof messages.emptyState.ponto}`
   | `dialogo.remover.${keyof typeof messages.dialogo.remover}`
   | `dialogo.inativar.${keyof typeof messages.dialogo.inativar}`

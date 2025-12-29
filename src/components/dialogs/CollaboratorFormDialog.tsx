@@ -44,7 +44,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { PERFIL_MOTOBOY } from "@/constants";
 import { messages } from "@/constants/messages";
-import { useCreateClient, useCreateEmployee, useRoles, useUpdateEmployee } from "@/hooks";
+import { useCreateClient, useCreateCollaborator, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useClientSelection } from "@/hooks/ui/useClientSelection";
 import { cn } from "@/lib/utils";
 import { cpfSchema, emailSchema } from "@/schemas/common";
@@ -74,26 +74,26 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
 
-interface EmployeeFormProps {
+interface CollaboratorFormProps {
   isOpen: boolean;
   onClose: () => void;
-  editingEmployee?: Usuario | null;
+  editingCollaborator?: Usuario | null;
 }
 
-export function EmployeeFormDialog({
+export function CollaboratorFormDialog({
   isOpen,
   onClose,
-  editingEmployee = null,
-}: EmployeeFormProps) {
+  editingCollaborator = null,
+}: CollaboratorFormProps) {
   const allSections = ["dados-pessoais", "dados-profissionais", "turnos"];
   const [openAccordionItems, setOpenAccordionItems] = useState(allSections);
   
   const { data: roles } = useRoles();
-  const { data: clients } = useClientSelection(editingEmployee?.cliente_id, { enabled: isOpen });
-  const createEmployee = useCreateEmployee();
-  const updateEmployee = useUpdateEmployee();
+  const { data: clients } = useClientSelection(editingCollaborator?.cliente_id, { enabled: isOpen });
+  const createCollaborator = useCreateCollaborator();
+  const updateCollaborator = useUpdateCollaborator();
 
-  const employeeSchema = z.object({
+  const collaboratorSchema = z.object({
     nome_completo: z.string().min(1, "Nome completo é obrigatório"),
     email: emailSchema,
     cpf: cpfSchema,
@@ -194,10 +194,10 @@ export function EmployeeFormDialog({
     }
   });
 
-  type EmployeeFormData = z.infer<typeof employeeSchema>;
-
-  const form = useForm<EmployeeFormData>({
-    resolver: zodResolver(employeeSchema),
+  type CollaboratorFormData = z.infer<typeof collaboratorSchema>;
+  
+  const form = useForm<CollaboratorFormData>({
+    resolver: zodResolver(collaboratorSchema),
     defaultValues: {
       nome_completo: "",
       email: "",
@@ -216,15 +216,15 @@ export function EmployeeFormDialog({
 
   useEffect(() => {
     if (isOpen) {
-      if (editingEmployee) {
+      if (editingCollaborator) {
         form.reset({
-          nome_completo: editingEmployee.nome_completo,
-          email: editingEmployee.email,
-          cpf: editingEmployee.cpf,
-          perfil_id: editingEmployee.perfil_id.toString(),
-          cliente_id: editingEmployee.cliente_id?.toString() || null,
-          ativo: editingEmployee.ativo,
-          turnos: editingEmployee.turnos?.map(t => ({
+          nome_completo: editingCollaborator.nome_completo,
+          email: editingCollaborator.email,
+          cpf: editingCollaborator.cpf,
+          perfil_id: editingCollaborator.perfil_id.toString(),
+          cliente_id: editingCollaborator.cliente_id?.toString() || null,
+          ativo: editingCollaborator.ativo,
+          turnos: editingCollaborator.turnos?.map(t => ({
             hora_inicio: t.hora_inicio.substring(0, 5),
             hora_fim: t.hora_fim.substring(0, 5)
           })) || [{ hora_inicio: "08:00", hora_fim: "18:00" }],
@@ -242,7 +242,7 @@ export function EmployeeFormDialog({
       }
       setOpenAccordionItems(allSections);
     }
-  }, [isOpen, editingEmployee, form]);
+  }, [isOpen, editingCollaborator, form]);
 
   const onFormError = () => {
     toast.error(messages.validacao.formularioComErros);
@@ -253,7 +253,7 @@ export function EmployeeFormDialog({
   const handleFillMock = async () => {
     let clientId = clients?.[0]?.id;
     
-    const mockData = mockGenerator.employee(clientId);
+    const mockData = mockGenerator.collaborator(clientId);
     const formData = {
       nome_completo: mockData.nome_completo,
       email: mockData.email,
@@ -282,22 +282,22 @@ export function EmployeeFormDialog({
         clientId = newClient.id;
       }
 
-      const mockData = mockGenerator.employee(clientId);
+      const mockData = mockGenerator.collaborator(clientId);
       const finalData = {
         ...mockData,
         perfil_id: roles && roles.length > 0 ? roles[1].id : 2, 
         cliente_id: mockData.cliente_id,
       };
 
-      await createEmployee.mutateAsync(finalData as any);
-      toast.success("Funcionário criado rapidamente!");
+      await createCollaborator.mutateAsync(finalData as any);
+      toast.success("Colaborador criado rapidamente!");
       safeCloseDialog(() => onClose());
     } catch (error: any) {
       toast.error("Erro no Quick Create", { description: error.message });
     }
   };
 
-  const onSubmit = async (values: EmployeeFormData) => {
+  const onSubmit = async (values: CollaboratorFormData) => {
     try {
       const selectedPerfil = roles?.find(r => r.id.toString() === values.perfil_id);
       const isMotoboy = selectedPerfil?.nome === PERFIL_MOTOBOY;
@@ -308,10 +308,10 @@ export function EmployeeFormDialog({
         cliente_id: values.cliente_id ? parseInt(values.cliente_id) : null,
       };
 
-      if (editingEmployee) {
-        await updateEmployee.mutateAsync({ id: editingEmployee.id, ...data });
+      if (editingCollaborator) {
+        await updateCollaborator.mutateAsync({ id: editingCollaborator.id, ...data });
       } else {
-        await createEmployee.mutateAsync(data as any);
+        await createCollaborator.mutateAsync(data as any);
       }
       safeCloseDialog(() => onClose());
     } catch (error) {
@@ -324,7 +324,7 @@ export function EmployeeFormDialog({
   const isMotoboy = selectedPerfil?.nome === PERFIL_MOTOBOY;
 
 
-  const isPending = createEmployee.isPending || updateEmployee.isPending;
+  const isPending = createCollaborator.isPending || updateCollaborator.isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
@@ -344,7 +344,7 @@ export function EmployeeFormDialog({
             >
               <Wand2 className="h-4 w-4" />
             </Button>
-            {!editingEmployee && (
+            {!editingCollaborator && (
               <Button
                 type="button"
                 variant="ghost"
@@ -367,12 +367,12 @@ export function EmployeeFormDialog({
             <User className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            {editingEmployee ? "Editar Funcionário" : "Novo Funcionário"}
+            {editingCollaborator ? "Editar Colaborador" : "Novo Colaborador"}
           </DialogTitle>
           <DialogDescription className="text-white/80 text-sm mt-1">
-            {editingEmployee
-              ? "Ajuste as informações do perfil do funcionário."
-              : "Preencha os dados para cadastrar um novo funcionário."}
+            {editingCollaborator
+              ? "Ajuste as informações do perfil do colaborador."
+              : "Preencha os dados para cadastrar um novo colaborador."}
           </DialogDescription>
         </div>
 
@@ -563,9 +563,9 @@ export function EmployeeFormDialog({
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">Funcionario Ativo</FormLabel>
+                            <FormLabel className="text-base">Colaborador Ativo</FormLabel>
                             <div className="text-sm text-muted-foreground">
-                              Define se o funcionário pode acessar o sistema.
+                              Define se o colaborador pode acessar o sistema.
                             </div>
                           </div>
                           <FormControl>
@@ -667,7 +667,7 @@ export function EmployeeFormDialog({
           >
             {isPending ? (
               <Loader2 className="h-5 w-5 animate-spin" />
-            ) : editingEmployee ? (
+            ) : editingCollaborator ? (
               "Atualizar"
             ) : (
               "Salvar"

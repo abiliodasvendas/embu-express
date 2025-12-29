@@ -5,7 +5,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useActiveEmployees, useCreatePonto } from "@/hooks";
+import { useActiveCollaborators, useCreatePonto } from "@/hooks";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
 import { TimeRules } from "@/utils/timeRules";
@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 const formSchema = z.object({
-  usuario_id: z.string().min(1, "Selecione um funcionário"),
+  usuario_id: z.string().min(1, "Selecione um colaborador"),
   data: z.string().min(1, "Selecione a data"),
   entrada_hora: z.string().min(1, "Horário de entrada obrigatório"),
   saida_hora: z.string().optional(),
@@ -36,8 +36,8 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
   const { mutateAsync: createPonto, isPending } = useCreatePonto();
   const [openCombobox, setOpenCombobox] = useState(false);
 
-  // Fetch employees only when dialog is open
-  const { data: employees = [] } = useActiveEmployees({ enabled: isOpen });
+  // Fetch collaborators only when dialog is open
+  const { data: collaborators = [] } = useActiveCollaborators({ enabled: isOpen });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -114,7 +114,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 Novo Registro Manual
             </DialogTitle>
             <DialogDescription className="text-blue-100/90 text-sm mt-1">
-                Lançamento manual de horas para funcionário
+                Lançamento manual de horas para colaborador
             </DialogDescription>
         </div>
 
@@ -128,7 +128,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 name="usuario_id"
                 render={({ field }) => (
                     <FormItem className="flex flex-col">
-                    <FormLabel>Funcionário</FormLabel>
+                    <FormLabel>Colaborador</FormLabel>
                     <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
                         <PopoverTrigger asChild>
                         <FormControl>
@@ -141,36 +141,36 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                             )}
                             >
                             {field.value
-                                ? employees.find((employee) => employee.id.toString() === field.value)?.nome_completo
-                                : "Selecione o funcionário..."}
+                                ? collaborators.find((collaborator) => collaborator.id.toString() === field.value)?.nome_completo
+                                : "Selecione o colaborador..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                         </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                         <Command>
-                            <CommandInput placeholder="Buscar funcionário..." />
+                            <CommandInput placeholder="Buscar colaborador..." />
                             <CommandList>
-                                <CommandEmpty>Nenhum funcionário encontrado.</CommandEmpty>
+                                <CommandEmpty>Nenhum colaborador encontrado.</CommandEmpty>
                                 <CommandGroup>
-                                {employees.map((employee) => (
+                                {collaborators.map((collaborator) => (
                                     <CommandItem
-                                    value={employee.nome_completo} // Search by name
-                                    key={employee.id}
+                                    value={collaborator.nome_completo} // Search by name
+                                    key={collaborator.id}
                                     onSelect={() => {
-                                        form.setValue("usuario_id", employee.id.toString());
+                                        form.setValue("usuario_id", collaborator.id.toString());
                                         setOpenCombobox(false);
                                     }}
                                     >
                                     <Check
                                         className={cn(
                                         "mr-2 h-4 w-4",
-                                        employee.id.toString() === field.value
+                                        collaborator.id.toString() === field.value
                                             ? "opacity-100"
                                             : "opacity-0"
                                         )}
                                     />
-                                    {employee.nome_completo}
+                                    {collaborator.nome_completo}
                                     </CommandItem>
                                 ))}
                                 </CommandGroup>
@@ -185,7 +185,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                         <div className="flex flex-wrap gap-1.5">
                             {field.value ? (
                                 (() => {
-                                    const selectedEmp = employees.find(e => e.id.toString() === field.value);
+                                    const selectedEmp = collaborators.find(e => e.id.toString() === field.value);
                                     if (selectedEmp?.turnos && selectedEmp.turnos.length > 0) {
                                         return selectedEmp.turnos.map((turno) => (
                                             <span 

@@ -14,8 +14,9 @@ export function useUpdatePonto() {
       toast.success("Registro atualizado com sucesso!");
     },
     onError: (error: any) => {
+      const message = error.response?.data?.error || error.response?.data?.message || error.message || "Tente novamente mais tarde.";
       toast.error("Erro ao atualizar registro.", {
-        description: error.message || "Tente novamente mais tarde.",
+        description: message,
       });
     },
   });
@@ -31,8 +32,9 @@ export function useCreatePonto() {
       toast.success("registro criado com sucesso!");
     },
     onError: (error: any) => {
+      const message = error.response?.data?.error || error.response?.data?.message || error.message || "Tente novamente mais tarde.";
       toast.error("Erro ao criar registro.", {
-        description: error.message || "Tente novamente mais tarde.",
+        description: message,
       });
     },
   });
@@ -48,8 +50,9 @@ export function useDeletePonto() {
       toast.success("Registro excluído com sucesso!");
     },
     onError: (error: any) => {
+      const message = error.response?.data?.error || error.response?.data?.message || error.message || "Tente novamente mais tarde.";
       toast.error("Erro ao excluir registro.", {
-        description: error.message || "Tente novamente mais tarde.",
+        description: message,
       });
     },
   });

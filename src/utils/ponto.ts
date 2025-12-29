@@ -39,3 +39,14 @@ export const calculateTotalTime = (entrada?: string | null, saida?: string | nul
     const minutes = totalMinutes % 60;
     return `${hours}h ${minutes}min`;
 };
+
+export const formatMinutes = (totalMinutes: number) => {
+    const absMinutes = Math.abs(totalMinutes);
+    if (absMinutes < 60) return `${totalMinutes} min`;
+
+    const hours = Math.floor(absMinutes / 60);
+    const minutes = absMinutes % 60;
+    const sign = totalMinutes < 0 ? "-" : "+";
+    
+    return `${sign}${hours}h ${minutes}min`;
+};

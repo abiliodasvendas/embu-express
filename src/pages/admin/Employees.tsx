@@ -33,13 +33,16 @@ export default function Employees() {
     categoriaParam: "perfil_id",
   });
 
+  const [selectedClient, setSelectedClient] = useState("todos");
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Usuario | null>(null);
 
   const { data: employees, isLoading, refetch } = useEmployees({ 
     searchTerm: searchTerm || undefined,
     ativo: selectedStatus === "todos" ? undefined : selectedStatus === "ativo" ? "true" : "false",
-    perfil_id: selectedPerfilId === "todos" ? undefined : selectedPerfilId
+    perfil_id: selectedPerfilId === "todos" ? undefined : selectedPerfilId,
+    cliente_id: selectedClient === "todos" ? undefined : selectedClient
   });
 
   const toggleStatus = useToggleEmployeeStatus();
@@ -160,10 +163,16 @@ export default function Employees() {
                     onStatusChange={setSelectedStatus}
                     selectedRole={selectedPerfilId || "todos"}
                     onRoleChange={setSelectedPerfilId || (() => {})}
+                    selectedClient={selectedClient}
+                    onClientChange={setSelectedClient}
                     onRegister={handleAdd}
                     onQuickCreate={handleQuickCreate}
-                    onApplyFilters={setFilters}
+                    onApplyFilters={(f) => {
+                      setFilters({ status: f.status, categoria: f.categoria });
+                      if (f.cliente) setSelectedClient(f.cliente);
+                    }}
                     roles={roles || []}
+                    clients={clients || []}
                   />
               </div>
 

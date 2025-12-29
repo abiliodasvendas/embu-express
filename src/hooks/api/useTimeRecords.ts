@@ -26,6 +26,13 @@ export function useTimeRecords({ date, searchTerm, usuarioId, statusEntrada, sta
       return response.data;
     },
     // Refresh every minute to keep statuses updated securely
-    refetchInterval: 60000, 
+    // Refresh every minute to keep statuses updated securely
+    refetchInterval: 60000,
+    // FORCE FRESH DATA (User Request)
+    // "Quase como se não houvesse react query"
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true, 
   });
 }

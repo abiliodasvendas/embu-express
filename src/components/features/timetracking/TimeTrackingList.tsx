@@ -10,7 +10,7 @@ import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { useTimeRecordActions } from "@/hooks/business/useTimeRecordActions";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
 import { RegistroPonto } from "@/types/database";
-import { calculateTotalTime, formatTime, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
+import { calculateTotalTime, formatMinutes, formatTime, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { Clock, Timer } from "lucide-react";
 import { useState } from "react";
 
@@ -125,7 +125,7 @@ const TimeRecordMobileItem = ({
                        {/* Mobile Balance */}
                          {record.saldo_minutos !== undefined && record.saldo_minutos !== null && (
                              <Badge variant="outline" className={`${record.saldo_minutos >= 0 ? "text-green-600 border-green-200 bg-green-50" : "text-red-600 border-red-200 bg-red-50"}`}>
-                                {record.saldo_minutos > 0 ? "+" : ""}{record.saldo_minutos} min
+                                {formatMinutes(record.saldo_minutos)}
                              </Badge>
                          )}
                    </div>
@@ -219,7 +219,7 @@ const TimeRecordTableRow = ({
             {/* Saldo Primary */}
             {record.saldo_minutos !== undefined && record.saldo_minutos !== null ? (
                  <span className={`text-sm font-bold ${record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500"}`}>
-                    {record.saldo_minutos > 0 ? "+" : ""}{record.saldo_minutos} min
+                    {formatMinutes(record.saldo_minutos)}
                  </span>
             ) : (
                  <span className="text-gray-300 text-sm font-bold">--</span>

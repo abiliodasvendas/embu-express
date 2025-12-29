@@ -5,12 +5,14 @@ import { Label } from "@/components/ui/label";
 import { useUpdatePonto } from "@/hooks/api/usePontoMutations";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { RegistroPonto } from "@/types/database";
+import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Clock, Edit2, Loader2, Save, X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 interface EditTimeRecordDialogProps {
@@ -53,30 +55,25 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
   const onSubmit = (values: EditRecordForm) => {
     if (!record) return;
 
-    // Construct full ISO strings based on the original record's date
-    const baseDate = record.entrada_hora ? new Date(record.entrada_hora) : new Date(); // Fallback
-    const dateString = format(baseDate, "yyyy-MM-dd");
+    // Use o utilitário compartilhado para consistência de regras
+    const baseDate = record.entrada_hora ? format(new Date(record.entrada_hora), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
+    const { entrada, saida } = TimeRules.resolveDates(baseDate, values.entrada_hora, values.saida_hora || undefined);
 
-    // Construtor explícito para garantir horário local -> UTC
-    const entradaDate = new Date(`${dateString}T${values.entrada_hora}:00`);
-    const entradaISO = entradaDate.toISOString();
-    
-    let saidaISO = null;
-    if (values.saida_hora) {
-        const saidaDate = new Date(`${dateString}T${values.saida_hora}:00`);
-        // Se saida < entrada, assume dia seguinte
-        if (saidaDate < entradaDate) {
-            saidaDate.setDate(saidaDate.getDate() + 1);
+    // Validação de segurança
+    if (saida) {
+        const checkMax = TimeRules.validateMaxDuration(entrada, saida, 16);
+        if (!checkMax.valid) {
+            toast.error("Erro na validação", { description: checkMax.message });
+            return;
         }
-        saidaISO = saidaDate.toISOString();
     }
 
     updatePonto.mutate(
       {
         id: record.id,
         data: {
-          entrada_hora: entradaISO,
-          saida_hora: saidaISO || null, // Ensure explicit null if empty
+          entrada_hora: entrada.toISOString(),
+          saida_hora: saida ? saida.toISOString() : null, 
         },
       },
       {

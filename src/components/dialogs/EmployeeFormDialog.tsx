@@ -1,37 +1,52 @@
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { PERFIL_MOTOBOY } from "@/constants";
 import { messages } from "@/constants/messages";
-import { useClients, useCreateClient, useCreateEmployee, useRoles, useUpdateEmployee } from "@/hooks";
+import { useCreateClient, useCreateEmployee, useRoles, useUpdateEmployee } from "@/hooks";
+import { useClientSelection } from "@/hooks/ui/useClientSelection";
+import { cn } from "@/lib/utils";
 import { cpfSchema, emailSchema } from "@/schemas/common";
 import { Perfil, Usuario } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -41,17 +56,18 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-    Briefcase,
-    Clock,
-    Loader2,
-    Mail,
-    Plus,
-    Trash2,
-    User,
-    Users,
-    Wand2,
-    X,
-    Zap
+  Briefcase,
+  Check,
+  ChevronsUpDown,
+  Clock,
+  Loader2,
+  Mail,
+  Plus,
+  Trash2,
+  User,
+  Wand2,
+  X,
+  Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -73,7 +89,7 @@ export function EmployeeFormDialog({
   const [openAccordionItems, setOpenAccordionItems] = useState(allSections);
   
   const { data: roles } = useRoles();
-  const { data: clients } = useClients();
+  const { data: clients } = useClientSelection(editingEmployee?.cliente_id, { enabled: isOpen });
   const createEmployee = useCreateEmployee();
   const updateEmployee = useUpdateEmployee();
 
@@ -107,7 +123,8 @@ export function EmployeeFormDialog({
         return h * 60 + m;
       };
 
-      const getIntervals = (t: { hora_inicio: string; hora_fim: string }) => {
+      const getIntervals = (t: { hora_inicio?: string; hora_fim?: string }) => {
+        if (!t.hora_inicio || !t.hora_fim) return [];
         const start = toMinutes(t.hora_inicio);
         const end = toMinutes(t.hora_fim);
         if (start < end) {
@@ -464,36 +481,76 @@ export function EmployeeFormDialog({
                         )}
                       />
 
-                      <FormField
+                          <FormField
                         control={form.control}
                         name="cliente_id"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex flex-col">
                             <FormLabel>
                               Cliente Atual 
                               {isMotoboy && <span className="text-red-500"> *</span>}
                             </FormLabel>
-                            <Select 
-                              onValueChange={(val) => field.onChange(val === "null" ? null : val)} 
-                              value={field.value || "null"}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
-                                  <div className="flex items-center gap-2">
-                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                    <SelectValue placeholder="Selecione o cliente" />
-                                  </div>
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="null">Nenhum cliente selecionado</SelectItem>
-                                {clients?.map((client) => (
-                                  <SelectItem key={client.id} value={client.id.toString()}>
-                                    {client.nome_fantasia}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                      "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 font-normal hover:bg-white",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value
+                                      ? clients?.find((client: any) => client.id.toString() === field.value)?.nome_fantasia
+                                      : "Selecione o cliente"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                <Command>
+                                  <CommandInput placeholder="Buscar cliente..." />
+                                  <CommandList>
+                                    <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                                    <CommandGroup>
+                                        <CommandItem
+                                          value="Nenhum cliente selecionado"
+                                          onSelect={() => {
+                                            form.setValue("cliente_id", null);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              !field.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          Nenhum cliente selecionado
+                                        </CommandItem>
+                                      {clients?.map((client: any) => (
+                                        <CommandItem
+                                          value={client.nome_fantasia}
+                                          key={client.id}
+                                          onSelect={() => {
+                                            form.setValue("cliente_id", client.id.toString());
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              client.id.toString() === field.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {client.nome_fantasia}
+                                          {!client.ativo && <span className="ml-2 text-xs text-red-500">(Inativo)</span>}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                             <FormMessage />
                           </FormItem>
                         )}

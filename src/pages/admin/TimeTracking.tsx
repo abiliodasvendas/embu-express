@@ -45,7 +45,7 @@ export default function TimeTracking() {
   // Data Hooks - Active Employees for Filter
   const { data: activeEmployees = [] } = useActiveEmployees();
 
-  const { data: clients = [] } = useClients();
+  const { data: clients = [] } = useClients(undefined, { staleTime: 0, refetchOnWindowFocus: true });
 
   // Data Hooks - Time Records
   const { data: records, isLoading, refetch } = useTimeRecords({

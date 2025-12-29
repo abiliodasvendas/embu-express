@@ -8,12 +8,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useActiveEmployees, useCreatePonto } from "@/hooks";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
+import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Check, ChevronsUpDown, Clock, Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -65,31 +67,25 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const baseDate = values.data; // YYYY-MM-DD
-      // Construtor: YYYY-MM-DD + T + HH:mm + :00
-      // O navegador interpreta isso como Hora Local.
-      // .toISOString() converte para UTC (adiciona Z).
-      const entradaDate = new Date(`${baseDate}T${values.entrada_hora}:00`);
-      const entradaIso = entradaDate.toISOString();
-      
-      let saidaIso = null;
-      if (values.saida_hora) {
-          const saidaDate = new Date(`${baseDate}T${values.saida_hora}:00`);
+      // 1. Resolver Datas (com auto-overnight)
+      const { entrada, saida } = TimeRules.resolveDates(values.data, values.entrada_hora, values.saida_hora || undefined);
 
-          // Se saida < entrada (ex: Entrou 22h, Saiu 05h), assume dia seguinte
-          if (saidaDate < entradaDate) {
-              saidaDate.setDate(saidaDate.getDate() + 1);
+      // 2. Validação Explicita de Máximos (Consistência com Backend)
+      if (saida) {
+          const checkMax = TimeRules.validateMaxDuration(entrada, saida, 16);
+          if (!checkMax.valid) {
+              toast.error("Erro na validação", { description: checkMax.message });
+              return; // Bloqueia envio
           }
-          saidaIso = saidaDate.toISOString();
       }
 
       await createPonto({
         usuario_id: values.usuario_id,
         data_referencia: values.data,
-        entrada_hora: entradaIso,
-        entrada_km: null, // DB updated to allow NULL (requires migration)
-        saida_hora: saidaIso,
-        saida_km: null, // DB updated to allow NULL
+        entrada_hora: entrada.toISOString(),
+        entrada_km: null, 
+        saida_hora: saida ? saida.toISOString() : null,
+        saida_km: null, 
       });
 
       handleClose();

@@ -1,5 +1,6 @@
 import { FilterButton } from "@/components/common/FilterButton";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,8 +32,11 @@ interface EmployeesToolbarProps {
   onRoleChange: (value: string) => void;
   onRegister: () => void;
   onQuickCreate?: () => void;
-  onApplyFilters: (filters: { status?: string; categoria?: string }) => void;
+  onApplyFilters: (filters: { status?: string; categoria?: string; cliente?: string }) => void;
   roles: any[];
+  clients: any[];
+  selectedClient: string;
+  onClientChange: (value: string) => void;
 }
 
 const FilterControls = ({
@@ -40,21 +44,43 @@ const FilterControls = ({
   onStatusChange,
   roleValue,
   onRoleChange,
+  clientValue,
+  onClientChange,
   onClear,
   onApply,
   roles,
+  clients,
   isSheet = false,
 }: {
   statusValue: string;
   onStatusChange: (val: string) => void;
   roleValue: string;
   onRoleChange: (val: string) => void;
+  clientValue: string;
+  onClientChange: (val: string) => void;
   onClear: () => void;
   onApply?: () => void;
   roles: any[];
+  clients: any[];
   isSheet?: boolean;
 }) => (
   <div className={cn("space-y-6", isSheet ? "px-6" : "p-4")}>
+     <div className="space-y-2">
+      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
+        Cliente
+      </Label>
+      <Combobox
+          options={clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))}
+          value={clientValue === "todos" ? "" : clientValue}
+          onSelect={(val) => onClientChange(val || "todos")}
+          placeholder="Todos os Clientes"
+          searchPlaceholder="Buscar cliente..."
+          emptyText="Nenhum cliente encontrado."
+          className={cn("h-11 rounded-xl bg-gray-50 border-gray-200", isSheet && "h-12 bg-white")}
+          modal={isSheet}
+      />
+    </div>
+
     <div className="space-y-2">
       <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
         Status
@@ -134,6 +160,9 @@ export function EmployeesToolbar({
   onQuickCreate,
   onApplyFilters,
   roles,
+  clients,
+  selectedClient,
+  onClientChange,
 }: EmployeesToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -145,6 +174,7 @@ export function EmployeesToolbar({
   // Local state for mobile filters (deferred application)
   const [mobileStatus, setMobileStatus] = useState(selectedStatus);
   const [mobileRole, setMobileRole] = useState(selectedRole);
+  const [mobileClient, setMobileClient] = useState(selectedClient);
 
   useEffect(() => {
     onSearchChange(debouncedSearch);
@@ -163,23 +193,26 @@ export function EmployeesToolbar({
     if (isSheetOpen) {
       setMobileStatus(selectedStatus);
       setMobileRole(selectedRole);
+      setMobileClient(selectedClient);
     }
-  }, [isSheetOpen, selectedStatus, selectedRole]);
+  }, [isSheetOpen, selectedStatus, selectedRole, selectedClient]);
 
   const hasActiveFilters =
-    selectedStatus !== "todos" || selectedRole !== "todos";
+    selectedStatus !== "todos" || selectedRole !== "todos" || selectedClient !== "todos";
   const selectedCount =
-    (selectedStatus !== "todos" ? 1 : 0) + (selectedRole !== "todos" ? 1 : 0);
+    (selectedStatus !== "todos" ? 1 : 0) + (selectedRole !== "todos" ? 1 : 0) + (selectedClient !== "todos" ? 1 : 0);
 
   const clearFilters = () => {
     onStatusChange("todos");
     onRoleChange("todos");
+    onClientChange("todos");
   };
 
   const applyMobileFilters = () => {
     onApplyFilters({
       status: mobileStatus,
       categoria: mobileRole,
+      cliente: mobileClient,
     });
     setIsSheetOpen(false);
   };
@@ -187,6 +220,7 @@ export function EmployeesToolbar({
   const clearMobileFilters = () => {
     setMobileStatus("todos");
     setMobileRole("todos");
+    setMobileClient("todos");
   };
 
   return (
@@ -233,9 +267,12 @@ export function EmployeesToolbar({
                     onStatusChange={setMobileStatus}
                     roleValue={mobileRole}
                     onRoleChange={setMobileRole}
+                    clientValue={mobileClient}
+                    onClientChange={setMobileClient}
                     onClear={clearMobileFilters}
                     onApply={applyMobileFilters}
                     roles={roles || []}
+                    clients={clients || []}
                   />
                 </div>
               </SheetContent>
@@ -260,8 +297,11 @@ export function EmployeesToolbar({
                   onStatusChange={onStatusChange}
                   roleValue={selectedRole}
                   onRoleChange={onRoleChange}
+                  clientValue={selectedClient}
+                  onClientChange={onClientChange}
                   onClear={clearFilters}
                   roles={roles || []}
+                  clients={clients || []}
                 />
               </PopoverContent>
             </Popover>

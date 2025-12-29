@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { useTimeRecordActions } from "@/hooks/business/useTimeRecordActions";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
+import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
 import { calculateTotalTime, formatMinutes, formatTime, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { Clock, Timer } from "lucide-react";
@@ -34,6 +35,48 @@ const renderStatusTooltip = (details: any, type: 'entrada' | 'saida', timeIso?: 
             </p>
             <p className="text-[10px] text-gray-400">Tolerância: {info.tolerancia} min</p>
         </div>
+    );
+};
+
+const StatusBadgeWithTooltip = ({ 
+    status, 
+    type, 
+    details, 
+    timeIso 
+}: { 
+    status: string, 
+    type: 'entrada' | 'saida', 
+    details: any, 
+    timeIso?: string | null 
+}) => {
+    const hasDetails = !!(details?.[type] && details?.[type]?.turno_base);
+
+    const BadgeComponent = (
+        <Badge 
+            variant="outline" 
+            className={cn(
+                "text-[10px] px-2 py-0.5 rounded-md font-medium border",
+                getStatusColorClass(status),
+                hasDetails ? "cursor-help" : "cursor-default"
+            )}
+        >
+            {getStatusLabel(status, type)}
+        </Badge>
+    );
+
+    if (!hasDetails) return BadgeComponent;
+
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    {BadgeComponent}
+                </TooltipTrigger>
+                <TooltipContent className="hidden sm:block">
+                    {renderStatusTooltip(details, type, timeIso)}
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 };
 
@@ -67,7 +110,7 @@ const TimeRecordMobileItem = ({
                  )}
                </div>
                
-               <ActionsDropdown actions={actions} />
+
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -78,20 +121,12 @@ const TimeRecordMobileItem = ({
                 </div>
                 <div className="flex flex-col items-start gap-1">
                   <span className="font-bold text-gray-700 text-lg">{formatTime(record.entrada_hora)}</span>
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Badge variant="outline" className={`cursor-help text-[10px] px-1.5 py-0 rounded-md font-normal border ${getStatusColorClass(record.status_entrada)}`}>
-                                        {getStatusLabel(record.status_entrada, 'entrada')}
-                                    </Badge>
-                                </TooltipTrigger>
-                                {record.detalhes_calculo?.entrada && (
-                                    <TooltipContent className="hidden sm:block">
-                                        {renderStatusTooltip(record.detalhes_calculo, 'entrada', record.entrada_hora)}
-                                    </TooltipContent>
-                                )}
-                            </Tooltip>
-                        </TooltipProvider>
+                  <StatusBadgeWithTooltip 
+                    status={record.status_entrada} 
+                    type="entrada" 
+                    details={record.detalhes_calculo} 
+                    timeIso={record.entrada_hora} 
+                  />
                 </div>
               </div>
 
@@ -102,20 +137,12 @@ const TimeRecordMobileItem = ({
                 </div>
                 <div className="flex flex-col items-start gap-1">
                   <span className="font-bold text-gray-700 text-lg">{formatTime(record.saida_hora)}</span>
-                  <TooltipProvider>
-                      <Tooltip>
-                          <TooltipTrigger asChild>
-                              <Badge variant="outline" className={`cursor-help text-[10px] px-1.5 py-0 rounded-md font-normal border ${getStatusColorClass(record.status_saida)}`}>
-                                  {getStatusLabel(record.status_saida, 'saida')}
-                              </Badge>
-                          </TooltipTrigger>
-                          {record.detalhes_calculo?.saida && (
-                              <TooltipContent className="hidden sm:block">
-                                  {renderStatusTooltip(record.detalhes_calculo, 'saida', record.saida_hora)}
-                              </TooltipContent>
-                          )}
-                      </Tooltip>
-                  </TooltipProvider>
+                  <StatusBadgeWithTooltip 
+                    status={record.status_saida} 
+                    type="saida" 
+                    details={record.detalhes_calculo} 
+                    timeIso={record.saida_hora} 
+                  />
                 </div>
               </div>
             </div>
@@ -178,40 +205,23 @@ const TimeRecordTableRow = ({
       <td className="px-6 py-4 align-middle">
          <div className="flex flex-col items-start gap-1">
             <span className="text-base font-bold text-gray-700">{formatTime(record.entrada_hora)}</span>
-            
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger>
-                        <Badge variant="outline" className={`cursor-help text-[10px] px-2 py-0.5 rounded-md font-medium border ${getStatusColorClass(record.status_entrada)}`}>
-                           {getStatusLabel(record.status_entrada, 'entrada')}
-                        </Badge>
-                    </TooltipTrigger>
-                    {record.detalhes_calculo?.entrada && (
-                        <TooltipContent>
-                            {renderStatusTooltip(record.detalhes_calculo, 'entrada', record.entrada_hora)}
-                        </TooltipContent>
-                    )}
-                </Tooltip>
-            </TooltipProvider>
+            <StatusBadgeWithTooltip 
+                status={record.status_entrada} 
+                type="entrada" 
+                details={record.detalhes_calculo} 
+                timeIso={record.entrada_hora} 
+            />
          </div>
       </td>
       <td className="px-6 py-4 align-middle">
          <div className="flex flex-col items-start gap-1">
             <span className="text-base font-bold text-gray-700">{formatTime(record.saida_hora)}</span>
-             <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger>
-                        <Badge variant="outline" className={`cursor-help text-[10px] px-2 py-0.5 rounded-md font-medium border ${getStatusColorClass(record.status_saida)}`}>
-                           {getStatusLabel(record.status_saida, 'saida')}
-                        </Badge>
-                    </TooltipTrigger>
-                    {record.detalhes_calculo?.saida && (
-                        <TooltipContent>
-                            {renderStatusTooltip(record.detalhes_calculo, 'saida', record.saida_hora)}
-                        </TooltipContent>
-                    )}
-                </Tooltip>
-            </TooltipProvider>
+            <StatusBadgeWithTooltip 
+                status={record.status_saida} 
+                type="saida" 
+                details={record.detalhes_calculo} 
+                timeIso={record.saida_hora} 
+            />
          </div>
       </td>
        <td className="px-6 py-4 align-middle">

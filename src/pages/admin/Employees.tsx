@@ -4,7 +4,6 @@ import { EmployeeList } from "@/components/features/employee/EmployeeList";
 import { EmployeesToolbar } from "@/components/features/employee/EmployeesToolbar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
@@ -14,7 +13,7 @@ import { useFilters } from "@/hooks/ui/useFilters";
 import { Usuario } from "@/types/database";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { Users, Zap } from "lucide-react";
+import { Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 export default function Employees() {
@@ -134,24 +133,24 @@ export default function Employees() {
           <Card className="border-none shadow-none bg-transparent">
             <CardHeader className="p-0">
                 <div className="flex justify-end mb-4 md:hidden">
-                  <Button
+                  {/* <Button
                     onClick={handleQuickCreate}
                     variant="outline"
                     className="gap-2 text-uppercase w-full font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11"
                   >
                     <Zap className="h-4 w-4" />
                     GERAR FUNCIONÁRIO FAKE
-                  </Button>
+                  </Button> */}
                 </div>
                 <div className="hidden md:flex justify-end mb-4">
-                  <Button
+                  {/* <Button
                     onClick={handleQuickCreate}
                     variant="outline"
                     className="gap-2 text-uppercase font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11 px-6"
                   >
                     <Zap className="h-4 w-4" />
                     GERAR FUNCIONÁRIO FAKE
-                  </Button>
+                  </Button> */}
                 </div>
             </CardHeader>
             <CardContent className="px-0">

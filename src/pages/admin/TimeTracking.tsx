@@ -2,6 +2,7 @@ import { ManualTimeRecordDialog } from "@/components/dialogs/ManualTimeRecordDia
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { TimeTrackingList } from "@/components/features/timetracking/TimeTrackingList";
 import { TimeTrackingToolbar } from "@/components/features/timetracking/TimeTrackingToolbar";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FILTER_OPTIONS } from "@/constants/ponto";
@@ -129,43 +130,45 @@ export default function TimeTracking() {
   };
 
   return (
-    <div className="space-y-6">
-      <TimeTrackingToolbar 
-        date={date}
-        onDateChange={setDate}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        onGenerateMockData={handleGenerateMockData}
-        isGenerating={isGenerating}
-        onRegister={() => setIsManualEntryOpen(true)}
-        employees={activeEmployees}
-        clients={clients}
-      />
+    <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
+        <div className="space-y-6">
+        <TimeTrackingToolbar 
+            date={date}
+            onDateChange={setDate}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            onGenerateMockData={handleGenerateMockData}
+            isGenerating={isGenerating}
+            onRegister={() => setIsManualEntryOpen(true)}
+            employees={activeEmployees}
+            clients={clients}
+        />
 
-      {isLoading ? (
-          <ListSkeleton />
-      ) : !records || records.length === 0 ? (
-          <UnifiedEmptyState 
-            icon={CalendarX}
-            title="Nenhum registro encontrado"
-            description="Nenhum ponto registrado para esta data ou filtros."
-          />
-      ) : (
-          <TimeTrackingList records={records} />
-      )}
+        {isLoading ? (
+            <ListSkeleton />
+        ) : !records || records.length === 0 ? (
+            <UnifiedEmptyState 
+                icon={CalendarX}
+                title="Nenhum registro encontrado"
+                description="Nenhum ponto registrado para esta data ou filtros."
+            />
+        ) : (
+            <TimeTrackingList records={records} />
+        )}
 
-      <ManualTimeRecordDialog 
-        isOpen={isManualEntryOpen} 
-        onClose={() => setIsManualEntryOpen(false)} 
-      />
+        <ManualTimeRecordDialog 
+            isOpen={isManualEntryOpen} 
+            onClose={() => setIsManualEntryOpen(false)} 
+        />
 
-      {/* Global Action Loader */}
-      <LoadingOverlay 
-        active={isGenerating} 
-        text="Gerando dados..." 
-      />
-    </div>
+        {/* Global Action Loader */}
+        <LoadingOverlay 
+            active={isGenerating} 
+            text="Gerando dados..." 
+        />
+        </div>
+    </PullToRefreshWrapper>
   );
 }

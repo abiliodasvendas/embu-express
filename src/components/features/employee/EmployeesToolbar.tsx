@@ -76,7 +76,10 @@ const FilterControls = ({
           placeholder="Todos os Clientes"
           searchPlaceholder="Buscar cliente..."
           emptyText="Nenhum cliente encontrado."
-          className={cn("h-11 rounded-xl bg-gray-50 border-gray-200", isSheet && "h-12 bg-white")}
+          className={cn(
+            "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 transition-none",
+            isSheet && "h-12 bg-white hover:bg-white"
+          )}
           modal={isSheet}
       />
     </div>

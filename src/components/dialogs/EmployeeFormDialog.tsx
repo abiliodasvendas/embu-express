@@ -485,7 +485,7 @@ export function EmployeeFormDialog({
                         control={form.control}
                         name="cliente_id"
                         render={({ field }) => (
-                          <FormItem className="flex flex-col">
+                          <FormItem>
                             <FormLabel>
                               Cliente Atual 
                               {isMotoboy && <span className="text-red-500"> *</span>}
@@ -497,8 +497,8 @@ export function EmployeeFormDialog({
                                     variant="outline"
                                     role="combobox"
                                     className={cn(
-                                      "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 font-normal hover:bg-white",
-                                      !field.value && "text-muted-foreground"
+                                      "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none px-3 text-left focus-visible:ring-primary/20 font-normal hover:bg-gray-50 transition-none",
+                                      !field.value && "text-muted-foreground hover:text-muted-foreground"
                                     )}
                                   >
                                     {field.value

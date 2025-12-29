@@ -7,26 +7,23 @@ interface PullToRefreshProps {
   children: React.ReactNode;
 }
 
-const PULL_THRESHOLD = 60; // Reduzido para 60px (gatilho mais rápido)
-const MAX_PULL = 130; // Máximo reduzido
+const PULL_THRESHOLD = 60;
+const MAX_PULL = 130;
 
 export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const y = useMotionValue(0);
   
-  // Transforma a distância puxada em rotação e opacidade
   const rotate = useTransform(y, [0, PULL_THRESHOLD], [0, 180]);
   const opacity = useTransform(y, [0, 20, PULL_THRESHOLD], [0, 0, 1]);
   const scale = useTransform(y, [0, PULL_THRESHOLD], [0, 1]);
   
-  // Centraliza o loader no espaço vazio
-  // y/2 é o centro do espaço. -20px compensa metade da altura do loader (~40px)
-  // Isso garante que o loader fique visualmente no meio da área branca criada
   const translateY = useTransform(y, (latest) => latest / 2 - 20);
 
   useEffect(() => {
     const checkMobile = () => {
+      // Consider mobile if width < 768px (md breakpoint)
       setIsMobile(window.innerWidth < 768);
     };
     
@@ -40,10 +37,8 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
     if (!isMobile) return;
 
       const handleTouchStart = (e: TouchEvent) => {
-      // Verifica se há algum dialog aberto (Radix UI adiciona data-scroll-locked ao body)
       const isScrollLocked = document.body.hasAttribute("data-scroll-locked");
       const isSwipeActive = document.body.hasAttribute("data-swipe-active");
-      // Verifica se o toque foi dentro de um dialog
       const isInsideDialog = (e.target as Element)?.closest?.('[role="dialog"]');
       
       if (window.scrollY > 0 || isRefreshing || isScrollLocked || isSwipeActive || isInsideDialog) return;
@@ -51,16 +46,12 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
       
       const startY = e.touches[0].clientY;
 
-      // Proteção de Navbar: Ignora toques nos primeiros 80px (header fixo)
+      // Ignore touches on fixed header (approx 80px)
       if (startY < 80) return;
 
-      let isPulling = false;
-
       const handleTouchMove = (e: TouchEvent) => {
-        // Re-check lock status inside move to handle race conditions (e.g. swipe starting after touch)
         if (document.body.hasAttribute("data-scroll-locked") || document.body.hasAttribute("data-swipe-active")) {
-           isPulling = false;
-           y.set(0); // Reset visual position if locked mid-gesture
+           y.set(0); 
            return;
         }
 
@@ -68,12 +59,14 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
         const diff = currentY - startY;
 
         if (diff > 0 && window.scrollY <= 0) {
-          // Fator 0.8: Mais leve de puxar
           const resistance = Math.min(diff * 0.8, MAX_PULL);
           
           if (resistance > 0) {
-            isPulling = true;
             if (e.cancelable) {
+               // Only prevent default if we are actually pulling to refresh
+               // and not just scrolling up (handled by window.scrollY check)
+               // But standard behavior might conflict? 
+               // Van360 implementation does `e.preventDefault()` here.
                e.preventDefault(); 
             }
             y.set(resistance);
@@ -87,7 +80,6 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
 
         if (currentY >= PULL_THRESHOLD) {
           setIsRefreshing(true);
-          // Mantém o loader visível durante o refresh
           animate(y, PULL_THRESHOLD, { type: "spring", stiffness: 300, damping: 30 });
           
           try {
@@ -125,7 +117,6 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
 
   return (
     <div className="relative min-h-screen">
-      {/* Indicador de Refresh */}
       <motion.div
         className="absolute top-0 left-0 right-0 z-10 flex justify-center items-start pointer-events-none"
         style={{ y: translateY, opacity, scale }}
@@ -141,7 +132,6 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
         </div>
       </motion.div>
 
-      {/* Conteúdo */}
       <motion.div
         style={{ y }}
         className="w-full"

@@ -28,7 +28,7 @@ import { STATUS_PONTO } from "@/constants/ponto";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { cn } from "@/lib/utils";
 import { getStatusLabel } from "@/utils/ponto";
-import { Plus, Wand2 } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useState } from "react";
 
 interface TimeTrackingToolbarProps {
@@ -94,7 +94,10 @@ export function TimeTrackingToolbar({
           placeholder="Selecione um cliente"
           searchPlaceholder="Buscar cliente..."
           emptyText="Nenhum cliente encontrado."
-          className={cn("h-11 rounded-xl bg-gray-50 border-gray-200", isSheet && "h-12 bg-white")}
+          className={cn(
+            "h-11 rounded-xl bg-gray-50 border-gray-200 font-medium text-foreground hover:bg-gray-50 transition-none",
+            isSheet && "h-12 bg-white hover:bg-white"
+          )}
           modal={isSheet} // If in Sheet, acts as modal. If in Popover... keep false hopefully.
         />
       </div>
@@ -169,7 +172,7 @@ export function TimeTrackingToolbar({
             <DateNavigation date={date} onNavigate={onDateChange} />
 
             {/* 2. Actions */}
-            <Button 
+            {/* <Button 
                 variant="outline"
                 className="h-10 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 font-semibold gap-2 transition-all active:scale-95 hidden md:flex"
                 onClick={onGenerateMockData}
@@ -177,7 +180,7 @@ export function TimeTrackingToolbar({
             >
                 <Wand2 className={cn("w-4 h-4", isGenerating && "animate-spin")} />
                 {isGenerating ? "Gerando..." : "Gerar Dados Fakes"}
-            </Button>
+            </Button> */}
 
             <Button 
                 className="h-10 bg-blue-600 hover:bg-blue-700 text-white font-bold gap-2 transition-all active:scale-95 hidden md:flex rounded-xl shadow-sm"
@@ -190,7 +193,7 @@ export function TimeTrackingToolbar({
 
         {/* Mobile Mock Button */}
         <div className="md:hidden">
-             <Button
+             {/* <Button
                 onClick={onGenerateMockData}
                 variant="outline"
                 className="w-full gap-2 uppercase font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11"
@@ -198,7 +201,7 @@ export function TimeTrackingToolbar({
               >
                 <Wand2 className={cn("h-4 w-4", isGenerating && "animate-spin")} />
                 GERAR DADOS FAKES
-              </Button>
+              </Button> */}
         </div>
 
         <div className="flex flex-col md:flex-row items-center gap-3">
@@ -210,7 +213,8 @@ export function TimeTrackingToolbar({
                 placeholder="Buscar funcionário..."
                 searchPlaceholder="Digite o nome..."
                 emptyText="Nenhum funcionário encontrado."
-                className="h-11 rounded-xl bg-white border-gray-200 shadow-none"
+                startIcon={<Search className="h-4 w-4 text-gray-400" />}
+                className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium shadow-none text-sm sm:text-base hover:bg-white transition-none pl-9"
             />
         </div>
 

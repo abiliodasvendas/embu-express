@@ -4,17 +4,17 @@ import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from "@/components/ui/command"
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
@@ -32,6 +32,7 @@ interface ComboboxProps {
   searchPlaceholder?: string
   className?: string
   modal?: boolean
+  startIcon?: React.ReactNode
 }
 
 export function Combobox({
@@ -42,7 +43,8 @@ export function Combobox({
   emptyText = "Nenhum resultado encontrado.",
   searchPlaceholder = "Buscar...",
   className,
-  modal = false
+  modal = false,
+  startIcon
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -53,11 +55,23 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 hover:bg-white hover:border-blue-300 font-normal", className)}
+          className={cn(
+            "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 font-normal shadow-none px-3 text-left relative",
+            startIcon && "pl-10",
+            !value && "text-muted-foreground hover:text-muted-foreground",
+            className
+          )}
         >
-          {value
-            ? options.find((option) => option.value === value)?.label
-            : placeholder}
+          {startIcon && (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              {startIcon}
+            </div>
+          )}
+          <span className="truncate flex-1">
+            {value
+              ? options.find((option) => option.value === value)?.label
+              : placeholder}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

@@ -23,7 +23,7 @@ export function DateNavigation({ date, onNavigate, disabled }: DateNavigationPro
 
   const handleNext = () => {
     const nextDate = addDays(date, 1);
-    if (!isAfter(nextDate, maxDate)) {
+    if (!isAfter(startOfDay(nextDate), maxDate)) {
        onNavigate(nextDate);
     }
   };

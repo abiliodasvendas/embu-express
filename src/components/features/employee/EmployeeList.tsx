@@ -5,7 +5,6 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { useEmployeeActions } from "@/hooks/business/useEmployeeActions";
 import { Usuario } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
-import { User } from "lucide-react";
 
 interface EmployeeListProps {
   employees: Usuario[];
@@ -13,6 +12,13 @@ interface EmployeeListProps {
   onToggleStatus: (employee: Usuario) => void;
   onDelete: (employee: Usuario) => void;
 }
+
+const getAvatarStyles = (isActive: boolean) => {
+  if (isActive) {
+    return "bg-green-100 text-green-700";
+  }
+  return "bg-gray-100 text-gray-500";
+};
 
 const EmployeeMobileItem = ({
   employee,
@@ -38,15 +44,15 @@ const EmployeeMobileItem = ({
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-3 pr-20">
             {/* Added pr-20 to avoid overlap with absolute badge */}
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-              <User className="h-5 w-5" />
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(employee.ativo)}`}>
+              {employee.nome_completo.charAt(0)}
             </div>
             <div className="min-w-0">
               <h3 className="font-bold text-gray-900 text-sm truncate">
                 {employee.nome_completo}
               </h3>
                {employee.cliente?.nome_fantasia && (
-                <p className="text-xs text-blue-600 font-medium line-clamp-1">{employee.cliente.nome_fantasia}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{employee.cliente.nome_fantasia}</p>
                )}
             </div>
           </div>
@@ -114,7 +120,7 @@ const EmployeeTableRow = ({
     >
       <td className="py-4 pl-6 align-middle">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xs">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${getAvatarStyles(employee.ativo)}`}>
             {employee.nome_completo.charAt(0)}
           </div>
           <div>
@@ -122,7 +128,7 @@ const EmployeeTableRow = ({
               {employee.nome_completo}
             </p>
              {employee.cliente?.nome_fantasia && (
-                <p className="text-xs text-blue-600 font-medium line-clamp-1">{employee.cliente.nome_fantasia}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{employee.cliente.nome_fantasia}</p>
              )}
           </div>
         </div>

@@ -5,6 +5,7 @@ export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida')
     switch (status) {
         case "VERDE": return "No Horário";
         case "AMARELO": return type === 'entrada' ? "Atraso" : "Hora Extra";
+        case "ANTECIPADA": return "Saída Antecipada";
         case "VERMELHO": return type === 'entrada' ? "Atraso Crítico" : "HE Excessiva";
         case "CINZA": return "Indefinido";
         case "EM_ANDAMENTO": return "Em Andamento";
@@ -16,6 +17,7 @@ export const getStatusColorClass = (status: string | null) => {
     switch (status) {
         case "VERDE": return "bg-green-100 text-green-700 border-green-200";
         case "AMARELO": return "bg-yellow-100 text-yellow-700 border-yellow-200";
+        case "ANTECIPADA": return "bg-orange-100 text-orange-700 border-orange-200"; 
         case "VERMELHO": return "bg-red-100 text-red-700 border-red-200";
         default: return "bg-gray-100 text-gray-700 border-gray-200";
     }

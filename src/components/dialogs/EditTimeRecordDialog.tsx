@@ -57,8 +57,19 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
     const baseDate = record.entrada_hora ? new Date(record.entrada_hora) : new Date(); // Fallback
     const dateString = format(baseDate, "yyyy-MM-dd");
 
-    const entradaISO = `${dateString}T${values.entrada_hora}:00`;
-    const saidaISO = values.saida_hora ? `${dateString}T${values.saida_hora}:00` : null;
+    // Construtor explícito para garantir horário local -> UTC
+    const entradaDate = new Date(`${dateString}T${values.entrada_hora}:00`);
+    const entradaISO = entradaDate.toISOString();
+    
+    let saidaISO = null;
+    if (values.saida_hora) {
+        const saidaDate = new Date(`${dateString}T${values.saida_hora}:00`);
+        // Se saida < entrada, assume dia seguinte
+        if (saidaDate < entradaDate) {
+            saidaDate.setDate(saidaDate.getDate() + 1);
+        }
+        saidaISO = saidaDate.toISOString();
+    }
 
     updatePonto.mutate(
       {

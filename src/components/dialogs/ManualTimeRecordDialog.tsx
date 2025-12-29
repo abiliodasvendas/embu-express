@@ -38,7 +38,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
 
   // Fetch employees only when dialog is open
   const { data: employees = [] } = useQuery({
-      queryKey: ["active-employees-combo"],
+      queryKey: ["active-employees-filter"], // Share cache with Toolbar
       queryFn: () => funcionarioApi.listFuncionarios({ ativo: "true" }),
       enabled: isOpen,
       staleTime: 1000 * 60 * 5 // Cache for 5 min
@@ -73,14 +73,17 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
   const onSubmit = async (values: FormValues) => {
     try {
       const baseDate = values.data; // YYYY-MM-DD
-      const entradaIso = new Date(`${baseDate}T${values.entrada_hora}:00`).toISOString();
+      // Construtor: YYYY-MM-DD + T + HH:mm + :00
+      // O navegador interpreta isso como Hora Local.
+      // .toISOString() converte para UTC (adiciona Z).
+      const entradaDate = new Date(`${baseDate}T${values.entrada_hora}:00`);
+      const entradaIso = entradaDate.toISOString();
       
       let saidaIso = null;
       if (values.saida_hora) {
-          const entradaDate = new Date(`${baseDate}T${values.entrada_hora}:00`);
           const saidaDate = new Date(`${baseDate}T${values.saida_hora}:00`);
 
-          // Se saida < entrada, assume dia seguinte
+          // Se saida < entrada (ex: Entrou 22h, Saiu 05h), assume dia seguinte
           if (saidaDate < entradaDate) {
               saidaDate.setDate(saidaDate.getDate() + 1);
           }
@@ -91,9 +94,9 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
         usuario_id: values.usuario_id,
         data_referencia: values.data,
         entrada_hora: entradaIso,
-        entrada_km: 0, // Default 0 for admin manual entry to satisfy DB constraint
+        entrada_km: null, // DB updated to allow NULL (requires migration)
         saida_hora: saidaIso,
-        saida_km: values.saida_hora ? 0 : null, // Default 0 if closed, null if open
+        saida_km: null, // DB updated to allow NULL
       });
 
       handleClose();

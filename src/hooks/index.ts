@@ -18,5 +18,4 @@ export { useCreatePonto, useDeletePonto, useUpdatePonto } from "./api/usePontoMu
 export { useClientActions } from "./business/useClientActions";
 export { useCollaboratorActions } from "./business/useCollaboratorActions";
 export { useDebounce } from "./useDebounce";
-export { useTimeTracking } from "./useTimeTracking";
 

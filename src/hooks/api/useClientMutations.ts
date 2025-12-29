@@ -31,6 +31,9 @@ export function useUpdateClient() {
       clienteApi.updateCliente(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["collaborators"] });
+      queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
+      queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
       toast.success(messages.cliente.sucesso.atualizado);
     },
     onError: (error: any) => {
@@ -46,6 +49,9 @@ export function useToggleClientStatus() {
       clienteApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["collaborators"] });
+      queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
+      queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
       toast.success(messages.cliente.sucesso.status);
     },
     onError: (error: any) => {
@@ -60,6 +66,11 @@ export function useDeleteClient() {
     mutationFn: (id: number) => clienteApi.deleteCliente(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      
+      // Force reset to ensure fresh fetch
+      queryClient.resetQueries({ queryKey: ["collaborators"] });
+      queryClient.resetQueries({ queryKey: ["active-collaborators-filter"] });
+      queryClient.resetQueries({ queryKey: ["active-collaborators-combo"] });
       toast.success(messages.cliente.sucesso.excluido);
     },
     onError: (error: any) => {

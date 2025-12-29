@@ -6,6 +6,7 @@ export function useCollaborators(filters?: { searchTerm?: string; ativo?: string
     queryKey: ["collaborators", filters],
     queryFn: () => colaboradorApi.listColaboradores(filters),
     placeholderData: keepPreviousData,
+    refetchOnMount: true, // Ensure we fetch fresh data on navigation if invalidated
   });
 }
 

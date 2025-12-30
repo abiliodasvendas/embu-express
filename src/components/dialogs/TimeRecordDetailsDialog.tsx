@@ -2,20 +2,20 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { RegistroPonto } from "@/types/database";
-import { getStatusColorClass, getStatusLabel } from "@/utils/ponto";
+import { calculateTotalTime, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarClock, Clock, Edit2, Trash2, X } from "lucide-react";
+import { CalendarClock, Clock, Edit2, X } from "lucide-react";
 
 interface TimeRecordDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   record: RegistroPonto | null;
   onEdit: (record: RegistroPonto) => void;
-  onDelete: (record: RegistroPonto) => void;
+  // onDelete removed as user requested Close interaction only
 }
 
-export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDelete }: TimeRecordDetailsDialogProps) {
+export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omit<TimeRecordDetailsDialogProps, 'onDelete'> & { onDelete?: any }) {
   if (!record) return null;
 
   const formatDate = (dateStr: string) => {
@@ -35,9 +35,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDel
       safeCloseDialog(() => onEdit(record));
   };
 
-  const handleDelete = () => {
-      safeCloseDialog(() => onDelete(record));
-  };
+
 
   const renderCalculationDetails = (type: 'entrada' | 'saida') => {
       const details = record.detalhes_calculo?.[type];
@@ -52,8 +50,18 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDel
       const isLateOrExtra = diff > 0;
       const sign = isLateOrExtra ? "+" : "";
 
+      const kmValue = type === 'entrada' ? record.entrada_km : record.saida_km;
+      const kmDisplay = kmValue ? `${kmValue.toLocaleString('pt-BR')} km` : "Não se aplica";
+
       return (
         <div className="bg-gray-50 rounded-lg p-3 space-y-2 border border-gray-100">
+             {/* KM Display */}
+             <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Kilometragem:</span>
+                <span className="font-medium text-gray-900">
+                    {kmDisplay}
+                </span>
+            </div>
             <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Horário Registrado:</span>
                 <span className="font-medium text-gray-900">{formatTime(timeIso)}</span>
@@ -69,10 +77,6 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDel
                     {sign}{diff} min
                 </span>
             </div>
-             <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>Tolerância da regra:</span>
-                <span>{details.tolerancia} min</span>
-            </div>
              <div className="mt-2 text-center">
                  <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColorClass(status)} font-medium`}>
                      {getStatusLabel(status, type)}
@@ -86,7 +90,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDel
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-full max-w-md p-0 gap-0 bg-white h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
+        className="w-full max-w-lg p-0 gap-0 bg-white h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
         {/* Header - Style matched to van-control/EscolaFormDialog */}
@@ -116,10 +120,34 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDel
                 <p className="text-sm text-gray-500">{record.usuario?.cliente?.nome_fantasia}</p>
             </div>
 
+            {/* Summary Card */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="col-span-2 sm:col-span-1 bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Saldo</span>
+                    <span className={`text-lg font-bold ${record.saldo_minutos !== undefined ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-400"}`}>
+                         {record.saldo_minutos !== undefined ? (record.saldo_minutos > 0 ? "+" : "") + record.saldo_minutos : "--"} min
+                    </span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Trabalhadas</span>
+                    <span className="text-lg font-bold text-gray-700">
+                        {calculateTotalTime(record.entrada_hora, record.saida_hora) || "--"}
+                    </span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Turno</span>
+                    <span className="text-md sm:text-lg font-bold text-gray-700">
+                         {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--"} 
+                         {" - "}
+                         {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--"}
+                    </span>
+                </div>
+            </div>
+
             {/* Entry Section */}
             <div>
                 <div className="flex items-center gap-2 mb-3">
-                    <Clock className="w-4 h-4 text-blue-600" />
+                    <Clock className="w-4 h-4" />
                     <h4 className="font-bold text-gray-800">Entrada</h4>
                 </div>
                 {renderCalculationDetails('entrada')}
@@ -128,29 +156,13 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDel
             {/* Exit Section */}
              <div>
                 <div className="flex items-center gap-2 mb-3">
-                    <Clock className="w-4 h-4 text-orange-600" />
+                    <Clock className="w-4 h-4" />
                     <h4 className="font-bold text-gray-800">Saída</h4>
                 </div>
                 {renderCalculationDetails('saida')}
             </div>
 
-             {/* Saldo Section */}
-            {record.saldo_minutos !== undefined && record.saldo_minutos !== null && (
-                 <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-center justify-between">
-                     <div className="flex items-center gap-2">
-                         <div className="bg-blue-100 p-2 rounded-lg">
-                            <Clock className="w-5 h-5 text-blue-700" />
-                         </div>
-                         <div>
-                             <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">Saldo do Turno</p>
-                             <p className="text-[10px] text-blue-400">Trabalhado vs Esperado</p>
-                         </div>
-                     </div>
-                     <span className={`text-xl font-bold ${record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500"}`}>
-                        {record.saldo_minutos > 0 ? "+" : ""}{record.saldo_minutos} min
-                     </span>
-                 </div>
-            )}
+            {/* Removed Saldo Section */ }
             
             {/* Observation if any */}
             {record.observacao && (
@@ -165,11 +177,10 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit, onDel
         <div className="p-4 border-t bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             variant="outline"
-            onClick={handleDelete}
-            className="w-full h-11 rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium"
+            onClick={handleClose}
+            className="w-full h-11 rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50 font-medium"
           >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Excluir
+            Fechar
           </Button>
           <Button
             onClick={handleEdit}

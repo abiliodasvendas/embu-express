@@ -327,19 +327,23 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
         </div>
       </ResponsiveDataList>
       
-      <TimeRecordDetailsDialog 
-        isOpen={!!detailsRecord}
-        onClose={() => setDetailsRecord(null)}
-        record={detailsRecord}
-        onEdit={handleEditFromDetails}
-        onDelete={handleDelete}
-      />
+      {!!detailsRecord && (
+        <TimeRecordDetailsDialog 
+            isOpen={!!detailsRecord}
+            onClose={() => setDetailsRecord(null)}
+            record={detailsRecord}
+            onEdit={handleEditFromDetails}
+            onDelete={handleDelete}
+        />
+      )}
 
-      <EditTimeRecordDialog 
-        isOpen={!!editingRecord} 
-        onClose={() => setEditingRecord(null)} 
-        record={editingRecord} 
-      />
+      {!!editingRecord && (
+        <EditTimeRecordDialog 
+            isOpen={!!editingRecord} 
+            onClose={() => setEditingRecord(null)} 
+            record={editingRecord} 
+        />
+      )}
 
       <ConfirmationDialog
             open={!!recordToDelete}

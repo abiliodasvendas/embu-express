@@ -229,11 +229,14 @@ export function Collaborators() {
         </div>
       </PullToRefreshWrapper>
 
-      <CollaboratorFormDialog
-        open={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        collaboratorToEdit={editingCollaborator}
-      />
+      {isFormOpen && (
+        <CollaboratorFormDialog
+          key={editingCollaborator?.id ? `edit-${editingCollaborator.id}` : 'new'}
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          collaboratorToEdit={editingCollaborator}
+        />
+      )}
       
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

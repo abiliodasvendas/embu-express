@@ -60,13 +60,23 @@ const CollaboratorMobileItem = ({
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t border-gray-50">
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-              Cargo
-            </p>
-            <p className="font-medium text-gray-700 text-xs text-left">
-              {getPerfilLabel(collaborator.perfil?.nome)}
-            </p>
+          <div className="space-y-3">
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                Cargo
+              </p>
+              <p className="font-medium text-gray-700 text-xs text-left">
+                {getPerfilLabel(collaborator.perfil?.nome)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                Empresa
+              </p>
+              <p className="font-medium text-gray-700 text-xs text-left">
+                {collaborator.empresa?.nome_fantasia || "-"}
+              </p>
+            </div>
           </div>
           <div>
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">

@@ -166,11 +166,14 @@ export default function Clients() {
         </div>
       </PullToRefreshWrapper>
 
-      <ClientFormDialog
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        editingClient={editingClient}
-      />
+      {isFormOpen && (
+        <ClientFormDialog
+          key={editingClient?.id ? `edit-${editingClient.id}` : 'new'}
+          isOpen={isFormOpen}
+          onClose={() => setIsFormOpen(false)}
+          editingClient={editingClient}
+        />
+      )}
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

@@ -208,10 +208,12 @@ export default function TimeTracking() {
             <TimeTrackingList records={records} />
         )}
 
-        <ManualTimeRecordDialog 
-            isOpen={isManualEntryOpen} 
-            onClose={() => setIsManualEntryOpen(false)} 
-        />
+        {isManualEntryOpen && (
+            <ManualTimeRecordDialog 
+                isOpen={isManualEntryOpen} 
+                onClose={() => setIsManualEntryOpen(false)} 
+            />
+        )}
 
         {/* Global Action Loader */}
         <LoadingOverlay 

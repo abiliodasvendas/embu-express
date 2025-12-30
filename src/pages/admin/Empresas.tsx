@@ -174,11 +174,14 @@ export function Empresas() {
         </div>
       </PullToRefreshWrapper>
 
-      <EmpresaFormDialog
-        open={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        empresaToEdit={editingEmpresa}
-      />
+      {isFormOpen && (
+        <EmpresaFormDialog
+          key={editingEmpresa?.id ? `edit-${editingEmpresa.id}` : 'new'}
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          empresaToEdit={editingEmpresa}
+        />
+      )}
       
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

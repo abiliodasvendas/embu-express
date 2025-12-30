@@ -6,14 +6,6 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -29,11 +21,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -56,8 +43,6 @@ import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Briefcase,
-  Check,
-  ChevronsUpDown,
   Clock,
   Loader2,
   Mail,
@@ -71,7 +56,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-
+import { ClienteCombobox, EmpresaCombobox } from "./CollaboratorFormComboboxes";
 
 interface CollaboratorFormProps {
   open: boolean;
@@ -224,11 +209,11 @@ export function CollaboratorFormDialog({
       perfil_id: "",
       cliente_id: null,
       ativo: true,
-      turnos: [{ hora_inicio: "08:00", hora_fim: "18:00" }],
+      turnos: [],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name: "turnos",
   });
@@ -236,20 +221,26 @@ export function CollaboratorFormDialog({
   useEffect(() => {
     if (open) {
       if (collaboratorToEdit) {
+        const mappedTurnos = collaboratorToEdit.turnos?.map(t => ({
+            hora_inicio: t.hora_inicio.substring(0, 5),
+            hora_fim: t.hora_fim.substring(0, 5)
+        })) || [];
+
         form.reset({
           nome_completo: collaboratorToEdit.nome_completo,
           email: collaboratorToEdit.email,
-          cpf: collaboratorToEdit.cpf,
+          cpf: cpfMask(collaboratorToEdit.cpf),
           perfil_id: collaboratorToEdit.perfil_id.toString(),
           cliente_id: collaboratorToEdit.cliente_id?.toString() || null,
           empresa_id: collaboratorToEdit.empresa_id?.toString() || null,
           ativo: collaboratorToEdit.ativo,
-          turnos: collaboratorToEdit.turnos?.map(t => ({
-            hora_inicio: t.hora_inicio.substring(0, 5),
-            hora_fim: t.hora_fim.substring(0, 5)
-          })) || [{ hora_inicio: "08:00", hora_fim: "18:00" }],
+          turnos: mappedTurnos,
         });
+        
+        // Force UI to match valid turns (removes any ghost lines from previous state)
+        replace(mappedTurnos);
       } else {
+        const defaultTurnos = [{ hora_inicio: "08:00", hora_fim: "18:00" }];
         form.reset({
           nome_completo: "",
           email: "",
@@ -258,12 +249,22 @@ export function CollaboratorFormDialog({
           cliente_id: null,
           empresa_id: null,
           ativo: true,
-          turnos: [{ hora_inicio: "08:00", hora_fim: "18:00" }],
+          turnos: defaultTurnos,
         });
+        replace(defaultTurnos);
       }
       setOpenAccordionItems(allSections);
     }
-  }, [open, collaboratorToEdit, form]);
+  }, [open, collaboratorToEdit, form, replace]);
+
+  const handleRemoveTurno = (index: number) => {
+    remove(index);
+  };
+
+  const handleAddTurno = () => {
+    const currentTurnos = form.getValues().turnos || [];
+    replace([...currentTurnos, { hora_inicio: "08:00", hora_fim: "18:00" }]);
+  };
 
   const onFormError = () => {
     toast.error(messages.validacao.formularioComErros);
@@ -509,6 +510,22 @@ export function CollaboratorFormDialog({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField
                         control={form.control}
+                        name="empresa_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Empresa <span className="text-red-500">*</span></FormLabel>
+                            <EmpresaCombobox 
+                                value={field.value} 
+                                onChange={field.onChange} 
+                                empresas={empresas || []} 
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
                         name="perfil_id"
                         render={({ field }) => (
                           <FormItem>
@@ -540,78 +557,6 @@ export function CollaboratorFormDialog({
 
                       <FormField
                         control={form.control}
-                        name="empresa_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Empresa <span className="text-red-500">*</span></FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={cn(
-                                      "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none px-3 text-left focus-visible:ring-primary/20 font-normal hover:bg-gray-50 transition-none",
-                                      !field.value && "text-muted-foreground hover:text-muted-foreground",
-                                      form.formState.errors.empresa_id && "border-red-500"
-                                    )}
-                                  >
-                                    {field.value
-                                      ? empresas?.find((empresa: any) => empresa.id.toString() === field.value)?.nome_fantasia
-                                      : "Selecione a empresa"}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                <Command>
-                                  <CommandInput placeholder="Buscar empresa..." />
-                                  <CommandList>
-                                    <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>
-                                    <CommandGroup>
-                                        <CommandItem
-                                          value="Nenhuma empresa selecionada"
-                                          onSelect={() => {
-                                            form.setValue("empresa_id", null);
-                                          }}
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              !field.value ? "opacity-100" : "opacity-0"
-                                            )}
-                                          />
-                                          Nenhuma empresa selecionada
-                                        </CommandItem>
-                                      {empresas?.map((empresa: any) => (
-                                        <CommandItem
-                                          value={empresa.nome_fantasia}
-                                          key={empresa.id}
-                                          onSelect={() => {
-                                            form.setValue("empresa_id", empresa.id.toString());
-                                          }}
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              empresa.id.toString() === field.value ? "opacity-100" : "opacity-0"
-                                            )}
-                                          />
-                                          {empresa.nome_fantasia}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
                         name="cliente_id"
                         render={({ field }) => (
                           <FormItem>
@@ -619,68 +564,11 @@ export function CollaboratorFormDialog({
                               Cliente Atual 
                               {isMotoboy && <span className="text-red-500"> *</span>}
                             </FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={cn(
-                                      "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none px-3 text-left focus-visible:ring-primary/20 font-normal hover:bg-gray-50 transition-none",
-                                      !field.value && "text-muted-foreground hover:text-muted-foreground",
-                                      form.formState.errors.cliente_id && "border-red-500"
-                                    )}
-                                  >
-                                    {field.value
-                                      ? clients?.find((client: any) => client.id.toString() === field.value)?.nome_fantasia
-                                      : "Selecione o cliente"}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                <Command>
-                                  <CommandInput placeholder="Buscar cliente..." />
-                                  <CommandList>
-                                    <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
-                                    <CommandGroup>
-                                        <CommandItem
-                                          value="Nenhum cliente selecionado"
-                                          onSelect={() => {
-                                            form.setValue("cliente_id", null);
-                                          }}
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              !field.value ? "opacity-100" : "opacity-0"
-                                            )}
-                                          />
-                                          Nenhum cliente selecionado
-                                        </CommandItem>
-                                      {clients?.map((client: any) => (
-                                        <CommandItem
-                                          value={client.nome_fantasia}
-                                          key={client.id}
-                                          onSelect={() => {
-                                            form.setValue("cliente_id", client.id.toString());
-                                          }}
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              client.id.toString() === field.value ? "opacity-100" : "opacity-0"
-                                            )}
-                                          />
-                                          {client.nome_fantasia}
-                                          {!client.ativo && <span className="ml-2 text-xs text-red-500">(Inativo)</span>}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
+                            <ClienteCombobox 
+                                value={field.value} 
+                                onChange={field.onChange} 
+                                clients={clients || []} 
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -728,11 +616,12 @@ export function CollaboratorFormDialog({
                               )}
                             />
                           </div>
+
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => remove(index)}
+                            onClick={() => handleRemoveTurno(index)}
                             className="h-10 w-10 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl shrink-0"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -744,7 +633,7 @@ export function CollaboratorFormDialog({
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => append({ hora_inicio: "08:00", hora_fim: "18:00" })}
+                        onClick={handleAddTurno}
                         className="w-full h-11 border-dashed border-2 rounded-2xl text-primary hover:bg-primary/5 hover:border-primary gap-2 transition-all"
                       >
                         <Plus className="h-4 w-4" />

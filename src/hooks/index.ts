@@ -14,6 +14,8 @@ export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClien
 export { useClients } from "./api/useClients";
 export { useCreateCollaborator, useDeleteCollaborator, useToggleCollaboratorStatus, useUpdateCollaborator } from "./api/useCollaboratorMutations";
 export { useActiveCollaborators, useCollaborators, useRoles } from "./api/useCollaborators";
+export { useCreateEmpresa, useDeleteEmpresa, useToggleEmpresaStatus, useUpdateEmpresa } from "./api/useEmpresaMutations";
+export { useEmpresa, useEmpresas } from "./api/useEmpresas";
 export { useCreatePonto, useDeletePonto, useUpdatePonto } from "./api/usePontoMutations";
 export { useClientActions } from "./business/useClientActions";
 export { useCollaboratorActions } from "./business/useCollaboratorActions";

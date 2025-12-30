@@ -124,11 +124,11 @@ const CollaboratorTableRow = ({
             {collaborator.nome_completo.charAt(0)}
           </div>
           <div>
-            <p className="font-bold text-gray-900 text-sm line-clamp-1">
+            <p className="font-bold text-gray-900 text-sm">
               {collaborator.nome_completo}
             </p>
              {collaborator.cliente?.nome_fantasia && (
-                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{collaborator.cliente.nome_fantasia}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{collaborator.cliente.nome_fantasia}</p>
              )}
           </div>
         </div>
@@ -136,7 +136,9 @@ const CollaboratorTableRow = ({
       <td className="px-6 py-4 align-middle text-sm text-gray-600">
         {getPerfilLabel(collaborator.perfil?.nome)}
       </td>
-      {/* Client Column Removed */}
+      <td className="px-6 py-4 align-middle text-sm text-gray-600">
+        {collaborator.empresa?.nome_fantasia || "-"}
+      </td>
       <td className="px-6 py-4 align-middle">
         {renderTurnos(collaborator.turnos)}
       </td>
@@ -181,7 +183,9 @@ export function CollaboratorList({
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Cargo
               </th>
-              {/* Client Column Removed */}
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Empresa
+              </th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Turnos
               </th>

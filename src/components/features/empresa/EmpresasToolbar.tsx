@@ -29,13 +29,12 @@ import { Plus, Search, X } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
 
-interface ClientsToolbarProps {
+interface EmpresasToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   selectedStatus: string;
   onStatusChange: (value: string) => void;
   onRegister: () => void;
-  onQuickCreate?: () => void;
   onApplyFilters: (filters: { status?: string }) => void;
   hasActiveFilters?: boolean;
 }
@@ -74,22 +73,21 @@ const FilterContent = ({
   </div>
 );
 
-export function ClientsToolbar({
+export function EmpresasToolbar({
   searchTerm,
   onSearchChange,
   selectedStatus,
   onStatusChange,
   onRegister,
-  onQuickCreate,
   onApplyFilters,
   hasActiveFilters,
-}: ClientsToolbarProps) {
+}: EmpresasToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState(searchTerm);
   const debouncedSearch = useDebounce(localSearch, 500);
 
-  // Local state for mobile filters (deferred application)
+  // Local state for mobile filters
   const [mobileStatus, setMobileStatus] = useState(selectedStatus);
 
   React.useEffect(() => {
@@ -103,7 +101,6 @@ export function ClientsToolbar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
-  // Sync mobile local state when opening sheet or when props change
   React.useEffect(() => {
     if (isSheetOpen) {
       setMobileStatus(selectedStatus);
@@ -169,7 +166,7 @@ export function ClientsToolbar({
               <SheetHeader className="text-left mb-4 px-6">
                 <SheetTitle className="text-xl font-bold">Filtrar</SheetTitle>
                 <SheetDescription className="text-gray-500">
-                  Refine a lista de clientes pelas opções abaixo.
+                  Refine a lista de empresas pelas opções abaixo.
                 </SheetDescription>
               </SheetHeader>
               <div className="flex-1 overflow-y-auto">
@@ -200,7 +197,7 @@ export function ClientsToolbar({
           </Sheet>
         ) : (
           <div className="flex items-center gap-3">
-            {hasAnyFilter && (
+             {hasAnyFilter && (
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -211,9 +208,9 @@ export function ClientsToolbar({
                 Limpar
               </Button>
             )}
-            <Popover>
+          <Popover>
             <PopoverTrigger asChild>
-              <FilterButton 
+               <FilterButton 
                 hasActiveFilters={hasAdvancedFilters}
                 isMobile={isMobile}
                 selectedCount={selectedStatus !== "todos" ? 1 : 0}
@@ -231,7 +228,7 @@ export function ClientsToolbar({
                 onClear={clearFilters}
               />
             </PopoverContent>
-          </Popover>
+            </Popover>
           </div>
         )}
 
@@ -243,7 +240,7 @@ export function ClientsToolbar({
           )}
         >
           <Plus className="h-4 w-4" />
-          <span>{isMobile ? "Cadastrar" : "Cadastrar Cliente"}</span>
+          <span>{isMobile ? "Cadastrar" : "Cadastrar Empresa"}</span>
         </Button>
       </div>
     </div>

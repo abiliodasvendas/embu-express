@@ -19,7 +19,7 @@ export const FilterButton = React.forwardRef<HTMLButtonElement, FilterButtonProp
         "h-11 rounded-xl border-gray-200 bg-white gap-2 px-4 md:px-5 font-bold transition-all shadow-sm active:scale-95",
         isMobile && "flex-1 h-11",
         hasActiveFilters
-          ? "text-blue-600 border-blue-100 bg-blue-50/50"
+          ? "text-blue-600 border-blue-100 hover:bg-blue-50"
           : "text-slate-600 hover:bg-slate-50",
         className
       )}

@@ -29,6 +29,16 @@ export interface Client {
   updated_at?: string;
 }
 
+export interface Empresa {
+  id: number;
+  nome_fantasia: string;
+  razao_social: string | null;
+  cnpj: string | null;
+  ativo: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Usuario {
   id: string; // UUID references auth.users
   perfil_id: number;
@@ -42,7 +52,9 @@ export interface Usuario {
   updated_at?: string;
   // Relacionamentos (virtual)
   perfil?: Perfil;
-  cliente?: Client;
+  cliente?: Client; // Keeping Client as per original, assuming Cliente in snippet was a typo or future change
+  empresa_id?: number | null; // Added Link
+  empresa?: Empresa; // Aded Link
   turnos?: UsuarioTurno[];
 }
 

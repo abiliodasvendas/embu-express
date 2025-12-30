@@ -1,4 +1,4 @@
-import { Building, Clock, Users } from "lucide-react";
+import { Briefcase, Building, Clock, Users } from "lucide-react";
 
 const pagesItems = [
     {
@@ -14,6 +14,11 @@ const pagesItems = [
     {
         title: "Clientes",
         href: "/clientes",
+        icon: Briefcase,
+    },
+    {
+        title: "Empresas",
+        href: "/empresas",
         icon: Building,
     },
 ];

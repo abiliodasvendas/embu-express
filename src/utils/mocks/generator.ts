@@ -201,9 +201,32 @@ export const generateClientData = () => {
 };
 
 /**
+ * Gera dados fictícios para uma empresa
+ */
+export const generateEmpresaData = () => {
+  const nomes = ["Alpha", "Beta", "Gama", "Delta", "Omega", "Sigma", "Zeta", "Prime", "Master", "Ultra"];
+  const setores = ["Logística", "Transportes", "Entregas", "Express", "Cargas", "Soluções", "Serviços", "Comércio", "Indústria"];
+  const sufixos = ["Ltda", "S.A.", "ME", "EPP"];
+  
+  const nome = nomes[randomNumber(0, nomes.length - 1)];
+  const setor = setores[randomNumber(0, setores.length - 1)];
+  const sufixo = sufixos[randomNumber(0, sufixos.length - 1)];
+  
+  const nomeFantasia = `${nome} ${setor}`;
+  const razaoSocial = `${nomeFantasia} ${sufixo}`;
+  
+  return {
+    nome_fantasia: nomeFantasia,
+    razao_social: razaoSocial,
+    cnpj: generateCNPJ(),
+    ativo: true,
+  };
+};
+
+/**
  * Gera dados fictícios para um colaborador
  */
-export const generateCollaboratorData = (clienteId?: string | number) => {
+export const generateCollaboratorData = (clienteId?: string | number, empresaId?: string | number) => {
   const nomeCompleto = generateName();
   
   return {
@@ -212,6 +235,7 @@ export const generateCollaboratorData = (clienteId?: string | number) => {
     cpf: generateCPF(),
     perfil_id: randomNumber(1, 3), // 1: Admin, 2: Colaborador, 3: Motorista
     cliente_id: clienteId ? (typeof clienteId === "string" ? parseInt(clienteId) : clienteId) : null,
+    empresa_id: empresaId ? (typeof empresaId === "string" ? parseInt(empresaId) : empresaId) : null,
     ativo: true,
     turnos: [
       { hora_inicio: "08:00:00", hora_fim: "12:00:00" },
@@ -314,6 +338,7 @@ export const mockGenerator = {
   cep: generateCEP,
   address: generateAddress,
   client: generateClientData,
+  empresa: generateEmpresaData,
   collaborator: generateCollaboratorData,
   timeRecord: generateTimeRecord,
 };

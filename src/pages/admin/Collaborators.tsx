@@ -9,70 +9,94 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useCollaborators, useCreateClient, useCreateCollaborator, useDeleteCollaborator, useRoles, useToggleCollaboratorStatus } from "@/hooks";
+import { useFilters } from "@/hooks";
+import {
+  useCreateCollaborator,
+  useDeleteCollaborator,
+  useToggleCollaboratorStatus,
+  useUpdateCollaborator,
+} from "@/hooks/api/useCollaboratorMutations";
+import {
+  useCollaborators,
+  useRoles
+} from "@/hooks/api/useCollaborators";
+import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useClientSelection } from "@/hooks/ui/useClientSelection";
-import { useFilters } from "@/hooks/ui/useFilters";
-import { Usuario } from "@/types/database";
-import { toast } from "@/utils/notifications/toast";
+import { Usuario as Collaborator } from "@/types/database";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { Users, Zap } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 export function Collaborators() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  
+  // Filters Hook
   const {
-    searchTerm,
-    setSearchTerm,
-    selectedStatus,
-    setSelectedStatus,
-    selectedCategoria: selectedPerfilId,
-    setSelectedCategoria: setSelectedPerfilId,
-    clearFilters,
-    setFilters,
+      searchTerm,
+      setSearchTerm,
+      selectedStatus = "todos",
+      setSelectedStatus,
+      selectedCategoria: selectedRole = "todos",
+      setSelectedCategoria: setSelectedRole,
+      selectedCliente: selectedClient = "todos",
+      setSelectedCliente: setSelectedClient,
+      selectedEmpresa: selectedEmpresa = "todos",
+      setSelectedEmpresa: setSelectedEmpresa,
+      hasActiveFilters,
+      setFilters
   } = useFilters({
-    categoriaParam: "perfil_id",
+      statusParam: "status",
+      categoriaParam: "cargo",
+      clienteParam: "cliente",
+      empresaParam: "empresa",
+      syncWithUrl: true
   });
-
-  const [selectedClient, setSelectedClient] = useState("todos");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCollaborator, setEditingCollaborator] = useState<Usuario | null>(null);
+  const [editingCollaborator, setEditingCollaborator] = useState<Collaborator | undefined>(undefined);
+  const [isQuickCreateLoading, setIsQuickCreateLoading] = useState(false);
 
-  const { data: collaborators, isLoading, refetch } = useCollaborators({ 
-    searchTerm: searchTerm || undefined,
-    ativo: selectedStatus === "todos" ? undefined : selectedStatus === "ativo" ? "true" : "false",
-    perfil_id: selectedPerfilId === "todos" ? undefined : selectedPerfilId,
-    cliente_id: selectedClient === "todos" ? undefined : selectedClient
-  });
-
-  const toggleStatus = useToggleCollaboratorStatus();
-  const deleteCollaborator = useDeleteCollaborator();
+  // Queries
   const { data: roles } = useRoles();
   const { data: clients } = useClientSelection();
-  
+  const { data: empresas } = useEmpresas({ ativo: "true" });
+
+  const { data: collaborators = [], isLoading, refetch } = useCollaborators({
+    searchTerm: searchTerm || undefined,
+    ativo: selectedStatus === "todos" ? undefined : selectedStatus === "ativo" ? "true" : "false",
+    perfil_id: selectedRole === "todos" ? undefined : selectedRole,
+    cliente_id: selectedClient === "todos" ? undefined : selectedClient,
+    empresa_id: selectedEmpresa === "todos" ? undefined : selectedEmpresa,
+  });
+
+  // Mutations
+  const createCollaborator = useCreateCollaborator();
+  const updateCollaborator = useUpdateCollaborator();
+  const deleteCollaborator = useDeleteCollaborator();
+  const toggleStatus = useToggleCollaboratorStatus();
+
+
+
   useEffect(() => {
-    setPageTitle("Gestão de Colaboradores");
+    setPageTitle("Colaboradores");
   }, [setPageTitle]);
 
   const pullToRefreshReload = useCallback(async () => {
     await refetch();
   }, [refetch]);
 
-  const handleEdit = (collaborator: Usuario) => {
+
+
+  const handleEdit = (collaborator: Collaborator) => {
     setEditingCollaborator(collaborator);
     setIsFormOpen(true);
   };
 
-  const handleAdd = () => {
-    setEditingCollaborator(null);
+  const handleRegister = () => {
+    setEditingCollaborator(undefined);
     setIsFormOpen(true);
   };
 
-  const handleToggleStatus = (collaborator: Usuario) => {
-    toggleStatus.mutate({ id: collaborator.id, ativo: !collaborator.ativo });
-  };
-
-  const handleDelete = (collaborator: Usuario) => {
+  const handleDelete = async (collaborator: Collaborator) => {
     openConfirmationDialog({
       title: messages.dialogo.remover.titulo,
       description: `Tem certeza que deseja remover "${collaborator.nome_completo}"? Esta ação não pode ser desfeita.`,
@@ -89,53 +113,53 @@ export function Collaborators() {
     });
   };
 
-  const [isQuickCreateLoading, setIsQuickCreateLoading] = useState(false);
-
-  // Mock Generation Logic
-  const { mutateAsync: createCollaborator, isPending: isCreatingCollaborator } = useCreateCollaborator();
-  const { mutateAsync: createClient } = useCreateClient();
+  const handleToggleStatus = async (collaborator: Collaborator) => {
+    await toggleStatus.mutateAsync({
+      id: collaborator.id,
+      ativo: !collaborator.ativo,
+    });
+  };
 
   const handleQuickCreate = async () => {
     setIsQuickCreateLoading(true);
+    const clientId = clients?.[0]?.id;
+    const empresaId = empresas?.[0]?.id;
+    
+    // Pass both client and empresa to generator
+    const fakeData = mockGenerator.collaborator(clientId, empresaId);
+    
     try {
-      const { mockGenerator } = await import("@/utils/mocks/generator");
-      let clientId = selectedClient !== "todos" ? parseInt(selectedClient) : undefined;
-
-      if (!clientId) {
-         if (clients && clients.length > 0) {
-             clientId = clients[0].id;
-         } else {
-             // Create a client if none exists
-             const newClient = await createClient({ ...mockGenerator.client(), silent: true });
-             clientId = newClient.id;
-         }
-      }
-
-      const mockData = mockGenerator.collaborator(clientId);
-      const finalData = {
-          ...mockData,
-          perfil_id: roles && roles.length > 0 ? roles[1].id : 2, // Default to a role (e.g., driver)
-          cliente_id: clientId
-      };
-
-      await createCollaborator(finalData as any);
-      toast.success("Colaborador fake criado com sucesso!");
+      await createCollaborator.mutateAsync(fakeData);
     } catch (error) {
-        console.error("Erro ao gerar colaborador fake:", error);
-        toast.error("Erro ao gerar colaborador fake.");
+      console.error(error);
     } finally {
-        setIsQuickCreateLoading(false);
+      setIsQuickCreateLoading(false);
     }
   };
 
-  const isActionLoading = toggleStatus.isPending || deleteCollaborator.isPending || isCreatingCollaborator || isQuickCreateLoading;
+  const isCreatingCollaborator = createCollaborator.isPending;
+  const isActionLoading = deleteCollaborator.isPending || toggleStatus.isPending || isCreatingCollaborator || isQuickCreateLoading;
+
+  const handleApplyFilters = (newFilters: {
+    status?: string;
+    categoria?: string;
+    cliente?: string;
+    empresa?: string;
+  }) => {
+    setFilters({
+      status: newFilters.status,
+      categoria: newFilters.categoria,
+      cliente: newFilters.cliente,
+      empresa: newFilters.empresa,
+    });
+  };
 
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
           <Card className="border-none shadow-none bg-transparent">
-            <CardHeader className="p-0">
+             <CardHeader className="p-0">
                 <div className="flex justify-end mb-4 md:hidden">
                   <Button
                     onClick={handleQuickCreate}
@@ -143,7 +167,7 @@ export function Collaborators() {
                     className="gap-2 text-uppercase w-full font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11"
                   >
                     <Zap className="h-4 w-4" />
-                    GERAR COLABORADOR FAKE
+                    GERAR FAKE
                   </Button>
                 </div>
                 <div className="hidden md:flex justify-end mb-4">
@@ -159,41 +183,24 @@ export function Collaborators() {
             </CardHeader>
             <CardContent className="px-0">
               <div className="mb-6">
-                  <CollaboratorsToolbar
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    selectedStatus={selectedStatus}
-                    onStatusChange={setSelectedStatus}
-                    selectedRole={selectedPerfilId || "todos"}
-                    onRoleChange={setSelectedPerfilId || (() => {})}
-                    selectedClient={selectedClient}
-                    onClientChange={setSelectedClient}
-                    onRegister={handleAdd}
-                    onQuickCreate={async () => {
-                        // Quick logic to create a random collaborator
-                        try {
-                           const { mockGenerator } = await import("@/utils/mocks/generator");
-                           const { useCreateCollaborator } = await import("@/hooks");
-                           // Note: This is an inline implementation for the toolbar button restoration.
-                           // Ideally, we might want to move this logic to a hook or the view component properly.
-                           // For now, alerting user or opening the dialog in a special mode might be better,
-                           // but to "generate data", we usually just create one.
-                           
-                           // However, we need access to the mutation. 
-                           // Let's just open the form in "create" mode and pre-fill it? 
-                           // Or simpler: Trigger a toast or logic from the parent if possible.
-                           
-                           // Since I can't easily hook into the mutation from right here inside the prop definition without
-                           // getting messy, let's instantiate the hook in the component body above and call it here.
-                        } catch (e) { console.error(e) }
-                    }}
-                    onApplyFilters={(f) => {
-                      setFilters({ status: f.status, categoria: f.categoria });
-                      if (f.cliente) setSelectedClient(f.cliente);
-                    }}
-                    roles={roles || []}
-                    clients={clients || []}
-                  />
+                <CollaboratorsToolbar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  selectedStatus={selectedStatus}
+                  onStatusChange={setSelectedStatus}
+                  selectedRole={selectedRole}
+                  onRoleChange={setSelectedRole}
+                  onRegister={handleRegister}
+                  onQuickCreate={handleQuickCreate}
+                  onApplyFilters={handleApplyFilters}
+                  roles={roles || []}
+                  clients={clients || []}
+                  selectedClient={selectedClient}
+                  onClientChange={setSelectedClient}
+                  empresas={empresas || []}
+                  selectedEmpresa={selectedEmpresa}
+                  onEmpresaChange={setSelectedEmpresa}
+                />
               </div>
 
               {isLoading ? (
@@ -214,7 +221,7 @@ export function Collaborators() {
                       ? messages.emptyState.colaborador.semResultados
                       : messages.emptyState.colaborador.descricao
                   }
-                  action={!searchTerm ? { label: "Cadastrar Colaborador", onClick: handleAdd } : undefined}
+                  action={!searchTerm ? { label: "Cadastrar Colaborador", onClick: handleRegister } : undefined}
                 />
               )}
             </CardContent>
@@ -223,12 +230,14 @@ export function Collaborators() {
       </PullToRefreshWrapper>
 
       <CollaboratorFormDialog
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        editingCollaborator={editingCollaborator}
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        collaboratorToEdit={editingCollaborator}
       />
-
+      
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>
   );
 }
+
+export default Collaborators;

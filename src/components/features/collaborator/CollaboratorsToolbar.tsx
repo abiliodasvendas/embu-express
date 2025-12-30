@@ -20,7 +20,7 @@ import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 import { getPerfilLabel } from "@/utils/formatters";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface CollaboratorsToolbarProps {
@@ -32,11 +32,14 @@ interface CollaboratorsToolbarProps {
   onRoleChange: (value: string) => void;
   onRegister: () => void;
   onQuickCreate?: () => void;
-  onApplyFilters: (filters: { status?: string; categoria?: string; cliente?: string }) => void;
+  onApplyFilters: (filters: { status?: string; categoria?: string; cliente?: string; empresa?: string }) => void;
   roles: any[];
   clients: any[];
   selectedClient: string;
   onClientChange: (value: string) => void;
+  empresas: any[];
+  selectedEmpresa: string;
+  onEmpresaChange: (value: string) => void;
 }
 
 const FilterControls = ({
@@ -46,10 +49,13 @@ const FilterControls = ({
   onRoleChange,
   clientValue,
   onClientChange,
+  empresaValue,
+  onEmpresaChange,
   onClear,
   onApply,
   roles,
   clients,
+  empresas,
   isSheet = false,
 }: {
   statusValue: string;
@@ -58,26 +64,48 @@ const FilterControls = ({
   onRoleChange: (val: string) => void;
   clientValue: string;
   onClientChange: (val: string) => void;
+  empresaValue: string;
+  onEmpresaChange: (val: string) => void;
   onClear: () => void;
   onApply?: () => void;
   roles: any[];
   clients: any[];
+  empresas: any[];
   isSheet?: boolean;
 }) => (
-  <div className={cn("space-y-6", isSheet ? "px-6" : "p-4")}>
-     <div className="space-y-2">
+  <div className={cn("space-y-6", isSheet ? "px-6 pb-6" : "p-4")}>
+    <div className="space-y-2">
       <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
         Cliente
       </Label>
       <Combobox
-          options={clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))}
-          value={clientValue === "todos" ? "" : clientValue}
+          options={[{ value: "todos", label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
+          value={clientValue}
           onSelect={(val) => onClientChange(val || "todos")}
           placeholder="Todos os Clientes"
           searchPlaceholder="Buscar cliente..."
           emptyText="Nenhum cliente encontrado."
           className={cn(
-            "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 transition-none",
+            "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none", 
+            isSheet && "h-12 bg-white hover:bg-white"
+          )}
+          modal={isSheet}
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
+        Empresa
+      </Label>
+      <Combobox
+          options={[{ value: "todos", label: "Todas as Empresas" }, ...empresas.map(e => ({ value: e.id.toString(), label: e.nome_fantasia }))]}
+          value={empresaValue}
+          onSelect={(val) => onEmpresaChange(val || "todos")}
+          placeholder="Todas as Empresas"
+          searchPlaceholder="Buscar empresa..."
+          emptyText="Nenhuma empresa encontrada."
+          className={cn(
+            "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none", 
             isSheet && "h-12 bg-white hover:bg-white"
           )}
           modal={isSheet}
@@ -98,7 +126,7 @@ const FilterControls = ({
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent className="z-[10001] rounded-xl border-gray-100">
-          <SelectItem value="todos">Todos Status</SelectItem>
+          <SelectItem value="todos">Todos os Status</SelectItem>
           <SelectItem value="ativo">Ativos</SelectItem>
           <SelectItem value="inativo">Inativos</SelectItem>
         </SelectContent>
@@ -129,26 +157,6 @@ const FilterControls = ({
       </Select>
     </div>
 
-    <div className={cn("flex items-center gap-3 pt-4", isSheet && "pb-6")}>
-      <Button
-        variant="outline"
-        onClick={onClear}
-        className={cn(
-          "flex-1 h-11 rounded-xl text-slate-500 font-bold border-gray-200 hover:bg-gray-50 transition-all active:scale-95",
-          isSheet && "h-12"
-        )}
-      >
-        Limpar
-      </Button>
-      {isSheet && (
-        <Button
-          onClick={onApply}
-          className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white"
-        >
-          Aplicar
-        </Button>
-      )}
-    </div>
   </div>
 );
 
@@ -166,6 +174,9 @@ export function CollaboratorsToolbar({
   clients,
   selectedClient,
   onClientChange,
+  empresas,
+  selectedEmpresa,
+  onEmpresaChange,
 }: CollaboratorsToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -178,6 +189,7 @@ export function CollaboratorsToolbar({
   const [mobileStatus, setMobileStatus] = useState(selectedStatus);
   const [mobileRole, setMobileRole] = useState(selectedRole);
   const [mobileClient, setMobileClient] = useState(selectedClient);
+  const [mobileEmpresa, setMobileEmpresa] = useState(selectedEmpresa);
 
   useEffect(() => {
     onSearchChange(debouncedSearch);
@@ -197,18 +209,25 @@ export function CollaboratorsToolbar({
       setMobileStatus(selectedStatus);
       setMobileRole(selectedRole);
       setMobileClient(selectedClient);
+      setMobileEmpresa(selectedEmpresa);
     }
-  }, [isSheetOpen, selectedStatus, selectedRole, selectedClient]);
+  }, [isSheetOpen, selectedStatus, selectedRole, selectedClient, selectedEmpresa]);
 
-  const hasActiveFilters =
-    selectedStatus !== "todos" || selectedRole !== "todos" || selectedClient !== "todos";
+  const hasAdvancedFilters =
+    selectedStatus !== "todos" || selectedRole !== "todos" || selectedClient !== "todos" || selectedEmpresa !== "todos";
+  const hasAnyFilter = hasAdvancedFilters || localSearch !== "";
   const selectedCount =
-    (selectedStatus !== "todos" ? 1 : 0) + (selectedRole !== "todos" ? 1 : 0) + (selectedClient !== "todos" ? 1 : 0);
+    (selectedStatus !== "todos" ? 1 : 0) + (selectedRole !== "todos" ? 1 : 0) + (selectedClient !== "todos" ? 1 : 0) + (selectedEmpresa !== "todos" ? 1 : 0);
 
   const clearFilters = () => {
-    onStatusChange("todos");
-    onRoleChange("todos");
-    onClientChange("todos");
+    setLocalSearch("");
+    onSearchChange("");
+    onApplyFilters({
+      status: "todos",
+      categoria: "todos",
+      cliente: "todos",
+      empresa: "todos"
+    });
   };
 
   const applyMobileFilters = () => {
@@ -216,6 +235,7 @@ export function CollaboratorsToolbar({
       status: mobileStatus,
       categoria: mobileRole,
       cliente: mobileClient,
+      empresa: mobileEmpresa,
     });
     setIsSheetOpen(false);
   };
@@ -224,6 +244,7 @@ export function CollaboratorsToolbar({
     setMobileStatus("todos");
     setMobileRole("todos");
     setMobileClient("todos");
+    setMobileEmpresa("todos");
   };
 
   return (
@@ -238,8 +259,19 @@ export function CollaboratorsToolbar({
             placeholder="Buscar por nome, e-mail ou CPF..."
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            className="pl-9 text-sm sm:text-base bg-white border-gray-200 focus-visible:ring-primary/20 h-11 rounded-xl shadow-none font-medium"
+            className={cn(
+              "pl-9 text-sm sm:text-base bg-white border-gray-200 focus-visible:ring-primary/20 h-11 rounded-xl shadow-none font-medium",
+              isMobile && localSearch && "pr-10"
+            )}
           />
+          {isMobile && localSearch && (
+            <button
+              onClick={() => setLocalSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
@@ -247,19 +279,19 @@ export function CollaboratorsToolbar({
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <FilterButton
-                  hasActiveFilters={hasActiveFilters}
+                  hasActiveFilters={hasAdvancedFilters}
                   selectedCount={selectedCount}
                   isMobile={isMobile}
                 />
               </SheetTrigger>
               <SheetContent
                 side="bottom"
-                className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 bg-gray-50 border-t-0 shadow-2xl"
+                className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 pb-0 bg-gray-50 border-t-0 shadow-2xl"
                 onOpenAutoFocus={(e) => e.preventDefault()}
               >
                 <SheetHeader className="text-left mb-4 px-6">
                   <SheetTitle className="text-xl font-bold">
-                    Filtrar Colaboradores
+                    Filtrar
                   </SheetTitle>
                   <SheetDescription className="text-gray-500">
                     Refine a lista de colaboradores pelas opções abaixo.
@@ -274,19 +306,49 @@ export function CollaboratorsToolbar({
                     onRoleChange={setMobileRole}
                     clientValue={mobileClient}
                     onClientChange={setMobileClient}
+                    empresaValue={mobileEmpresa}
+                    onEmpresaChange={setMobileEmpresa}
                     onClear={clearMobileFilters}
                     onApply={applyMobileFilters}
                     roles={roles || []}
                     clients={clients || []}
+                    empresas={empresas || []}
                   />
+                </div>
+                <div className="p-4 border-t bg-white mt-auto flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={clearMobileFilters}
+                    className="flex-1 h-12 rounded-xl text-slate-500 font-bold border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
+                  >
+                    Limpar
+                  </Button>
+                  <Button
+                    onClick={applyMobileFilters}
+                    className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white"
+                  >
+                    Aplicar
+                  </Button>
                 </div>
               </SheetContent>
             </Sheet>
           ) : (
+            <div className="flex items-center gap-3">
+              {hasAnyFilter && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearFilters}
+                  className="text-gray-500 hover:text-gray-900"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar
+                </Button>
+              )}
             <Popover>
               <PopoverTrigger asChild>
                 <FilterButton
-                  hasActiveFilters={hasActiveFilters}
+                  hasActiveFilters={hasAdvancedFilters}
                   selectedCount={selectedCount}
                   isMobile={isMobile}
                 />
@@ -304,12 +366,16 @@ export function CollaboratorsToolbar({
                   onRoleChange={onRoleChange}
                   clientValue={selectedClient}
                   onClientChange={onClientChange}
+                  empresaValue={selectedEmpresa}
+                  onEmpresaChange={onEmpresaChange}
                   onClear={clearFilters}
                   roles={roles || []}
                   clients={clients || []}
+                  empresas={empresas || []}
                 />
               </PopoverContent>
             </Popover>
+            </div>
           )}
 
 

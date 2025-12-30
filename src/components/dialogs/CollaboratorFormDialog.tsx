@@ -44,10 +44,9 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { PERFIL_MOTOBOY } from "@/constants";
 import { messages } from "@/constants/messages";
-import { useCreateClient, useCreateCollaborator, useRoles, useUpdateCollaborator } from "@/hooks";
+import { useCreateClient, useCreateCollaborator, useEmpresas, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useClientSelection } from "@/hooks/ui/useClientSelection";
 import { cn } from "@/lib/utils";
-import { cpfSchema, emailSchema } from "@/schemas/common";
 import { Perfil, Usuario } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { getPerfilLabel } from "@/utils/formatters";
@@ -69,135 +68,155 @@ import {
   X,
   Zap
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
 
 interface CollaboratorFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  editingCollaborator?: Usuario | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  collaboratorToEdit?: Usuario | null;
 }
 
 export function CollaboratorFormDialog({
-  isOpen,
-  onClose,
-  editingCollaborator = null,
+  open,
+  onOpenChange,
+  collaboratorToEdit = null,
 }: CollaboratorFormProps) {
+  const onClose = () => onOpenChange(false);
+  
   const allSections = ["dados-pessoais", "dados-profissionais", "turnos"];
   const [openAccordionItems, setOpenAccordionItems] = useState(allSections);
   
   const { data: roles } = useRoles();
-  const { data: clients } = useClientSelection(editingCollaborator?.cliente_id, { enabled: isOpen });
+  // Use a ref to access the latest roles inside the Zod resolver, avoiding stale closures
+  const rolesRef = useRef(roles);
+  useEffect(() => {
+    rolesRef.current = roles;
+  }, [roles]);
+
+  const { data: clients } = useClientSelection(collaboratorToEdit?.cliente_id, { enabled: open });
+  const { data: empresas } = useEmpresas({ 
+    ativo: "true", 
+    includeId: collaboratorToEdit?.empresa_id?.toString() 
+  }, { enabled: open });
   const createCollaborator = useCreateCollaborator();
   const updateCollaborator = useUpdateCollaborator();
 
-  const collaboratorSchema = z.object({
-    nome_completo: z.string().min(1, "Nome completo é obrigatório"),
-    email: emailSchema,
-    cpf: cpfSchema,
-    perfil_id: z.string().min(1, "Cargo é obrigatório"),
-    cliente_id: z.string().optional().nullable(),
+
+  // Common schema definition for consistent reuse
+  const baseSchemaShape = {
+    nome_completo: z.string().min(3, "Nome completo é obrigatório"),
+    email: z.string().email("E-mail inválido"),
+    cpf: z.string().min(11, "CPF inválido"),
+    perfil_id: z.string().min(1, "Perfil é obrigatório"),
+    empresa_id: z.string({ required_error: "Empresa é obrigatória", invalid_type_error: "Empresa é obrigatória" }).min(1, "Empresa é obrigatória"),
     ativo: z.boolean().default(true),
     turnos: z.array(z.object({
       hora_inicio: z.string().min(1, "Obrigatório"),
       hora_fim: z.string().min(1, "Obrigatório"),
-    })).min(1, "Ao menos um turno é necessário"),
-  }).superRefine((data, ctx) => {
-    if (roles) {
-        const selectedPerfil = roles.find(r => r.id.toString() === data.perfil_id);
-        if (selectedPerfil?.nome === PERFIL_MOTOBOY && !data.cliente_id) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Cliente é obrigatório para motoboys",
-                path: ["cliente_id"],
-            });
-        }
+    })).default([]),
+  };
+
+  const customResolver = async (values: any, context: any, options: any) => {
+    const currentRoles = rolesRef.current;
+    
+    // Determine strict requirement based on current values
+    let isMotoboy = false;
+    if (currentRoles && values.perfil_id) {
+        const selectedPerfil = currentRoles.find(r => r.id.toString() === values.perfil_id);
+        isMotoboy = selectedPerfil?.nome?.toLowerCase() === PERFIL_MOTOBOY.toLowerCase();
     }
 
-    // Validação de Conflito de Turnos e Regras de Negócio
-    if (data.turnos?.length > 0) {
-      const toMinutes = (time: string) => {
-        const [h, m] = time.split(":").map(Number);
-        return h * 60 + m;
-      };
-
-      const getIntervals = (t: { hora_inicio?: string; hora_fim?: string }) => {
-        if (!t.hora_inicio || !t.hora_fim) return [];
-        const start = toMinutes(t.hora_inicio);
-        const end = toMinutes(t.hora_fim);
-        if (start < end) {
-            return [[start, end]];
-        } else {
-            // Overnight: [Start, 1440] AND [0, End]
-            return [[start, 1440], [0, end]];
-        }
-      };
-
-      for (let i = 0; i < data.turnos.length; i++) {
-        const t = data.turnos[i];
-        const start = toMinutes(t.hora_inicio);
-        const end = toMinutes(t.hora_fim);
-
-        // Rule 1: Duration Check (>= 60 mins)
-        // Handle overnight duration
-        let duration = 0;
-        if (start < end) {
-            duration = end - start;
-        } else {
-            duration = (1440 - start) + end;
-        }
-
-        if (duration < 60) {
-             ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Turno deve ter no mínimo 1 hora",
-                path: ["turnos", i, "hora_fim"],
-            });
-        }
-
-        // Rule 2: Overlaps
-        for (let j = i + 1; j < data.turnos.length; j++) {
-            const t1 = data.turnos[i];
-            const t2 = data.turnos[j];
-
-            const intervals1 = getIntervals(t1);
-            const intervals2 = getIntervals(t2);
-
-            let hasOverlap = false;
-
-            for (const [s1, e1] of intervals1) {
-                for (const [s2, e2] of intervals2) {
-                    if (s1 < e2 && s2 < e1) {
-                        hasOverlap = true;
-                        break;
+    const dynamicSchema = z.object({
+        ...baseSchemaShape,
+        cliente_id: isMotoboy 
+            ? z.string({ required_error: "Cliente é obrigatório para motoboys", invalid_type_error: "Cliente é obrigatório para motoboys" }).min(1, "Cliente é obrigatório para motoboys")
+            : z.string().optional().nullable()
+    }).superRefine((data, ctx) => {
+        // Validação de Conflito de Turnos
+        if (data.turnos?.length > 0) {
+            const toMinutes = (time: string) => {
+                const [h, m] = time?.split(":").map(Number) || [0, 0];
+                return h * 60 + m;
+            };
+    
+            const getIntervals = (t: { hora_inicio?: string; hora_fim?: string }) => {
+                if (!t.hora_inicio || !t.hora_fim) return [];
+                const start = toMinutes(t.hora_inicio);
+                const end = toMinutes(t.hora_fim);
+                if (start < end) {
+                    return [[start, end]];
+                } else {
+                    return [[start, 1440], [0, end]];
+                }
+            };
+    
+            for (let i = 0; i < data.turnos.length; i++) {
+                const t = data.turnos[i];
+                const start = toMinutes(t.hora_inicio);
+                const end = toMinutes(t.hora_fim);
+        
+                let duration = 0;
+                if (start < end) {
+                    duration = end - start;
+                } else {
+                    duration = (1440 - start) + end;
+                }
+        
+                if (duration < 60) {
+                        ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: "Turno deve ter no mínimo 1 hora",
+                        path: ["turnos", i, "hora_fim"],
+                    });
+                }
+        
+                for (let j = i + 1; j < data.turnos.length; j++) {
+                    const t1 = data.turnos[i];
+                    const t2 = data.turnos[j]; // Fixed loop reference
+        
+                    const intervals1 = getIntervals(t1);
+                    const intervals2 = getIntervals(t2);
+        
+                    let hasOverlap = false;
+        
+                    for (const [s1, e1] of intervals1) {
+                        for (const [s2, e2] of intervals2) {
+                            if (s1 < e2 && s2 < e1) {
+                                hasOverlap = true;
+                                break;
+                            }
+                        }
+                        if (hasOverlap) break;
+                    }
+        
+                    if (hasOverlap) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: "Conflito com outro turno",
+                            path: ["turnos", j, "hora_inicio"],
+                        });
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: "Conflito com outro turno",
+                            path: ["turnos", i, "hora_inicio"],
+                        });
                     }
                 }
-                if (hasOverlap) break;
-            }
-
-            if (hasOverlap) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: "Conflito com outro turno",
-                    path: ["turnos", j, "hora_inicio"],
-                });
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: "Conflito com outro turno",
-                    path: ["turnos", i, "hora_inicio"],
-                });
             }
         }
-      }
-    }
-  });
+    });
 
-  type CollaboratorFormData = z.infer<typeof collaboratorSchema>;
+    return zodResolver(dynamicSchema)(values, context, options);
+  };
+
+  // Type inference helper (approximate)
+  type CollaboratorFormData = any; // Simplify for resolver pattern
   
   const form = useForm<CollaboratorFormData>({
-    resolver: zodResolver(collaboratorSchema),
+    resolver: customResolver,
     defaultValues: {
       nome_completo: "",
       email: "",
@@ -215,16 +234,17 @@ export function CollaboratorFormDialog({
   });
 
   useEffect(() => {
-    if (isOpen) {
-      if (editingCollaborator) {
+    if (open) {
+      if (collaboratorToEdit) {
         form.reset({
-          nome_completo: editingCollaborator.nome_completo,
-          email: editingCollaborator.email,
-          cpf: editingCollaborator.cpf,
-          perfil_id: editingCollaborator.perfil_id.toString(),
-          cliente_id: editingCollaborator.cliente_id?.toString() || null,
-          ativo: editingCollaborator.ativo,
-          turnos: editingCollaborator.turnos?.map(t => ({
+          nome_completo: collaboratorToEdit.nome_completo,
+          email: collaboratorToEdit.email,
+          cpf: collaboratorToEdit.cpf,
+          perfil_id: collaboratorToEdit.perfil_id.toString(),
+          cliente_id: collaboratorToEdit.cliente_id?.toString() || null,
+          empresa_id: collaboratorToEdit.empresa_id?.toString() || null,
+          ativo: collaboratorToEdit.ativo,
+          turnos: collaboratorToEdit.turnos?.map(t => ({
             hora_inicio: t.hora_inicio.substring(0, 5),
             hora_fim: t.hora_fim.substring(0, 5)
           })) || [{ hora_inicio: "08:00", hora_fim: "18:00" }],
@@ -236,13 +256,14 @@ export function CollaboratorFormDialog({
           cpf: "",
           perfil_id: "",
           cliente_id: null,
+          empresa_id: null,
           ativo: true,
           turnos: [{ hora_inicio: "08:00", hora_fim: "18:00" }],
         });
       }
       setOpenAccordionItems(allSections);
     }
-  }, [isOpen, editingCollaborator, form]);
+  }, [open, collaboratorToEdit, form]);
 
   const onFormError = () => {
     toast.error(messages.validacao.formularioComErros);
@@ -252,14 +273,16 @@ export function CollaboratorFormDialog({
 
   const handleFillMock = async () => {
     let clientId = clients?.[0]?.id;
+    let empresaId = empresas?.[0]?.id;
     
-    const mockData = mockGenerator.collaborator(clientId);
+    const mockData = mockGenerator.collaborator(clientId, empresaId);
     const formData = {
       nome_completo: mockData.nome_completo,
       email: mockData.email,
       cpf: mockData.cpf,
       perfil_id: roles && roles.length > 0 ? roles[0].id.toString() : "",
       cliente_id: mockData.cliente_id?.toString() || null,
+      empresa_id: mockData.empresa_id?.toString() || null,
       ativo: true, // Mock data usually active
       turnos: mockData.turnos.map(t => ({
         hora_inicio: t.hora_inicio.substring(0, 5),
@@ -282,11 +305,13 @@ export function CollaboratorFormDialog({
         clientId = newClient.id;
       }
 
-      const mockData = mockGenerator.collaborator(clientId);
+      const empresaId = empresas?.[0]?.id;
+      const mockData = mockGenerator.collaborator(clientId, empresaId);
       const finalData = {
         ...mockData,
         perfil_id: roles && roles.length > 0 ? roles[1].id : 2, 
         cliente_id: mockData.cliente_id,
+        empresa_id: mockData.empresa_id,
       };
 
       await createCollaborator.mutateAsync(finalData as any);
@@ -306,10 +331,11 @@ export function CollaboratorFormDialog({
         ...values,
         perfil_id: parseInt(values.perfil_id),
         cliente_id: values.cliente_id ? parseInt(values.cliente_id) : null,
+        empresa_id: values.empresa_id ? parseInt(values.empresa_id) : null,
       };
 
-      if (editingCollaborator) {
-        await updateCollaborator.mutateAsync({ id: editingCollaborator.id, ...data });
+      if (collaboratorToEdit) {
+        await updateCollaborator.mutateAsync({ id: collaboratorToEdit.id, ...data });
       } else {
         await createCollaborator.mutateAsync(data as any);
       }
@@ -327,9 +353,9 @@ export function CollaboratorFormDialog({
   const isPending = createCollaborator.isPending || updateCollaborator.isPending;
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
+    <Dialog open={open} onOpenChange={() => safeCloseDialog(onClose)}>
       <DialogContent 
-        className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
+        className="w-full max-w-3xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
         <div className="bg-primary p-4 text-center relative shrink-0">
@@ -344,7 +370,7 @@ export function CollaboratorFormDialog({
             >
               <Wand2 className="h-4 w-4" />
             </Button>
-            {!editingCollaborator && (
+            {!collaboratorToEdit && (
               <Button
                 type="button"
                 variant="ghost"
@@ -367,10 +393,10 @@ export function CollaboratorFormDialog({
             <User className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            {editingCollaborator ? "Editar Colaborador" : "Novo Colaborador"}
+            {collaboratorToEdit ? "Editar Colaborador" : "Novo Colaborador"}
           </DialogTitle>
           <DialogDescription className="text-white/80 text-sm mt-1">
-            {editingCollaborator
+            {collaboratorToEdit
               ? "Ajuste as informações do perfil do colaborador."
               : "Preencha os dados para cadastrar um novo colaborador."}
           </DialogDescription>
@@ -417,7 +443,14 @@ export function CollaboratorFormDialog({
                             <FormControl>
                               <div className="relative">
                                 <Mail className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                                <Input placeholder="email@exemplo.com" className="pl-12 h-11 rounded-xl bg-gray-50" {...field} />
+                                <Input 
+                                  placeholder="email@exemplo.com" 
+                                  className={cn(
+                                    "pl-12 h-11 rounded-xl bg-gray-50",
+                                    form.formState.errors.email && "border-red-500 focus-visible:ring-red-200"
+                                  )} 
+                                  {...field} 
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -444,6 +477,24 @@ export function CollaboratorFormDialog({
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="ativo"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Colaborador Ativo</FormLabel>
+                            <div className="text-sm text-muted-foreground">
+                              Define se o colaborador pode acessar o sistema.
+                            </div>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
                   </AccordionContent>
                 </AccordionItem>
 
@@ -455,14 +506,20 @@ export function CollaboratorFormDialog({
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField
                         control={form.control}
                         name="perfil_id"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Cargo / Permissão <span className="text-red-500">*</span></FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select 
+                                onValueChange={(val) => {
+                                    field.onChange(val);
+                                    setTimeout(() => form.trigger("cliente_id"), 0);
+                                }} 
+                                value={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
                                   <SelectValue placeholder="Selecione o cargo" />
@@ -481,7 +538,79 @@ export function CollaboratorFormDialog({
                         )}
                       />
 
-                          <FormField
+                      <FormField
+                        control={form.control}
+                        name="empresa_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Empresa <span className="text-red-500">*</span></FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                      "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none px-3 text-left focus-visible:ring-primary/20 font-normal hover:bg-gray-50 transition-none",
+                                      !field.value && "text-muted-foreground hover:text-muted-foreground",
+                                      form.formState.errors.empresa_id && "border-red-500"
+                                    )}
+                                  >
+                                    {field.value
+                                      ? empresas?.find((empresa: any) => empresa.id.toString() === field.value)?.nome_fantasia
+                                      : "Selecione a empresa"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                <Command>
+                                  <CommandInput placeholder="Buscar empresa..." />
+                                  <CommandList>
+                                    <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>
+                                    <CommandGroup>
+                                        <CommandItem
+                                          value="Nenhuma empresa selecionada"
+                                          onSelect={() => {
+                                            form.setValue("empresa_id", null);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              !field.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          Nenhuma empresa selecionada
+                                        </CommandItem>
+                                      {empresas?.map((empresa: any) => (
+                                        <CommandItem
+                                          value={empresa.nome_fantasia}
+                                          key={empresa.id}
+                                          onSelect={() => {
+                                            form.setValue("empresa_id", empresa.id.toString());
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              empresa.id.toString() === field.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {empresa.nome_fantasia}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
                         control={form.control}
                         name="cliente_id"
                         render={({ field }) => (
@@ -498,7 +627,8 @@ export function CollaboratorFormDialog({
                                     role="combobox"
                                     className={cn(
                                       "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none px-3 text-left focus-visible:ring-primary/20 font-normal hover:bg-gray-50 transition-none",
-                                      !field.value && "text-muted-foreground hover:text-muted-foreground"
+                                      !field.value && "text-muted-foreground hover:text-muted-foreground",
+                                      form.formState.errors.cliente_id && "border-red-500"
                                     )}
                                   >
                                     {field.value
@@ -556,24 +686,6 @@ export function CollaboratorFormDialog({
                         )}
                       />
                     </div>
-
-                    <FormField
-                      control={form.control}
-                      name="ativo"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">Colaborador Ativo</FormLabel>
-                            <div className="text-sm text-muted-foreground">
-                              Define se o colaborador pode acessar o sistema.
-                            </div>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
                   </AccordionContent>
                 </AccordionItem>
 
@@ -616,17 +728,15 @@ export function CollaboratorFormDialog({
                               )}
                             />
                           </div>
-                          {fields.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => remove(index)}
-                              className="h-10 w-10 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl shrink-0"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => remove(index)}
+                            className="h-10 w-10 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl shrink-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       ))}
 
@@ -638,7 +748,7 @@ export function CollaboratorFormDialog({
                         className="w-full h-11 border-dashed border-2 rounded-2xl text-primary hover:bg-primary/5 hover:border-primary gap-2 transition-all"
                       >
                         <Plus className="h-4 w-4" />
-                        Adicionar Novo Período
+                        Adicionar Turno
                       </Button>
                     </div>
                   </AccordionContent>
@@ -667,7 +777,7 @@ export function CollaboratorFormDialog({
           >
             {isPending ? (
               <Loader2 className="h-5 w-5 animate-spin" />
-            ) : editingCollaborator ? (
+            ) : collaboratorToEdit ? (
               "Atualizar"
             ) : (
               "Salvar"

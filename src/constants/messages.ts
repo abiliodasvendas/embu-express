@@ -165,7 +165,7 @@ export const messages = {
     },
     ponto: {
       titulo: "Nenhum registro de ponto encontrado",
-      descricao: "Não há registros para o período selecionado.",
+      descricao: "Não há registros para o turno selecionado.",
       semResultados: "Não encontramos resultados para sua busca.",
     },
   },
@@ -177,10 +177,10 @@ export const messages = {
       descricao: "Tem certeza que deseja remover este item? Esta ação não pode ser desfeita.",
       botao: "Remover",
     },
-    inativar: {
-      titulo: "Confirmar Inativação",
-      descricao: "Tem certeza que deseja inativar este item?",
-      botao: "Inativar",
+    desativar: {
+      titulo: "Confirmar Desativação",
+      descricao: "Tem certeza que deseja desativar este item?",
+      botao: "Desativar",
     },
     ativar: {
       titulo: "Confirmar Ativação",
@@ -214,7 +214,7 @@ export type MessageKey =
   | `emptyState.colaborador.${keyof typeof messages.emptyState.colaborador}`
   | `emptyState.ponto.${keyof typeof messages.emptyState.ponto}`
   | `dialogo.remover.${keyof typeof messages.dialogo.remover}`
-  | `dialogo.inativar.${keyof typeof messages.dialogo.inativar}`
+  | `dialogo.desativar.${keyof typeof messages.dialogo.desativar}`
   | `dialogo.ativar.${keyof typeof messages.dialogo.ativar}`;
 
 /**

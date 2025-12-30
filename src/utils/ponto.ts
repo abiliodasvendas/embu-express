@@ -42,11 +42,12 @@ export const calculateTotalTime = (entrada?: string | null, saida?: string | nul
 
 export const formatMinutes = (totalMinutes: number) => {
     const absMinutes = Math.abs(totalMinutes);
-    if (absMinutes < 60) return `${totalMinutes} min`;
+    const sign = totalMinutes < 0 ? "-" : "+";
+
+    if (absMinutes < 60) return `${sign}${absMinutes} min`;
 
     const hours = Math.floor(absMinutes / 60);
     const minutes = absMinutes % 60;
-    const sign = totalMinutes < 0 ? "-" : "+";
-    
+   
     return `${sign}${hours}h ${minutes}min`;
 };

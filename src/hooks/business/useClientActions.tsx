@@ -20,20 +20,23 @@ export function useClientActions({
       label: "Editar",
       icon: <Edit2 className="h-4 w-4" />,
       onClick: () => onEdit(client),
-      swipeColor: "bg-blue-500",
+      swipeColor: "bg-blue-600",
+      drawerClass: "text-blue-600",
     },
     {
-      label: client.ativo ? "Inativar" : "Reativar",
-      icon: client.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
+      label: client.ativo ? "Desativar" : "Reativar",
+      icon: client.ativo ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />,
       onClick: () => onToggleStatus(client),
-      swipeColor: client.ativo ? "bg-amber-500" : "bg-emerald-500",
+      swipeColor: client.ativo ? "bg-amber-600" : "bg-emerald-600",
+      drawerClass: client.ativo ? "text-amber-600" : "text-emerald-600",
     },
     {
       label: "Remover",
       icon: <Trash2 className="h-4 w-4" />,
       onClick: () => onDelete(client),
       isDestructive: true,
-      swipeColor: "bg-red-500",
+      swipeColor: "bg-red-600",
+      drawerClass: "text-red-600",
     },
   ];
 }

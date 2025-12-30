@@ -1,3 +1,4 @@
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -12,7 +13,7 @@ import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Check, ChevronsUpDown, Clock, Loader2, Plus } from "lucide-react";
+import { AlertCircle, Check, ChevronsUpDown, Clock, Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -48,6 +49,10 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
       saida_hora: "",
     },
   });
+
+  const selectedCollaboratorId = form.watch("usuario_id");
+  const selectedCollaborator = collaborators.find(c => c.id.toString() === selectedCollaboratorId);
+  const hasTurnos = selectedCollaborator?.turnos && selectedCollaborator.turnos.length > 0;
 
   const handleClose = () => {
     safeCloseDialog(onClose);
@@ -179,7 +184,6 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                         </PopoverContent>
                     </Popover>
                     <FormMessage />
-                    <FormMessage />
                     <div className="flex items-start gap-2 mt-2 px-1">
                         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-1.5 shrink-0">Turno(s):</span>
                         <div className="flex flex-wrap gap-1.5">
@@ -293,6 +297,15 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                     )}
                     />
                 </div>
+                {selectedCollaboratorId && !hasTurnos && (
+                    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Bloqueio de Registro</AlertTitle>
+                        <AlertDescription>
+                            Este colaborador não possui turnos cadastrados. Configure os turnos no cadastro do colaborador para lançar horas.
+                        </AlertDescription>
+                    </Alert>
+                )}
             </form>
             </Form>
         </div>
@@ -310,8 +323,8 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
             <Button 
                 type="submit" 
                 form="create-ponto-form"
-                disabled={isPending}
-                className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20"
+                disabled={isPending || (!!selectedCollaboratorId && !hasTurnos)}
+                className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Criar Registro

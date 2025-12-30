@@ -20,6 +20,7 @@ const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
 // Admin - Embu Express
 const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
 const Clients = lazyLoad(() => import("./pages/admin/Clients"));
+const Empresas = lazyLoad(() => import("./pages/admin/Empresas"));
 
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
@@ -101,6 +102,7 @@ const App = () => {
               <Route path="controle-ponto" element={<TimeTracking />} />
               <Route path="colaboradores" element={<Collaborators />} />
               <Route path="clientes" element={<Clients />} />
+              <Route path="empresas" element={<Empresas />} />
               
               {/* Fallback para a home do admin */}
               <Route path="inicio" element={<Navigate to="/controle-ponto" replace />} />

@@ -587,16 +587,34 @@ export function CollaboratorFormDialog({
                   <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
                     <div className="space-y-4">
                       {fields.map((field, index) => (
-                        <div key={field.id} className="flex items-end gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100 relative group">
-                          <div className="grid grid-cols-2 gap-4 flex-1">
+                        <div key={field.id} className="relative p-4 rounded-2xl bg-gray-50 border border-gray-100 group transition-all">
+                          {/* Delete Button - Absolute Position */}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveTurno(index)}
+                            className="absolute right-2 top-2 h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-lg transition-colors opacity-70 hover:opacity-100"
+                            title="Remover turno"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+
+                          <div className="grid grid-cols-2 gap-4 pt-2">
                             <FormField
                               control={form.control}
                               name={`turnos.${index}.hora_inicio`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-xs">Entrada</FormLabel>
+                                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Entrada</FormLabel>
                                   <FormControl>
-                                    <Input type="time" className="h-10 rounded-xl bg-white" {...field} />
+                                    <div className="relative">
+                                      <Input 
+                                        type="time" 
+                                        className="h-12 px-4 bg-white border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-gray-700 transition-all [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:mr-0.5" 
+                                        {...field} 
+                                      />
+                                    </div>
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -607,25 +625,21 @@ export function CollaboratorFormDialog({
                               name={`turnos.${index}.hora_fim`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-xs">Saída</FormLabel>
+                                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Saída</FormLabel>
                                   <FormControl>
-                                    <Input type="time" className="h-10 rounded-xl bg-white" {...field} />
+                                    <div className="relative">
+                                      <Input 
+                                        type="time" 
+                                        className="h-12 px-4 bg-white border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-gray-700 transition-all [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:mr-0.5" 
+                                        {...field} 
+                                      />
+                                    </div>
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
                           </div>
-
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRemoveTurno(index)}
-                            className="h-10 w-10 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl shrink-0"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
                         </div>
                       ))}
 

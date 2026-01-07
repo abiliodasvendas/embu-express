@@ -318,7 +318,7 @@ export const generateTimeRecord = (usuarioId: string, date: string, turno?: { ho
     entrada_hora: toISO(entrada),
     saida_hora: toISO(saida, !!isOvernight),
     entrada_km: randomNumber(10000, 50000),
-    saida_km: saida ? randomNumber(50050, 50200) : null,
+    saida_km: saida ? randomNumber(10000, 50000) + randomNumber(20, 150) : null, // Fix: Use same base + delta
     entrada_lat: -23.550520,
     entrada_long: -46.633308,
     saida_lat: -23.550520,

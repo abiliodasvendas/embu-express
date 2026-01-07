@@ -89,6 +89,7 @@ export interface RegistroPonto {
   detalhes_calculo?: {
     entrada?: { turno_base: string; diff_minutos: number; tolerancia: number };
     saida?: { turno_base: string; diff_minutos: number; tolerancia: number };
+    resumo?: { diff_km?: number; horas_trabalhadas?: string };
   };
   saldo_minutos?: number | null;
 }

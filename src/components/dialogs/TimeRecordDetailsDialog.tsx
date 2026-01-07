@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { RegistroPonto } from "@/types/database";
-import { calculateTotalTime, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
+import { getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarClock, Clock, Edit2, X } from "lucide-react";
@@ -55,13 +55,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
 
       return (
         <div className="bg-gray-50 rounded-lg p-3 space-y-2 border border-gray-100">
-             {/* KM Display */}
-             <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Kilometragem:</span>
-                <span className="font-medium text-gray-900">
-                    {kmDisplay}
-                </span>
-            </div>
+             {/* KM Display Removed - Now in Summary Card */}
             <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Horário Registrado:</span>
                 <span className="font-medium text-gray-900">{formatTime(timeIso)}</span>
@@ -121,45 +115,79 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
             </div>
 
             {/* Summary Card */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <div className="col-span-2 sm:col-span-1 bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center">
+            {/* Summary Card Grid 2x2 */}
+            <div className="grid grid-cols-2 gap-3">
+                {/* 1. Saldo */}
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center h-24">
                     <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Saldo</span>
-                    <span className={`text-lg font-bold ${record.saldo_minutos !== undefined ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-400"}`}>
+                    <span className={`text-xl font-bold ${record.saldo_minutos !== undefined ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-400"}`}>
                          {record.saldo_minutos !== undefined ? (record.saldo_minutos > 0 ? "+" : "") + record.saldo_minutos : "--"} min
                     </span>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center">
+
+                {/* 2. Trabalhadas */}
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center h-24">
                     <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Trabalhadas</span>
                     <span className="text-lg font-bold text-gray-700">
-                        {calculateTotalTime(record.entrada_hora, record.saida_hora) || "--"}
+                        {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
                     </span>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center">
+
+                {/* 3. Quilometragem */}
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center h-24 relative overflow-hidden">
+                    <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-0.5 z-10">Quilometragem</span>
+                    <span className="text-xl font-bold text-blue-600 z-10">
+                        {record.detalhes_calculo?.resumo?.diff_km !== undefined 
+                            ? `${record.detalhes_calculo.resumo.diff_km > 0 ? "+" : ""}${record.detalhes_calculo.resumo.diff_km} km` 
+                            : "--"}
+                    </span>
+                    
+                    {/* Detailed KM Info */}
+                    <div className="flex w-full justify-center gap-3 mt-1 text-[9px] text-gray-500 font-medium z-10 px-1">
+                        <div className="flex flex-col leading-tight">
+                            <span className="text-gray-400 uppercase tracking-tighter text-[8px]">Entrada</span>
+                            <span>{record.entrada_km || '-'}</span>
+                        </div>
+                         <div className="w-px bg-gray-200 h-full mx-1"></div>
+                        <div className="flex flex-col leading-tight">
+                            <span className="text-gray-400 uppercase tracking-tighter text-[8px]">Saída</span>
+                            <span>{record.saida_km || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 4. Turno */}
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center h-24">
                     <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Turno</span>
-                    <span className="text-md sm:text-lg font-bold text-gray-700">
-                         {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--"} 
-                         {" - "}
-                         {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--"}
+                    <span className="text-md font-bold text-gray-700">
+                         {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--"} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--"}
                     </span>
                 </div>
             </div>
 
-            {/* Entry Section */}
-            <div>
-                <div className="flex items-center gap-2 mb-3">
-                    <Clock className="w-4 h-4" />
-                    <h4 className="font-bold text-gray-800">Entrada</h4>
+            {/* Entry/Exit Sections - Side-by-Side on Desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                {/* Entry Section */}
+                <div>
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="p-1.5 bg-blue-50 rounded-lg">
+                            <Clock className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <h4 className="font-bold text-gray-800">Entrada</h4>
+                    </div>
+                    {renderCalculationDetails('entrada')}
                 </div>
-                {renderCalculationDetails('entrada')}
-            </div>
 
-            {/* Exit Section */}
-             <div>
-                <div className="flex items-center gap-2 mb-3">
-                    <Clock className="w-4 h-4" />
-                    <h4 className="font-bold text-gray-800">Saída</h4>
+                {/* Exit Section */}
+                <div>
+                    <div className="flex items-center gap-2 mb-3">
+                         <div className="p-1.5 bg-orange-50 rounded-lg">
+                            <Clock className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <h4 className="font-bold text-gray-800">Saída</h4>
+                    </div>
+                    {renderCalculationDetails('saida')}
                 </div>
-                {renderCalculationDetails('saida')}
             </div>
 
             {/* Removed Saldo Section */ }

@@ -55,8 +55,8 @@ export default function Login() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      cpfcnpj: "",
-      senha: "",
+      cpfcnpj: "395.423.918-38",
+      senha: "Ogaiht+1",
     },
   });
 

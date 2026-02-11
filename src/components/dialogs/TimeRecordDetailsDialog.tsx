@@ -1,21 +1,31 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useFinalizarPausa, useIniciarPausa } from "@/hooks/api/usePontoMutations";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { RegistroPonto } from "@/types/database";
 import { getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarClock, Clock, Edit2, X } from "lucide-react";
+import { CalendarClock, Clock, Edit2, Loader2, Pause, Play, X } from "lucide-react";
+import { useState } from "react";
 
 interface TimeRecordDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   record: RegistroPonto | null;
   onEdit: (record: RegistroPonto) => void;
-  // onDelete removed as user requested Close interaction only
+  onDelete?: any; 
 }
 
-export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omit<TimeRecordDetailsDialogProps, 'onDelete'> & { onDelete?: any }) {
+export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: TimeRecordDetailsDialogProps) {
+  const { mutateAsync: iniciarPausa, isPending: isStarting } = useIniciarPausa();
+  const { mutateAsync: finalizarPausa, isPending: isEnding } = useFinalizarPausa();
+
+  const [pauseInputs, setPauseInputs] = useState({ km: "", loc: "" });
+  const [showPauseForm, setShowPauseForm] = useState(false);
+
   if (!record) return null;
 
   const formatDate = (dateStr: string) => {
@@ -34,8 +44,41 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
   const handleEdit = () => {
       safeCloseDialog(() => onEdit(record));
   };
+  
+  // Pause Logic
+  const pausas = (record as any).pausas || [];
+  const openPause = pausas.find((p: any) => !p.fim_hora);
+  const isShiftOpen = !!record.entrada_hora && !record.saida_hora;
 
-
+  const handlePauseAction = async () => {
+      try {
+          if (openPause) {
+              // Finish Pause
+              await finalizarPausa({ 
+                  pausaId: openPause.id, 
+                  data: { 
+                      fim_hora: new Date().toISOString(),
+                      fim_km: pauseInputs.km ? Number(pauseInputs.km) : null,
+                      fim_loc: pauseInputs.loc
+                  } 
+              });
+          } else {
+              // Start Pause
+              await iniciarPausa({ 
+                  pontoId: record.id, 
+                  data: { 
+                      inicio_hora: new Date().toISOString(),
+                      inicio_km: pauseInputs.km ? Number(pauseInputs.km) : null,
+                      inicio_loc: pauseInputs.loc
+                  } 
+              });
+          }
+          setPauseInputs({ km: "", loc: "" });
+          setShowPauseForm(false);
+      } catch (e) {
+          console.error(e);
+      }
+  };
 
   const renderCalculationDetails = (type: 'entrada' | 'saida') => {
       const details = record.detalhes_calculo?.[type];
@@ -47,15 +90,9 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
       );
 
       const diff = details.diff_minutos;
-      const isLateOrExtra = diff > 0;
-      const sign = isLateOrExtra ? "+" : "";
-
-      const kmValue = type === 'entrada' ? record.entrada_km : record.saida_km;
-      const kmDisplay = kmValue ? `${kmValue.toLocaleString('pt-BR')} km` : "Não se aplica";
-
+      
       return (
         <div className="bg-gray-50 rounded-lg p-3 space-y-2 border border-gray-100">
-             {/* KM Display Removed - Now in Summary Card */}
             <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Horário Registrado:</span>
                 <span className="font-medium text-gray-900">{formatTime(timeIso)}</span>
@@ -68,7 +105,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
             <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Diferença:</span>
                 <span className={`font-bold ${diff > 0 ? "text-red-600" : "text-green-600"}`}>
-                    {sign}{diff} min
+                    {diff > 0 ? "+" : ""}{diff} min
                 </span>
             </div>
              <div className="mt-2 text-center">
@@ -80,6 +117,8 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
       );
   };
 
+  const isActionPending = isStarting || isEnding;
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent
@@ -87,7 +126,6 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
         className="w-full max-w-lg p-0 gap-0 bg-white h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
-        {/* Header - Style matched to van-control/EscolaFormDialog */}
         <div className="bg-blue-600 p-6 text-center relative shrink-0">
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors" onClick={handleClose}>
             <X className="h-6 w-6" />
@@ -100,74 +138,127 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
           <DialogTitle className="text-xl font-bold text-white">
             Detalhes do Ponto
           </DialogTitle>
-          <DialogDescription className="text-blue-100/90 text-sm mt-1">
-            {formatDate(record.data_referencia)}
-          </DialogDescription>
         </div>
 
-        {/* Scrollable Body */}
         <div className="p-6 bg-white flex-1 overflow-y-auto space-y-6">
             
-            {/* Colaborador Info */}
             <div className="text-center pb-4 border-b border-gray-100">
                 <h3 className="text-lg font-bold text-gray-900">{record.usuario?.nome_completo}</h3>
                 <p className="text-sm text-gray-500">{record.usuario?.cliente?.nome_fantasia}</p>
             </div>
 
-            {/* Summary Card */}
-            {/* Summary Card Grid 2x2 */}
             <div className="grid grid-cols-2 gap-3">
-                {/* 1. Saldo */}
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center h-24">
                     <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Saldo</span>
                     <span className={`text-xl font-bold ${record.saldo_minutos !== undefined ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-400"}`}>
                          {record.saldo_minutos !== undefined ? (record.saldo_minutos > 0 ? "+" : "") + record.saldo_minutos : "--"} min
                     </span>
                 </div>
-
-                {/* 2. Trabalhadas */}
                 <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center h-24">
                     <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Trabalhadas</span>
                     <span className="text-lg font-bold text-gray-700">
                         {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
                     </span>
                 </div>
-
-                {/* 3. Quilometragem */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center h-24 relative overflow-hidden">
-                    <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-0.5 z-10">Quilometragem</span>
-                    <span className="text-xl font-bold text-blue-600 z-10">
-                        {record.detalhes_calculo?.resumo?.diff_km !== undefined 
-                            ? `${record.detalhes_calculo.resumo.diff_km > 0 ? "+" : ""}${record.detalhes_calculo.resumo.diff_km} km` 
-                            : "--"}
-                    </span>
-                    
-                    {/* Detailed KM Info */}
-                    <div className="flex w-full justify-center gap-3 mt-1 text-[9px] text-gray-500 font-medium z-10 px-1">
-                        <div className="flex flex-col leading-tight">
-                            <span className="text-gray-400 uppercase tracking-tighter text-[8px]">Entrada</span>
-                            <span>{record.entrada_km || '-'}</span>
-                        </div>
-                         <div className="w-px bg-gray-200 h-full mx-1"></div>
-                        <div className="flex flex-col leading-tight">
-                            <span className="text-gray-400 uppercase tracking-tighter text-[8px]">Saída</span>
-                            <span>{record.saida_km || '-'}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 4. Turno */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-center h-24">
-                    <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1">Turno</span>
-                    <span className="text-md font-bold text-gray-700">
-                         {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--"} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--"}
-                    </span>
-                </div>
             </div>
 
-            {/* Entry/Exit Sections - Side-by-Side on Desktop */}
+            {/* Pauses Section */}
+            {isShiftOpen && (
+                <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                    <div className="flex items-center justify-between mb-3">
+                         <h4 className="font-bold text-orange-900 flex items-center gap-2">
+                             <Pause className="w-4 h-4" /> Pausas
+                         </h4>
+                         {!showPauseForm && (
+                             <Button 
+                                size="sm" 
+                                variant={openPause ? "default" : "outline"}
+                                className={openPause ? "bg-green-600 hover:bg-green-700 text-white" : "border-orange-200 text-orange-700 hover:bg-orange-100"}
+                                onClick={() => setShowPauseForm(true)}
+                             >
+                                 {openPause ? <><Play className="w-3 h-3 mr-1"/> Retornar</> : <><Pause className="w-3 h-3 mr-1"/> Pausar</>}
+                             </Button>
+                         )}
+                    </div>
+
+                    {showPauseForm && (
+                        <div className="bg-white p-3 rounded-lg border border-orange-100 shadow-sm animate-in fade-in zoom-in-95 duration-200">
+                            <h5 className="text-xs font-bold text-gray-500 uppercase mb-2">
+                                {openPause ? "Finalizar Pausa" : "Iniciar Pausa"}
+                            </h5>
+                            <div className="grid grid-cols-2 gap-2 mb-3">
+                                <div className="space-y-1">
+                                    <Label className="text-[10px]">KM Local</Label>
+                                    <Input 
+                                        className="h-8 text-xs" 
+                                        type="number" 
+                                        placeholder="0"
+                                        value={pauseInputs.km}
+                                        onChange={e => setPauseInputs({...pauseInputs, km: e.target.value})}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-[10px]">Localização</Label>
+                                    <Input 
+                                        className="h-8 text-xs" 
+                                        placeholder="Rua..."
+                                        value={pauseInputs.loc}
+                                        onChange={e => setPauseInputs({...pauseInputs, loc: e.target.value})}
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="flex-1 h-8 text-xs"
+                                    onClick={() => setShowPauseForm(false)}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button 
+                                    size="sm" 
+                                    className={`flex-1 h-8 text-xs text-white ${openPause ? "bg-green-600 hover:bg-green-700" : "bg-orange-500 hover:bg-orange-600"}`}
+                                    onClick={handlePauseAction}
+                                    disabled={isActionPending}
+                                >
+                                    {isActionPending ? <Loader2 className="w-3 h-3 animate-spin"/> : "Confirmar"}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {pausas.length > 0 ? (
+                        <div className="space-y-2 mt-3">
+                            {pausas.map((p: any, idx: number) => {
+                                const start = new Date(p.inicio_hora);
+                                const end = p.fim_hora ? new Date(p.fim_hora) : null;
+                                const duration = end ? Math.round((end.getTime() - start.getTime()) / 60000) : null;
+
+                                return (
+                                    <div key={p.id} className="text-xs bg-white/60 p-2 rounded border border-orange-100 flex justify-between items-center">
+                                        <div className="flex flex-col">
+                                            <span className="font-semibold text-orange-900">Pausa #{idx + 1}</span>
+                                            <span className="text-gray-500">
+                                                {format(start, "HH:mm")} - {end ? format(end, "HH:mm") : "Em andamento..."}
+                                            </span>
+                                        </div>
+                                        {duration !== null && (
+                                            <span className="font-mono font-bold text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded">
+                                                {duration} min
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className="text-xs text-center text-orange-400 italic mt-2">Nenhuma pausa registrada.</p>
+                    )}
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                {/* Entry Section */}
                 <div>
                     <div className="flex items-center gap-2 mb-3">
                         <div className="p-1.5 bg-blue-50 rounded-lg">
@@ -178,7 +269,6 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
                     {renderCalculationDetails('entrada')}
                 </div>
 
-                {/* Exit Section */}
                 <div>
                     <div className="flex items-center gap-2 mb-3">
                          <div className="p-1.5 bg-orange-50 rounded-lg">
@@ -190,9 +280,6 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
                 </div>
             </div>
 
-            {/* Removed Saldo Section */ }
-            
-            {/* Observation if any */}
             {record.observacao && (
                 <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-sm text-yellow-800">
                     <span className="font-bold block mb-1">Observação:</span>
@@ -201,7 +288,6 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Omi
             )}
         </div>
 
-        {/* Fixed Footer */}
         <div className="p-4 border-t bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             variant="outline"

@@ -23,7 +23,7 @@ import {
   SheetTrigger
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/hooks/ui/useDebounce";
 import { cn } from "@/lib/utils";
 import { Plus, Search, X } from "lucide-react";
 import * as React from "react";

@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogTitle
 } from "@/components/ui/dialog";
 import {
@@ -19,7 +18,7 @@ import { messages } from "@/constants/messages";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
-import { cpfSchema, emailSchema } from "@/schemas/common";
+import { UserProfileFormData, userProfileSchema } from "@/schemas/userSchema";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
@@ -27,20 +26,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Mail, User, X } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 interface EditarCadastroDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const schema = z.object({
-  nome_completo: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  cpf: cpfSchema,
-  email: emailSchema,
-});
-
-type FormData = z.infer<typeof schema>;
 
 export default function EditarCadastroDialog({
   isOpen,
@@ -49,8 +40,8 @@ export default function EditarCadastroDialog({
   const { user } = useSession();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+  const form = useForm<UserProfileFormData>({
+    resolver: zodResolver(userProfileSchema),
     defaultValues: {
       nome_completo: "",
       cpf: "",
@@ -69,7 +60,7 @@ export default function EditarCadastroDialog({
     }
   }, [profile, form]);
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (data: UserProfileFormData) => {
     try {
       const nome_completo = cleanString(data.nome_completo, true);
 
@@ -114,9 +105,6 @@ export default function EditarCadastroDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Editar Perfil
           </DialogTitle>
-          <DialogDescription className="text-blue-100/80 text-sm mt-1">
-             Atualize suas informações de perfil.
-          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
@@ -135,7 +123,7 @@ export default function EditarCadastroDialog({
                 name="nome_completo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">Nome completo</FormLabel>
+                    <FormLabel>Nome completo <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
@@ -156,7 +144,7 @@ export default function EditarCadastroDialog({
                 name="cpf"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">CPF</FormLabel>
+                    <FormLabel>CPF</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -174,7 +162,7 @@ export default function EditarCadastroDialog({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">E-mail</FormLabel>
+                    <FormLabel>E-mail</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />

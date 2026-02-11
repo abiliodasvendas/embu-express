@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/hooks/ui/useDebounce";
 import { cn } from "@/lib/utils";
 import { getPerfilLabel } from "@/utils/formatters";
 import { Plus, Search, X } from "lucide-react";
@@ -128,6 +128,7 @@ const FilterControls = ({
         <SelectContent className="z-[10001] rounded-xl border-gray-100">
           <SelectItem value="todos">Todos os Status</SelectItem>
           <SelectItem value="ativo">Ativos</SelectItem>
+          <SelectItem value="pendente">Pendentes</SelectItem>
           <SelectItem value="inativo">Inativos</SelectItem>
         </SelectContent>
       </Select>

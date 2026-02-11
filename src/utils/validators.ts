@@ -73,6 +73,39 @@ export function isValidPhoneFormat(phone: string | undefined | null): boolean {
 }
 
 /**
+ * Valida se uma data está no formato DD/MM/YYYY e é uma data válida.
+ * Opcionalmente valida se não é uma data futura.
+ */
+export function isValidDateBr(dateString: string | undefined | null, allowFuture: boolean = false): boolean {
+  if (!dateString) return false;
+  
+  const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+  if (!regex.test(dateString)) return false;
+
+  const [day, month, year] = dateString.split('/').map(Number);
+  
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  if (year < 1900) return false;
+
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      return false;
+  }
+
+  if (!allowFuture) {
+    // Future check: date cannot be in the future (today is valid)
+    // Normalize to start of day for accurate comparison vs today
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    if (date > today) return false;
+  }
+
+  return true;
+}
+
+/**
  * Schema Zod para validação de CEP (formato opcional ou obrigatório)
  * @param required - Se true, o campo é obrigatório. Se false, é opcional mas valida formato se preenchido
  */

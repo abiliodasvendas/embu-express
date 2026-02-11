@@ -13,7 +13,12 @@ export async function fetchProfile(uid: string): Promise<ProfileWithRole | null>
     .select(
       `
       *,
-      perfil:perfis (*)
+      perfil:perfis (*),
+      links:colaborador_clientes(
+        *,
+        cliente:clientes(nome_fantasia),
+        empresa:empresas(nome_fantasia)
+      )
     `
     )
     .eq("id", uid)

@@ -32,11 +32,11 @@ export interface Client {
 export interface Empresa {
   id: number;
   nome_fantasia: string;
-  razao_social: string | null;
-  cnpj: string | null;
+  razao_social: string;
+  cnpj: string;
   ativo: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  codigo?: string; // Sigla (EE, ES, etc)
 }
 
 export interface Usuario {
@@ -46,16 +46,48 @@ export interface Usuario {
   nome_completo: string;
   cpf: string;
   email: string;
-  primeiro_acesso: boolean;
-  ativo: boolean;
+  senha_padrao: boolean;
+  status: 'PENDENTE' | 'ATIVO' | 'INATIVO';
+  // ativo: boolean; // Deprecated
   created_at?: string;
   updated_at?: string;
+  
+  // Dados Pessoais Estendidos
+  data_nascimento?: string;
+  rg?: string;
+  nome_mae?: string;
+  endereco_completo?: string;
+  telefone?: string;
+  telefone_recado?: string;
+  data_inicio?: string;
+
+  // Dados Profissionais (Moto)
+  cnh_registro?: string;
+  cnh_vencimento?: string;
+  cnh_categoria?: string;
+  cnpj?: string;
+  chave_pix?: string;
+  moto_modelo?: string;
+  moto_cor?: string;
+  moto_ano?: string;
+  moto_placa?: string;
+
+  // Financeiro
+  nome_operacao?: string;
+  empresa_financeiro_id?: number | null;
+  valor_contrato?: number;
+  valor_aluguel?: number;
+  valor_ajuda_custo?: number;
+  valor_bonus?: number; // Zero Falta
+  valor_mei?: number;
+
   // Relacionamentos (virtual)
   perfil?: Perfil;
   cliente?: Client; // Keeping Client as per original, assuming Cliente in snippet was a typo or future change
   empresa_id?: number | null; // Added Link
   empresa?: Empresa; // Aded Link
   turnos?: UsuarioTurno[];
+  links?: ColaboradorCliente[];
 }
 
 export interface UsuarioTurno {
@@ -64,6 +96,23 @@ export interface UsuarioTurno {
   hora_inicio: string; // TIME
   hora_fim: string; // TIME
   created_at?: string;
+}
+
+export interface ColaboradorCliente {
+    id: number;
+    colaborador_id: string;
+    cliente_id: number;
+    empresa_id: number;
+    hora_inicio: string;
+    hora_fim: string;
+    valor_contrato?: number;
+    valor_aluguel?: number;
+    valor_bonus?: number;
+    ajuda_custo?: number;
+    mei?: boolean;
+    // Virtual
+    cliente?: Client;
+    empresa?: Empresa;
 }
 
 export interface RegistroPonto {

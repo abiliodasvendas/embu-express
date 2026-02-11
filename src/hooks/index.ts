@@ -3,8 +3,9 @@ export { usePermissions } from "./business/usePermissions";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
 
-// UI hooks
-export { useIsMobile } from "./ui/use-mobile";
+// UI Hooks
+export * from "./ui/useAnimatedNumber";
+export * from "./ui/useDebounce";
 export { safeCloseDialog, useDialogClose } from "./ui/useDialogClose";
 export { useFilters } from "./ui/useFilters";
 export { useLoadingState } from "./ui/useLoadingState";
@@ -12,12 +13,15 @@ export { useLoadingState } from "./ui/useLoadingState";
 // Embu Express Hooks
 export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClient } from "./api/useClientMutations";
 export { useClients } from "./api/useClients";
-export { useCreateCollaborator, useDeleteCollaborator, useToggleCollaboratorStatus, useUpdateCollaborator } from "./api/useCollaboratorMutations";
-export { useActiveCollaborators, useCollaborators, useRoles } from "./api/useCollaborators";
+export {
+    useCreateCollaborator, useCreateVinculo, useDeleteCollaborator, useDeleteVinculo, useUpdateCollaborator,
+    useUpdateCollaboratorStatus, useUpdateVinculo
+} from "./api/useCollaboratorMutations";
+export { useActiveCollaborators, useCollaborator, useCollaborators, useRoles } from "./api/useCollaborators";
 export { useCreateEmpresa, useDeleteEmpresa, useToggleEmpresaStatus, useUpdateEmpresa } from "./api/useEmpresaMutations";
 export { useEmpresa, useEmpresas } from "./api/useEmpresas";
 export { useCreatePonto, useDeletePonto, useUpdatePonto } from "./api/usePontoMutations";
 export { useClientActions } from "./business/useClientActions";
 export { useCollaboratorActions } from "./business/useCollaboratorActions";
-export { useDebounce } from "./useDebounce";
+
 

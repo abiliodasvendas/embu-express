@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogTitle
 } from "@/components/ui/dialog";
 import {
@@ -18,25 +17,19 @@ import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/services/api/client";
+import { sessionManager } from "@/services/sessionManager";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, KeyRound, Loader2, Lock, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 interface AlterarSenhaDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const schema = z.object({
-  senhaAtual: z.string().min(6, "A senha atual deve ter pelo menos 6 caracteres"),
-  novaSenha: z.string().min(6, "A nova senha deve ter pelo menos 6 caracteres"),
-});
-
-type FormData = z.infer<typeof schema>;
 
 export default function AlterarSenhaDialog({
   isOpen,
@@ -47,15 +40,15 @@ export default function AlterarSenhaDialog({
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+  const form = useForm<ChangePasswordFormData>({
+    resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       senhaAtual: "",
       novaSenha: "",
     },
   });
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (data: ChangePasswordFormData) => {
     if (!profile?.cpf || !profile?.email) {
       toast.error(messages.erro.operacao, {
         description: "Não foi possível identificar o usuário logado.",
@@ -71,25 +64,12 @@ export default function AlterarSenhaDialog({
     }
 
     try {
-      const email = profile.email;
-
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: data.senhaAtual,
+      // Send logic to backend
+      // Backend validates old password and updates new one
+      await api.put("/auth/update-password", {
+          password: data.novaSenha,
+          oldPassword: data.senhaAtual
       });
-
-      if (signInError) {
-        toast.error(messages.auth.erro.senhaIncorreta, {
-          description: "A senha atual informada está incorreta.",
-        });
-        return;
-      }
-
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: data.novaSenha,
-      });
-
-      if (updateError) throw updateError;
 
       toast.success(messages.auth.sucesso.senhaAlterada, {
         description: "Você será desconectado para acessar com a nova senha.",
@@ -97,11 +77,13 @@ export default function AlterarSenhaDialog({
 
       await new Promise((res) => setTimeout(res, 1500));
 
-      await supabase.auth.signOut();
+      await sessionManager.signOut();
       window.location.href = "/login";
     } catch (err: any) {
-      toast.error(messages.erro.operacao, {
-        description: err.message || "Ocorreu um erro ao tentar alterar a senha.",
+      console.error(err);
+      const msg = err.response?.data?.error || messages.erro.operacao;
+      toast.error("Erro ao alterar senha", {
+        description: msg === "Senha atual incorreta." ? messages.auth.erro.senhaIncorreta : msg,
       });
     }
   };
@@ -125,9 +107,6 @@ export default function AlterarSenhaDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Alterar Senha
           </DialogTitle>
-          <DialogDescription className="text-blue-100/80 text-sm mt-1">
-            Preencha os campos abaixo para alterar sua senha.
-          </DialogDescription>
         </div>
 
         <Form {...form}>
@@ -140,7 +119,7 @@ export default function AlterarSenhaDialog({
               name="senhaAtual"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">Senha atual</FormLabel>
+                  <FormLabel>Senha atual <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
@@ -173,7 +152,7 @@ export default function AlterarSenhaDialog({
               name="novaSenha"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">Nova senha</FormLabel>
+                  <FormLabel>Nova senha <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
                     <div className="relative">
                       <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />

@@ -7,8 +7,16 @@ interface AppSidebarProps {
 }
 
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+
 export function AppSidebar({ onLinkClick }: AppSidebarProps) {
-  const userItems = pagesItems;
+  const { roleName } = usePermissions();
+  // Default to motoboy if undefined, or handle safely
+  const currentRole = (roleName || "motoboy") as any;
+
+  const userItems = pagesItems.filter(item => 
+    item.allowedRoles.includes(currentRole)
+  );
 
   return (
     <div className="flex h-full flex-col gap-6">

@@ -1,95 +1,56 @@
 import { CepInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
 import { useCreateClient, useUpdateClient } from "@/hooks";
-import { cepSchema, cnpjSchema } from "@/schemas/common";
 import { Client } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { cepMask, cnpjMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, FileText, Hash, Loader2, MapPin, Wand2, X, Zap } from "lucide-react";
+import {
+  Building2,
+  FileText,
+  Hash,
+  Loader2,
+  MapPin,
+  Wand2,
+  X,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
-const clientSchema = z
-  .object({
-    nome_fantasia: z.string().min(1, "Nome Fantasia é obrigatório"),
-    razao_social: z.string().min(1, "Razão Social é obrigatória"),
-    cnpj: cnpjSchema,
-    cep: cepSchema.or(z.literal("")).refine((val) => !!val, "CEP é obrigatório"),
-    logradouro: z.string().min(1, "Logradouro é obrigatório"),
-    numero: z.string().min(1, "Número é obrigatório"),
-    complemento: z.string().optional(),
-    bairro: z.string().min(1, "Bairro é obrigatório"),
-    cidade: z.string().min(1, "Cidade é obrigatória"),
-    estado: z.string().min(2, "Estado é obrigatório"),
-    ativo: z.boolean().default(true),
-  })
-  .superRefine((data, ctx) => {
-    const validation = validateEnderecoFields(
-      data.cep || "",
-      data.logradouro,
-      data.numero
-    );
-
-    if (validation.errors.cep) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.cep,
-        path: ["cep"],
-      });
-    }
-    if (validation.errors.logradouro) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.logradouro,
-        path: ["logradouro"],
-      });
-    }
-    if (validation.errors.numero) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: validation.errors.numero,
-        path: ["numero"],
-      });
-    }
-  });
-
-type ClientFormData = z.infer<typeof clientSchema>;
+import { ClientFormData, clientSchema } from "@/schemas/clientSchema";
 
 interface ClientFormDialogProps {
   isOpen: boolean;
@@ -108,9 +69,12 @@ export function ClientFormDialog({
   profile, // Add this if missing
   allowBatchCreation = false, // Add this if missing
 }: ClientFormDialogProps) {
-  const [openAccordionItems, setOpenAccordionItems] = useState(["dados-cliente", "endereco"]);
+  const [openAccordionItems, setOpenAccordionItems] = useState([
+    "dados-cliente",
+    "endereco",
+  ]);
   const [isCepLoading, setIsCepLoading] = useState(false);
-  
+
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
 
@@ -130,12 +94,6 @@ export function ClientFormDialog({
       ativo: true,
     },
   });
-
-  const cep = form.watch("cep");
-  const logradouro = form.watch("logradouro");
-  const numero = form.watch("numero");
-
-
 
   useEffect(() => {
     if (isOpen) {
@@ -181,7 +139,7 @@ export function ClientFormDialog({
     const mockData = mockGenerator.client();
     form.reset(mockData);
     setOpenAccordionItems(["dados-cliente", "endereco"]);
-    toast.success("Campos preenchidos com dados de teste!");
+    toast.success(messages.mock.sucesso.preenchido);
   };
 
   const handleQuickCreate = async () => {
@@ -192,10 +150,10 @@ export function ClientFormDialog({
         ativo: true,
       };
       await createClient.mutateAsync(clientData as any);
-      toast.success("Cliente criado rapidamente!");
+      toast.success(messages.cliente.sucesso.criado);
       safeCloseDialog(() => onClose());
     } catch (error: any) {
-      toast.error("Erro no Quick Create", { description: error.message });
+      toast.error(messages.cliente.erro.criar, { description: error.message });
     }
   };
 
@@ -230,7 +188,7 @@ export function ClientFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
-      <DialogContent 
+      <DialogContent
         className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
@@ -272,19 +230,17 @@ export function ClientFormDialog({
           <DialogTitle className="text-xl font-bold text-white">
             {editingClient ? "Editar Cliente" : "Novo Cliente"}
           </DialogTitle>
-          <DialogDescription className="text-white/80 text-sm mt-1">
-            {editingClient
-              ? "Ajuste as informações do cliente selecionado."
-              : "Preencha os dados para cadastrar um novo cliente."}
-          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-4">
-              <Accordion 
-                type="multiple" 
-                value={openAccordionItems} 
+            <form
+              onSubmit={form.handleSubmit(onSubmit, onFormError)}
+              className="space-y-4"
+            >
+              <Accordion
+                type="multiple"
+                value={openAccordionItems}
                 onValueChange={setOpenAccordionItems}
                 className="w-full"
               >
@@ -301,11 +257,18 @@ export function ClientFormDialog({
                       name="nome_fantasia"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome Fantasia <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>
+                            Nome Fantasia{" "}
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Building2 className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                              <Input placeholder="Ex: Logística ABC" className="pl-12 h-11 rounded-xl bg-gray-50" {...field} />
+                              <Input
+                                placeholder="Ex: Logística ABC"
+                                className="pl-12 h-11 rounded-xl bg-gray-50"
+                                {...field}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -319,11 +282,18 @@ export function ClientFormDialog({
                         name="razao_social"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Razão Social <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel>
+                              Razão Social{" "}
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <FileText className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                                <Input placeholder="Ex: ABC Transportes LTDA" className="pl-12 h-11 rounded-xl bg-gray-50" {...field} />
+                                <Input
+                                  placeholder="Ex: ABC Transportes LTDA"
+                                  className="pl-12 h-11 rounded-xl bg-gray-50"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -336,7 +306,9 @@ export function ClientFormDialog({
                         name="cnpj"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>CNPJ <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel>
+                              CNPJ <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Hash className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
@@ -363,15 +335,17 @@ export function ClientFormDialog({
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">Status Ativo</FormLabel>
+                            <FormLabel className="text-base">
+                              Status Ativo
+                            </FormLabel>
                             <div className="text-sm text-muted-foreground">
                               Define se o cliente está habilitado.
                             </div>
                           </div>
                           <FormControl>
-                            <Switch 
-                              checked={field.value} 
-                              onCheckedChange={field.onChange} 
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
                             />
                           </FormControl>
                         </FormItem>
@@ -407,7 +381,9 @@ export function ClientFormDialog({
                         name="logradouro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Logradouro <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel>
+                              Logradouro <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -425,7 +401,9 @@ export function ClientFormDialog({
                         name="numero"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Número <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel>
+                              Número <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -458,7 +436,9 @@ export function ClientFormDialog({
                         name="bairro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-3">
-                            <FormLabel>Bairro <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel>
+                              Bairro <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -475,7 +455,9 @@ export function ClientFormDialog({
                         name="cidade"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Cidade <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel>
+                              Cidade <span className="text-red-500">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -492,16 +474,54 @@ export function ClientFormDialog({
                         name="estado"
                         render={({ field }) => (
                           <FormItem className="md:col-span-1">
-                            <FormLabel>UF <span className="text-red-500">*</span></FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <FormLabel>
+                              UF <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
                               <FormControl>
-                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200" disabled={isCepLoading}>
+                                <SelectTrigger
+                                  className="h-11 rounded-xl bg-gray-50 border-gray-200"
+                                  disabled={isCepLoading}
+                                >
                                   <SelectValue placeholder="UF" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"].map((uf) => (
-                                  <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                                {[
+                                  "AC",
+                                  "AL",
+                                  "AP",
+                                  "AM",
+                                  "BA",
+                                  "CE",
+                                  "DF",
+                                  "ES",
+                                  "GO",
+                                  "MA",
+                                  "MT",
+                                  "MS",
+                                  "MG",
+                                  "PA",
+                                  "PB",
+                                  "PR",
+                                  "PE",
+                                  "PI",
+                                  "RJ",
+                                  "RN",
+                                  "RS",
+                                  "RO",
+                                  "RR",
+                                  "SC",
+                                  "SP",
+                                  "SE",
+                                  "TO",
+                                ].map((uf) => (
+                                  <SelectItem key={uf} value={uf}>
+                                    {uf}
+                                  </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>

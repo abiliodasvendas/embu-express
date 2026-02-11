@@ -1,12 +1,20 @@
 import { colaboradorApi } from "@/services/api/colaborador.api";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
-export function useCollaborators(filters?: { searchTerm?: string; ativo?: string; perfil_id?: string; cliente_id?: string; empresa_id?: string }) {
+export function useCollaborators(filters?: { searchTerm?: string; status?: string; perfil_id?: string; cliente_id?: string; empresa_id?: string }) {
   return useQuery({
     queryKey: ["collaborators", filters],
     queryFn: () => colaboradorApi.listColaboradores(filters),
-    placeholderData: keepPreviousData,
+    // placeholderData: keepPreviousData, // Removed to show skeleton on filter change
     refetchOnMount: true, // Ensure we fetch fresh data on navigation if invalidated
+  });
+}
+
+export function useCollaborator(id?: string) {
+  return useQuery({
+    queryKey: ["collaborator", id],
+    queryFn: () => colaboradorApi.getColaborador(id!),
+    enabled: !!id,
   });
 }
 

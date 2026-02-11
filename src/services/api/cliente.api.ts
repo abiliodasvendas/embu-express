@@ -16,8 +16,6 @@ export const clienteApi = {
   toggleStatus: (id: number, novoStatus: boolean) =>
     apiClient.patch(`/clientes/${id}/toggle-ativo`, { novoStatus }).then(res => res.data),
 
-
-
   deleteCliente: (id: number) =>
     apiClient.delete(`/clientes/${id}`).then(res => res.data),
 };

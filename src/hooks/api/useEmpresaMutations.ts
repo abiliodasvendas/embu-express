@@ -1,3 +1,4 @@
+import { messages } from "@/constants/messages";
 import { empresaApi } from "@/services/api/empresa.api";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,11 +14,11 @@ export function useCreateEmpresa() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["empresas"] });
       if (!variables.silent) {
-        toast.success("Empresa criada com sucesso!");
+        toast.success(messages.empresa.sucesso.criada);
       }
     },
     onError: (error: any) => {
-      toast.error("Erro ao criar empresa", {
+      toast.error(messages.empresa.erro.criar, {
         description: error.userMessage || error.message,
       });
     },
@@ -32,10 +33,10 @@ export function useUpdateEmpresa() {
       queryClient.invalidateQueries({ queryKey: ["empresas"] });
       // Invalidate collaborators in case we show company info there
       queryClient.invalidateQueries({ queryKey: ["collaborators"] }); 
-      toast.success("Empresa atualizada com sucesso!");
+      toast.success(messages.empresa.sucesso.atualizada);
     },
     onError: (error: any) => {
-      toast.error("Erro ao atualizar empresa", {
+      toast.error(messages.empresa.erro.atualizar, {
         description: error.userMessage || error.message,
       });
     },
@@ -49,10 +50,10 @@ export function useToggleEmpresaStatus() {
         empresaApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["empresas"] });
-      toast.success("Status atualizado com sucesso!");
+      toast.success(messages.empresa.sucesso.status);
     },
     onError: (error: any) => {
-      toast.error("Erro ao alterar status", {
+      toast.error(messages.empresa.erro.status, {
         description: error.userMessage || error.message,
       });
     },
@@ -67,10 +68,10 @@ export function useDeleteEmpresa() {
       queryClient.invalidateQueries({ queryKey: ["empresas"] });
       // Invalidate collaborators as they might be unlinked
       queryClient.invalidateQueries({ queryKey: ["collaborators"] });
-      toast.success("Empresa excluída com sucesso!");
+      toast.success(messages.empresa.sucesso.excluida);
     },
     onError: (error: any) => {
-      toast.error("Erro ao excluir empresa", {
+      toast.error(messages.empresa.erro.excluir, {
         description: error.userMessage || error.message,
       });
     },

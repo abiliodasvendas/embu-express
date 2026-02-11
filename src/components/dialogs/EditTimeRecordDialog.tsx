@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUpdatePonto } from "@/hooks/api/usePontoMutations";
@@ -9,11 +9,10 @@ import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Clock, Edit2, Loader2, Save, X } from "lucide-react";
+import { Edit2, Loader2, Save, X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
 interface EditTimeRecordDialogProps {
   isOpen: boolean;
@@ -21,18 +20,12 @@ interface EditTimeRecordDialogProps {
   record: RegistroPonto | null;
 }
 
-const editRecordSchema = z.object({
-  entrada_hora: z.string().min(1, "Horário de entrada obrigatório"),
-  saida_hora: z.string().optional(),
-});
-
-type EditRecordForm = z.infer<typeof editRecordSchema>;
 
 export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecordDialogProps) {
   const updatePonto = useUpdatePonto();
   
-  const form = useForm<EditRecordForm>({
-    resolver: zodResolver(editRecordSchema),
+  const form = useForm<EditTimeRecordFormValues>({
+    resolver: zodResolver(editTimeRecordSchema),
     defaultValues: {
       entrada_hora: "",
       saida_hora: "",
@@ -52,7 +45,7 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
     safeCloseDialog(onClose);
   };
 
-  const onSubmit = (values: EditRecordForm) => {
+  const onSubmit = (values: EditTimeRecordFormValues) => {
     if (!record) return;
 
     // Use o utilitário compartilhado para consistência de regras
@@ -111,9 +104,6 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
           <DialogTitle className="text-xl font-bold text-white">
             Editar Registro
           </DialogTitle>
-          <DialogDescription className="text-blue-100/90 text-sm mt-1">
-             {record.data_referencia ? formatDate(record.data_referencia) : "Ajuste os horários"}
-          </DialogDescription>
         </div>
 
         {/* Scrollable Body - Form */}
@@ -127,13 +117,13 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
 
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="entrada" className="flex items-center gap-1.5 text-gray-700">
-                         <Clock className="w-4 h-4 text-blue-600" /> Entrada
+                     <Label htmlFor="entrada" className="text-gray-700">
+                         Entrada <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="entrada"
                       type="time"
-                      className="h-12 text-lg font-semibold text-center bg-gray-50 border-gray-200 rounded-xl focus:ring-blue-500/20 focus:border-blue-500"
+                      className="h-10 bg-white"
                       {...form.register("entrada_hora")}
                     />
                     {form.formState.errors.entrada_hora && (
@@ -142,13 +132,13 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
                   </div>
 
                   <div className="space-y-2">
-                     <Label htmlFor="saida" className="flex items-center gap-1.5 text-gray-700">
-                         <Clock className="w-4 h-4 text-orange-600" /> Saída
+                     <Label htmlFor="saida" className="text-gray-700">
+                         Saída
                     </Label>
                     <Input
                       id="saida"
                       type="time"
-                      className="h-12 text-lg font-semibold text-center bg-gray-50 border-gray-200 rounded-xl focus:ring-blue-500/20 focus:border-blue-500"
+                      className="h-10 bg-white"
                       {...form.register("saida_hora")}
                     />
                   </div>

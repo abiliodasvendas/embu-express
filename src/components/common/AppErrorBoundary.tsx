@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { messages } from "@/constants/messages";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Component, ErrorInfo, ReactNode } from "react";
 
@@ -35,11 +36,11 @@ export class AppErrorBoundary extends Component<Props, State> {
             </div>
             
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Ops! Algo deu errado
+              {messages.erroBoundary.titulo}
             </h1>
             
             <p className="text-gray-500 mb-6">
-              Desculpe, encontramos um erro inesperado. Tente recarregar a página para continuar.
+              {messages.erroBoundary.descricao}
             </p>
 
             <div className="bg-gray-50 p-3 rounded-lg text-left mb-6 overflow-hidden">
@@ -53,7 +54,7 @@ export class AppErrorBoundary extends Component<Props, State> {
               onClick={() => window.location.reload()}
             >
               <RotateCcw className="w-4 h-4" />
-              Recarregar Aplicação
+              {messages.erroBoundary.botao}
             </Button>
           </div>
         </div>

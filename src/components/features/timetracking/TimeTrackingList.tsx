@@ -103,9 +103,9 @@ const TimeRecordMobileItem = ({
             <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-50">
                <div className="flex flex-col gap-0.5">
                  <span className="text-sm font-bold text-gray-900">{record.usuario?.nome_completo}</span>
-                 {record.usuario?.cliente?.nome_fantasia && (
+                 {record.usuario?.links?.[0]?.cliente?.nome_fantasia && (
                     <span className="text-[10px] text-gray-400">
-                        {record.usuario.cliente.nome_fantasia}
+                        {record.usuario.links[0].cliente.nome_fantasia}
                     </span>
                  )}
                </div>
@@ -195,9 +195,9 @@ const TimeRecordTableRow = ({
       <td className="py-4 pl-6 align-middle relative">
          <div className="flex flex-col gap-0.5">
           <span className="text-sm font-bold text-gray-700">{record.usuario?.nome_completo}</span>
-          {record.usuario?.cliente?.nome_fantasia && (
+          {record.usuario?.links?.[0]?.cliente?.nome_fantasia && (
               <span className="text-[10px] text-gray-400">
-                  {record.usuario.cliente.nome_fantasia}
+                  {record.usuario.links[0].cliente.nome_fantasia}
               </span>
           )}
          </div>

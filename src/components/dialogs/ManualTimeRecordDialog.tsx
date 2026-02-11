@@ -2,7 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -17,16 +17,7 @@ import { AlertCircle, Check, ChevronsUpDown, Clock, Loader2, Plus } from "lucide
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
-const formSchema = z.object({
-  usuario_id: z.string().min(1, "Selecione um colaborador"),
-  data: z.string().min(1, "Selecione a data"),
-  entrada_hora: z.string().min(1, "Horário de entrada obrigatório"),
-  saida_hora: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 interface ManualTimeRecordDialogProps {
   isOpen: boolean;
@@ -40,8 +31,8 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
   // Fetch collaborators only when dialog is open
   const { data: collaborators = [] } = useActiveCollaborators({ enabled: isOpen });
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ManualTimeRecordFormValues>({
+    resolver: zodResolver(manualTimeRecordSchema),
     defaultValues: {
       usuario_id: "",
       data: format(new Date(), "yyyy-MM-dd"),
@@ -52,7 +43,8 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
 
   const selectedCollaboratorId = form.watch("usuario_id");
   const selectedCollaborator = collaborators.find(c => c.id.toString() === selectedCollaboratorId);
-  const hasTurnos = selectedCollaborator?.turnos && selectedCollaborator.turnos.length > 0;
+  // Check links for shifts
+  const hasTurnos = selectedCollaborator?.links && selectedCollaborator.links.length > 0;
 
   const handleClose = () => {
     safeCloseDialog(onClose);
@@ -70,7 +62,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
      }
   }, [isOpen, form]);
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: ManualTimeRecordFormValues) => {
     try {
       // 1. Resolver Datas (com auto-overnight)
       const { entrada, saida } = TimeRules.resolveDates(values.data, values.entrada_hora, values.saida_hora || undefined);
@@ -118,9 +110,6 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
             <DialogTitle className="text-xl font-bold text-white">
                 Novo Registro Manual
             </DialogTitle>
-            <DialogDescription className="text-blue-100/90 text-sm mt-1">
-                Lançamento manual de horas para colaborador
-            </DialogDescription>
         </div>
 
         {/* Form Body */}
@@ -133,7 +122,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 name="usuario_id"
                 render={({ field }) => (
                     <FormItem className="flex flex-col">
-                    <FormLabel>Colaborador</FormLabel>
+                    <FormLabel>Colaborador <span className="text-red-500">*</span></FormLabel>
                     <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
                         <PopoverTrigger asChild>
                         <FormControl>
@@ -141,7 +130,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                             variant="outline"
                             role="combobox"
                             className={cn(
-                                "w-full justify-between h-12 rounded-xl text-left font-normal border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 transition-all",
+                                "w-full justify-between h-11 rounded-xl text-left font-normal border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 transition-all",
                                 !field.value && "text-muted-foreground"
                             )}
                             >
@@ -190,13 +179,13 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                             {field.value ? (
                                 (() => {
                                     const selectedEmp = collaborators.find(e => e.id.toString() === field.value);
-                                    if (selectedEmp?.turnos && selectedEmp.turnos.length > 0) {
-                                        return selectedEmp.turnos.map((turno) => (
+                                    if (selectedEmp?.links && selectedEmp.links.length > 0) {
+                                        return selectedEmp.links.map((link, idx) => (
                                             <span 
-                                                key={turno.id}
+                                                key={link.id || idx}
                                                 className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 w-fit whitespace-nowrap"
                                             >
-                                                {turno.hora_inicio.slice(0, 5)} - {turno.hora_fim.slice(0, 5)}
+                                                {link.hora_inicio.slice(0, 5)} - {link.hora_fim.slice(0, 5)}
                                             </span>
                                         ));
                                     }
@@ -216,14 +205,14 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 name="data"
                 render={({ field }) => (
                     <FormItem className="flex flex-col">
-                    <FormLabel>Data de Referência</FormLabel>
+                    <FormLabel>Data de Referência <span className="text-red-500">*</span></FormLabel>
                     <Popover>
                         <PopoverTrigger asChild>
                             <FormControl>
                                 <Button
                                     variant={"outline"}
                                     className={cn(
-                                        "h-12 w-full pl-3 text-left font-normal border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 rounded-xl",
+                                        "h-11 w-full pl-3 text-left font-normal border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 rounded-xl",
                                         !field.value && "text-muted-foreground"
                                     )}
                                 >
@@ -262,13 +251,11 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                     name="entrada_hora"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-gray-700">
-                             <Clock className="w-4 h-4 text-blue-600" /> Entrada *
-                        </FormLabel>
+                        <FormLabel>Entrada <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                             <Input 
                                 type="time" 
-                                className="h-12 text-lg font-semibold text-center bg-gray-50 border-gray-200 rounded-xl focus:border-blue-500"
+                                className="h-10 bg-white"
                                 {...field} 
                             />
                         </FormControl>
@@ -282,13 +269,11 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                     name="saida_hora"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel className="flex items-center gap-1.5 text-gray-700">
-                            <Clock className="w-4 h-4 text-orange-600" /> Saída
-                        </FormLabel>
+                        <FormLabel>Saída</FormLabel>
                         <FormControl>
                             <Input 
                                 type="time" 
-                                className="h-12 text-lg font-semibold text-center bg-gray-50 border-gray-200 rounded-xl focus:border-blue-500"
+                                className="h-10 bg-white"
                                 {...field} 
                             />
                         </FormControl>

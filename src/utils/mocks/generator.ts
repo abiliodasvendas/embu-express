@@ -165,7 +165,7 @@ export const generateCNPJ = (formatted = true): string => {
   cnpj.push(d1);
 
   const w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  let sum2 = cnpj.reduce((acc, val, i) => acc + val * w2[i], 0);
+  const sum2 = cnpj.reduce((acc, val, i) => acc + val * w2[i], 0);
   let d2 = 11 - (sum2 % 11);
   if (d2 >= 10) d2 = 0;
   cnpj.push(d2);
@@ -233,13 +233,30 @@ export const generateCollaboratorData = (clienteId?: string | number, empresaId?
     nome_completo: nomeCompleto,
     email: generateEmail(nomeCompleto),
     cpf: generateCPF(),
+    rg: generateRG(),
     perfil_id: randomNumber(1, 3), // 1: Admin, 2: Colaborador, 3: Motorista
     cliente_id: clienteId ? (typeof clienteId === "string" ? parseInt(clienteId) : clienteId) : null,
     empresa_id: empresaId ? (typeof empresaId === "string" ? parseInt(empresaId) : empresaId) : null,
     ativo: true,
     turnos: [
-      { hora_inicio: "08:00:00", hora_fim: "12:00:00" },
-      { hora_inicio: "13:00:00", hora_fim: "18:00:00" }
+      { 
+        hora_inicio: "08:00:00", 
+        hora_fim: "12:00:00",
+        valor_contrato: 3500,
+        valor_aluguel: 500,
+        ajuda_custo: 200,
+        valor_bonus: 0,
+        mei: false
+      },
+      { 
+        hora_inicio: "13:00:00", 
+        hora_fim: "18:00:00",
+        valor_contrato: 3500,
+        valor_aluguel: 500,
+        ajuda_custo: 200,
+        valor_bonus: 0,
+        mei: false
+      }
     ]
   };
 };
@@ -332,7 +349,110 @@ export const generateTimeRecord = (usuarioId: string, date: string, turno?: { ho
   };
 };
 
+
+/**
+ * Gera dados fictícios para Moto
+ */
+export const generateMotoData = () => {
+    const modelos = ["CG 160", "CB 300", "XRE 300", "Fazer 250", "Biz 125", "NMAX 160", "PCX 150"];
+    const cores = ["Preta", "Vermelha", "Branca", "Azul", "Prata", "Cinza"];
+    return {
+        moto_modelo: modelos[randomNumber(0, modelos.length - 1)],
+        moto_cor: cores[randomNumber(0, cores.length - 1)],
+        moto_ano: randomNumber(2015, 2024).toString(),
+        moto_placa: `ABC${randomNumber(1000, 9999).toString().slice(0, 1)}${randomNumber(0, 9)}${randomNumber(0, 9)}${randomNumber(0, 9).toString()}`.slice(0, 7).toUpperCase() // Simple mock, regex in form handles format
+    };
+};
+
+/**
+ * Formata uma data para o padrão brasileiro DD/MM/AAAA
+ */
+const formatDateBR = (date: Date): string => {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+/**
+ * Gera dados fictícios para CNH
+ */
+export const generateCNHData = () => {
+    const validDate = new Date();
+    validDate.setFullYear(validDate.getFullYear() + randomNumber(1, 5));
+    
+    return {
+        cnh_registro: randomNumber(10000000000, 99999999999).toString(),
+        cnh_vencimento: formatDateBR(validDate),
+        cnh_categoria: Math.random() > 0.5 ? "A" : "AB"
+    };
+};
+
+/**
+ * Gera dados completos para Auto Cadastro (Motoboy)
+ */
+export const generateSelfRegistrationData = () => {
+    const nomeCompleto = generateName();
+    const documento = Math.random() > 0.5 ? generateCPF(false) : generateCNPJ(false); // Unformatted for input usually
+    const address = generateAddress();
+    const moto = generateMotoData();
+    const cnh = generateCNHData();
+    
+    const birthDate = new Date();
+    birthDate.setFullYear(birthDate.getFullYear() - randomNumber(18, 50));
+
+    return {
+        nome_completo: nomeCompleto,
+        email: generateEmail(nomeCompleto),
+        cpfcnpj: documento, // Form expects one field
+        data_nascimento: formatDateBR(birthDate),
+        nome_mae: generateName().split(" ").slice(0, 3).join(" "), // Shorter name
+        
+        // Address flattened
+        endereco_completo: `${address.logradouro}, ${address.numero} - ${address.bairro}, ${address.cidade} - ${address.estado}, ${address.cep}`,
+        
+        telefone: generatePhone(),
+        telefone_recado: generatePhone(),
+        
+        // Moto
+        ...moto,
+        
+        // CNH
+        ...cnh,
+        
+        chave_pix: generateCPF(true),
+        senha: "Ogaiht+1", // Default mock password
+    };
+};
+
+/**
+ * Gera um RG fictício formatado
+ */
+export const generateRG = (): string => {
+  const n1 = randomNumber(10, 99);
+  const n2 = randomNumber(100, 999);
+  const n3 = randomNumber(100, 999);
+  const d = randomNumber(0, 9);
+  return `${n1}.${n2}.${n3}-${d}`;
+};
+
+/**
+ * Gera dados fictícios para um turno
+ */
+export const generateTurnData = () => {
+    return {
+        hora_inicio: "08:00",
+        hora_fim: "18:00",
+        valor_contrato: 3500,
+        valor_aluguel: 500,
+        ajuda_custo: 200,
+        valor_bonus: 0,
+        mei: Math.random() > 0.5
+    };
+};
+
 export const mockGenerator = {
+  rg: generateRG,
   cpf: generateCPF,
   cnpj: generateCNPJ,
   name: generateName,
@@ -344,4 +464,8 @@ export const mockGenerator = {
   empresa: generateEmpresaData,
   collaborator: generateCollaboratorData,
   timeRecord: generateTimeRecord,
+  moto: generateMotoData,
+  cnh: generateCNHData,
+  selfRegistration: generateSelfRegistrationData,
+  turn: generateTurnData
 };

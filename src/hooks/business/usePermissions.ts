@@ -1,4 +1,5 @@
 import { useProfile } from "@/hooks/business/useProfile";
+import { ROLES } from "@/types/auth";
 import { useSession } from "./useSession";
 
 /**
@@ -6,14 +7,17 @@ import { useSession } from "./useSession";
  * Embu Express: Baseado em Roles (admin, motoboy, super_admin, financeiro).
  */
 export function usePermissions() {
-  const { user } = useSession();
-  const { profile, isLoading, refreshProfile } = useProfile(user?.id);
+  const { user, loading: loadingSession } = useSession();
+  const { profile, error, isLoading: loadingProfile, refreshProfile } = useProfile(user?.id);
+  
+  // Robust Loading Check
+  const isLoading = loadingSession || loadingProfile || (!!user && !profile && !error);
   
   // Extração de Role
   const roleName = profile?.perfil?.nome;
-  const isAdmin = roleName === 'admin' || roleName === 'super_admin';
-  const isMotoboy = roleName === 'motoboy';
-  const isFinanceiro = roleName === 'financeiro';
+  const isAdmin = roleName === ROLES.ADMIN || roleName === ROLES.SUPER_ADMIN;
+  const isMotoboy = roleName === ROLES.MOTOBOY;
+  const isFinanceiro = roleName === ROLES.FINANCEIRO;
 
   // Regras de Visualização (Simplificadas para o MVP)
   const canViewAdminPanel = isAdmin || isFinanceiro;

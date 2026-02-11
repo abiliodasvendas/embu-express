@@ -2,34 +2,34 @@ import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
 import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/components/ui/sheet";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { supabase } from "@/integrations/supabase/client";
+import { sessionManager } from "@/services/sessionManager";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-  ChevronDown,
-  Lock,
-  LogOut,
-  Menu,
-  UserPen
+    ChevronDown,
+    Lock,
+    LogOut,
+    Menu,
+    UserPen
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-export function AppNavbar({ role }: { role: string }) {
+export function AppNavbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { pageTitle } = useLayout();
   const [openAlterarSenha, setOpenAlterarSenha] = useState(false);
@@ -45,15 +45,10 @@ export function AppNavbar({ role }: { role: string }) {
     setIsSigningOut(true);
 
     try {
-      await supabase.auth.signOut();
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      redirect("/login");
+      await sessionManager.signOut();
+      navigate("/login");
     } catch (err) {
-      // Erro ao encerrar sessão - não crítico, redirecionamento já foi feito
+      // Erro ao encerrar sessão
     } finally {
       setIsSigningOut(false);
     }

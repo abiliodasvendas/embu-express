@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { messages } from "@/constants/messages";
 import { cn } from "@/lib/utils";
 import { getStatusColor, getStatusText } from "@/utils/formatters";
 
@@ -21,8 +22,8 @@ interface StatusBadgeProps {
 
 export function StatusBadge({
   status,
-  trueLabel = "Ativo",
-  falseLabel = "Inativo",
+  trueLabel = messages.labels.ativo,
+  falseLabel = messages.labels.inativo,
   className,
 }: StatusBadgeProps) {
 

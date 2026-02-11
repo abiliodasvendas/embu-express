@@ -1,6 +1,7 @@
 /**
  * Formata cores e textos de status para o componente StatusBadge
  */
+import { messages } from "@/constants/messages";
 
 export const getStatusColor = (status?: string | boolean | null) => {
   if (status === undefined || status === null) return "bg-gray-50 text-gray-600 border-gray-200";
@@ -10,6 +11,7 @@ export const getStatusColor = (status?: string | boolean | null) => {
   // Status de Cliente/Colaborador
   if (s === "ativo" || s === "true") return "bg-emerald-50 text-emerald-700 border-emerald-100";
   if (s === "inativo" || s === "false") return "bg-slate-50 text-slate-600 border-slate-200";
+  if (s === "pendente") return "bg-yellow-50 text-yellow-700 border-yellow-100";
 
   // Status de Ponto
   if (s === "verde") return "bg-green-500 text-white border-transparent";
@@ -26,14 +28,15 @@ export const getStatusText = (status?: string | boolean | null) => {
   const s = String(status).toLowerCase();
 
   const map: Record<string, string> = {
-    ativo: "Ativo",
-    true: "Ativo",
-    inativo: "Inativo",
-    false: "Inativo",
-    verde: "Verde",
-    amarelo: "Amarelo",
-    vermelho: "Vermelho",
-    cinza: "N/A",
+    ativo: messages.labels.ativo,
+    true: messages.labels.ativo,
+    inativo: messages.labels.inativo,
+    false: messages.labels.inativo,
+    pendente: messages.labels.pendente,
+    verde: messages.labels.verde,
+    amarelo: messages.labels.amarelo,
+    vermelho: messages.labels.vermelho,
+    cinza: messages.labels.cinza,
   };
 
   return map[s] || String(status);

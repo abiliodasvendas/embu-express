@@ -4,21 +4,19 @@ import { EmpresaList } from "@/components/features/empresa/EmpresaList";
 import { EmpresasToolbar } from "@/components/features/empresa/EmpresasToolbar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateEmpresa,
-    useDeleteEmpresa,
-    useToggleEmpresaStatus,
+  useCreateEmpresa,
+  useDeleteEmpresa,
+  useToggleEmpresaStatus,
 } from "@/hooks/api/useEmpresaMutations";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { Empresa } from "@/types/database";
-import { mockGenerator } from "@/utils/mocks/generator";
-import { Building2, Zap } from "lucide-react"; // Using Building2 for Empresas icon
+import { Building2 } from "lucide-react"; // Using Building2 for Empresas icon
 import { useCallback, useEffect, useState } from "react";
 
 export function Empresas() {
@@ -91,50 +89,13 @@ export function Empresas() {
     });
   };
 
-  const handleQuickCreate = async () => {
-    setIsQuickCreateLoading(true);
-    const fakeEmpresa = mockGenerator.empresa();
-    try {
-      await createEmpresa.mutateAsync({
-        ...fakeEmpresa,
-        ativo: true,
-      });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsQuickCreateLoading(false);
-    }
-  };
-
-  const isActionLoading = deleteEmpresa.isPending || toggleStatus.isPending || createEmpresa.isPending || isQuickCreateLoading;
+  const isActionLoading = deleteEmpresa.isPending || toggleStatus.isPending || createEmpresa.isPending;
 
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
           <Card className="border-none shadow-none bg-transparent">
-             <CardHeader className="p-0">
-                <div className="flex justify-end mb-4 md:hidden">
-                  <Button
-                    onClick={handleQuickCreate}
-                    variant="outline"
-                    className="gap-2 text-uppercase w-full font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11"
-                  >
-                    <Zap className="h-4 w-4" />
-                    GERAR FAKE
-                  </Button>
-                </div>
-                <div className="hidden md:flex justify-end mb-4">
-                  <Button
-                    onClick={handleQuickCreate}
-                    variant="outline"
-                    className="gap-2 text-uppercase font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11 px-6"
-                  >
-                    <Zap className="h-4 w-4" />
-                    GERAR EMPRESA FAKE
-                  </Button>
-                </div>
-            </CardHeader>
             <CardContent className="px-0">
               <div className="mb-6">
                 <EmpresasToolbar

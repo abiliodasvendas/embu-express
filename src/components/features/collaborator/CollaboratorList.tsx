@@ -5,46 +5,49 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { Usuario } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
+import { useNavigate } from "react-router-dom";
 
 interface CollaboratorListProps {
   collaborators: Usuario[];
   onEdit: (collaborator: Usuario) => void;
-  onToggleStatus: (collaborator: Usuario) => void;
+  onStatusChange: (collaborator: Usuario, newStatus: string) => void;
   onDelete: (collaborator: Usuario) => void;
 }
 
-const getAvatarStyles = (isActive: boolean) => {
-  if (isActive) {
-    return "bg-green-100 text-green-700";
+const getAvatarStyles = (status: string) => {
+  switch (status) {
+    case 'ATIVO': return "bg-green-100 text-green-700";
+    case 'PENDENTE': return "bg-yellow-100 text-yellow-700";
+    default: return "bg-gray-100 text-gray-500";
   }
-  return "bg-gray-100 text-gray-500";
 };
 
 const CollaboratorMobileItem = ({
   collaborator,
   index,
   onEdit,
-  onToggleStatus,
+  onStatusChange,
   onDelete,
 }: {
   collaborator: Usuario;
   index: number;
   onEdit: (collaborator: Usuario) => void;
-  onToggleStatus: (collaborator: Usuario) => void;
+  onStatusChange: (collaborator: Usuario, newStatus: string) => void;
   onDelete: (collaborator: Usuario) => void;
 }) => {
-  const actions = useCollaboratorActions({ collaborator, onEdit, onToggleStatus, onDelete });
+  const actions = useCollaboratorActions({ collaborator, onEdit, onStatusChange, onDelete });
+  const navigate = useNavigate();
 
   return (
     <MobileActionItem actions={actions} showHint={index === 0}>
       <div
-        onClick={() => onEdit(collaborator)}
+        onClick={() => navigate(`/colaboradores/${collaborator.id}`)}
         className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
       >
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-3 pr-20">
             {/* Added pr-20 to avoid overlap with absolute badge */}
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(collaborator.ativo)}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(collaborator.status)}`}>
               {collaborator.nome_completo.charAt(0)}
             </div>
             <div className="min-w-0">
@@ -56,7 +59,7 @@ const CollaboratorMobileItem = ({
                )}
             </div>
           </div>
-          <StatusBadge status={collaborator.ativo} className="absolute top-4 right-4" />
+          <StatusBadge status={collaborator.status} className="absolute top-4 right-4" />
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t border-gray-50">
@@ -69,27 +72,6 @@ const CollaboratorMobileItem = ({
                 {getPerfilLabel(collaborator.perfil?.nome)}
               </p>
             </div>
-            <div>
-              <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-                Empresa
-              </p>
-              <p className="font-medium text-gray-700 text-xs text-left">
-                {collaborator.empresa?.nome_fantasia || "-"}
-              </p>
-            </div>
-          </div>
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-              Turnos
-            </p>
-             <div className="flex flex-wrap gap-1 mt-0.5">
-                {collaborator.turnos?.map((t, i) => (
-                    <span key={i} className="text-[10px] font-medium text-gray-500 bg-gray-100/50 px-1.5 py-0.5 rounded border border-gray-200/50">
-                        {t.hora_inicio.substring(0, 5)} - {t.hora_fim.substring(0, 5)}
-                    </span>
-                ))}
-                {!collaborator.turnos?.length && <span className="text-[10px] text-gray-400">Sem turno</span>}
-              </div>
           </div>
         </div>
       </div>
@@ -100,37 +82,25 @@ const CollaboratorMobileItem = ({
 const CollaboratorTableRow = ({
   collaborator,
   onEdit,
-  onToggleStatus,
+  onStatusChange,
   onDelete,
 }: {
   collaborator: Usuario;
   onEdit: (collaborator: Usuario) => void;
-  onToggleStatus: (collaborator: Usuario) => void;
+  onStatusChange: (collaborator: Usuario, newStatus: string) => void;
   onDelete: (collaborator: Usuario) => void;
 }) => {
-  const actions = useCollaboratorActions({ collaborator, onEdit, onToggleStatus, onDelete });
-
-  const renderTurnos = (turnos: any[]) => {
-    if (!turnos || turnos.length === 0) return <span className="text-gray-400">-</span>;
-    return (
-        <div className="flex flex-col gap-1">
-            {turnos.map((t, i) => (
-                <div key={i} className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 w-fit whitespace-nowrap">
-                    {t.hora_inicio.substring(0, 5)} - {t.hora_fim.substring(0, 5)}
-                </div>
-            ))}
-        </div>
-    );
-  };
+  const actions = useCollaboratorActions({ collaborator, onEdit, onStatusChange, onDelete });
+  const navigate = useNavigate();
 
   return (
     <tr
-      onClick={() => onEdit(collaborator)}
+      onClick={() => navigate(`/colaboradores/${collaborator.id}`)}
       className="hover:bg-gray-50/80 transition-colors cursor-pointer"
     >
       <td className="py-4 pl-6 align-middle">
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${getAvatarStyles(collaborator.ativo)}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${getAvatarStyles(collaborator.status)}`}>
             {collaborator.nome_completo.charAt(0)}
           </div>
           <div>
@@ -146,14 +116,8 @@ const CollaboratorTableRow = ({
       <td className="px-6 py-4 align-middle text-sm text-gray-600">
         {getPerfilLabel(collaborator.perfil?.nome)}
       </td>
-      <td className="px-6 py-4 align-middle text-sm text-gray-600">
-        {collaborator.empresa?.nome_fantasia || "-"}
-      </td>
       <td className="px-6 py-4 align-middle">
-        {renderTurnos(collaborator.turnos)}
-      </td>
-      <td className="px-6 py-4 align-middle">
-        <StatusBadge status={collaborator.ativo} />
+        <StatusBadge status={collaborator.status} />
       </td>
       <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
         <ActionsDropdown actions={actions} />
@@ -165,7 +129,7 @@ const CollaboratorTableRow = ({
 export function CollaboratorList({
   collaborators,
   onEdit,
-  onToggleStatus,
+  onStatusChange,
   onDelete,
 }: CollaboratorListProps) {
   return (
@@ -178,7 +142,7 @@ export function CollaboratorList({
           collaborator={collaborator}
           index={index}
           onEdit={onEdit}
-          onToggleStatus={onToggleStatus}
+          onStatusChange={onStatusChange}
           onDelete={onDelete}
         />
       )}
@@ -194,12 +158,6 @@ export function CollaboratorList({
                 Cargo
               </th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Empresa
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Turnos
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -213,7 +171,7 @@ export function CollaboratorList({
                 key={collaborator.id}
                 collaborator={collaborator}
                 onEdit={onEdit}
-                onToggleStatus={onToggleStatus}
+                onStatusChange={onStatusChange}
                 onDelete={onDelete}
               />
             ))}

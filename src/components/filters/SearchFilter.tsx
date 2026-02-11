@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { messages } from "@/constants/messages";
 import { Search } from "lucide-react";
 
 interface SearchFilterProps {
@@ -15,7 +16,7 @@ export function SearchFilter({
   value,
   onChange,
   id = "search",
-  label = "Buscar",
+  label = messages.labels.buscar,
   placeholder = "",
   className,
 }: SearchFilterProps) {

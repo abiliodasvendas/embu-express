@@ -63,9 +63,20 @@ export const messages = {
   ponto: {
     erro: {
       carregar: "Erro ao carregar registros de ponto.",
+      registrar: "Erro ao registrar ponto.",
+      iniciarPausa: "Erro ao iniciar pausa.",
+      finalizarPausa: "Erro ao finalizar pausa.",
+      atualizar: "Erro ao atualizar registro.",
+      criar: "Erro ao criar registro.",
+      excluir: "Erro ao excluir registro.",
     },
     sucesso: {
-      // Adicionar conforme necessário
+      registrado: "Ponto registrado com sucesso!",
+      pausaIniciada: "Pausa iniciada!",
+      pausaFinalizada: "Pausa finalizada!",
+      atualizado: "Registro atualizado com sucesso!",
+      criado: "Registro criado com sucesso!",
+      excluido: "Registro excluído com sucesso!",
     },
   },
 
@@ -104,6 +115,20 @@ export const messages = {
     formularioComErros: "Corrija os erros no formulário.",
   },
 
+  // ========== LABELS COMUNS ==========
+  labels: {
+    ativo: "Ativo",
+    inativo: "Inativo",
+    todos: "Todos",
+    buscar: "Buscar",
+    status: "Status",
+    pendente: "Pendente",
+    verde: "Verde",
+    amarelo: "Amarelo",
+    vermelho: "Vermelho",
+    cinza: "N/A",
+  },
+
   // ========== SISTEMA ==========
   sistema: {
     erro: {
@@ -132,6 +157,24 @@ export const messages = {
     },
   },
 
+  // ========== MOCK / TESTES ==========
+  mock: {
+    erro: {
+      semDados: "Sem Clientes/Empresas para gerar mock.",
+    },
+    sucesso: {
+      preenchido: "Campos preenchidos com dados de teste!",
+      criadoRapido: "Criado rapidamente com dados fictícios!",
+    },
+  },
+
+  // ========== COMPONENTES ==========
+  erroBoundary: {
+    titulo: "Ops! Algo deu errado",
+    descricao: "Desculpe, encontramos um erro inesperado. Tente recarregar a página para continuar.",
+    botao: "Recarregar Aplicação",
+  },
+
   // ========== USUÁRIOS/ADMIN ==========
   usuario: {
     erro: {
@@ -148,6 +191,24 @@ export const messages = {
       atualizado: "Usuário atualizado com sucesso!",
       excluido: "Usuário excluído com sucesso!",
       perfilAtualizado: "Perfil atualizado com sucesso.",
+    },
+  },
+
+  // ========== EMPRESAS ==========
+  empresa: {
+    erro: {
+      criar: "Erro ao criar empresa",
+      atualizar: "Erro ao atualizar empresa",
+      excluir: "Erro ao excluir empresa",
+      status: "Erro ao alterar status",
+      quickCreate: "Erro no Quick Create",
+    },
+    sucesso: {
+      criada: "Empresa criada com sucesso!",
+      atualizada: "Empresa atualizada com sucesso!",
+      excluida: "Empresa excluída com sucesso!",
+      status: "Status atualizado com sucesso!",
+      criadaRapida: "Empresa criada rapidamente!",
     },
   },
 

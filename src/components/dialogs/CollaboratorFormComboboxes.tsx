@@ -114,21 +114,7 @@ export function ClienteCombobox({ value, onChange, clients }: ClienteComboboxPro
                 <CommandList>
                 <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
                 <CommandGroup>
-                    <CommandItem
-                        value="Não vincular cliente"
-                        onSelect={() => {
-                            onChange(null);
-                            setOpen(false);
-                        }}
-                    >
-                        <Check
-                        className={cn(
-                            "mr-2 h-4 w-4",
-                            !value ? "opacity-100" : "opacity-0"
-                        )}
-                        />
-                        Não vincular cliente
-                    </CommandItem>
+
                     {clients?.map((client: any) => (
                     <CommandItem
                         value={client.nome_fantasia}

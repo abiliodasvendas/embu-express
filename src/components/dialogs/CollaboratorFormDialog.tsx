@@ -9,349 +9,135 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { PERFIL_MOTOBOY } from "@/constants";
+import { Form } from "@/components/ui/form";
 import { messages } from "@/constants/messages";
-import { useCreateClient, useCreateCollaborator, useEmpresas, useRoles, useUpdateCollaborator } from "@/hooks";
-import { useClientSelection } from "@/hooks/ui/useClientSelection";
-import { cn } from "@/lib/utils";
-import { Perfil, Usuario } from "@/types/database";
+import { useCreateCollaborator, useRoles, useUpdateCollaborator } from "@/hooks";
+import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
+import { CollaboratorFormData } from "@/schemas/collaboratorSchema";
+import { Usuario } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { getPerfilLabel } from "@/utils/formatters";
-import { cpfMask } from "@/utils/masks";
+import { aplicarMascaraPlaca, cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Briefcase,
-  Clock,
-  Loader2,
-  Mail,
-  Plus,
-  Trash2,
-  User,
-  Wand2,
-  X,
-  Zap
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
-import { ClienteCombobox, EmpresaCombobox } from "./CollaboratorFormComboboxes";
+import { Loader2, User, Wand2, X } from "lucide-react";
+import { useState } from "react";
+import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
+import { CollaboratorFormProfessional } from "../features/collaborator/form/CollaboratorFormProfessional";
 
 interface CollaboratorFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   collaboratorToEdit?: Usuario | null;
+  onSuccess?: (data?: any) => void;
 }
 
 export function CollaboratorFormDialog({
   open,
   onOpenChange,
   collaboratorToEdit = null,
+  onSuccess,
 }: CollaboratorFormProps) {
   const onClose = () => onOpenChange(false);
   
-  const allSections = ["dados-pessoais", "dados-profissionais", "turnos"];
-  const [openAccordionItems, setOpenAccordionItems] = useState(allSections);
-  
   const { data: roles } = useRoles();
-  // Use a ref to access the latest roles inside the Zod resolver, avoiding stale closures
-  const rolesRef = useRef(roles);
-  useEffect(() => {
-    rolesRef.current = roles;
-  }, [roles]);
+  const [openSections, setOpenSections] = useState(["personal", "professional"]);
 
-  const { data: clients } = useClientSelection(collaboratorToEdit?.cliente_id, { enabled: open });
-  const { data: empresas } = useEmpresas({ 
-    ativo: "true", 
-    includeId: collaboratorToEdit?.empresa_id?.toString() 
-  }, { enabled: open });
   const createCollaborator = useCreateCollaborator();
   const updateCollaborator = useUpdateCollaborator();
 
-
-  // Common schema definition for consistent reuse
-  const baseSchemaShape = {
-    nome_completo: z.string().min(3, "Nome completo é obrigatório"),
-    email: z.string().email("E-mail inválido"),
-    cpf: z.string().min(11, "CPF inválido"),
-    perfil_id: z.string().min(1, "Perfil é obrigatório"),
-    empresa_id: z.string({ required_error: "Empresa é obrigatória", invalid_type_error: "Empresa é obrigatória" }).min(1, "Empresa é obrigatória"),
-    ativo: z.boolean().default(true),
-    turnos: z.array(z.object({
-      hora_inicio: z.string().min(1, "Obrigatório"),
-      hora_fim: z.string().min(1, "Obrigatório"),
-    })).default([]),
-  };
-
-  const customResolver = async (values: any, context: any, options: any) => {
-    const currentRoles = rolesRef.current;
-    
-    // Determine strict requirement based on current values
-    let isMotoboy = false;
-    if (currentRoles && values.perfil_id) {
-        const selectedPerfil = currentRoles.find(r => r.id.toString() === values.perfil_id);
-        isMotoboy = selectedPerfil?.nome?.toLowerCase() === PERFIL_MOTOBOY.toLowerCase();
-    }
-
-    const dynamicSchema = z.object({
-        ...baseSchemaShape,
-        cliente_id: isMotoboy 
-            ? z.string({ required_error: "Cliente é obrigatório para motoboys", invalid_type_error: "Cliente é obrigatório para motoboys" }).min(1, "Cliente é obrigatório para motoboys")
-            : z.string().optional().nullable()
-    }).superRefine((data, ctx) => {
-        // Validação de Conflito de Turnos
-        if (data.turnos?.length > 0) {
-            const toMinutes = (time: string) => {
-                const [h, m] = time?.split(":").map(Number) || [0, 0];
-                return h * 60 + m;
-            };
-    
-            const getIntervals = (t: { hora_inicio?: string; hora_fim?: string }) => {
-                if (!t.hora_inicio || !t.hora_fim) return [];
-                const start = toMinutes(t.hora_inicio);
-                const end = toMinutes(t.hora_fim);
-                if (start < end) {
-                    return [[start, end]];
-                } else {
-                    return [[start, 1440], [0, end]];
-                }
-            };
-    
-            for (let i = 0; i < data.turnos.length; i++) {
-                const t = data.turnos[i];
-                const start = toMinutes(t.hora_inicio);
-                const end = toMinutes(t.hora_fim);
-        
-                let duration = 0;
-                if (start < end) {
-                    duration = end - start;
-                } else {
-                    duration = (1440 - start) + end;
-                }
-        
-                if (duration < 60) {
-                        ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
-                        message: "Turno deve ter no mínimo 1 hora",
-                        path: ["turnos", i, "hora_fim"],
-                    });
-                }
-        
-                for (let j = i + 1; j < data.turnos.length; j++) {
-                    const t1 = data.turnos[i];
-                    const t2 = data.turnos[j]; // Fixed loop reference
-        
-                    const intervals1 = getIntervals(t1);
-                    const intervals2 = getIntervals(t2);
-        
-                    let hasOverlap = false;
-        
-                    for (const [s1, e1] of intervals1) {
-                        for (const [s2, e2] of intervals2) {
-                            if (s1 < e2 && s2 < e1) {
-                                hasOverlap = true;
-                                break;
-                            }
-                        }
-                        if (hasOverlap) break;
-                    }
-        
-                    if (hasOverlap) {
-                        ctx.addIssue({
-                            code: z.ZodIssueCode.custom,
-                            message: "Conflito com outro turno",
-                            path: ["turnos", j, "hora_inicio"],
-                        });
-                        ctx.addIssue({
-                            code: z.ZodIssueCode.custom,
-                            message: "Conflito com outro turno",
-                            path: ["turnos", i, "hora_inicio"],
-                        });
-                    }
-                }
-            }
-        }
-    });
-
-    return zodResolver(dynamicSchema)(values, context, options);
-  };
-
-  // Type inference helper (approximate)
-  type CollaboratorFormData = any; // Simplify for resolver pattern
-  
-  const form = useForm<CollaboratorFormData>({
-    resolver: customResolver,
-    defaultValues: {
-      nome_completo: "",
-      email: "",
-      cpf: "",
-      perfil_id: "",
-      cliente_id: null,
-      ativo: true,
-      turnos: [],
-    },
+  const { form } = useCollaboratorForm({ 
+      open, 
+      collaboratorToEdit 
   });
 
-  const { fields, append, remove, replace } = useFieldArray({
-    control: form.control,
-    name: "turnos",
-  });
-
-  useEffect(() => {
-    if (open) {
-      if (collaboratorToEdit) {
-        const mappedTurnos = collaboratorToEdit.turnos?.map(t => ({
-            hora_inicio: t.hora_inicio.substring(0, 5),
-            hora_fim: t.hora_fim.substring(0, 5)
-        })) || [];
-
-        form.reset({
-          nome_completo: collaboratorToEdit.nome_completo,
-          email: collaboratorToEdit.email,
-          cpf: cpfMask(collaboratorToEdit.cpf),
-          perfil_id: collaboratorToEdit.perfil_id.toString(),
-          cliente_id: collaboratorToEdit.cliente_id?.toString() || null,
-          empresa_id: collaboratorToEdit.empresa_id?.toString() || null,
-          ativo: collaboratorToEdit.ativo,
-          turnos: mappedTurnos,
-        });
-        
-        // Force UI to match valid turns (removes any ghost lines from previous state)
-        replace(mappedTurnos);
-      } else {
-        const defaultTurnos = [{ hora_inicio: "08:00", hora_fim: "18:00" }];
-        form.reset({
-          nome_completo: "",
-          email: "",
-          cpf: "",
-          perfil_id: "",
-          cliente_id: null,
-          empresa_id: null,
-          ativo: true,
-          turnos: defaultTurnos,
-        });
-        replace(defaultTurnos);
-      }
-      setOpenAccordionItems(allSections);
-    }
-  }, [open, collaboratorToEdit, form, replace]);
-
-  const handleRemoveTurno = (index: number) => {
-    remove(index);
-  };
-
-  const handleAddTurno = () => {
-    const currentTurnos = form.getValues().turnos || [];
-    replace([...currentTurnos, { hora_inicio: "08:00", hora_fim: "18:00" }]);
-  };
-
-  const onFormError = () => {
+  const onFormError = (errors: any) => {
     toast.error(messages.validacao.formularioComErros);
+    setOpenSections(["personal", "professional"]);
   };
 
-  const { mutateAsync: createClientAsync } = useCreateClient();
+  /* Helper to convert DD/MM/YYYY to YYYY-MM-DD */
+  const parseDateBr = (dateStr: string | undefined) => {
+    if (!dateStr || dateStr.length !== 10) return null;
+    const [day, month, year] = dateStr.split('/');
+    return `${year}-${month}-${day}`;
+  };
 
   const handleFillMock = async () => {
-    let clientId = clients?.[0]?.id;
-    let empresaId = empresas?.[0]?.id;
+    const mockData = mockGenerator.collaborator();
+    const address = mockGenerator.address();
+    const moto = mockGenerator.moto();
+    const cnh = mockGenerator.cnh();
     
-    const mockData = mockGenerator.collaborator(clientId, empresaId);
-    const formData = {
-      nome_completo: mockData.nome_completo,
-      email: mockData.email,
-      cpf: mockData.cpf,
-      perfil_id: roles && roles.length > 0 ? roles[0].id.toString() : "",
-      cliente_id: mockData.cliente_id?.toString() || null,
-      empresa_id: mockData.empresa_id?.toString() || null,
-      ativo: true, // Mock data usually active
-      turnos: mockData.turnos.map(t => ({
-        hora_inicio: t.hora_inicio.substring(0, 5),
-        hora_fim: t.hora_fim.substring(0, 5)
-      })),
-    };
+    // Personal
+    form.setValue("nome_completo", mockData.nome_completo);
+    form.setValue("email", mockData.email);
+    form.setValue("cpf", cpfMask(mockData.cpf));
+    form.setValue("rg", mockGenerator.rg());
+    form.setValue("perfil_id", roles ? roles.find(r => r.nome === 'motoboy')?.id.toString() || "3" : "3");
     
-    form.reset(formData);
-    setOpenAccordionItems(allSections);
-    toast.success("Campos preenchidos com dados de teste!");
-  };
+    // Fix: Format Date of Birth as DD/MM/YYYY for the mask
+    const birthDate = new Date();
+    birthDate.setFullYear(birthDate.getFullYear() - 25);
+    const day = birthDate.getDate().toString().padStart(2, '0');
+    const month = (birthDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = birthDate.getFullYear();
+    form.setValue("data_nascimento", `${day}/${month}/${year}`);
 
-  const handleQuickCreate = async () => {
-    try {
-      let clientId = clients?.[0]?.id;
-      
-      if (!clientId) {
-        toast.info("Nenhum cliente encontrado. Gerando um novo cliente primeiro...");
-        const newClient = await createClientAsync(mockGenerator.client());
-        clientId = newClient.id;
-      }
+    form.setValue("data_inicio", new Date().toISOString().split('T')[0]);
+    form.setValue("nome_mae", mockGenerator.name());
+    form.setValue("telefone", phoneMask(mockGenerator.phone()));
+    form.setValue("telefone_recado", phoneMask(mockGenerator.phone()));
+    
+    // Address
+    form.setValue("endereco_completo", `${address.logradouro}, ${address.numero} - ${address.bairro}, ${address.cidade} - ${address.estado}, ${address.cep}`);
 
-      const empresaId = empresas?.[0]?.id;
-      const mockData = mockGenerator.collaborator(clientId, empresaId);
-      const finalData = {
-        ...mockData,
-        perfil_id: roles && roles.length > 0 ? roles[1].id : 2, 
-        cliente_id: mockData.cliente_id,
-        empresa_id: mockData.empresa_id,
-      };
+    // Professional / Moto
+    form.setValue("moto_modelo", moto.moto_modelo);
+    form.setValue("moto_cor", moto.moto_cor);
+    form.setValue("moto_ano", moto.moto_ano.toString());
+    form.setValue("moto_placa", aplicarMascaraPlaca(moto.moto_placa));
+    
+    form.setValue("cnh_registro", cnh.cnh_registro);
+    form.setValue("cnh_vencimento", cnh.cnh_vencimento); // Already DD/MM/YYYY from mock
+    form.setValue("cnh_categoria", cnh.cnh_categoria);
 
-      await createCollaborator.mutateAsync(finalData as any);
-      toast.success("Colaborador criado rapidamente!");
-      safeCloseDialog(() => onClose());
-    } catch (error: any) {
-      toast.error("Erro no Quick Create", { description: error.message });
-    }
+    form.setValue("cnpj", cnpjMask(mockGenerator.cnpj()));
+    form.setValue("chave_pix", mockGenerator.cpf());
+    
+    toast.success(messages.mock.sucesso.preenchido);
   };
 
   const onSubmit = async (values: CollaboratorFormData) => {
     try {
-      const selectedPerfil = roles?.find(r => r.id.toString() === values.perfil_id);
-      const isMotoboy = selectedPerfil?.nome === PERFIL_MOTOBOY;
+      // Convert dates from DD/MM/YYYY to YYYY-MM-DD
+      const formattedBirthDate = parseDateBr(values.data_nascimento);
+      const formattedCnhDate = values.cnh_vencimento ? parseDateBr(values.cnh_vencimento) : null;
 
       const data = {
         ...values,
+        data_nascimento: formattedBirthDate || values.data_nascimento, // Fallback if parse fails or already ISO (unlikely with mask)
+        cnh_vencimento: formattedCnhDate || values.cnh_vencimento,
         perfil_id: parseInt(values.perfil_id),
-        cliente_id: values.cliente_id ? parseInt(values.cliente_id) : null,
-        empresa_id: values.empresa_id ? parseInt(values.empresa_id) : null,
+        // Links are no longer managed here
+        links: collaboratorToEdit ? [] : undefined 
       };
 
       if (collaboratorToEdit) {
+        // @ts-ignore - links not needed for partial personal update
         await updateCollaborator.mutateAsync({ id: collaboratorToEdit.id, ...data });
       } else {
         await createCollaborator.mutateAsync(data as any);
       }
+      onSuccess?.(); 
       safeCloseDialog(() => onClose());
     } catch (error) {
       console.error(error);
     }
   };
 
-  const selectedPerfilId = form.watch("perfil_id");
-  const selectedPerfil = roles?.find(r => r.id.toString() === selectedPerfilId);
-  const isMotoboy = selectedPerfil?.nome === PERFIL_MOTOBOY;
-
-
-  const isPending = createCollaborator.isPending || updateCollaborator.isPending;
+  const isSubmitting = createCollaborator.isPending || updateCollaborator.isPending;
 
   return (
     <Dialog open={open} onOpenChange={() => safeCloseDialog(onClose)}>
@@ -371,18 +157,6 @@ export function CollaboratorFormDialog({
             >
               <Wand2 className="h-4 w-4" />
             </Button>
-            {!collaboratorToEdit && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-white/70 hover:text-cyan-300 hover:bg-white/10 rounded-full h-8 w-8"
-                onClick={handleQuickCreate}
-                title="Criação Rápida (Um clique)"
-              >
-                <Zap className="h-4 w-4" />
-              </Button>
-            )}
           </div>
 
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
@@ -396,296 +170,62 @@ export function CollaboratorFormDialog({
           <DialogTitle className="text-xl font-bold text-white">
             {collaboratorToEdit ? "Editar Colaborador" : "Novo Colaborador"}
           </DialogTitle>
-          <DialogDescription className="text-white/80 text-sm mt-1">
-            {collaboratorToEdit
-              ? "Ajuste as informações do perfil do colaborador."
-              : "Preencha os dados para cadastrar um novo colaborador."}
-          </DialogDescription>
         </div>
 
-        <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
+        <div className="p-4 sm:p-6 bg-white flex-1 overflow-y-auto">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-6">
               <Accordion 
                 type="multiple" 
-                value={openAccordionItems} 
-                onValueChange={setOpenAccordionItems}
-                className="w-full"
+                value={openSections} 
+                onValueChange={setOpenSections} 
+                className="space-y-4"
               >
-                <AccordionItem value="dados-pessoais" className="border-b-0">
-                  <AccordionTrigger className="hover:no-underline py-2">
-                    <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                      <User className="w-5 h-5 text-primary" />
-                      Dados Pessoais
-                    </div>
+                <AccordionItem value="personal" className="border rounded-2xl px-4 bg-gray-50/30">
+                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                    Dados Pessoais
                   </AccordionTrigger>
-                  <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="nome_completo"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>Nome Completo <span className="text-red-500">*</span></FormLabel>
-                            <FormControl>
-                              <Input placeholder="Nome completo" className="h-11 rounded-xl bg-gray-50" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>E-mail <span className="text-red-500">*</span></FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Mail className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                                <Input 
-                                  placeholder="email@exemplo.com" 
-                                  className={cn(
-                                    "pl-12 h-11 rounded-xl bg-gray-50",
-                                    form.formState.errors.email && "border-red-500 focus-visible:ring-red-200"
-                                  )} 
-                                  {...field} 
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="cpf"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>CPF <span className="text-red-500">*</span></FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="000.000.000-00"
-                                className="h-11 rounded-xl bg-gray-50"
-                                {...field}
-                                onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="ativo"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">Colaborador Ativo</FormLabel>
-                            <div className="text-sm text-muted-foreground">
-                              Define se o colaborador pode acessar o sistema.
-                            </div>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                  <AccordionContent className="pb-6">
+                    <CollaboratorFormPersonal roles={roles} />
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="dados-profissionais" className="mt-2 border-b-0">
-                  <AccordionTrigger className="hover:no-underline py-2">
-                    <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                      <Briefcase className="w-5 h-5 text-primary" />
-                      Dados Profissionais
-                    </div>
+                <AccordionItem value="professional" className="border rounded-2xl px-4 bg-gray-50/30">
+                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                    Profissional & Moto
                   </AccordionTrigger>
-                  <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="empresa_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Empresa <span className="text-red-500">*</span></FormLabel>
-                            <EmpresaCombobox 
-                                value={field.value} 
-                                onChange={field.onChange} 
-                                empresas={empresas || []} 
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="perfil_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Cargo / Permissão <span className="text-red-500">*</span></FormLabel>
-                            <Select 
-                                onValueChange={(val) => {
-                                    field.onChange(val);
-                                    setTimeout(() => form.trigger("cliente_id"), 0);
-                                }} 
-                                value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
-                                  <SelectValue placeholder="Selecione o cargo" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {roles?.map((role: Perfil) => (
-                                  <SelectItem key={role.id} value={role.id.toString()}>
-                                    {getPerfilLabel(role.nome)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="cliente_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Cliente Atual 
-                              {isMotoboy && <span className="text-red-500"> *</span>}
-                            </FormLabel>
-                            <ClienteCombobox 
-                                value={field.value} 
-                                onChange={field.onChange} 
-                                clients={clients || []} 
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <AccordionContent className="pb-6">
+                    <CollaboratorFormProfessional />
                   </AccordionContent>
                 </AccordionItem>
-
-                <AccordionItem value="turnos" className="mt-2 border-b-0">
-                  <AccordionTrigger className="hover:no-underline py-2">
-                    <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                      <Clock className="w-5 h-5 text-primary" />
-                      Turnos de Trabalho
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                    <div className="space-y-4">
-                      {fields.map((field, index) => (
-                        <div key={field.id} className="relative p-4 rounded-2xl bg-gray-50 border border-gray-100 group transition-all">
-                          {/* Delete Button - Absolute Position */}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRemoveTurno(index)}
-                            className="absolute right-2 top-2 h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-lg transition-colors opacity-70 hover:opacity-100"
-                            title="Remover turno"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-
-                          <div className="grid grid-cols-2 gap-4 pt-2">
-                            <FormField
-                              control={form.control}
-                              name={`turnos.${index}.hora_inicio`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Entrada</FormLabel>
-                                  <FormControl>
-                                    <div className="relative">
-                                      <Input 
-                                        type="time" 
-                                        className="h-12 px-4 bg-white border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-gray-700 transition-all [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:mr-0.5" 
-                                        {...field} 
-                                      />
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={`turnos.${index}.hora_fim`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Saída</FormLabel>
-                                  <FormControl>
-                                    <div className="relative">
-                                      <Input 
-                                        type="time" 
-                                        className="h-12 px-4 bg-white border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-gray-700 transition-all [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:mr-0.5" 
-                                        {...field} 
-                                      />
-                                    </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      ))}
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleAddTurno}
-                        className="w-full h-11 border-dashed border-2 rounded-2xl text-primary hover:bg-primary/5 hover:border-primary gap-2 transition-all"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Adicionar Turno
-                      </Button>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
               </Accordion>
+              
+              <div className="pt-2 border-t mt-4 grid grid-cols-2 gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={onClose}
+                    className="h-12 rounded-xl"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="h-12 text-lg font-bold rounded-xl"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Salvando...
+                        </>
+                    ) : (
+                        collaboratorToEdit ? "Salvar Alterações" : "Criar Colaborador"
+                    )}
+                  </Button>
+              </div>
             </form>
           </Form>
-        </div>
-
-        <div className="p-4 border-t bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => safeCloseDialog(() => onClose())}
-            disabled={isPending}
-            className="h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-100 font-medium"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            onClick={form.handleSubmit(onSubmit, onFormError)}
-            disabled={isPending}
-            className="h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg transition-all active:scale-95"
-          >
-            {isPending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : collaboratorToEdit ? (
-              "Atualizar"
-            ) : (
-              "Salvar"
-            )}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

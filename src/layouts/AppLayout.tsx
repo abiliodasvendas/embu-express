@@ -1,21 +1,16 @@
+import { PasswordGuardDialog } from "@/components/dialogs/PasswordGuardDialog";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { LayoutProvider } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
-import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { Outlet, useNavigate } from "react-router-dom";
 
 export default function AppLayout() {
-  const { user, loading: loadingSession } = useSession();
-  const { profile, isLoading, isAdmin, roleName } = usePermissions();
+  const { loading: loadingSession } = useSession();
+  const { profile, isLoading } = usePermissions();
   const navigate = useNavigate();
-
-  // Bloquear indexação de todas as páginas protegidas (área logada)
-  useSEO({
-    noindex: true,
-  });
 
   if (loadingSession || isLoading) {
     return (
@@ -60,12 +55,17 @@ export default function AppLayout() {
     );
   }
 
-  const currentRole = roleName || "motoboy";
+
+  const showGuard = !!profile?.senha_padrao;
 
   return (
     <LayoutProvider>
       <div className="min-h-screen bg-gray-50">
-        <AppNavbar role={currentRole} />
+        <PasswordGuardDialog 
+            open={showGuard} 
+            onSuccess={() => window.location.reload()} 
+        />
+        <AppNavbar />
 
         <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white">
           <div className="flex h-20 items-center justify-center border-b border-gray-50">
@@ -74,7 +74,7 @@ export default function AppLayout() {
               alt="Embu Express"
               className="h-12 cursor-pointer"
               title="Embu Express"
-              onClick={() => navigate("/controle-ponto")}
+              onClick={() => navigate("/inicio")}
             />
           </div>
           <div className="flex-1 overflow-y-auto px-5 py-6">
@@ -82,7 +82,7 @@ export default function AppLayout() {
           </div>
         </aside>
 
-        <main className="pt-[5.5rem] pb-10 md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 min-h-screen">
+        <main className="pt-[6.5rem] pb-10 md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 min-h-screen">
           <Outlet />
         </main>
       </div>

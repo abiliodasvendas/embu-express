@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { messages } from "@/constants/messages";
 import { useCreateEmpresa, useUpdateEmpresa } from "@/hooks/api/useEmpresaMutations";
 import { Empresa } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -18,15 +19,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Loader2, Wand2, X, Zap } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
-const empresaSchema = z.object({
-  nome_fantasia: z.string().min(3, "Nome fantasia deve ter no mínimo 3 caracteres"),
-  razao_social: z.string().optional(),
-  cnpj: z.string().optional(), 
-});
-
-type EmpresaFormValues = z.infer<typeof empresaSchema>;
+import { EmpresaFormValues, empresaSchema } from "@/schemas/empresaSchema";
 
 interface EmpresaFormDialogProps {
   open: boolean;
@@ -85,7 +79,7 @@ export function EmpresaFormDialog({
         razao_social: mockData.razao_social,
         cnpj: cnpjMask(mockData.cnpj),
     });
-    toast.success("Campos preenchidos com dados de teste!");
+    toast.success(messages.mock.sucesso.preenchido);
   };
 
   const handleQuickCreate = async () => {
@@ -96,10 +90,10 @@ export function EmpresaFormDialog({
         ativo: true,
       };
       await createEmpresa.mutateAsync(empresaData);
-      toast.success("Empresa criada rapidamente!");
+      toast.success(messages.empresa.sucesso.criadaRapida);
       safeCloseDialog(() => onOpenChange(false));
     } catch (error: any) {
-      toast.error("Erro no Quick Create", { description: error.message });
+      toast.error(messages.empresa.erro.quickCreate, { description: error.message });
     }
   };
 

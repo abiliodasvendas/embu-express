@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Third-party
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,31 +13,29 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Lock } from "lucide-react";
 
 // Services
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/services/api/client";
+import { sessionManager } from "@/services/sessionManager";
 
 // Utils
 import { messages } from "@/constants/messages";
-import { useSEO } from "@/hooks/useSEO";
 import { toast } from "@/utils/notifications/toast";
 
 export default function NovaSenha() {
-  // Bloquear indexação da página de redefinição de senha
-  useSEO({
-    noindex: true,
-  });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isForced = location.state?.forced;
 
   const formSchema = z
     .object({
@@ -60,32 +58,28 @@ export default function NovaSenha() {
   const handleRedefinir = async (data: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.updateUser({ password: data.senha });
+      
+      // Update Password via Backend API (to reset primeiro_acesso flag)
+      await api.put("/auth/update-password", { 
+          password: data.senha 
+      });
+
+      // Update session info locally
+      const { success } = await sessionManager.refreshToken();
+      
       setLoading(false);
 
-      if (error) {
-        if (error.code === "same_password") {
-          toast.error(messages.erro.operacao, {
-            description: "A nova senha deve ser diferente da senha atual.",
-          });
-          return;
-        }
-
-        toast.error(messages.erro.operacao, {
-          description: error.message,
-        });
-        return;
-      }
-
-      toast.success(messages.auth.sucesso.senhaRedefinida, {
-        description: "Redirecionando para o sistema...",
+      toast.success("Senha definida com sucesso!", {
+        description: "Agora você já pode acessar o sistema com sua nova senha.",
       });
 
       setTimeout(() => navigate("/inicio", { replace: true }), 1200);
     } catch (err: any) {
       setLoading(false);
-      toast.error(messages.erro.generico, {
-        description: err.message || "Tente novamente mais tarde.",
+      console.error(err);
+      const msg = err.response?.data?.error || messages.erro.atualizar;
+      toast.error("Erro ao definir senha", {
+        description: msg,
       });
     }
   };
@@ -104,10 +98,12 @@ export default function NovaSenha() {
         <CardContent className="p-8 sm:p-10 bg-white/80 backdrop-blur-sm">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Redefinir senha
+              {isForced ? "Definir senha de acesso" : "Redefinir senha"}
             </h1>
             <p className="text-gray-500 text-sm">
-              Crie uma nova senha segura para sua conta
+              {isForced 
+                ? "Para sua segurança, crie uma nova senha pessoal" 
+                : "Crie uma nova senha segura para sua conta"}
             </p>
           </div>
 

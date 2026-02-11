@@ -1,11 +1,12 @@
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
+import { messages } from "@/constants/messages";
 
 interface StatusFilterProps {
   value: string;
@@ -18,17 +19,18 @@ interface StatusFilterProps {
 }
 
 const defaultOptions = [
-  { value: "todos", label: "Todos" },
-  { value: "ativo", label: "Ativo" },
-  { value: "desativado", label: "Desativado" },
+  { value: "todos", label: messages.labels.todos },
+  { value: "ativo", label: messages.labels.ativo },
+  { value: "inativo", label: messages.labels.inativo },
+  { value: "pendente", label: messages.labels.pendente },
 ];
 
 export function StatusFilter({
   value,
   onValueChange,
   id = "status-filter",
-  label = "Status",
-  placeholder = "Todos",
+  label = messages.labels.status,
+  placeholder = messages.labels.todos,
   options = defaultOptions,
   className,
 }: StatusFilterProps) {

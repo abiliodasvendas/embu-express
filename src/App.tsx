@@ -3,7 +3,7 @@ import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AppLayout from "@/layouts/AppLayout";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
@@ -11,39 +11,27 @@ import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
 
 import { lazyLoad } from "@/utils/lazyLoad";
-import { Collaborators } from "./pages/admin/Collaborators";
+import { RequireRole } from "./components/auth/RequireRole";
+import { usePermissions } from "./hooks/business/usePermissions";
+import { ADMIN_ROLES, OPERATIONAL_ROLES } from "./types/auth";
 
 // Lazy loading de rotas principais
 const Login = lazyLoad(() => import("./pages/Login"));
 const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
+const SelfRegistration = lazyLoad(() => import("./pages/public/SelfRegistration"));
 
 // Admin - Embu Express
 const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
+const Collaborators = lazyLoad(() => import("./pages/admin/Collaborators"));
+const CollaboratorDetails = lazyLoad(() => import("./pages/admin/CollaboratorDetails"));
 const Clients = lazyLoad(() => import("./pages/admin/Clients"));
 const Empresas = lazyLoad(() => import("./pages/admin/Empresas"));
+const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
 
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
-/**
- * Configuração do React Query
- * 
- * staleTime: Tempo que os dados são considerados "frescos" (não refaz requisição)
- * cacheTime: Tempo que os dados ficam no cache após componente desmontar
- * refetchOnWindowFocus: Refaz requisição ao focar a janela (útil para dados em tempo real)
- * refetchOnReconnect: Refaz requisição ao reconectar à internet
- */
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutos - dados frescos por 5 min
-      gcTime: 1000 * 60 * 30, // 30 minutos - mantém no cache por 30 min (antigo cacheTime)
-      refetchOnWindowFocus: true, // Atualiza ao focar a janela
-      refetchOnReconnect: true, // Atualiza ao reconectar
-      retry: false, // Não tenta novamente se falhar
-      refetchOnMount: false, // Não refaz ao montar se dados estão frescos
-    },
-  },
-});
+
+import { queryClient } from "@/services/queryClient";
 
 const App = () => {
   // Componente de loading para Suspense
@@ -67,6 +55,11 @@ const App = () => {
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
             {/* Rotas Públicas */}
+            <Route
+              path="/cadastro"
+              element={<SelfRegistration />}
+            />
+
             <Route
               path="/login"
               element={
@@ -99,13 +92,21 @@ const App = () => {
                 </AppGate>
               }
             >
-              <Route path="controle-ponto" element={<TimeTracking />} />
-              <Route path="colaboradores" element={<Collaborators />} />
-              <Route path="clientes" element={<Clients />} />
-              <Route path="empresas" element={<Empresas />} />
-              
-              {/* Fallback para a home do admin */}
-              <Route path="inicio" element={<Navigate to="/controle-ponto" replace />} />
+              <Route path="inicio" element={<RedirectByRole />} />
+
+              {/* Rotas Operacionais (Motoboy) */}
+              <Route element={<RequireRole allowedRoles={OPERATIONAL_ROLES} />}>
+                 <Route path="registrar-ponto" element={<RegistrarPonto />} />
+              </Route>
+
+              {/* Rotas Administrativas (Admin/SuperAdmin) */}
+              <Route element={<RequireRole allowedRoles={ADMIN_ROLES} />}>
+                <Route path="controle-ponto" element={<TimeTracking />} />
+                <Route path="colaboradores" element={<Collaborators />} />
+                <Route path="colaboradores/:id" element={<CollaboratorDetails />} />
+                <Route path="clientes" element={<Clients />} />
+                <Route path="empresas" element={<Empresas />} />
+              </Route>
             </Route>
 
             <Route path="*" element={<NotFound />} />
@@ -118,6 +119,29 @@ const App = () => {
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
+};
+
+// Componente auxiliar para redirecionamento inteligente
+const RedirectByRole = () => {
+    const { isAdmin, isMotoboy, isLoading } = usePermissions();
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (isAdmin) {
+        return <Navigate to="/controle-ponto" replace />;
+    }
+    if (isMotoboy) {
+        return <Navigate to="/registrar-ponto" replace />;
+    }
+    
+    // Default fallback
+    return <Navigate to="/registrar-ponto" replace />;
 };
 
 export default App;

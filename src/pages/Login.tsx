@@ -8,44 +8,39 @@ import { useNavigate } from "react-router-dom";
 // Third-party
 import { cpfSchema } from "@/schemas/common";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Lock, User, Wand2 } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
+import { ForgotPasswordDialog } from "@/components/dialogs/ForgotPasswordDialog";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
 // Services
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/services/api/client";
+import { sessionManager } from "@/services/sessionManager";
 
 // Utils
 import { messages } from "@/constants/messages";
-import { useSEO } from "@/hooks/useSEO";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 
 export default function Login() {
-  // Permitir indexação da página de login
-  useSEO({
-    noindex: true,
-    title: "Login - Embu Express | Área Administrativa",
-    description: "Acesse a área administrativa do Embu Express.",
-  });
-  
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
+  const [showForgotDialog, setShowForgotDialog] = useState(false);
 
   const formSchema = z.object({
     cpfcnpj: cpfSchema,
@@ -55,144 +50,52 @@ export default function Login() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      cpfcnpj: "395.423.918-38",
-      senha: "Ogaiht+1",
+      cpfcnpj: "", // Defaults empty for security
+      senha: "",
     },
   });
 
-  const handleForgotPassword = useCallback(async () => {
-    const cpfDigits = form.getValues("cpfcnpj")?.replace(/\D/g, "");
-    if (!cpfDigits) {
-      toast.info(messages.auth.info.informeCpfDescricao);
-      return;
-    }
-
-    try {
-      setRefreshing(true);
-
-      const { data: usuario, error } = await (supabase as any)
-        .from("usuarios")
-        .select("email")
-        .eq("cpf", cpfDigits)
-        .single();
-
-      if (error || !usuario?.email) {
-        toast.error(messages.auth.erro.cpfNaoEncontrado, {
-          description: messages.auth.erro.cpfNaoEncontradoDescricao,
-        });
-        return;
-      }
-
-      const maskedEmail = (() => {
-        const [user, domain] = usuario.email.split("@");
-        const maskedUser =
-          user.length <= 3
-            ? user[0] + "*".repeat(user.length - 1)
-            : user.slice(0, 3) + "*".repeat(user.length - 3);
-        const domainParts = domain.split(".");
-        const maskedDomain =
-          domainParts[0].slice(0, 3) +
-          "*".repeat(Math.max(0, domainParts[0].length - 3));
-        return `${maskedUser}@${maskedDomain}.${domainParts
-          .slice(1)
-          .join(".")}`;
-      })();
-
-      const redirectUrl = `${
-        import.meta.env.VITE_PUBLIC_APP_DOMAIN
-      }/nova-senha`;
-
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        usuario.email,
-        { redirectTo: redirectUrl }
-      );
-
-      if (resetError) throw resetError;
-
-      toast.success(messages.auth.sucesso.emailEnviado, {
-        description: `Enviamos o link para ${maskedEmail}. Verifique sua caixa de entrada e o spam.`,
-      });
-    } catch (err: any) {
-      toast.error(messages.auth.erro.emailEnviado, {
-        description: "Tente novamente em alguns minutos ou entre em contato com o suporte.",
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  }, [form]);
+  const handleForgotPassword = useCallback(() => {
+    setShowForgotDialog(true);
+  }, []);
 
   const handleLogin = async (data: any) => {
     setLoading(true);
 
     try {
       const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
-      const { data: usuario, error: usuarioError } = await (supabase as any)
-        .from("usuarios")
-        .select(`
-          email,
-          perfil:perfis (nome)
-        `)
-        .eq("cpf", cpfcnpjDigits)
-        .single();
 
-      if (usuarioError || !usuario) {
-        form.setError("cpfcnpj", {
-          type: "manual",
-          message: "CPF não encontrado",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: usuario.email,
-        password: data.senha,
+      // Call Backend Login
+      const response = await api.post("/auth/login", {
+        cpf: cpfcnpjDigits,
+        password: data.senha
       });
 
-      if (signInError) {
-        if (signInError.message.includes("Invalid login credentials")) {
-          form.setError("senha", {
-            type: "manual",
-            message: "Senha incorreta",
-          });
-        } else {
-          form.setError("root", {
-            type: "manual",
-            message: "Erro inesperado: " + signInError.message,
-          });
-        }
-        setLoading(false);
-        return;
-      }
+      const session = response.data;
+      
+      // Update Session Manager
+      await sessionManager.setSession(session.access_token, session.refresh_token);
 
-      const roleName = (usuario.perfil as any)?.nome;
-      const allowedAdminRoles = ["admin", "super_admin"];
-
-      if (roleName && allowedAdminRoles.includes(roleName)) {
-        localStorage.setItem("app_role", roleName);
-        navigate("/controle-ponto", { replace: true });
-      } else if (roleName === "motoboy") {
-        await supabase.auth.signOut();
-        toast.info(messages.auth.info.appMobileDesenvolvimento, {
-            description: messages.auth.info.aguardeLancamento
-        });
-        setLoading(false);
+      const user = session.user;
+      
+      // Let's navigate to /inicio and let RedirectByRole handle it
+      // BUT if it's first access, force password change
+      if (user.senha_padrao) {
+          toast.info("Primeiro acesso detectado", { description: "Por favor, defina uma nova senha para sua segurança." });
+          navigate("/nova-senha", { replace: true, state: { forced: true } });
       } else {
-        await supabase.auth.signOut();
-        toast.error(messages.auth.erro.naoAutorizado, {
-            description: "Seu perfil não possui permissão para acessar esta área."
-        });
-        setLoading(false);
+          navigate("/inicio", { replace: true });
       }
       
     } catch (error: any) {
-      toast.error(messages.auth.erro.login, {
-        description: error.message || messages.erro.generico,
-      });
-      form.setError("root", {
-        type: "manual",
-        message: "Erro inesperado",
-      });
+      console.error(error);
+      const msg = error.response?.data?.error || messages.auth.erro.login;
+      
+      if (msg.includes("Credenciais inválidas") || msg.includes("não encontrado")) {
+          form.setError("root", { message: "CPF ou senha incorretos" });
+      } else {
+          toast.error("Erro ao entrar", { description: msg });
+      }
       setLoading(false);
     }
   };
@@ -211,10 +114,23 @@ export default function Login() {
         <Card className="w-full max-w-md shadow-2xl border-0 rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500">
           <CardContent className="p-6 sm:p-10 bg-white/80 backdrop-blur-sm">
             <Form {...form}>
-              <div className="text-center mb-6 sm:mb-8">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
+              <div className="text-center mb-6 sm:mb-8 relative group">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 text-center">
                   Área Administrativa
                 </h1>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    form.setValue("cpfcnpj", "395.423.918-38");
+                    form.setValue("senha", "Ogaiht+1");
+                  }}
+                  className="absolute -top-2 -right-2 w-8 h-8 rounded-full text-blue-600 hover:bg-blue-50"
+                  title="Acesso Rápido"
+                >
+                  <Wand2 className="h-4 w-4" />
+                </Button>
               </div>
 
               <form
@@ -311,6 +227,19 @@ export default function Login() {
                   >
                     Esqueci minha senha
                   </button>
+
+                  <div className="border-t border-gray-100 w-full my-2"></div>
+
+                  <p className="text-sm text-gray-600">
+                    Não possui conta?{" "}
+                    <button
+                        type="button"
+                        onClick={() => navigate("/cadastro")}
+                        className="text-blue-600 font-bold hover:underline"
+                    >
+                        Cadastre-se aqui
+                    </button>
+                  </p>
                 </div>
               </form>
             </Form>
@@ -319,6 +248,7 @@ export default function Login() {
       </div>
 
       <LoadingOverlay active={refreshing} text="Aguarde..." />
+      <ForgotPasswordDialog open={showForgotDialog} onOpenChange={setShowForgotDialog} />
     </>
   );
 }

@@ -63,10 +63,6 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
           
           if (resistance > 0) {
             if (e.cancelable) {
-               // Only prevent default if we are actually pulling to refresh
-               // and not just scrolling up (handled by window.scrollY check)
-               // But standard behavior might conflict? 
-               // Van360 implementation does `e.preventDefault()` here.
                e.preventDefault(); 
             }
             y.set(resistance);

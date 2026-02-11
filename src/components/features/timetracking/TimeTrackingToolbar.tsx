@@ -27,7 +27,7 @@ import { STATUS_PONTO } from "@/constants/ponto";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { cn } from "@/lib/utils";
 import { getStatusLabel } from "@/utils/ponto";
-import { Plus, Search, Wand2, X } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { useState } from "react";
 
 interface TimeTrackingToolbarProps {
@@ -42,8 +42,6 @@ interface TimeTrackingToolbarProps {
       clienteId: string;
   };
   onFiltersChange: (key: string, value: string) => void;
-  onGenerateMockData: () => void;
-  isGenerating?: boolean;
   onRegister: () => void;
   collaborators: any[];
   clients: any[];
@@ -58,8 +56,6 @@ export function TimeTrackingToolbar({
   onDateChange,
   filters,
   onFiltersChange, // Live update for Desktop
-  onGenerateMockData,
-  isGenerating,
   onRegister,
   collaborators,
   clients,
@@ -224,32 +220,6 @@ export function TimeTrackingToolbar({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
              {/* 1. Date Navigation */}
             <DateNavigation date={date} onNavigate={onDateChange} />
-
-            {/* 2. Actions */}
-            <Button 
-                variant="outline"
-                className="h-10 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 font-semibold gap-2 transition-all active:scale-95 hidden md:flex rounded-xl"
-                onClick={onGenerateMockData}
-                disabled={isGenerating}
-            >
-                <Wand2 className={cn("w-4 h-4", isGenerating && "animate-spin")} />
-                {isGenerating ? "Gerando..." : "Gerar Dados Fakes"}
-            </Button>
-
-
-        </div>
-
-        {/* Mobile Mock Button */}
-        <div className="md:hidden">
-             <Button
-                onClick={onGenerateMockData}
-                variant="outline"
-                className="w-full gap-2 uppercase font-bold text-blue-600 border-blue-100 hover:bg-blue-50 rounded-xl h-11"
-                disabled={isGenerating}
-              >
-                <Wand2 className={cn("h-4 w-4", isGenerating && "animate-spin")} />
-                GERAR DADOS FAKES
-              </Button>
         </div>
 
         <div className="flex flex-col md:flex-row items-center gap-3">

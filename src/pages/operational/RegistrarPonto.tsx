@@ -1,3 +1,4 @@
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -7,7 +8,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { useGeolocation } from "@/hooks/ui/useGeolocation";
 import { apiClient } from "@/services/api/client";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Pause, Play, ShieldAlert, Square } from "lucide-react";
+import { MapPin, Pause, Play, RefreshCw, ShieldAlert, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type PontoAction = 'idle' | 'working' | 'paused';
@@ -16,7 +17,7 @@ export default function RegistrarPonto() {
     const { setPageTitle } = useLayout();
     const { user } = useSession();
     const { profile: userProfile } = useProfile(user?.id);
-    const { location, requestLocation, loading: loadingGeo } = useGeolocation();
+    const { location, requestLocation, loading: loadingGeo, error: geoError } = useGeolocation();
     
     const { mutateAsync: togglePonto } = useTogglePonto();
     const { mutateAsync: iniciarPausa } = useIniciarPausa();
@@ -212,10 +213,27 @@ export default function RegistrarPonto() {
             {/* Smart Action Button - Hidden if no shifts */}
             {hasShifts && (
                 <div className="grid grid-cols-1 gap-4">
+                    {/* Geolocation Alert */}
+                    {(geoError || (!location && !loadingGeo)) && (
+                        <Alert variant="destructive" className="rounded-3xl border-none shadow-lg bg-red-50 text-red-900 animate-in fade-in slide-in-from-top-4 duration-500 mb-2">
+                            <ShieldAlert className="h-5 w-5 text-red-600" />
+                            <AlertTitle className="font-bold">Localização Requerida</AlertTitle>
+                            <AlertDescription className="text-red-700 font-medium">
+                                {geoError ? "Sua permissão de localização foi negada ou o sinal está indisponível." : "Aguardando sinal de GPS para liberar o registro."}
+                                <button 
+                                    onClick={() => requestLocation()}
+                                    className="block mt-2 text-red-900 font-bold underline hover:text-red-700 transition-colors flex items-center"
+                                >
+                                    <RefreshCw className="w-3 h-3 mr-1" /> Tentar Novamente
+                                </button>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
                     {status === 'idle' && (
                         <Button 
                             onClick={handleToggle}
-                            disabled={loadingGeo}
+                            disabled={loadingGeo || !location}
                             className="h-28 text-2xl font-black rounded-[2rem] shadow-xl bg-green-600 hover:bg-green-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100"
                         >
                             {loadingGeo ? <MapPin className="animate-pulse w-8 h-8 mr-3"/> : <Play className="w-8 h-8 mr-3" />}
@@ -228,15 +246,16 @@ export default function RegistrarPonto() {
                             <Button 
                                 variant="outline" 
                                 onClick={handlePauseStart}
-                                className="h-24 text-xl font-bold rounded-[2rem] border-4 border-yellow-500 text-yellow-600 hover:bg-yellow-50 shadow-lg"
+                                disabled={loadingGeo || !location}
+                                className="h-24 text-xl font-bold rounded-[2rem] border-4 border-yellow-500 text-yellow-600 hover:bg-yellow-50 shadow-lg disabled:opacity-50"
                             >
                                 <Pause className="w-7 h-7 mr-2" />
                                 PAUSA
                             </Button>
                             <Button 
                                 onClick={handleToggle}
-                                disabled={loadingGeo}
-                                className="h-24 text-xl font-bold rounded-[2rem] shadow-xl bg-red-600 hover:bg-red-700"
+                                disabled={loadingGeo || !location}
+                                className="h-24 text-xl font-bold rounded-[2rem] shadow-xl bg-red-600 hover:bg-red-700 disabled:opacity-50"
                             >
                                 {loadingGeo ? <MapPin className="animate-pulse w-7 h-7 mr-2"/> : <Square className="w-7 h-7 mr-2" />}
                                 ENCERRAR
@@ -247,10 +266,11 @@ export default function RegistrarPonto() {
                     {status === 'paused' && (
                         <Button 
                             onClick={handlePauseEnd}
-                            className="h-28 text-2xl font-black rounded-[2rem] shadow-xl bg-yellow-600 hover:bg-yellow-700 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            disabled={loadingGeo || !location}
+                            className="h-28 text-2xl font-black rounded-[2rem] shadow-xl bg-yellow-600 hover:bg-yellow-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                         >
-                            <Play className="w-8 h-8 mr-3" />
-                            RETOMAR TRABALHO
+                            {loadingGeo ? <MapPin className="animate-pulse w-8 h-8 mr-3"/> : <Play className="w-8 h-8 mr-3" />}
+                            {loadingGeo ? "LOCALIZANDO..." : "RETOMAR TRABALHO"}
                         </Button>
                     )}
                 </div>

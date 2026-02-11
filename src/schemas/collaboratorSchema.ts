@@ -1,4 +1,5 @@
 import { messages } from "@/constants/messages";
+import { PERFIL_ID } from "@/constants/roles";
 import { z } from "zod";
 import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
 
@@ -44,6 +45,9 @@ const baseSchema = z.object({
   status: z.enum(["ATIVO", "INATIVO", "PENDENTE"]).default("ATIVO"),
   senha_padrao: z.boolean().optional(),
   data_inicio: z.string().optional(), // Admissão
+  valor_ajuda_custo: z.coerce.number().optional().default(0),
+  empresa_financeiro_id: z.string().optional(),
+  nome_operacao: z.string().optional(),
 
   // Vínculos (Turnos)
   links: z.array(z.object({
@@ -65,10 +69,9 @@ const motoboyFields = z.object({
     cnh_registro: z.string().min(1, messages.validacao.campoObrigatorio),
     cnh_vencimento: dateSchema(true, true),
     cnh_categoria: z.string().min(1, messages.validacao.campoObrigatorio),
-    
     moto_modelo: z.string().min(1, messages.validacao.campoObrigatorio),
     moto_cor: z.string().min(1, messages.validacao.campoObrigatorio),
-    moto_ano: z.string().min(1, messages.validacao.campoObrigatorio).length(4, "Ano deve ter 4 dígitos").regex(/^\d+$/, "Ano deve ser numérico"),
+    moto_ano: z.string().min(1, messages.validacao.campoObrigatorio),
     moto_placa: placaSchema.refine((val) => val.length > 0, messages.validacao.campoObrigatorio),
 
     cnpj: z.string().min(14, messages.validacao.campoObrigatorio),
@@ -89,7 +92,7 @@ const standardFields = z.object({
 
 // Schema for Motoboy (perfil_id "3")
 const motoboySchema = baseSchema.merge(motoboyFields).extend({
-    perfil_id: z.literal("3", {
+    perfil_id: z.literal(PERFIL_ID.MOTOBOY, {
         errorMap: () => ({ message: messages.validacao.campoObrigatorio }) 
     }),
 });
@@ -97,7 +100,7 @@ const motoboySchema = baseSchema.merge(motoboyFields).extend({
 // Schema for Others (perfil_id != "3")
 // We ensure perfil_id is present and not "3".
 const standardSchema = baseSchema.merge(standardFields).extend({
-    perfil_id: z.string().min(1, messages.validacao.campoObrigatorio).refine((val) => val !== "3", {
+    perfil_id: z.coerce.string().min(1, messages.validacao.campoObrigatorio).refine((val) => val !== PERFIL_ID.MOTOBOY, {
         message: "Perfil inválido para schema padrão"
     }),
 });

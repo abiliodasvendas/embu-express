@@ -41,14 +41,12 @@ export interface Empresa {
 
 export interface Usuario {
   id: string; // UUID references auth.users
-  perfil_id: number;
-  cliente_id?: number | null;
+  perfil_id: string; // "1", "2", "3"
   nome_completo: string;
   cpf: string;
   email: string;
   senha_padrao: boolean;
   status: 'PENDENTE' | 'ATIVO' | 'INATIVO';
-  // ativo: boolean; // Deprecated
   created_at?: string;
   updated_at?: string;
   
@@ -75,18 +73,12 @@ export interface Usuario {
   // Financeiro
   nome_operacao?: string;
   empresa_financeiro_id?: number | null;
-  valor_contrato?: number;
-  valor_aluguel?: number;
   valor_ajuda_custo?: number;
-  valor_bonus?: number; // Zero Falta
-  valor_mei?: number;
 
   // Relacionamentos (virtual)
   perfil?: Perfil;
-  cliente?: Client; // Keeping Client as per original, assuming Cliente in snippet was a typo or future change
-  empresa_id?: number | null; // Added Link
-  empresa?: Empresa; // Aded Link
-  turnos?: UsuarioTurno[];
+  cliente?: Client; 
+  empresa?: Empresa; 
   links?: ColaboradorCliente[];
 }
 
@@ -119,20 +111,20 @@ export interface RegistroPonto {
   id: number; // BIGINT
   usuario_id: string; // UUID
   data_referencia: string; // DATE (YYYY-MM-DD)
-  entrada_hora?: string | null; // TIMESTAMP WITH TIME ZONE
+  entrada_hora: string; // TIMESTAMP WITH TIME ZONE
   entrada_km?: number | null;
-  entrada_lat?: number | null;
-  entrada_long?: number | null;
   saida_hora?: string | null; // TIMESTAMP WITH TIME ZONE
   saida_km?: number | null;
-  saida_lat?: number | null;
-  saida_long?: number | null;
   status_entrada?: string | null; // 'VERDE', 'AMARELO', 'VERMELHO', 'CINZA'
   status_saida?: string | null;
   observacao?: string | null;
   criado_por?: string | null; // UUID
   created_at?: string;
   updated_at?: string;
+  cliente_id?: number | null;
+  empresa_id?: number | null;
+  entrada_loc?: any; // JSONB geolocalização
+  saida_loc?: any; // JSONB geolocalização
   // Relacionamentos (virtual)
   usuario?: Usuario;
   detalhes_calculo?: {

@@ -87,7 +87,7 @@ class SessionManager {
                 }
 
                 // Call Backend
-                const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+                const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
                 const response = await fetch(`${API_URL}/auth/refresh`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },

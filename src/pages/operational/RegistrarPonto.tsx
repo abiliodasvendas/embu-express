@@ -1,12 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useFinalizarPausa, useIniciarPausa, useTogglePonto } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useGeolocation } from "@/hooks/ui/useGeolocation";
 import { apiClient } from "@/services/api/client";
-import { toast } from "@/utils/notifications/toast";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Pause, Play, ShieldAlert, Square } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -19,6 +18,10 @@ export default function RegistrarPonto() {
     const { profile: userProfile } = useProfile(user?.id);
     const { location, requestLocation, loading: loadingGeo } = useGeolocation();
     
+    const { mutateAsync: togglePonto } = useTogglePonto();
+    const { mutateAsync: iniciarPausa } = useIniciarPausa();
+    const { mutateAsync: finalizarPausa } = useFinalizarPausa();
+
     const [status, setStatus] = useState<PontoAction>("idle");
     const [activeShift, setActiveShift] = useState<{
         nome: string;
@@ -127,15 +130,13 @@ export default function RegistrarPonto() {
         const loc = await requestLocation();
         if (!loc) return;
         try {
-            await apiClient.post('/pontos/toggle', {
+            await togglePonto({
                 usuario_id: user?.id,
                 location: loc
             });
-            toast.success(messages.ponto.sucesso.registrado);
             refetch();
         } catch (error) {
             console.error(error);
-            toast.error(messages.ponto.erro.registrar);
         }
     };
 
@@ -144,15 +145,13 @@ export default function RegistrarPonto() {
         const loc = await requestLocation();
         if (!loc) return;
         try {
-            await apiClient.post('/pontos/pausa/inicio', {
-                ponto_id: pontoHoje.id,
-                inicio_loc: loc
+            await iniciarPausa({
+                pontoId: pontoHoje.id,
+                data: { inicio_loc: loc }
             });
-            toast.success("Pausa iniciada!");
             refetch();
         } catch (error) {
             console.error(error);
-            toast.error("Erro ao iniciar pausa.");
         }
     };
 
@@ -163,15 +162,13 @@ export default function RegistrarPonto() {
         const loc = await requestLocation();
         if (!loc) return;
         try {
-            await apiClient.post('/pontos/pausa/fim', {
-                id: openPause.id,
-                fim_loc: loc
+            await finalizarPausa({
+                pausaId: openPause.id,
+                data: { fim_loc: loc }
             });
-            toast.success("Pausa finalizada!");
             refetch();
         } catch (error) {
             console.error(error);
-            toast.error("Erro ao finalizar pausa.");
         }
     };
 

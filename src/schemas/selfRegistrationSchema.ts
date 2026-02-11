@@ -23,13 +23,14 @@ export const selfRegistrationSchema = z.object({
   chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
   moto_modelo: z.string().min(1, messages.validacao.campoObrigatorio),
   moto_cor: z.string().min(1, messages.validacao.campoObrigatorio),
-  moto_ano: z.string().min(1, messages.validacao.campoObrigatorio).length(4, "Ano deve ter 4 dígitos").regex(/^\d+$/, "Apenas números"),
+  moto_ano: z.string().min(1, messages.validacao.campoObrigatorio),
   moto_placa: placaSchema.refine((val) => val.length > 0, messages.validacao.campoObrigatorio),
   
   // CNH Defaults - Mandatory
   cnh_registro: z.string().min(1, messages.validacao.campoObrigatorio),
   cnh_vencimento: dateSchema(true, true), // allowFuture = true for expiry
   cnh_categoria: z.string().min(1, messages.validacao.campoObrigatorio),
+  nome_operacao: z.string().optional(),
 });
 
 export type SelfRegistrationFormData = z.infer<typeof selfRegistrationSchema>;

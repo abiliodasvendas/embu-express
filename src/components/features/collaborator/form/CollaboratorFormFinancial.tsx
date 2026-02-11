@@ -31,7 +31,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                 name="empresa_financeiro_id"
                 render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Empresa do Contrato</FormLabel>
+                    <FormLabel>Empresa Pagadora (Contrato)</FormLabel>
                     <Select 
                         onValueChange={field.onChange} 
                         value={field.value}

@@ -20,7 +20,7 @@ export {
 export { useActiveCollaborators, useCollaborator, useCollaborators, useRoles } from "./api/useCollaborators";
 export { useCreateEmpresa, useDeleteEmpresa, useToggleEmpresaStatus, useUpdateEmpresa } from "./api/useEmpresaMutations";
 export { useEmpresa, useEmpresas } from "./api/useEmpresas";
-export { useCreatePonto, useDeletePonto, useUpdatePonto } from "./api/usePontoMutations";
+export { useCreatePonto, useDeletePonto, useFinalizarPausa, useIniciarPausa, useTogglePonto, useUpdatePonto } from "./api/usePontoMutations";
 export { useClientActions } from "./business/useClientActions";
 export { useCollaboratorActions } from "./business/useCollaboratorActions";
 

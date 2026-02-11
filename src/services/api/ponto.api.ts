@@ -14,7 +14,7 @@ export const pontoApi = {
   deleteRegistro: (id: number): Promise<void> =>
     apiClient.delete(`/pontos/${id}`).then(res => res.data),
 
-  toggle: (data: { usuario_id: string; data_referencia?: string; hora?: string; km?: number; localizacao?: string }): Promise<any> =>
+  toggle: (data: { usuario_id: string; data_referencia?: string; hora?: string; km?: number; location?: any }): Promise<any> =>
     apiClient.post(`/pontos/toggle`, data).then(res => res.data),
 
   iniciarPausa: (id: number, data: { inicio_hora?: string; inicio_km?: number; inicio_loc?: string }): Promise<any> =>

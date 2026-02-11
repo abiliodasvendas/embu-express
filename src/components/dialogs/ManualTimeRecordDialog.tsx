@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useActiveCollaborators, useCreatePonto } from "@/hooks";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
+import { ManualTimeRecordFormValues, manualTimeRecordSchema } from "@/schemas/pontoSchema";
 import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -35,7 +36,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
     resolver: zodResolver(manualTimeRecordSchema),
     defaultValues: {
       usuario_id: "",
-      data: format(new Date(), "yyyy-MM-dd"),
+      data_referencia: format(new Date(), "yyyy-MM-dd"),
       entrada_hora: "",
       saida_hora: "",
     },
@@ -54,7 +55,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
      if (isOpen) {
          form.reset({
              usuario_id: "",
-             data: format(new Date(), "yyyy-MM-dd"),
+             data_referencia: format(new Date(), "yyyy-MM-dd"),
              entrada_hora: "",
              saida_hora: "",
          });
@@ -65,7 +66,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
   const onSubmit = async (values: ManualTimeRecordFormValues) => {
     try {
       // 1. Resolver Datas (com auto-overnight)
-      const { entrada, saida } = TimeRules.resolveDates(values.data, values.entrada_hora, values.saida_hora || undefined);
+      const { entrada, saida } = TimeRules.resolveDates(values.data_referencia, values.entrada_hora, values.saida_hora || undefined);
 
       // 2. Validação Explicita de Máximos (Consistência com Backend)
       if (saida) {
@@ -78,7 +79,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
 
       await createPonto({
         usuario_id: values.usuario_id,
-        data_referencia: values.data,
+        data_referencia: values.data_referencia,
         entrada_hora: entrada.toISOString(),
         entrada_km: null, 
         saida_hora: saida ? saida.toISOString() : null,
@@ -202,7 +203,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
 
                 <FormField
                 control={form.control}
-                name="data"
+                name="data_referencia"
                 render={({ field }) => (
                     <FormItem className="flex flex-col">
                     <FormLabel>Data de Referência <span className="text-red-500">*</span></FormLabel>

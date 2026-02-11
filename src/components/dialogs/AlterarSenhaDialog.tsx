@@ -1,22 +1,23 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { ChangePasswordFormData, changePasswordSchema } from "@/schemas/userSchema";
 import { api } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { toast } from "@/utils/notifications/toast";

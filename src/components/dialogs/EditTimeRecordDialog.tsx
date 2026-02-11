@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUpdatePonto } from "@/hooks/api/usePontoMutations";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { EditTimeRecordFormValues, editTimeRecordSchema } from "@/schemas/pontoSchema";
 import { RegistroPonto } from "@/types/database";
 import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";

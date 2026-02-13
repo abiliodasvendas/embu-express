@@ -1,22 +1,22 @@
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Perfil } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
-import { cpfMask, dateMask, phoneMask } from "@/utils/masks";
+import { cpfMask, dateMask, phoneMask, rgMask } from "@/utils/masks";
 import { Eye, Mail, User } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
@@ -40,6 +40,14 @@ export function CollaboratorFormPersonal({
 
   return (
     <div className="space-y-4">
+      {/* Hidden ID for watch functionality */}
+      <FormField
+        control={control}
+        name="id"
+        render={({ field }) => (
+          <input type="hidden" {...field} value={field.value || ""} />
+        )}
+      />
       {/* Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
@@ -166,6 +174,8 @@ export function CollaboratorFormPersonal({
                       errors.rg && "border-red-500 focus-visible:ring-red-200",
                     )}
                     {...field}
+                    onChange={(e) => field.onChange(rgMask(e.target.value))}
+                    maxLength={12}
                   />
                 </FormControl>
                 <FormMessage />

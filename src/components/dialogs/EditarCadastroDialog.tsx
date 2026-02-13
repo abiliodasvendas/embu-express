@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
@@ -23,7 +23,7 @@ import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Mail, User, X } from "lucide-react";
+import { Hash, Loader2, Mail, User, X } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 
@@ -96,7 +96,7 @@ export default function EditarCadastroDialog({
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Fechar</span>
           </DialogClose>
           
           <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
@@ -107,105 +107,106 @@ export default function EditarCadastroDialog({
           </DialogTitle>
         </div>
 
-        <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
           {isLoading ? (
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
-          </div>
-        ) : (
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-6 p-6 pt-2"
-            >
-              <FormField
-                control={form.control}
-                name="nome_completo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome completo <span className="text-red-500">*</span></FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                        <Input
-                          placeholder="Digite seu nome completo"
-                          {...field}
-                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            </div>
+          ) : (
+            <Form {...form}>
+                <form
+                    id="edit-profile-form"
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="space-y-5 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm"
+                >
+                    <FormField
+                        control={form.control}
+                        name="nome_completo"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-gray-700 font-bold">Nome Completo <span className="text-red-500">*</span></FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            placeholder="Seu nome completo"
+                                            {...field}
+                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all shadow-none"
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="cpf"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CPF</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        readOnly
-                        className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                        control={form.control}
+                        name="cpf"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-gray-700 font-bold">CPF</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
+                                        <Input
+                                            {...field}
+                                            readOnly
+                                            className="pl-10 h-11 rounded-xl bg-gray-100 border-gray-100 text-gray-400 cursor-not-allowed shadow-none"
+                                        />
+                                    </div>
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-mail</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                        <Input
-                          {...field}
-                          readOnly
-                          className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-            </form>
-          </Form>
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-gray-700 font-bold">E-mail</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
+                                        <Input
+                                            {...field}
+                                            readOnly
+                                            className="pl-10 h-11 rounded-xl bg-gray-100 border-gray-100 text-gray-400 cursor-not-allowed shadow-none"
+                                        />
+                                    </div>
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                </form>
+            </Form>
           )} 
         </div>
 
-        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
             disabled={form.formState.isSubmitting}
-            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white transition-colors"
           >
             Cancelar
           </Button>
           <Button 
             type="submit" 
-            onClick={form.handleSubmit(handleSubmit)}
+            form="edit-profile-form"
             disabled={form.formState.isSubmitting}
-            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
+            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
           >
             {form.formState.isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Salvando...
               </>
             ) : (
-              "Salvar"
+              "Salvar Alterações"
             )}
           </Button>
         </div>

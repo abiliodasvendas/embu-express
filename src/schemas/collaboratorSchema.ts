@@ -3,8 +3,10 @@ import { PERFIL_ID } from "@/constants/roles";
 import { z } from "zod";
 import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
 
-// Helper for time duration check
+// Auxiliar para a validação de conflitos de horários
 const checkLinkConflicts = (links: any[], ctx: any) => {
+    if (!links) return;
+    
     const toMinutes = (time: string) => {
         const [h, m] = time?.split(":").map(Number) || [0, 0];
         return h * 60 + m;
@@ -29,8 +31,10 @@ const checkLinkConflicts = (links: any[], ctx: any) => {
     }
 };
 
-const baseSchema = z.object({
-  // Dados Pessoais
+// 1. Schema Base: Campos comuns a todos os perfis
+// Garante que o perfil_id tenha a mensagem "Campo obrigatório" padrão
+const commonSchema = z.object({
+  id: z.string().optional(),
   nome_completo: z.string().min(3, messages.validacao.campoObrigatorio),
   email: z.string().min(1, messages.validacao.campoObrigatorio).email("E-mail inválido"),
   cpf: cpfSchema,
@@ -40,23 +44,18 @@ const baseSchema = z.object({
   endereco_completo: z.string().optional(),
   telefone: phoneSchema,
   telefone_recado: z.string().optional(),
-  
-  // Configurações
   status: z.enum(["ATIVO", "INATIVO", "PENDENTE"]).default("ATIVO"),
   senha_padrao: z.boolean().optional(),
-  data_inicio: z.string().optional(), // Admissão
+  data_inicio: z.string().optional(),
   valor_ajuda_custo: z.coerce.number().optional().default(0),
   empresa_financeiro_id: z.string().optional(),
   nome_operacao: z.string().optional(),
-
-  // Vínculos (Turnos)
+  perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
   links: z.array(z.object({
     cliente_id: z.string().min(1, messages.validacao.campoObrigatorio),
     empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
     hora_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
     hora_fim: z.string().min(1, messages.validacao.campoObrigatorio),
-    
-    // Financeiro do Vínculo
     valor_contrato: z.coerce.number().optional(),
     valor_aluguel: z.coerce.number().optional(),
     valor_bonus: z.coerce.number().optional(),
@@ -65,47 +64,38 @@ const baseSchema = z.object({
   })).superRefine(checkLinkConflicts).optional().default([])
 });
 
-const motoboyFields = z.object({
+// 2. Schema Profissional: Condicional baseada no perfil
+const professionalSchema = z.union([
+  // Motoboy: Campos obrigatórios
+  z.object({
+    perfil_id: z.literal(PERFIL_ID.MOTOBOY),
     cnh_registro: z.string().min(1, messages.validacao.campoObrigatorio),
     cnh_vencimento: dateSchema(true, true),
     cnh_categoria: z.string().min(1, messages.validacao.campoObrigatorio),
     moto_modelo: z.string().min(1, messages.validacao.campoObrigatorio),
     moto_cor: z.string().min(1, messages.validacao.campoObrigatorio),
     moto_ano: z.string().min(1, messages.validacao.campoObrigatorio),
-    moto_placa: placaSchema.refine((val) => val.length > 0, messages.validacao.campoObrigatorio),
-
-    cnpj: z.string().min(14, messages.validacao.campoObrigatorio),
+    moto_placa: z.string().min(1, messages.validacao.campoObrigatorio).pipe(placaSchema),
+    cnpj: z.string().min(14, messages.validacao.campoObrigatorio).refine(v => v.replace(/\D/g, "").length >= 14, "CNPJ inválido"),
     chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
-});
-
-const standardFields = z.object({
+  }),
+  // Outros perfis: Campos opcionais
+  z.object({
+    perfil_id: z.string().refine(val => val !== PERFIL_ID.MOTOBOY),
     cnh_registro: z.string().optional(),
-    cnh_vencimento: dateSchema(false, true).optional().or(z.literal("")),
+    cnh_vencimento: z.string().optional(),
     cnh_categoria: z.string().optional(),
     moto_modelo: z.string().optional(),
     moto_cor: z.string().optional(),
     moto_ano: z.string().optional(),
-    moto_placa: placaSchema.optional().or(z.literal("")),
+    moto_placa: z.string().optional(),
     cnpj: z.string().optional(),
     chave_pix: z.string().optional(),
-});
+  })
+]);
 
-// Schema for Motoboy (perfil_id "3")
-const motoboySchema = baseSchema.merge(motoboyFields).extend({
-    perfil_id: z.literal(PERFIL_ID.MOTOBOY, {
-        errorMap: () => ({ message: messages.validacao.campoObrigatorio }) 
-    }),
-});
-
-// Schema for Others (perfil_id != "3")
-// We ensure perfil_id is present and not "3".
-const standardSchema = baseSchema.merge(standardFields).extend({
-    perfil_id: z.coerce.string().min(1, messages.validacao.campoObrigatorio).refine((val) => val !== PERFIL_ID.MOTOBOY, {
-        message: "Perfil inválido para schema padrão"
-    }),
-});
-
-// Union: specific first, then general
-export const collaboratorSchema = z.union([motoboySchema, standardSchema]);
+// 3. Schema Final: Interseção Híbrida
+// Isso garante validação paralela e mensagens de erro amigáveis
+export const collaboratorSchema = commonSchema.and(professionalSchema);
 
 export type CollaboratorFormData = z.infer<typeof collaboratorSchema>;

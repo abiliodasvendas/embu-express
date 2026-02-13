@@ -19,7 +19,7 @@ import { api } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Lock, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -56,12 +56,10 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
     try {
       setLoading(true);
       
-      // Update Password via Backend API (to reset senha_padrao flag)
       await api.put("/auth/update-password", { 
           password: data.senha 
       });
 
-      // Update session info locally to refresh the senha_padrao state in profile
       await sessionManager.refreshToken();
       
       toast.success("Senha definida com sucesso!", {
@@ -83,39 +81,39 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent 
-        className="sm:max-w-md border-none shadow-2xl rounded-3xl p-0 overflow-hidden"
+        className="w-full max-w-md p-0 gap-0 bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         hideCloseButton={true}
       >
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white flex flex-col items-center text-center">
-            <div className="bg-white/20 p-3 rounded-2xl mb-4 backdrop-blur-sm">
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white flex flex-col items-center text-center relative shrink-0">
+            <div className="bg-white/20 p-3 rounded-2xl mb-4 backdrop-blur-sm shadow-inner">
                 <ShieldAlert className="w-8 h-8 text-white" />
             </div>
-            <DialogTitle className="text-2xl font-bold mb-2 text-white">Segurança Obrigatória</DialogTitle>
-            <DialogDescription className="text-blue-50/90 text-sm">
-                Identificamos que você ainda está usando a senha padrão gerada pelo sistema. Por favor, defina uma nova senha pessoal para continuar.
+            <DialogTitle className="text-2xl font-black mb-2 text-white uppercase tracking-tight">Segurança Obrigatória</DialogTitle>
+            <DialogDescription className="text-blue-50/90 text-sm font-medium leading-relaxed">
+                Identificamos que você ainda está usando a senha padrão. Por favor, defina uma nova senha pessoal para continuar.
             </DialogDescription>
         </div>
 
-        <div className="p-8 bg-white">
+        <div className="flex-1 overflow-y-auto px-8 py-8 bg-gray-50/30">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <form id="guard-password-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
               <FormField
                 control={form.control}
                 name="senha"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">
-                      Nova senha
+                    <FormLabel className="text-gray-700 font-bold ml-1">
+                      Nova Senha
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="pl-12 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                          className="pl-12 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all shadow-none"
                           {...field}
                         />
                         <button
@@ -125,9 +123,9 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
                           tabIndex={-1}
                         >
                           {showPassword ? (
-                            <EyeOff className="h-5 w-5" />
+                            <EyeOff className="h-4 w-4" />
                           ) : (
-                            <Eye className="h-5 w-5" />
+                            <Eye className="h-4 w-4" />
                           )}
                         </button>
                       </div>
@@ -142,16 +140,16 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
                 name="confirmarSenha"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium ml-1">
-                      Confirmar nova senha
+                    <FormLabel className="text-gray-700 font-bold ml-1">
+                      Confirmar Senha
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="pl-12 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                          className="pl-12 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all shadow-none"
                           {...field}
                         />
                         <button
@@ -161,9 +159,9 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
                           tabIndex={-1}
                         >
                           {showConfirmPassword ? (
-                            <EyeOff className="h-5 w-5" />
+                            <EyeOff className="h-4 w-4" />
                           ) : (
-                            <Eye className="h-5 w-5" />
+                            <Eye className="h-4 w-4" />
                           )}
                         </button>
                       </div>
@@ -172,16 +170,19 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
                   </FormItem>
                 )}
               />
-
-              <Button
-                type="submit"
-                className="w-full h-11 rounded-xl text-base font-semibold shadow-lg bg-blue-600 hover:bg-blue-700 shadow-blue-500/20 transition-all mt-2"
-                disabled={loading}
-              >
-                {loading ? "Salvando..." : "Definir Senha e Acessar"}
-              </Button>
             </form>
           </Form>
+        </div>
+
+        <div className="p-6 bg-gray-50 border-t border-gray-100 shrink-0">
+          <Button
+            type="submit"
+            form="guard-password-form"
+            className="w-full h-12 rounded-xl text-lg font-black bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-1 active:scale-95 text-white"
+            disabled={loading}
+          >
+            {loading ? "Salvando..." : "Definir Senha e Entrar"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

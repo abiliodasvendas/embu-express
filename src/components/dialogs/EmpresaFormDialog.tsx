@@ -1,13 +1,19 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogFooter,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { messages } from "@/constants/messages";
 import { useCreateEmpresa, useUpdateEmpresa } from "@/hooks/api/useEmpresaMutations";
 import { Empresa } from "@/types/database";
@@ -16,7 +22,7 @@ import { cnpjMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Loader2, Wand2, X, Zap } from "lucide-react";
+import { Building2, FileText, Hash, Loader2, Wand2, X, Zap } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
@@ -39,13 +45,7 @@ export function EmpresaFormDialog({
   const isEditing = !!empresaToEdit;
   const isLoading = createEmpresa.isPending || updateEmpresa.isPending;
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<EmpresaFormValues>({
+  const form = useForm<EmpresaFormValues>({
     resolver: zodResolver(empresaSchema),
     defaultValues: {
       nome_fantasia: "",
@@ -57,24 +57,24 @@ export function EmpresaFormDialog({
   useEffect(() => {
     if (open) {
       if (empresaToEdit) {
-        reset({
+        form.reset({
           nome_fantasia: empresaToEdit.nome_fantasia,
           razao_social: empresaToEdit.razao_social || "",
           cnpj: cnpjMask(empresaToEdit.cnpj || ""),
         });
       } else {
-        reset({
+        form.reset({
           nome_fantasia: "",
           razao_social: "",
           cnpj: "",
         });
       }
     }
-  }, [open, empresaToEdit, reset]);
+  }, [open, empresaToEdit, form]);
 
   const handleFillMock = () => {
     const mockData = mockGenerator.empresa();
-    reset({
+    form.reset({
         nome_fantasia: mockData.nome_fantasia,
         razao_social: mockData.razao_social,
         cnpj: cnpjMask(mockData.cnpj),
@@ -110,35 +110,31 @@ export function EmpresaFormDialog({
     }
   };
 
-  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue("cnpj", cnpjMask(e.target.value));
-  };
-
   return (
-    <Dialog open={open} onOpenChange={() => safeCloseDialog(() => onOpenChange(false))}>
-      <DialogContent className="sm:max-w-[425px] p-0 gap-0 bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl" hideCloseButton>
-        <div className="bg-primary p-4 text-center relative shrink-0">
+    <Dialog open={open} onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}>
+      <DialogContent className="w-full max-w-lg p-0 gap-0 bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl" hideCloseButton>
+        <div className="bg-blue-600 p-4 text-center relative shrink-0">
             <div className="absolute left-4 top-4 flex gap-2">
                 <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-8 w-8"
+                    className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
                     onClick={handleFillMock}
                     title="Preencher com dados fictícios"
                 >
-                    <Wand2 className="h-4 w-4" />
+                    <Wand2 className="h-5 w-5" />
                 </Button>
                 {!isEditing && (
                     <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="text-white/70 hover:text-cyan-300 hover:bg-white/10 rounded-full h-8 w-8"
+                        className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
                         onClick={handleQuickCreate}
-                        title="Criação Rápida (Um clique)"
+                        title="Criação Rápida"
                     >
-                        <Zap className="h-4 w-4" />
+                        <Zap className="h-5 w-5" />
                     </Button>
                 )}
             </div>
@@ -154,71 +150,102 @@ export function EmpresaFormDialog({
             <DialogTitle className="text-xl font-bold text-white">
                 {isEditing ? "Editar Empresa" : "Nova Empresa"}
             </DialogTitle>
-            <div className="text-white/80 text-sm mt-1">
-                {isEditing
-                ? "Ajuste as informações da empresa selecionada."
-                : "Preencha os dados para cadastrar uma nova empresa."}
-            </div>
         </div>
 
-        <div className="p-6 bg-white space-y-4">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="nome_fantasia">Nome Fantasia <span className="text-red-500">*</span></Label>
-                <Input
-                id="nome_fantasia"
-                placeholder="Ex: Flow Logistics"
-                {...register("nome_fantasia")}
-                className="h-11 rounded-xl bg-gray-50"
-                />
-                {errors.nome_fantasia && (
-                <p className="text-sm text-red-500">{errors.nome_fantasia.message}</p>
-                )}
-            </div>
+        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
+            <Form {...form}>
+                <form id="empresa-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <FormField
+                        control={form.control}
+                        name="nome_fantasia"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nome Fantasia <span className="text-red-500">*</span></FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            placeholder="Ex: Flow Logistics"
+                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                            {...field}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-            <div className="space-y-2">
-                <Label htmlFor="razao_social">Razão Social</Label>
-                <Input
-                id="razao_social"
-                placeholder="Ex: Flow Logistics LTDA"
-                {...register("razao_social")}
-                className="h-11 rounded-xl bg-gray-50"
-                />
-            </div>
+                    <FormField
+                        control={form.control}
+                        name="razao_social"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Razão Social</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            placeholder="Ex: Flow Logistics LTDA"
+                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                            {...field}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-            <div className="space-y-2">
-                <Label htmlFor="cnpj">CNPJ</Label>
-                <Input
-                id="cnpj"
-                placeholder="00.000.000/0000-00"
-                {...register("cnpj")}
-                onChange={(e) => {
-                    handleCnpjChange(e);
-                }}
-                className="h-11 rounded-xl bg-gray-50"
-                />
-            </div>
+                    <FormField
+                        control={form.control}
+                        name="cnpj"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>CNPJ</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            placeholder="00.000.000/0000-00"
+                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                            {...field}
+                                            onChange={(e) => field.onChange(cnpjMask(e.target.value))}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </form>
+            </Form>
+        </div>
 
-            <DialogFooter className="pt-4">
-                <Button
-                type="button"
-                variant="outline"
-                onClick={() => safeCloseDialog(() => onOpenChange(false))}
-                disabled={isLoading}
-                className="h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-100 font-medium"
-                >
-                Cancelar
-                </Button>
-                <Button 
-                    type="submit" 
-                    disabled={isLoading}
-                    className="h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg transition-all active:scale-95"
-                >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? "Atualizar" : "Salvar"}
-                </Button>
-            </DialogFooter>
-            </form>
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="empresa-form"
+            disabled={isLoading}
+            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+          >
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : isEditing ? (
+              "Salvar Alterações"
+            ) : (
+              "Criar Empresa"
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

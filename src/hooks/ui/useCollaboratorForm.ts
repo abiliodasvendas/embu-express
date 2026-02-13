@@ -1,5 +1,6 @@
 import { Usuario } from "@/types/database";
-import { cpfMask } from "@/utils/masks";
+import { formatDateToBR } from "@/utils/formatters/date";
+import { cnpjMask, cpfMask, phoneMask, rgMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -14,6 +15,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
   const form = useForm<CollaboratorFormData>({
     resolver: zodResolver(collaboratorSchema),
     defaultValues: {
+      id: "",
       nome_completo: "",
       email: "",
       cpf: "",
@@ -44,6 +46,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
     if (open) {
       if (collaboratorToEdit) {
         form.reset({
+          id: collaboratorToEdit.id,
           nome_completo: collaboratorToEdit.nome_completo,
           email: collaboratorToEdit.email,
           cpf: cpfMask(collaboratorToEdit.cpf),
@@ -52,18 +55,18 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           senha_padrao: !!collaboratorToEdit.senha_padrao,
           links: (collaboratorToEdit as any).links || [],
           
-          rg: collaboratorToEdit.rg || "",
-          data_nascimento: collaboratorToEdit.data_nascimento || "",
+          rg: collaboratorToEdit.rg ? rgMask(collaboratorToEdit.rg) : "",
+          data_nascimento: collaboratorToEdit.data_nascimento ? formatDateToBR(collaboratorToEdit.data_nascimento) : "",
           nome_mae: collaboratorToEdit.nome_mae || "",
           endereco_completo: collaboratorToEdit.endereco_completo || "",
-          telefone: collaboratorToEdit.telefone || "",
-          telefone_recado: collaboratorToEdit.telefone_recado || "",
+          telefone: collaboratorToEdit.telefone ? phoneMask(collaboratorToEdit.telefone) : "",
+          telefone_recado: collaboratorToEdit.telefone_recado ? phoneMask(collaboratorToEdit.telefone_recado) : "",
           data_inicio: collaboratorToEdit.data_inicio || "",
           
           cnh_registro: collaboratorToEdit.cnh_registro || "",
-          cnh_vencimento: collaboratorToEdit.cnh_vencimento || "",
+          cnh_vencimento: collaboratorToEdit.cnh_vencimento ? formatDateToBR(collaboratorToEdit.cnh_vencimento) : "",
           cnh_categoria: collaboratorToEdit.cnh_categoria || "",
-          cnpj: collaboratorToEdit.cnpj || "",
+          cnpj: collaboratorToEdit.cnpj ? cnpjMask(collaboratorToEdit.cnpj) : "",
           chave_pix: collaboratorToEdit.chave_pix || "",
           moto_modelo: collaboratorToEdit.moto_modelo || "",
           moto_cor: collaboratorToEdit.moto_cor || "",
@@ -72,6 +75,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
         });
       } else {
         form.reset({
+          id: "",
           nome_completo: "",
           email: "",
           cpf: "",

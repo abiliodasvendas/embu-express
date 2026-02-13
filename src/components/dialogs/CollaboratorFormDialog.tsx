@@ -75,7 +75,7 @@ export function CollaboratorFormDialog({
     form.setValue("email", mockData.email);
     form.setValue("cpf", cpfMask(mockData.cpf));
     form.setValue("rg", mockGenerator.rg());
-    form.setValue("perfil_id", roles ? roles.find(r => r.nome === 'motoboy')?.id.toString() || "3" : "3");
+    form.setValue("perfil_id", (roles ? roles.find(r => r.nome === 'motoboy')?.id.toString() || "3" : "3") as any);
     
     // Fix: Format Date of Birth as DD/MM/YYYY for the mask
     const birthDate = new Date();
@@ -109,8 +109,9 @@ export function CollaboratorFormDialog({
     toast.success(messages.mock.sucesso.preenchido);
   };
 
-  const onSubmit = async (values: CollaboratorFormData) => {
+  const onSubmit = async (vals: CollaboratorFormData) => {
     try {
+      const values = vals as any;
       // Convert dates from DD/MM/YYYY to YYYY-MM-DD
       const formattedBirthDate = parseDateBr(values.data_nascimento);
       const formattedCnhDate = values.cnh_vencimento ? parseDateBr(values.cnh_vencimento) : null;
@@ -133,7 +134,7 @@ export function CollaboratorFormDialog({
       onSuccess?.(); 
       safeCloseDialog(() => onClose());
     } catch (error) {
-      console.error(error);
+      // Error handled by the mutation or global toast
     }
   };
 
@@ -145,17 +146,17 @@ export function CollaboratorFormDialog({
         className="w-full max-w-3xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
-        <div className="bg-primary p-4 text-center relative shrink-0">
+        <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-8 w-8"
+              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
               onClick={handleFillMock}
               title="Preencher com dados fictícios"
             >
-              <Wand2 className="h-4 w-4" />
+              <Wand2 className="h-5 w-5" />
             </Button>
           </div>
 
@@ -172,7 +173,7 @@ export function CollaboratorFormDialog({
           </DialogTitle>
         </div>
 
-        <div className="p-4 sm:p-6 bg-white flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-6">
               <Accordion 
@@ -181,37 +182,37 @@ export function CollaboratorFormDialog({
                 onValueChange={setOpenSections} 
                 className="space-y-4"
               >
-                <AccordionItem value="personal" className="border rounded-2xl px-4 bg-gray-50/30">
+                <AccordionItem value="personal" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                     Dados Pessoais
                   </AccordionTrigger>
-                  <AccordionContent className="pb-6">
+                  <AccordionContent className="pb-6 pt-2">
                     <CollaboratorFormPersonal roles={roles} />
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="professional" className="border rounded-2xl px-4 bg-gray-50/30">
+                <AccordionItem value="professional" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                     Profissional & Moto
                   </AccordionTrigger>
-                  <AccordionContent className="pb-6">
+                  <AccordionContent className="pb-6 pt-2">
                     <CollaboratorFormProfessional />
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
               
-              <div className="pt-2 border-t mt-4 grid grid-cols-2 gap-3">
+              <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={onClose}
-                    className="h-12 rounded-xl"
+                    className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
                   >
                     Cancelar
                   </Button>
                   <Button 
                     type="submit" 
-                    className="h-12 text-lg font-bold rounded-xl"
+                    className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (

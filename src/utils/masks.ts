@@ -109,3 +109,13 @@ export const dateMask = (value: string): string => {
     .replace(/(\d{2})(\d)/, "$1/$2") // Add slash after 2nd digit
     .replace(/(\d{2})(\d)/, "$1/$2"); // Add slash after 4th digit (2nd part)
 };
+
+export const rgMask = (value: string): string => {
+  if (!value) return value;
+  const numericValue = value.replace(/\D/g, "").slice(0, 9);
+
+  return numericValue
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1})$/, "$1-$2");
+};

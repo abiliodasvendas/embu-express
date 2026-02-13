@@ -1,32 +1,32 @@
 import { CepInput } from "@/components/forms";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
@@ -38,14 +38,14 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Building2,
-  FileText,
-  Hash,
-  Loader2,
-  MapPin,
-  Wand2,
-  X,
-  Zap,
+    Building2,
+    FileText,
+    Hash,
+    Loader2,
+    MapPin,
+    Wand2,
+    X,
+    Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -193,28 +193,28 @@ export function ClientFormDialog({
         hideCloseButton
       >
         {/* ... (dialog header not changing) ... */}
-        <div className="bg-primary p-4 text-center relative shrink-0">
+        <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-8 w-8"
+              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
               onClick={handleFillMock}
               title="Preencher com dados fictícios"
             >
-              <Wand2 className="h-4 w-4" />
+              <Wand2 className="h-5 w-5" />
             </Button>
             {!editingClient && (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="text-white/70 hover:text-cyan-300 hover:bg-white/10 rounded-full h-8 w-8"
+                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
                 onClick={handleQuickCreate}
                 title="Criação Rápida (Um clique)"
               >
-                <Zap className="h-4 w-4" />
+                <Zap className="h-5 w-5" />
               </Button>
             )}
           </div>
@@ -232,7 +232,7 @@ export function ClientFormDialog({
           </DialogTitle>
         </div>
 
-        <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit, onFormError)}
@@ -244,14 +244,14 @@ export function ClientFormDialog({
                 onValueChange={setOpenAccordionItems}
                 className="w-full"
               >
-                <AccordionItem value="dados-cliente" className="border-b-0">
-                  <AccordionTrigger className="hover:no-underline py-2">
-                    <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                      <Building2 className="w-5 h-5 text-primary" />
+                <AccordionItem value="dados-cliente" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100 mb-4">
+                  <AccordionTrigger className="hover:no-underline py-4">
+                    <div className="flex items-center gap-2 text-lg font-bold text-gray-700">
+                      <Building2 className="w-5 h-5 text-blue-600" />
                       Dados do Cliente
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
+                  <AccordionContent className="pb-6 pt-2 space-y-4">
                     <FormField
                       control={form.control}
                       name="nome_fantasia"
@@ -354,14 +354,14 @@ export function ClientFormDialog({
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="endereco" className="mt-2 border-b-0">
-                  <AccordionTrigger className="hover:no-underline py-2">
-                    <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                      <MapPin className="w-5 h-5 text-primary" />
+                <AccordionItem value="endereco" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                  <AccordionTrigger className="hover:no-underline py-4">
+                    <div className="flex items-center gap-2 text-lg font-bold text-gray-700">
+                      <MapPin className="w-5 h-5 text-blue-600" />
                       Endereço
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
+                  <AccordionContent className="pb-6 pt-2 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                       <FormField
                         control={form.control}
@@ -537,13 +537,13 @@ export function ClientFormDialog({
           </Form>
         </div>
 
-        <div className="p-4 border-t bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => safeCloseDialog(() => onClose())}
             disabled={isPending}
-            className="h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-100 font-medium"
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
           >
             Cancelar
           </Button>
@@ -551,7 +551,7 @@ export function ClientFormDialog({
             type="submit"
             onClick={form.handleSubmit(onSubmit, onFormError)}
             disabled={isPending}
-            className="h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg transition-all active:scale-95"
+            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
           >
             {isPending ? (
               <Loader2 className="h-5 w-5 animate-spin" />

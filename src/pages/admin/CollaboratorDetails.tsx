@@ -133,9 +133,6 @@ export default function CollaboratorDetails() {
               >
                 {collaborator.status}
               </Badge>
-              <p className="text-sm text-muted-foreground mt-2 font-medium">
-                {role?.nome === 'motoboy' ? '🏍️ ' : ''}{role?.descricao || 'Colaborador'}
-              </p>
             </CardContent>
             <CardContent className="border-t border-gray-100 space-y-4 pt-6">
               <div className="flex items-start gap-3">

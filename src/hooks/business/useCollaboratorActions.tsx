@@ -2,14 +2,16 @@ import { useSession } from "@/hooks/business/useSession";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { Usuario } from "@/types/database";
+import { ActionItem } from "@/types/actions";
 import { Ban, Check, Edit, Eye, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface UseCollaboratorActionsProps {
-  collaborator: Usuario;
+  collaborator?: Usuario;
   onEdit: (collaborator: Usuario) => void;
   onStatusChange: (collaborator: Usuario, newStatus: string) => void;
   onDelete: (collaborator: Usuario) => void;
+  hideDetails?: boolean;
 }
 
 export function useCollaboratorActions({
@@ -17,23 +19,28 @@ export function useCollaboratorActions({
   onEdit,
   onStatusChange,
   onDelete,
+  hideDetails = false,
 }: UseCollaboratorActionsProps) {
   const { user } = useSession();
   const { can } = usePermissions();
   const navigate = useNavigate();
+
+  const actions: ActionItem[] = [];
+  if (!collaborator) return actions;
+
   const isCurrentUser = user?.id === collaborator.id;
   const status = collaborator.status;
 
-  const actions = [];
-
-  // SEMPRE PODE VER DETALHES (Se ele chegou na lista, ele já tem usuarios:ver)
-  actions.push({
-    label: "Ver Detalhes",
-    icon: <Eye className="h-4 w-4" />,
-    onClick: () => navigate(`/colaboradores/${collaborator.id}`),
-    swipeColor: "bg-primary",
-    drawerClass: "text-primary",
-  });
+  // SEMPRE PODE VER DETALHES se não estivermos na view de detalhes.
+  if (!hideDetails) {
+    actions.push({
+      label: "Ver Detalhes",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: () => navigate(`/colaboradores/${collaborator.id}`),
+      swipeColor: "bg-primary",
+      drawerClass: "text-primary",
+    });
+  }
 
   if (can(PERMISSIONS.USUARIOS.EDITAR)) {
     actions.push({

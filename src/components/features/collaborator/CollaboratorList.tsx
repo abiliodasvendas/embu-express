@@ -54,9 +54,9 @@ const CollaboratorMobileItem = ({
               <h3 className="font-bold text-gray-900 text-sm truncate">
                 {collaborator.nome_completo}
               </h3>
-               {collaborator.cliente?.nome_fantasia && (
+              {collaborator.cliente?.nome_fantasia && (
                 <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{collaborator.cliente.nome_fantasia}</p>
-               )}
+              )}
             </div>
           </div>
           <StatusBadge status={collaborator.status} className="absolute top-4 right-4" />
@@ -69,7 +69,7 @@ const CollaboratorMobileItem = ({
                 Cargo
               </p>
               <p className="font-medium text-gray-700 text-xs text-left">
-                {getPerfilLabel(collaborator.perfil?.nome)}
+                {collaborator.perfil?.nome.toUpperCase()}
               </p>
             </div>
           </div>
@@ -107,14 +107,14 @@ const CollaboratorTableRow = ({
             <p className="font-bold text-gray-900 text-sm">
               {collaborator.nome_completo}
             </p>
-             {collaborator.cliente?.nome_fantasia && (
-                <p className="text-[10px] text-gray-400 mt-0.5">{collaborator.cliente.nome_fantasia}</p>
-             )}
+            {collaborator.cliente?.nome_fantasia && (
+              <p className="text-[10px] text-gray-400 mt-0.5">{collaborator.cliente.nome_fantasia}</p>
+            )}
           </div>
         </div>
       </td>
       <td className="px-6 py-4 align-middle text-sm text-gray-600">
-        {getPerfilLabel(collaborator.perfil?.nome)}
+        {collaborator.perfil?.nome.toUpperCase()}
       </td>
       <td className="px-6 py-4 align-middle">
         <StatusBadge status={collaborator.status} />

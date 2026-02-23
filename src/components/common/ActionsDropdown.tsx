@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ActionItem } from "@/types/actions";
@@ -15,6 +15,7 @@ interface ActionsDropdownProps {
   triggerSize?: "sm" | "icon" | "default" | "lg";
   align?: "end" | "center" | "start";
   disabled?: boolean;
+  children?: React.ReactNode;
 }
 
 export function ActionsDropdown({
@@ -23,6 +24,7 @@ export function ActionsDropdown({
   triggerSize = "sm",
   align = "end",
   disabled = false,
+  children,
 }: ActionsDropdownProps) {
   // Filter out hidden actions
   const visibleActions = actions.filter((a) => !a.hidden);
@@ -43,14 +45,16 @@ export function ActionsDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size={triggerSize}
-          className={cn("text-gray-400 hover:text-gray-600", triggerClassName)}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
+        {children || (
+          <Button
+            variant="ghost"
+            size={triggerSize}
+            className={cn("text-gray-400 hover:text-gray-600", triggerClassName)}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align}>
         {visibleActions.map((action, idx) => (
@@ -70,7 +74,7 @@ export function ActionsDropdown({
           >
             {action.icon && (
               <span className={cn("mr-2 h-4 w-4", action.isDestructive ? "text-red-600" : "")}>
-                 {action.icon}
+                {action.icon}
               </span>
             )}
             {action.label}

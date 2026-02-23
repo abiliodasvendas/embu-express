@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { messages } from "@/constants/messages";
-import { useCreateCollaborator, useRoles, useUpdateCollaborator } from "@/hooks";
+import { useCreateCollaborator, useRoles, useUpdateCollaborator, useEmpresas } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
 import { CollaboratorFormData } from "@/schemas/collaboratorSchema";
 import { Usuario } from "@/types/database";
@@ -25,6 +25,7 @@ import { Loader2, User, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
 import { CollaboratorFormProfessional } from "../features/collaborator/form/CollaboratorFormProfessional";
+import { CollaboratorFormFinancial } from "../features/collaborator/form/CollaboratorFormFinancial";
 import { ROLES } from "@/constants/permissions.enum";
 
 interface CollaboratorFormProps {
@@ -43,7 +44,8 @@ export function CollaboratorFormDialog({
   const onClose = () => onOpenChange(false);
 
   const { data: roles } = useRoles();
-  const [openSections, setOpenSections] = useState(["personal", "professional"]);
+  const { data: empresas } = useEmpresas();
+  const [openSections, setOpenSections] = useState(["personal", "professional", "financial"]);
 
   const createCollaborator = useCreateCollaborator();
   const updateCollaborator = useUpdateCollaborator();
@@ -64,7 +66,7 @@ export function CollaboratorFormDialog({
 
   const onFormError = (errors: any) => {
     toast.error(messages.validacao.formularioComErros);
-    setOpenSections(["personal", "professional"]);
+    setOpenSections(["personal", "professional", "financial"]);
   };
 
   /* Helper to convert DD/MM/YYYY to YYYY-MM-DD */
@@ -207,6 +209,15 @@ export function CollaboratorFormDialog({
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2">
                     <CollaboratorFormProfessional />
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="financial" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                    Financeiro
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-6 pt-2">
+                    <CollaboratorFormFinancial empresas={empresas} />
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>

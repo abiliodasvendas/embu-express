@@ -37,6 +37,7 @@ const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
 const Collaborators = lazyLoad(() => import("./pages/admin/Collaborators"));
 const CollaboratorDetails = lazyLoad(() => import("./pages/admin/CollaboratorDetails"));
 const Clients = lazyLoad(() => import("./pages/admin/Clients"));
+const ClientDetails = lazyLoad(() => import("./pages/admin/ClientDetails"));
 const Empresas = lazyLoad(() => import("./pages/admin/Empresas"));
 const Perfis = lazyLoad(() => import("./pages/admin/Perfis"));
 const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
@@ -213,6 +214,7 @@ const App = () => {
                     <Route path="colaboradores" element={<Collaborators />} />
                     <Route path="colaboradores/:id" element={<CollaboratorDetails />} />
                     <Route path="clientes" element={<Clients />} />
+                    <Route path="clientes/:id" element={<ClientDetails />} />
                     <Route path="empresas" element={<Empresas />} />
                     <Route path="perfis" element={<Perfis />} />
                   </Route>

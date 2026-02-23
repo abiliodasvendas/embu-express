@@ -135,33 +135,6 @@ export function CollaboratorFormProfessional() {
                     )} />
                 </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-                <FormField name="cnpj" control={control} render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>CNPJ (MEI) <span className="text-red-500">*</span></FormLabel>
-                        <FormControl>
-                            <Input
-                                className={cn("h-11 rounded-xl bg-white", errors.cnpj && "border-red-500 focus-visible:ring-red-200")}
-                                {...field}
-                                onChange={(e) => field.onChange(cnpjMask(e.target.value))}
-                                maxLength={18}
-                                placeholder="00.000.000/0000-00"
-                            />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-                <FormField name="chave_pix" control={control} render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Chave Pix <span className="text-red-500">*</span></FormLabel>
-                        <FormControl>
-                            <Input className={cn("h-11 rounded-xl bg-white", errors.chave_pix && "border-red-500 focus-visible:ring-red-200")} {...field} placeholder="CPF, Email ou Aleatória" />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-            </div>
         </div>
     );
 }

@@ -61,7 +61,8 @@ const commonSchema = z.object({
     valor_bonus: z.coerce.number().optional(),
     ajuda_custo: z.coerce.number().optional(),
     mei: z.boolean().optional(),
-  })).superRefine(checkLinkConflicts).optional().default([])
+  })).superRefine(checkLinkConflicts).optional().default([]),
+  chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
 });
 
 // 2. Schema Profissional: Condicional baseada no perfil
@@ -77,7 +78,6 @@ const professionalSchema = z.union([
     moto_ano: z.string().min(1, messages.validacao.campoObrigatorio),
     moto_placa: z.string().min(1, messages.validacao.campoObrigatorio).pipe(placaSchema),
     cnpj: z.string().min(14, messages.validacao.campoObrigatorio).refine(v => v.replace(/\D/g, "").length >= 14, "CNPJ inválido"),
-    chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
   }),
   // Outros perfis: Campos opcionais
   z.object({
@@ -90,7 +90,6 @@ const professionalSchema = z.union([
     moto_ano: z.string().optional(),
     moto_placa: z.string().optional(),
     cnpj: z.string().optional(),
-    chave_pix: z.string().optional(),
   })
 ]);
 

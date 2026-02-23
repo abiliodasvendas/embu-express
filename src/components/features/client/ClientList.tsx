@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { useClientActions } from "@/hooks/business/useClientActions";
 import { Client } from "@/types/client";
 import { cnpjMask } from "@/utils/masks";
+import { useNavigate } from "react-router-dom";
 
 interface ClientListProps {
   clients: Client[];
@@ -28,11 +29,13 @@ const ClientMobileItem = ({
 }) => {
   const actions = useClientActions({ client, onEdit, onDelete, onToggleStatus });
 
+  const navigate = useNavigate();
+
   return (
     <MobileActionItem actions={actions} showHint={index === 0}>
       <div
-        onClick={() => onEdit(client)}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform relative"
+        onClick={() => navigate(`/clientes/${client.id}`)}
+        className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform relative cursor-pointer"
       >
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="min-w-0 pr-20">
@@ -65,10 +68,11 @@ const ClientTableRow = ({
   onToggleStatus: (client: Client) => void;
 }) => {
   const actions = useClientActions({ client, onEdit, onDelete, onToggleStatus });
+  const navigate = useNavigate();
 
   return (
     <tr
-      onClick={() => onEdit(client)}
+      onClick={() => navigate(`/clientes/${client.id}`)}
       className="hover:bg-gray-50/80 transition-colors cursor-pointer"
     >
       <td className="py-4 pl-6 align-middle">

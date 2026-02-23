@@ -1,19 +1,27 @@
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { PerfisTable } from "@/components/features/perfil/PerfisTable";
+import { usePerfis } from "@/hooks/api/usePerfis";
+import { ListSkeleton } from "@/components/skeletons";
+import { Card, CardContent } from "@/components/ui/card";
 import { Can } from "@/components/auth/Can";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { usePerfis } from "@/hooks/api/usePerfis";
-import { Loader2 } from "lucide-react";
-import { PerfisTable } from "@/components/features/perfil/PerfisTable";
-import { useState } from "react";
 import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { useDeletePerfil } from "@/hooks/api/usePerfis";
+import { useLayout } from "@/contexts/LayoutContext";
+import { toast } from "@/utils/notifications/toast";
+import { Perfil } from "@/types/database";
 
 export default function Perfis() {
     const { data: perfis, isLoading } = usePerfis();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [perfilToEdit, setPerfilToEdit] = useState<any>(null);
+    const deletePerfil = useDeletePerfil();
+    const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
-    const handleEdit = (perfil: any) => {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [perfilToEdit, setPerfilToEdit] = useState<Perfil | null>(null);
+
+    const handleEdit = (perfil: Perfil) => {
         setPerfilToEdit(perfil);
         setIsDialogOpen(true);
     };
@@ -21,6 +29,26 @@ export default function Perfis() {
     const handleCreate = () => {
         setPerfilToEdit(null);
         setIsDialogOpen(true);
+    };
+
+    const handleDelete = (perfil: Perfil) => {
+        openConfirmationDialog({
+            title: "Você tem certeza absoluta?",
+            description: `Isso apagará o perfil "${perfil.nome.toUpperCase()}" permanentemente. Essa ação pode quebrar o acesso de usuários vinculados a ele.`,
+            confirmText: "Sim, deletar perfil",
+            variant: "destructive",
+            onConfirm: async () => {
+                try {
+                    await deletePerfil.mutateAsync(perfil.id);
+                    toast.success("Perfil deletado com sucesso!");
+                    closeConfirmationDialog();
+                } catch (error: any) {
+                    toast.error("Erro ao deletar perfil", {
+                        description: error.response?.data?.error || "Perfil pode estar em uso.",
+                    });
+                }
+            },
+        });
     };
 
     return (
@@ -38,18 +66,19 @@ export default function Perfis() {
                 </Can>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
-                {isLoading ? (
-                    <div className="flex justify-center p-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                ) : (
-                    <PerfisTable
-                        perfis={perfis || []}
-                        onEdit={handleEdit}
-                    />
-                )}
-            </div>
+            <Card className="border-none shadow-none bg-transparent">
+                <CardContent className="px-0">
+                    {isLoading ? (
+                        <ListSkeleton />
+                    ) : (
+                        <PerfisTable
+                            perfis={perfis || []}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                        />
+                    )}
+                </CardContent>
+            </Card>
 
             <PerfilFormDialog
                 open={isDialogOpen}

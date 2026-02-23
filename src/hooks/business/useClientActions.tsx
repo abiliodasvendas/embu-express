@@ -5,7 +5,7 @@ import { Client } from "@/types/client";
 import { Edit2, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 
 interface UseClientActionsProps {
-  client: Client;
+  client?: Client;
   onEdit: (client: Client) => void;
   onToggleStatus: (client: Client) => void;
   onDelete: (client: Client) => void;
@@ -19,6 +19,7 @@ export function useClientActions({
 }: UseClientActionsProps): ActionItem[] {
   const { can } = usePermissions();
   const actions: ActionItem[] = [];
+  if (!client) return actions;
 
   if (can(PERMISSIONS.CLIENTES.EDITAR)) {
     actions.push({

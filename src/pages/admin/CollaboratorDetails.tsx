@@ -5,15 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCollaborator, useDeleteVinculo, useRoles } from "@/hooks";
-import { useUpdateCollaboratorStatus } from "@/hooks/api/useCollaboratorMutations";
+import { useUpdateCollaboratorStatus, useDeleteCollaborator } from "@/hooks/api/useCollaboratorMutations";
 import { cn } from "@/lib/utils";
+import { useLayout } from "@/contexts/LayoutContext";
 import { ColaboradorCliente } from "@/types/database";
 import { cnpjMask, cpfMask, dateMask, phoneMask } from "@/utils/masks";
-import { Bike, Calendar, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, Phone, Plus, Power, Trash2, User } from "lucide-react";
+import { Bike, Calendar, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, Phone, Plus, Power, Trash2, User, ChevronDown, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
+import { STATUS } from "@/constants/roles";
+import { messages } from "@/constants/messages";
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
+import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
+import { Usuario } from "@/types/database";
 
 export default function CollaboratorDetails() {
   const { id } = useParams();
@@ -22,10 +28,47 @@ export default function CollaboratorDetails() {
   const { data: roles } = useRoles();
   const deleteVinculo = useDeleteVinculo();
   const updateStatus = useUpdateCollaboratorStatus();
+  const deleteCollaborator = useDeleteCollaborator();
+  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isTurnDialogOpen, setIsTurnDialogOpen] = useState(false);
   const [turnToEdit, setTurnToEdit] = useState<ColaboradorCliente | null>(null);
+
+  const handleToggleStatus = async (collab: Usuario, newStatus: string) => {
+    const confirmMessage = newStatus === STATUS.ATIVO ? messages.dialogo.ativar.descricao : messages.dialogo.desativar.descricao;
+
+    if (window.confirm(confirmMessage)) {
+      await updateStatus.mutateAsync({ id: collab.id, status: newStatus });
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!collaborator) return;
+    openConfirmationDialog({
+      title: messages.dialogo.remover.titulo,
+      description: `Tem certeza que deseja remover "${collaborator.nome_completo}"? Esta ação não pode ser desfeita.`,
+      confirmText: messages.dialogo.remover.botao,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await deleteCollaborator.mutateAsync(collaborator.id);
+          closeConfirmationDialog();
+          navigate("/colaboradores");
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
+  };
+
+  const actions = useCollaboratorActions({
+    collaborator: collaborator as Usuario,
+    onEdit: () => setIsEditDialogOpen(true),
+    onStatusChange: handleToggleStatus,
+    onDelete: handleDelete,
+    hideDetails: true,
+  });
 
   if (isLoading) {
     return (
@@ -61,17 +104,10 @@ export default function CollaboratorDetails() {
   };
 
   const handleDeleteTurn = async (turnId: number) => {
-    if (window.confirm("Deseja realmente remover este vínculo?")) {
+    if (window.confirm(messages.dialogo.remover.descricao)) {
       await deleteVinculo.mutateAsync(turnId);
     }
   };
-
-  const handleToggleStatus = async () => {
-    const newStatus = collaborator.status === 'ATIVO' ? 'INATIVO' : 'ATIVO';
-    if (window.confirm(`Deseja realmente alterar o status para ${newStatus}?`)) {
-      await updateStatus.mutateAsync({ id: collaborator.id, status: newStatus });
-    }
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -94,30 +130,14 @@ export default function CollaboratorDetails() {
           <ChevronLeft className="h-5 w-5 mr-1" />
           Voltar
         </Button>
-        <div className="flex gap-2">
-          <Can I={PERMISSIONS.USUARIOS.STATUS}>
-            <Button
-              onClick={handleToggleStatus}
-              variant="outline"
-              className={cn(
-                "rounded-xl border-gray-200",
-                collaborator.status === 'ATIVO' ? "text-red-600 hover:bg-red-50 hover:border-red-200" : "text-green-600 hover:bg-green-50 hover:border-green-200"
-              )}
-            >
-              <Power className="h-4 w-4 mr-2" />
-              {collaborator.status === 'ATIVO' ? "Desativar" : "Ativar"}
+        <div className="flex gap-2 items-center">
+          <ActionsDropdown actions={actions}>
+            <Button variant="outline" className="rounded-xl border-gray-200 shadow-sm text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1 px-3">
+              <span className="hidden sm:inline font-semibold">Ações</span>
+              <MoreVertical className="h-4 w-4 sm:hidden -mx-1" />
+              <ChevronDown className="h-4 w-4 hidden sm:block opacity-50 text-gray-500" />
             </Button>
-          </Can>
-          <Can I={PERMISSIONS.USUARIOS.EDITAR}>
-            <Button
-              onClick={() => setIsEditDialogOpen(true)}
-              variant="outline"
-              className="rounded-xl border-primary/20 text-primary hover:bg-primary/5"
-            >
-              <Edit2 className="h-4 w-4 mr-2" />
-              Editar
-            </Button>
-          </Can>
+          </ActionsDropdown>
         </div>
       </div>
 
@@ -312,7 +332,7 @@ export default function CollaboratorDetails() {
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Cliente</p>
                           <h4 className="font-bold text-gray-800 leading-tight">
-                            {link.cliente?.nome_fantasia || 'Cliente não identificado'}
+                            {link.cliente?.nome_fantasia}
                           </h4>
                         </div>
 

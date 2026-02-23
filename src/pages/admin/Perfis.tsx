@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { PerfisTable } from "@/components/features/perfil/PerfisTable";
 import { usePerfis } from "@/hooks/api/usePerfis";
@@ -16,7 +16,7 @@ import { Perfil } from "@/types/database";
 export default function Perfis() {
     const { data: perfis, isLoading } = usePerfis();
     const deletePerfil = useDeletePerfil();
-    const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+    const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [perfilToEdit, setPerfilToEdit] = useState<Perfil | null>(null);
@@ -51,11 +51,14 @@ export default function Perfis() {
         });
     };
 
+    useEffect(() => {
+        setPageTitle("Perfis");
+    }, [setPageTitle]);
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Gestão de Perfis</h1>
                     <p className="text-muted-foreground">Gerencie os perfis de acesso e suas permissões no sistema.</p>
                 </div>
                 <Can I={PERMISSIONS.PERFIS.CRIAR}>

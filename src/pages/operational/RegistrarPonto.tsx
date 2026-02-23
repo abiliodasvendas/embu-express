@@ -8,7 +8,8 @@ import { useSession } from "@/hooks/business/useSession";
 import { useGeolocation } from "@/hooks/ui/useGeolocation";
 import { apiClient } from "@/services/api/client";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Pause, Play, RefreshCw, ShieldAlert, Square } from "lucide-react";
+import { MapPin, Pause, Play, RefreshCw, ShieldAlert, Square, Settings } from "lucide-react";
+import { NativeSettings, AndroidSettings, IOSSettings } from 'capacitor-native-settings';
 import { useEffect, useState } from "react";
 
 type PontoAction = 'idle' | 'working' | 'paused';
@@ -17,7 +18,7 @@ export default function RegistrarPonto() {
     const { setPageTitle } = useLayout();
     const { user } = useSession();
     const { profile: userProfile } = useProfile(user?.id);
-    const { location, requestLocation, loading: loadingGeo, error: geoError } = useGeolocation();
+    const { location, requestLocation, loading: loadingGeo, error: geoError, permissionDenied, isWeb } = useGeolocation();
 
     const { mutateAsync: togglePonto } = useTogglePonto();
     const { mutateAsync: iniciarPausa } = useIniciarPausa();
@@ -175,6 +176,42 @@ export default function RegistrarPonto() {
 
     return (
         <div className="space-y-6 max-w-lg mx-auto pb-20">
+            {/* Geolocation Alert - Always Visible if Error */}
+            {(geoError || (!location && !loadingGeo)) && (
+                <Alert variant="destructive" className="rounded-3xl border-none shadow-lg bg-red-50 text-red-900 animate-in fade-in slide-in-from-top-4 duration-500 mb-2">
+                    <ShieldAlert className="h-5 w-5 text-red-600" />
+                    <AlertTitle className="font-bold">Localização Requerida</AlertTitle>
+                    <AlertDescription className="text-red-700 font-medium">
+                        {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível.") : "Aguardando sinal de GPS para liberar o registro."}
+
+                        {permissionDenied ? (
+                            isWeb ? (
+                                <div className="mt-4 p-3 bg-red-100 rounded-xl text-red-900 text-sm font-semibold flex items-start text-left">
+                                    Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1">Cadeado</strong> ou <strong className="mx-1">Ajustes</strong> ao lado da barra de endereço e reative a localização.
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => NativeSettings.open({
+                                        optionAndroid: AndroidSettings.ApplicationDetails,
+                                        optionIOS: IOSSettings.App
+                                    })}
+                                    className="mt-3 bg-red-100 px-4 py-2 rounded-xl text-red-900 font-bold hover:bg-red-200 transition-colors flex items-center w-full justify-center"
+                                >
+                                    <Settings className="w-4 h-4 mr-2" /> Abrir Config. do Aparelho
+                                </button>
+                            )
+                        ) : (
+                            <button
+                                onClick={() => requestLocation()}
+                                className="block mt-2 text-red-900 font-bold underline hover:text-red-700 transition-colors flex items-center"
+                            >
+                                <RefreshCw className="w-3 h-3 mr-1" /> Tentar Novamente
+                            </button>
+                        )}
+                    </AlertDescription>
+                </Alert>
+            )}
+
             {!hasShifts ? (
                 /* MISSING SHIFT PROMINENT ALERT */
                 <div className="bg-white rounded-[2rem] shadow-xl border-t-8 border-amber-500 p-8 sm:p-12 text-center flex flex-col items-center animate-in zoom-in-95 duration-500">
@@ -192,8 +229,8 @@ export default function RegistrarPonto() {
             ) : (
                 /* Header / Status Card */
                 <Card className={`border-none shadow-2xl rounded-[2rem] text-white overflow-hidden relative transition-colors duration-500 ${status === 'working' ? 'bg-gradient-to-br from-blue-600 to-blue-800' :
-                        status === 'paused' ? 'bg-gradient-to-br from-yellow-500 to-amber-700' :
-                            'bg-gradient-to-br from-slate-700 to-slate-900'
+                    status === 'paused' ? 'bg-gradient-to-br from-yellow-500 to-amber-700' :
+                        'bg-gradient-to-br from-slate-700 to-slate-900'
                     }`}>
                     <CardContent className="p-10 relative z-10 flex flex-col items-center justify-center min-h-[220px]">
                         <span className="text-white/70 text-sm font-bold uppercase tracking-[0.2em] mb-4">Status Atual</span>
@@ -212,23 +249,6 @@ export default function RegistrarPonto() {
             {/* Smart Action Button - Hidden if no shifts */}
             {hasShifts && (
                 <div className="grid grid-cols-1 gap-4">
-                    {/* Geolocation Alert */}
-                    {(geoError || (!location && !loadingGeo)) && (
-                        <Alert variant="destructive" className="rounded-3xl border-none shadow-lg bg-red-50 text-red-900 animate-in fade-in slide-in-from-top-4 duration-500 mb-2">
-                            <ShieldAlert className="h-5 w-5 text-red-600" />
-                            <AlertTitle className="font-bold">Localização Requerida</AlertTitle>
-                            <AlertDescription className="text-red-700 font-medium">
-                                {geoError ? "Sua permissão de localização foi negada ou o sinal está indisponível." : "Aguardando sinal de GPS para liberar o registro."}
-                                <button
-                                    onClick={() => requestLocation()}
-                                    className="block mt-2 text-red-900 font-bold underline hover:text-red-700 transition-colors flex items-center"
-                                >
-                                    <RefreshCw className="w-3 h-3 mr-1" /> Tentar Novamente
-                                </button>
-                            </AlertDescription>
-                        </Alert>
-                    )}
-
                     {status === 'idle' && (
                         <Button
                             onClick={handleToggle}

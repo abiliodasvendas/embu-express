@@ -22,6 +22,8 @@ import { cn } from "@/lib/utils";
 import { getPerfilLabel } from "@/utils/formatters";
 import { Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Can } from "@/components/auth/Can";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 
 interface CollaboratorsToolbarProps {
   searchTerm: string;
@@ -79,17 +81,17 @@ const FilterControls = ({
         Cliente
       </Label>
       <Combobox
-          options={[{ value: "todos", label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
-          value={clientValue}
-          onSelect={(val) => onClientChange(val || "todos")}
-          placeholder="Todos os Clientes"
-          searchPlaceholder="Buscar cliente..."
-          emptyText="Nenhum cliente encontrado."
-          className={cn(
-            "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none", 
-            isSheet && "h-12 bg-white hover:bg-white"
-          )}
-          modal={isSheet}
+        options={[{ value: "todos", label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
+        value={clientValue}
+        onSelect={(val) => onClientChange(val || "todos")}
+        placeholder="Todos os Clientes"
+        searchPlaceholder="Buscar cliente..."
+        emptyText="Nenhum cliente encontrado."
+        className={cn(
+          "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none",
+          isSheet && "h-12 bg-white hover:bg-white"
+        )}
+        modal={isSheet}
       />
     </div>
 
@@ -98,17 +100,17 @@ const FilterControls = ({
         Empresa
       </Label>
       <Combobox
-          options={[{ value: "todos", label: "Todas as Empresas" }, ...empresas.map(e => ({ value: e.id.toString(), label: e.nome_fantasia }))]}
-          value={empresaValue}
-          onSelect={(val) => onEmpresaChange(val || "todos")}
-          placeholder="Todas as Empresas"
-          searchPlaceholder="Buscar empresa..."
-          emptyText="Nenhuma empresa encontrada."
-          className={cn(
-            "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none", 
-            isSheet && "h-12 bg-white hover:bg-white"
-          )}
-          modal={isSheet}
+        options={[{ value: "todos", label: "Todas as Empresas" }, ...empresas.map(e => ({ value: e.id.toString(), label: e.nome_fantasia }))]}
+        value={empresaValue}
+        onSelect={(val) => onEmpresaChange(val || "todos")}
+        placeholder="Todas as Empresas"
+        searchPlaceholder="Buscar empresa..."
+        emptyText="Nenhuma empresa encontrada."
+        className={cn(
+          "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none",
+          isSheet && "h-12 bg-white hover:bg-white"
+        )}
+        modal={isSheet}
       />
     </div>
 
@@ -336,9 +338,9 @@ export function CollaboratorsToolbar({
           ) : (
             <div className="flex items-center gap-3">
               {hasAnyFilter && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={clearFilters}
                   className="text-gray-500 hover:text-gray-900"
                 >
@@ -346,51 +348,53 @@ export function CollaboratorsToolbar({
                   Limpar
                 </Button>
               )}
-            <Popover>
-              <PopoverTrigger asChild>
-                <FilterButton
-                  hasActiveFilters={hasAdvancedFilters}
-                  selectedCount={selectedCount}
-                  isMobile={isMobile}
-                />
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-[280px] p-0 rounded-2xl shadow-2xl border-gray-100 overflow-hidden"
-                align="end"
-                sideOffset={8}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-              >
-                <FilterControls
-                  statusValue={selectedStatus}
-                  onStatusChange={onStatusChange}
-                  roleValue={selectedRole}
-                  onRoleChange={onRoleChange}
-                  clientValue={selectedClient}
-                  onClientChange={onClientChange}
-                  empresaValue={selectedEmpresa}
-                  onEmpresaChange={onEmpresaChange}
-                  onClear={clearFilters}
-                  roles={roles || []}
-                  clients={clients || []}
-                  empresas={empresas || []}
-                />
-              </PopoverContent>
-            </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FilterButton
+                    hasActiveFilters={hasAdvancedFilters}
+                    selectedCount={selectedCount}
+                    isMobile={isMobile}
+                  />
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[280px] p-0 rounded-2xl shadow-2xl border-gray-100 overflow-hidden"
+                  align="end"
+                  sideOffset={8}
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                  <FilterControls
+                    statusValue={selectedStatus}
+                    onStatusChange={onStatusChange}
+                    roleValue={selectedRole}
+                    onRoleChange={onRoleChange}
+                    clientValue={selectedClient}
+                    onClientChange={onClientChange}
+                    empresaValue={selectedEmpresa}
+                    onEmpresaChange={onEmpresaChange}
+                    onClear={clearFilters}
+                    roles={roles || []}
+                    clients={clients || []}
+                    empresas={empresas || []}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           )}
 
 
 
-          <Button
-            onClick={onRegister}
-            className={cn(
-              "bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap",
-              isMobile && "flex-1 h-11"
-            )}
-          >
-            <Plus className="h-4 w-4" />
-            <span>{isMobile ? "Cadastrar" : "Cadastrar Colaborador"}</span>
-          </Button>
+          <Can I={PERMISSIONS.USUARIOS.CRIAR}>
+            <Button
+              onClick={onRegister}
+              className={cn(
+                "bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap",
+                isMobile && "flex-1 h-11"
+              )}
+            >
+              <Plus className="h-4 w-4" />
+              <span>{isMobile ? "Cadastrar" : "Cadastrar Colaborador"}</span>
+            </Button>
+          </Can>
         </div>
       </div>
     </div>

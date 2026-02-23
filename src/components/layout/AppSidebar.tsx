@@ -10,13 +10,12 @@ interface AppSidebarProps {
 import { usePermissions } from "@/hooks/business/usePermissions";
 
 export function AppSidebar({ onLinkClick }: AppSidebarProps) {
-  const { roleName } = usePermissions();
-  // Default to motoboy if undefined, or handle safely
-  const currentRole = (roleName || "motoboy") as any;
+  const { roleName, can, isSuperAdmin } = usePermissions();
 
-  const userItems = pagesItems.filter(item => 
-    item.allowedRoles.includes(currentRole)
-  );
+  const userItems = pagesItems.filter(item => {
+    if (isSuperAdmin) return true;
+    return item.permissionKey ? can(item.permissionKey) : true;
+  });
 
   return (
     <div className="flex h-full flex-col gap-6">

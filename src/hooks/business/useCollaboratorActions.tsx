@@ -1,4 +1,6 @@
 import { useSession } from "@/hooks/business/useSession";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import { Usuario } from "@/types/database";
 import { Ban, Check, Edit, Eye, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -17,63 +19,72 @@ export function useCollaboratorActions({
   onDelete,
 }: UseCollaboratorActionsProps) {
   const { user } = useSession();
+  const { can } = usePermissions();
   const navigate = useNavigate();
   const isCurrentUser = user?.id === collaborator.id;
   const status = collaborator.status;
 
-  const actions = [
-    {
-      label: "Ver Detalhes",
-      icon: <Eye className="h-4 w-4" />,
-      onClick: () => navigate(`/colaboradores/${collaborator.id}`),
-      swipeColor: "bg-primary",
-      drawerClass: "text-primary",
-    },
-    {
+  const actions = [];
+
+  // SEMPRE PODE VER DETALHES (Se ele chegou na lista, ele já tem usuarios:ver)
+  actions.push({
+    label: "Ver Detalhes",
+    icon: <Eye className="h-4 w-4" />,
+    onClick: () => navigate(`/colaboradores/${collaborator.id}`),
+    swipeColor: "bg-primary",
+    drawerClass: "text-primary",
+  });
+
+  if (can(PERMISSIONS.USUARIOS.EDITAR)) {
+    actions.push({
       label: "Editar",
       icon: <Edit className="h-4 w-4" />,
       onClick: () => onEdit(collaborator),
       swipeColor: "bg-blue-600",
       drawerClass: "text-blue-600",
-    },
-  ];
+    });
+  }
 
   if (!isCurrentUser) {
-    if (status === 'PENDENTE') {
-      actions.push({
-        label: "Aprovar",
-        icon: <Check className="h-4 w-4" />,
-        onClick: () => onStatusChange(collaborator, 'ATIVO'),
-        swipeColor: "bg-green-600",
-        drawerClass: "text-green-600",
-      });
-    } else if (status === 'ATIVO') {
-      actions.push({
-        label: "Desativar",
-        icon: <Ban className="h-4 w-4" />,
-        onClick: () => onStatusChange(collaborator, 'INATIVO'),
-        swipeColor: "bg-amber-600",
-        drawerClass: "text-amber-600",
-      });
-    } else {
-      actions.push({
-        label: "Ativar",
-        icon: <Check className="h-4 w-4" />,
-        onClick: () => onStatusChange(collaborator, 'ATIVO'),
-        swipeColor: "bg-green-600",
-        drawerClass: "text-green-600",
-      });
+    if (can(PERMISSIONS.USUARIOS.STATUS)) {
+      if (status === 'PENDENTE') {
+        actions.push({
+          label: "Aprovar",
+          icon: <Check className="h-4 w-4" />,
+          onClick: () => onStatusChange(collaborator, 'ATIVO'),
+          swipeColor: "bg-green-600",
+          drawerClass: "text-green-600",
+        });
+      } else if (status === 'ATIVO') {
+        actions.push({
+          label: "Desativar",
+          icon: <Ban className="h-4 w-4" />,
+          onClick: () => onStatusChange(collaborator, 'INATIVO'),
+          swipeColor: "bg-amber-600",
+          drawerClass: "text-amber-600",
+        });
+      } else {
+        actions.push({
+          label: "Ativar",
+          icon: <Check className="h-4 w-4" />,
+          onClick: () => onStatusChange(collaborator, 'ATIVO'),
+          swipeColor: "bg-green-600",
+          drawerClass: "text-green-600",
+        });
+      }
     }
 
-    actions.push({
-      label: "Excluir",
-      icon: <Trash2 className="h-4 w-4" />,
-      onClick: () => onDelete(collaborator),
-      // @ts-ignore
-      isDestructive: true,
-      swipeColor: "bg-red-600",
-      drawerClass: "text-red-600",
-    });
+    if (can(PERMISSIONS.USUARIOS.DELETAR)) {
+      actions.push({
+        label: "Excluir",
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: () => onDelete(collaborator),
+        // @ts-ignore
+        isDestructive: true,
+        swipeColor: "bg-red-600",
+        drawerClass: "text-red-600",
+      });
+    }
   }
 
   return actions;

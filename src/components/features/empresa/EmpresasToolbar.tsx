@@ -28,6 +28,8 @@ import { cn } from "@/lib/utils";
 import { Plus, Search, X } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
+import { Can } from "@/components/auth/Can";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 
 interface EmpresasToolbarProps {
   searchTerm: string;
@@ -39,18 +41,18 @@ interface EmpresasToolbarProps {
   hasActiveFilters?: boolean;
 }
 
-const FilterContent = ({ 
-  selectedStatus, 
-  onStatusChange, 
-  onClear, 
+const FilterContent = ({
+  selectedStatus,
+  onStatusChange,
+  onClear,
   onApply,
-  isSheet = false 
-}: { 
+  isSheet = false
+}: {
   selectedStatus: string;
   onStatusChange: (val: string) => void;
   onClear: () => void;
   onApply?: () => void;
-  isSheet?: boolean; 
+  isSheet?: boolean;
 }) => (
   <div className={cn("space-y-6", isSheet ? "px-6 pb-6" : "p-4")}>
     <div className="space-y-2">
@@ -153,13 +155,13 @@ export function EmpresasToolbar({
         {isMobile ? (
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <FilterButton 
+              <FilterButton
                 hasActiveFilters={hasAdvancedFilters}
                 isMobile={isMobile}
               />
             </SheetTrigger>
-            <SheetContent 
-              side="bottom" 
+            <SheetContent
+              side="bottom"
               className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 pb-0 bg-gray-50 border-t-0 shadow-2xl"
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
@@ -170,8 +172,8 @@ export function EmpresasToolbar({
                 </SheetDescription>
               </SheetHeader>
               <div className="flex-1 overflow-y-auto">
-                <FilterContent 
-                  isSheet={true} 
+                <FilterContent
+                  isSheet={true}
                   selectedStatus={mobileStatus}
                   onStatusChange={setMobileStatus}
                   onClear={clearMobileFilters}
@@ -179,14 +181,14 @@ export function EmpresasToolbar({
                 />
               </div>
               <div className="p-4 border-t bg-white mt-auto flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={clearMobileFilters} 
+                <Button
+                  variant="outline"
+                  onClick={clearMobileFilters}
                   className="flex-1 h-12 rounded-xl text-slate-500 font-bold border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
                 >
                   Limpar
                 </Button>
-                <Button 
+                <Button
                   onClick={applyMobileFilters}
                   className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white"
                 >
@@ -197,10 +199,10 @@ export function EmpresasToolbar({
           </Sheet>
         ) : (
           <div className="flex items-center gap-3">
-             {hasAnyFilter && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+            {hasAnyFilter && (
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={clearFilters}
                 className="text-gray-500 hover:text-gray-900"
               >
@@ -208,40 +210,42 @@ export function EmpresasToolbar({
                 Limpar
               </Button>
             )}
-          <Popover>
-            <PopoverTrigger asChild>
-               <FilterButton 
-                hasActiveFilters={hasAdvancedFilters}
-                isMobile={isMobile}
-                selectedCount={selectedStatus !== "todos" ? 1 : 0}
-              />
-            </PopoverTrigger>
-            <PopoverContent 
-              className="w-[280px] p-0 rounded-2xl shadow-2xl border-gray-100 overflow-hidden" 
-              align="end" 
-              sideOffset={8}
-              onOpenAutoFocus={(e) => e.preventDefault()}
-            >
-              <FilterContent 
-                selectedStatus={selectedStatus}
-                onStatusChange={onStatusChange}
-                onClear={clearFilters}
-              />
-            </PopoverContent>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FilterButton
+                  hasActiveFilters={hasAdvancedFilters}
+                  isMobile={isMobile}
+                  selectedCount={selectedStatus !== "todos" ? 1 : 0}
+                />
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[280px] p-0 rounded-2xl shadow-2xl border-gray-100 overflow-hidden"
+                align="end"
+                sideOffset={8}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <FilterContent
+                  selectedStatus={selectedStatus}
+                  onStatusChange={onStatusChange}
+                  onClear={clearFilters}
+                />
+              </PopoverContent>
             </Popover>
           </div>
         )}
 
-        <Button 
-          onClick={onRegister} 
-          className={cn(
-            "bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap",
-            isMobile && "flex-1 h-11"
-          )}
-        >
-          <Plus className="h-4 w-4" />
-          <span>{isMobile ? "Cadastrar" : "Cadastrar Empresa"}</span>
-        </Button>
+        <Can I={PERMISSIONS.EMPRESAS.CRIAR}>
+          <Button
+            onClick={onRegister}
+            className={cn(
+              "bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap",
+              isMobile && "flex-1 h-11"
+            )}
+          >
+            <Plus className="h-4 w-4" />
+            <span>{isMobile ? "Cadastrar" : "Cadastrar Empresa"}</span>
+          </Button>
+        </Can>
       </div>
     </div>
   );

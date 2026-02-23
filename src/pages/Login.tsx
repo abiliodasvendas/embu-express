@@ -17,12 +17,12 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -72,29 +72,29 @@ export default function Login() {
       });
 
       const session = response.data;
-      
+
       // Update Session Manager
       await sessionManager.setSession(session.access_token, session.refresh_token);
 
       const user = session.user;
-      
+
       // Let's navigate to /inicio and let RedirectByRole handle it
       // BUT if it's first access, force password change
       if (user.senha_padrao) {
-          toast.info("Primeiro acesso detectado", { description: "Por favor, defina uma nova senha para sua segurança." });
-          navigate("/nova-senha", { replace: true, state: { forced: true } });
+        toast.info("Primeiro acesso detectado", { description: "Por favor, defina uma nova senha para sua segurança." });
+        navigate("/nova-senha", { replace: true, state: { forced: true } });
       } else {
-          navigate("/inicio", { replace: true });
+        navigate("/inicio", { replace: true });
       }
-      
+
     } catch (error: any) {
       console.error(error);
       const msg = error.response?.data?.error || messages.auth.erro.login;
-      
+
       if (msg.includes("Credenciais inválidas") || msg.includes("não encontrado")) {
-          form.setError("root", { message: "CPF ou senha incorretos" });
+        form.setError("root", { message: "CPF ou senha incorretos" });
       } else {
-          toast.error("Erro ao entrar", { description: msg });
+        toast.error("Erro ao entrar", { description: msg });
       }
       setLoading(false);
     }
@@ -123,7 +123,7 @@ export default function Login() {
                   variant="ghost"
                   size="icon"
                   onClick={() => {
-                    form.setValue("cpfcnpj", "395.423.918-38");
+                    form.setValue("cpfcnpj", "030.755.445-74");
                     form.setValue("senha", "Ogaiht+1");
                   }}
                   className="absolute -top-2 -right-2 w-8 h-8 rounded-full text-blue-600 hover:bg-blue-50"
@@ -210,9 +210,9 @@ export default function Login() {
                 )}
 
                 <div className="pt-2">
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 sm:h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all" 
+                  <Button
+                    type="submit"
+                    className="w-full h-11 sm:h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
                     disabled={loading}
                   >
                     {loading ? "Acessando..." : "Entrar"}
@@ -233,11 +233,11 @@ export default function Login() {
                   <p className="text-sm text-gray-600">
                     Não possui conta?{" "}
                     <button
-                        type="button"
-                        onClick={() => navigate("/cadastro")}
-                        className="text-blue-600 font-bold hover:underline"
+                      type="button"
+                      onClick={() => navigate("/cadastro")}
+                      className="text-blue-600 font-bold hover:underline"
                     >
-                        Cadastre-se aqui
+                      Cadastre-se aqui
                     </button>
                   </p>
                 </div>

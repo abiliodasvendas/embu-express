@@ -13,7 +13,10 @@ export async function fetchProfile(uid: string): Promise<ProfileWithRole | null>
     .select(
       `
       *,
-      perfil:perfis (*),
+      perfil:perfis (
+        *,
+        perfil_permissoes(permissao:permissoes(nome_interno))
+      ),
       links:colaborador_clientes(
         *,
         cliente:clientes(nome_fantasia),
@@ -43,7 +46,7 @@ export function useProfile(uid?: string) {
 
   useEffect(() => {
     if (error) {
-      supabase.auth.signOut().catch(() => {});
+      supabase.auth.signOut().catch(() => { });
     }
   }, [error]);
 

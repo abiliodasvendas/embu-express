@@ -1,11 +1,11 @@
-import { ADMIN_ROLES, OPERATIONAL_ROLES, UserRole } from "@/types/auth";
+import { PermissionKey, PERMISSIONS } from "@/constants/permissions.enum";
 import { Briefcase, Building, Clock, Users } from "lucide-react";
 
 export interface PageItem {
     title: string;
     href: string;
     icon: any;
-    allowedRoles: UserRole[];
+    permissionKey?: PermissionKey; // Substitui o allowedRoles para checagem granular
 }
 
 export const pagesItems: PageItem[] = [
@@ -13,31 +13,36 @@ export const pagesItems: PageItem[] = [
         title: "Registrar Ponto",
         href: "/registrar-ponto",
         icon: Clock,
-        allowedRoles: OPERATIONAL_ROLES,
+        permissionKey: PERMISSIONS.PONTO.REGISTRAR,
     },
     {
         title: "Controle de Ponto",
         href: "/controle-ponto",
         icon: Clock,
-        allowedRoles: ADMIN_ROLES,
+        permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
     },
     {
         title: "Colaboradores",
         href: "/colaboradores",
         icon: Users,
-        allowedRoles: ADMIN_ROLES,
+        permissionKey: PERMISSIONS.USUARIOS.VER,
+    },
+    {
+        title: "Perfis",
+        href: "/perfis",
+        icon: Users,
+        permissionKey: PERMISSIONS.PERFIS.VER,
     },
     {
         title: "Clientes",
         href: "/clientes",
         icon: Briefcase,
-        allowedRoles: ADMIN_ROLES,
+        permissionKey: PERMISSIONS.CLIENTES.VER,
     },
     {
         title: "Empresas",
         href: "/empresas",
         icon: Building,
-        allowedRoles: ADMIN_ROLES,
+        permissionKey: PERMISSIONS.EMPRESAS.VER,
     },
 ];
-

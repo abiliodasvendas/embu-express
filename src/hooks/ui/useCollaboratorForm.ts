@@ -20,6 +20,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
       email: "",
       cpf: "",
       perfil_id: "",
+      isMotoboy: false,
       status: "ATIVO",
       senha_padrao: true,
       links: [],
@@ -51,10 +52,11 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           email: collaboratorToEdit.email,
           cpf: cpfMask(collaboratorToEdit.cpf),
           perfil_id: collaboratorToEdit.perfil_id.toString(),
+          isMotoboy: false, // Updated later by useEffect in Dialog
           status: collaboratorToEdit.status || "ATIVO",
           senha_padrao: !!collaboratorToEdit.senha_padrao,
           links: (collaboratorToEdit as any).links || [],
-          
+
           rg: collaboratorToEdit.rg ? rgMask(collaboratorToEdit.rg) : "",
           data_nascimento: collaboratorToEdit.data_nascimento ? formatDateToBR(collaboratorToEdit.data_nascimento) : "",
           nome_mae: collaboratorToEdit.nome_mae || "",
@@ -62,7 +64,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           telefone: collaboratorToEdit.telefone ? phoneMask(collaboratorToEdit.telefone) : "",
           telefone_recado: collaboratorToEdit.telefone_recado ? phoneMask(collaboratorToEdit.telefone_recado) : "",
           data_inicio: collaboratorToEdit.data_inicio || "",
-          
+
           cnh_registro: collaboratorToEdit.cnh_registro || "",
           cnh_vencimento: collaboratorToEdit.cnh_vencimento ? formatDateToBR(collaboratorToEdit.cnh_vencimento) : "",
           cnh_categoria: collaboratorToEdit.cnh_categoria || "",
@@ -80,6 +82,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           email: "",
           cpf: "",
           perfil_id: "",
+          isMotoboy: false,
           status: "ATIVO",
           links: [],
           rg: "",

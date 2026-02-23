@@ -12,6 +12,8 @@ import { cnpjMask, cpfMask, dateMask, phoneMask } from "@/utils/masks";
 import { Bike, Calendar, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, Phone, Plus, Power, Trash2, User } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Can } from "@/components/auth/Can";
+import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 
 export default function CollaboratorDetails() {
   const { id } = useParams();
@@ -46,7 +48,7 @@ export default function CollaboratorDetails() {
     );
   }
 
-  const role = roles?.find(r => r.id === collaborator.perfil_id);
+  const role = roles?.find(r => r.id === Number(collaborator.perfil_id));
 
   const handleAddTurn = () => {
     setTurnToEdit(null);
@@ -65,27 +67,27 @@ export default function CollaboratorDetails() {
   };
 
   const handleToggleStatus = async () => {
-      const newStatus = collaborator.status === 'ATIVO' ? 'INATIVO' : 'ATIVO';
-      if(window.confirm(`Deseja realmente alterar o status para ${newStatus}?`)) {
-          await updateStatus.mutateAsync({ id: collaborator.id, status: newStatus });
-      }
+    const newStatus = collaborator.status === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+    if (window.confirm(`Deseja realmente alterar o status para ${newStatus}?`)) {
+      await updateStatus.mutateAsync({ id: collaborator.id, status: newStatus });
+    }
   }
 
   const getStatusColor = (status: string) => {
-      switch(status) {
-          case 'ATIVO': return "bg-green-100 text-green-700 border-green-200";
-          case 'INATIVO': return "bg-red-100 text-red-700 border-red-200";
-          case 'PENDENTE': return "bg-yellow-100 text-yellow-700 border-yellow-200";
-          default: return "bg-gray-100 text-gray-600 border-gray-200";
-      }
+    switch (status) {
+      case 'ATIVO': return "bg-green-100 text-green-700 border-green-200";
+      case 'INATIVO': return "bg-red-100 text-red-700 border-red-200";
+      case 'PENDENTE': return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      default: return "bg-gray-100 text-gray-600 border-gray-200";
+    }
   }
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => navigate("/colaboradores")}
           className="hover:bg-gray-100 rounded-xl px-2"
         >
@@ -93,25 +95,29 @@ export default function CollaboratorDetails() {
           Voltar
         </Button>
         <div className="flex gap-2">
-            <Button 
-                onClick={handleToggleStatus}
-                variant="outline"
-                className={cn(
-                    "rounded-xl border-gray-200", 
-                    collaborator.status === 'ATIVO' ? "text-red-600 hover:bg-red-50 hover:border-red-200" : "text-green-600 hover:bg-green-50 hover:border-green-200"
-                )}
+          <Can I={PERMISSIONS.USUARIOS.STATUS}>
+            <Button
+              onClick={handleToggleStatus}
+              variant="outline"
+              className={cn(
+                "rounded-xl border-gray-200",
+                collaborator.status === 'ATIVO' ? "text-red-600 hover:bg-red-50 hover:border-red-200" : "text-green-600 hover:bg-green-50 hover:border-green-200"
+              )}
             >
-                <Power className="h-4 w-4 mr-2" />
-                {collaborator.status === 'ATIVO' ? "Desativar" : "Ativar"}
+              <Power className="h-4 w-4 mr-2" />
+              {collaborator.status === 'ATIVO' ? "Desativar" : "Ativar"}
             </Button>
-            <Button 
-            onClick={() => setIsEditDialogOpen(true)}
-            variant="outline"
-            className="rounded-xl border-primary/20 text-primary hover:bg-primary/5"
+          </Can>
+          <Can I={PERMISSIONS.USUARIOS.EDITAR}>
+            <Button
+              onClick={() => setIsEditDialogOpen(true)}
+              variant="outline"
+              className="rounded-xl border-primary/20 text-primary hover:bg-primary/5"
             >
-            <Edit2 className="h-4 w-4 mr-2" />
-            Editar
+              <Edit2 className="h-4 w-4 mr-2" />
+              Editar
             </Button>
+          </Can>
         </div>
       </div>
 
@@ -124,8 +130,8 @@ export default function CollaboratorDetails() {
                 <User className="h-12 w-12 text-white" />
               </div>
               <h2 className="text-xl font-bold text-gray-800">{collaborator.nome_completo}</h2>
-              <Badge 
-                variant="secondary" 
+              <Badge
+                variant="secondary"
                 className={cn(
                   "mt-2 px-3 py-1 rounded-full font-bold border",
                   getStatusColor(collaborator.status)
@@ -153,24 +159,24 @@ export default function CollaboratorDetails() {
                   <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Documentos</p>
                   <div className="grid grid-cols-2 gap-2 mt-1">
                     <div>
-                        <p className="text-[10px] text-muted-foreground font-semibold">CPF</p>
-                        <p className="text-sm font-medium text-gray-700">{cpfMask(collaborator.cpf)}</p>
+                      <p className="text-[10px] text-muted-foreground font-semibold">CPF</p>
+                      <p className="text-sm font-medium text-gray-700">{cpfMask(collaborator.cpf)}</p>
                     </div>
                     <div>
-                        <p className="text-[10px] text-muted-foreground font-semibold">RG</p>
-                        <p className="text-sm font-medium text-gray-700">{collaborator.rg || '-'}</p>
+                      <p className="text-[10px] text-muted-foreground font-semibold">RG</p>
+                      <p className="text-sm font-medium text-gray-700">{collaborator.rg || '-'}</p>
                     </div>
                     {collaborator.cnpj && (
-                         <div className="col-span-2">
-                            <p className="text-[10px] text-muted-foreground font-semibold">CNPJ (MEI)</p>
-                            <p className="text-sm font-medium text-gray-700">{cnpjMask(collaborator.cnpj)}</p>
-                        </div>
+                      <div className="col-span-2">
+                        <p className="text-[10px] text-muted-foreground font-semibold">CNPJ (MEI)</p>
+                        <p className="text-sm font-medium text-gray-700">{cnpjMask(collaborator.cnpj)}</p>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
 
-               <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3">
                 <div className="p-2 bg-yellow-50 rounded-lg shrink-0">
                   <Calendar className="h-4 w-4 text-yellow-600" />
                 </div>
@@ -192,7 +198,7 @@ export default function CollaboratorDetails() {
 
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
-                   <div className="h-4 w-4 font-bold text-emerald-600 flex items-center justify-center text-[10px]">R$</div>
+                  <div className="h-4 w-4 font-bold text-emerald-600 flex items-center justify-center text-[10px]">R$</div>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Chave PIX</p>
@@ -212,7 +218,7 @@ export default function CollaboratorDetails() {
             </CardContent>
           </Card>
 
-          {role?.id === 3 && (
+          {role?.nome === ROLES.MOTOBOY && (
             <Card className="border-0 shadow-sm rounded-3xl border-l-4 border-l-primary">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -233,7 +239,7 @@ export default function CollaboratorDetails() {
                   <p className="text-xs text-muted-foreground">Cor / Ano</p>
                   <p className="text-sm font-medium">{collaborator.moto_cor || '-'} / {collaborator.moto_ano || '-'}</p>
                 </div>
-                 <div>
+                <div>
                   <p className="text-xs text-muted-foreground">CNH</p>
                   <p className="text-sm font-medium">{collaborator.cnh_registro || '-'}</p>
                 </div>
@@ -242,8 +248,8 @@ export default function CollaboratorDetails() {
                   <p className="text-sm font-medium">{collaborator.cnh_categoria || '-'}</p>
                 </div>
                 <div>
-                   <p className="text-xs text-muted-foreground">Vencimento CNH</p>
-                   <p className="text-sm font-medium">{collaborator.cnh_vencimento ? dateMask(collaborator.cnh_vencimento) : '-'}</p>
+                  <p className="text-xs text-muted-foreground">Vencimento CNH</p>
+                  <p className="text-sm font-medium">{collaborator.cnh_vencimento ? dateMask(collaborator.cnh_vencimento) : '-'}</p>
                 </div>
               </CardContent>
             </Card>
@@ -261,10 +267,12 @@ export default function CollaboratorDetails() {
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">Configure onde e quando o colaborador trabalha.</p>
               </div>
-              <Button onClick={handleAddTurn} size="sm" className="rounded-xl shadow-md shadow-primary/20">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Vínculo
-              </Button>
+              <Can I={PERMISSIONS.USUARIOS.EDITAR}>
+                <Button onClick={handleAddTurn} size="sm" className="rounded-xl shadow-md shadow-primary/20">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Vínculo
+                </Button>
+              </Can>
             </CardHeader>
             <CardContent className="p-8 flex-1">
               {!collaborator.links || collaborator.links.length === 0 ? (
@@ -280,22 +288,24 @@ export default function CollaboratorDetails() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {collaborator.links.map((link, index) => (
-                    <div 
-                      key={link.id || index} 
+                    <div
+                      key={link.id || index}
                       className="group border border-gray-100 p-5 rounded-2xl hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all relative bg-gray-50/10"
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div className="p-2.5 bg-white shadow-sm border border-gray-100 rounded-xl">
                           <Bike className="h-5 w-5 text-primary" />
                         </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button onClick={() => handleEditTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-primary rounded-lg">
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button onClick={() => handleDeleteTurn(link.id)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500 rounded-lg">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                        <Can I={PERMISSIONS.USUARIOS.EDITAR}>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button onClick={() => handleEditTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-primary rounded-lg">
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button onClick={() => handleDeleteTurn(link.id)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500 rounded-lg">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </Can>
                       </div>
 
                       <div className="space-y-3">
@@ -305,7 +315,7 @@ export default function CollaboratorDetails() {
                             {link.cliente?.nome_fantasia || 'Cliente não identificado'}
                           </h4>
                         </div>
-                        
+
                         <div className="flex items-center gap-6">
                           <div>
                             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Horário</p>
@@ -328,9 +338,9 @@ export default function CollaboratorDetails() {
                             <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Valor Total</span>
                             <span className="text-sm font-extrabold text-primary">
                               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                                (link.valor_contrato || 0) + 
-                                (link.valor_aluguel || 0) + 
-                                (link.valor_bonus || 0) + 
+                                (link.valor_contrato || 0) +
+                                (link.valor_aluguel || 0) +
+                                (link.valor_bonus || 0) +
                                 (link.ajuda_custo || 0)
                               )}
                             </span>
@@ -346,7 +356,7 @@ export default function CollaboratorDetails() {
         </div>
       </div>
 
-      <CollaboratorFormDialog 
+      <CollaboratorFormDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         collaboratorToEdit={collaborator}

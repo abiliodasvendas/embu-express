@@ -1,34 +1,33 @@
 import { messages } from "@/constants/messages";
-import { PERFIL_ID } from "@/constants/roles";
 import { z } from "zod";
 import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
 
 // Auxiliar para a validação de conflitos de horários
 const checkLinkConflicts = (links: any[], ctx: any) => {
-    if (!links) return;
-    
-    const toMinutes = (time: string) => {
-        const [h, m] = time?.split(":").map(Number) || [0, 0];
-        return h * 60 + m;
-    };
+  if (!links) return;
 
-    for (let i = 0; i < links.length; i++) {
-        const l = links[i];
-        const start = toMinutes(l.hora_inicio);
-        const end = toMinutes(l.hora_fim);
-        
-        let duration = 0;
-        if (start < end) duration = end - start;
-        else duration = (1440 - start) + end;
+  const toMinutes = (time: string) => {
+    const [h, m] = time?.split(":").map(Number) || [0, 0];
+    return h * 60 + m;
+  };
 
-        if (duration < 60) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Turno min 1h",
-                path: ["links", i, "hora_fim"],
-            });
-        }
+  for (let i = 0; i < links.length; i++) {
+    const l = links[i];
+    const start = toMinutes(l.hora_inicio);
+    const end = toMinutes(l.hora_fim);
+
+    let duration = 0;
+    if (start < end) duration = end - start;
+    else duration = (1440 - start) + end;
+
+    if (duration < 60) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Turno min 1h",
+        path: ["links", i, "hora_fim"],
+      });
     }
+  }
 };
 
 // 1. Schema Base: Campos comuns a todos os perfis
@@ -51,6 +50,7 @@ const commonSchema = z.object({
   empresa_financeiro_id: z.string().optional(),
   nome_operacao: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
+  isMotoboy: z.boolean().optional().default(false),
   links: z.array(z.object({
     cliente_id: z.string().min(1, messages.validacao.campoObrigatorio),
     empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
@@ -68,7 +68,7 @@ const commonSchema = z.object({
 const professionalSchema = z.union([
   // Motoboy: Campos obrigatórios
   z.object({
-    perfil_id: z.literal(PERFIL_ID.MOTOBOY),
+    isMotoboy: z.literal(true),
     cnh_registro: z.string().min(1, messages.validacao.campoObrigatorio),
     cnh_vencimento: dateSchema(true, true),
     cnh_categoria: z.string().min(1, messages.validacao.campoObrigatorio),
@@ -81,7 +81,7 @@ const professionalSchema = z.union([
   }),
   // Outros perfis: Campos opcionais
   z.object({
-    perfil_id: z.string().refine(val => val !== PERFIL_ID.MOTOBOY),
+    isMotoboy: z.literal(false),
     cnh_registro: z.string().optional(),
     cnh_vencimento: z.string().optional(),
     cnh_categoria: z.string().optional(),

@@ -9,13 +9,13 @@ export function useCreateCollaborator() {
   return useMutation({
     mutationFn: (data: any & { silent?: boolean }) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { silent, ...collaboratorData } = data;
-      
+      const { silent, isMotoboy, ...collaboratorData } = data;
+
       const payload = {
-          ...collaboratorData,
-          data_nascimento: formatDateToISO(collaboratorData.data_nascimento),
-          cnh_vencimento: formatDateToISO(collaboratorData.cnh_vencimento),
-          data_inicio: formatDateToISO(collaboratorData.data_inicio),
+        ...collaboratorData,
+        data_nascimento: formatDateToISO(collaboratorData.data_nascimento),
+        cnh_vencimento: formatDateToISO(collaboratorData.cnh_vencimento),
+        data_inicio: formatDateToISO(collaboratorData.data_inicio),
       };
 
       return colaboradorApi.createColaborador(payload);
@@ -39,14 +39,14 @@ export function useCreateCollaborator() {
 export function useUpdateCollaborator() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: any) => {
-        const payload = {
-            ...data,
-            data_nascimento: formatDateToISO(data.data_nascimento),
-            cnh_vencimento: formatDateToISO(data.cnh_vencimento),
-            data_inicio: formatDateToISO(data.data_inicio),
-        };
-        return colaboradorApi.updateColaborador(id, payload);
+    mutationFn: ({ id, isMotoboy, ...data }: any) => {
+      const payload = {
+        ...data,
+        data_nascimento: formatDateToISO(data.data_nascimento),
+        cnh_vencimento: formatDateToISO(data.cnh_vencimento),
+        data_inicio: formatDateToISO(data.data_inicio),
+      };
+      return colaboradorApi.updateColaborador(id, payload);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["collaborators"] });
@@ -66,8 +66,8 @@ export function useUpdateCollaborator() {
 export function useUpdateCollaboratorStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => 
-        colaboradorApi.updateStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      colaboradorApi.updateStatus(id, status),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["collaborators"] });
       queryClient.invalidateQueries({ queryKey: ["collaborator", variables.id.toString()] });
@@ -123,9 +123,9 @@ export function useUpdateVinculo() {
   return useMutation({
     mutationFn: ({ id, ...data }: any) => colaboradorApi.updateVinculo(id, data),
     onSuccess: (_, variables) => {
-       // We might not have colaborador_id here if it's not passed, but usually it is
-       queryClient.invalidateQueries({ queryKey: ["collaborator"] });
-       toast.success("Vínculo atualizado!");
+      // We might not have colaborador_id here if it's not passed, but usually it is
+      queryClient.invalidateQueries({ queryKey: ["collaborator"] });
+      toast.success("Vínculo atualizado!");
     },
     onError: (error: any) => {
       toast.error("Erro ao atualizar vínculo", {

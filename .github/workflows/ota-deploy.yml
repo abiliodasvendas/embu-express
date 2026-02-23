@@ -1,0 +1,113 @@
+name: OTA Deploy
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    env:
+      VERSION: v${{ github.run_id }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Definir variáveis de ambiente da Web
+        run: |
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> $GITHUB_ENV
+
+      - name: Build app
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      - name: Compactar bundle
+        run: |
+          mkdir -p dist_zip
+          cd dist && zip -r ../dist_zip/app-${VERSION}.zip .
+
+      - name: Enviar para Supabase Storage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          curl -X POST "$SUPABASE_URL/storage/v1/object/ota/app-${VERSION}.zip" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/zip" \
+            --data-binary @dist_zip/app-${VERSION}.zip
+
+      - name: Registrar nova versão no banco
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # 1. Extrair a mensagem do commit
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+
+          # 2. Definir a flag force_update: 'true' se [FORCE] estiver na mensagem, senão 'false'
+          if [[ "$COMMIT_MESSAGE" == *"[FORCE]"* ]]; then
+            FORCE_UPDATE_VALUE="true"
+          else
+            FORCE_UPDATE_VALUE="false"
+          fi
+
+          echo "[INFO] Mensagem do Commit: $COMMIT_MESSAGE"
+          echo "[INFO] Force Update set to: $FORCE_UPDATE_VALUE"
+
+          # 3. Construir o payload e enviar a requisição
+          PUBLIC_URL="$SUPABASE_URL/storage/v1/object/public/ota/app-${VERSION}.zip"
+          curl -X POST "$SUPABASE_URL/rest/v1/app_updates" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "platform": "android",
+              "latest_version": "'${VERSION}'",
+              "url_zip": "'${PUBLIC_URL}'",
+              "force_update": '${FORCE_UPDATE_VALUE}'
+            }'
+
+      - name: Limpar versões antigas (manter apenas as 3 mais recentes)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "[INFO] Limpando versões antigas..."
+
+          # 1. Faz a requisição e armazena o JSON na variável 'RESPONSE'
+          RESPONSE=$(curl -s -X POST "$SUPABASE_URL/storage/v1/object/list/ota" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"prefix": ""}')
+
+          # 2. Verifica se a resposta é um JSON válido (array) e filtra os nomes
+          FILES=$(echo "$RESPONSE" | jq -r '.[].name' 2>/dev/null | sort -r)
+
+          if [ -z "$FILES" ]; then
+            echo "[INFO] Não há arquivos para limpar ou a resposta do servidor está vazia/inválida."
+          else
+            COUNT=0
+            echo "$FILES" | while read FILE; do
+              COUNT=$((COUNT+1))
+              if [ $COUNT -gt 3 ]; then
+                echo "Deletando versão antiga: $FILE"
+                curl -s -X DELETE "$SUPABASE_URL/storage/v1/object/ota/$FILE" \
+                  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+                  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" > /dev/null
+              fi
+            done
+          fi
+          echo "[INFO] Limpeza concluída."

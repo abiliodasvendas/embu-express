@@ -49,7 +49,7 @@ export interface Usuario {
   status: 'PENDENTE' | 'ATIVO' | 'INATIVO';
   created_at?: string;
   updated_at?: string;
-  
+
   // Dados Pessoais Estendidos
   data_nascimento?: string;
   rg?: string;
@@ -70,15 +70,10 @@ export interface Usuario {
   moto_ano?: string;
   moto_placa?: string;
 
-  // Financeiro
-  nome_operacao?: string;
-  empresa_financeiro_id?: number | null;
-  valor_ajuda_custo?: number;
-
   // Relacionamentos (virtual)
   perfil?: Perfil;
-  cliente?: Client; 
-  empresa?: Empresa; 
+  cliente?: Client;
+  empresa?: Empresa;
   links?: ColaboradorCliente[];
 }
 
@@ -91,20 +86,20 @@ export interface UsuarioTurno {
 }
 
 export interface ColaboradorCliente {
-    id: number;
-    colaborador_id: string;
-    cliente_id: number;
-    empresa_id: number;
-    hora_inicio: string;
-    hora_fim: string;
-    valor_contrato?: number;
-    valor_aluguel?: number;
-    valor_bonus?: number;
-    ajuda_custo?: number;
-    mei?: boolean;
-    // Virtual
-    cliente?: Client;
-    empresa?: Empresa;
+  id: number;
+  colaborador_id: string;
+  cliente_id: number;
+  empresa_id: number;
+  hora_inicio: string;
+  hora_fim: string;
+  valor_contrato?: number;
+  valor_aluguel?: number;
+  valor_bonus?: number;
+  ajuda_custo?: number;
+  mei?: boolean;
+  // Virtual
+  cliente?: Client;
+  empresa?: Empresa;
 }
 
 export interface RegistroPonto {

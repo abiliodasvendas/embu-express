@@ -46,9 +46,6 @@ const commonSchema = z.object({
   status: z.enum(["ATIVO", "INATIVO", "PENDENTE"]).default("ATIVO"),
   senha_padrao: z.boolean().optional(),
   data_inicio: z.string().optional(),
-  valor_ajuda_custo: z.coerce.number().optional().default(0),
-  empresa_financeiro_id: z.string().optional(),
-  nome_operacao: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
   isMotoboy: z.boolean().optional().default(false),
   links: z.array(z.object({

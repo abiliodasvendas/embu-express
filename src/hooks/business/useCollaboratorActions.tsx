@@ -1,5 +1,6 @@
 import { useSession } from "@/hooks/business/useSession";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { canManageRole } from "@/utils/auth/hierarchy";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { Usuario } from "@/types/database";
 import { ActionItem } from "@/types/actions";
@@ -22,14 +23,17 @@ export function useCollaboratorActions({
   hideDetails = false,
 }: UseCollaboratorActionsProps) {
   const { user } = useSession();
-  const { can } = usePermissions();
+  const { can, roleName: currentUserRole } = usePermissions();
   const navigate = useNavigate();
 
   const actions: ActionItem[] = [];
   if (!collaborator) return actions;
 
   const isCurrentUser = user?.id === collaborator.id;
+  const targetUserRole = collaborator.perfil?.nome;
   const status = collaborator.status;
+
+  const canManageHierarchy = canManageRole(currentUserRole, targetUserRole);
 
   // SEMPRE PODE VER DETALHES se não estivermos na view de detalhes.
   if (!hideDetails) {
@@ -43,16 +47,18 @@ export function useCollaboratorActions({
   }
 
   if (can(PERMISSIONS.USUARIOS.EDITAR)) {
-    actions.push({
-      label: "Editar",
-      icon: <Edit className="h-4 w-4" />,
-      onClick: () => onEdit(collaborator),
-      swipeColor: "bg-blue-600",
-      drawerClass: "text-blue-600",
-    });
+    if (isCurrentUser || canManageHierarchy) {
+      actions.push({
+        label: "Editar",
+        icon: <Edit className="h-4 w-4" />,
+        onClick: () => onEdit(collaborator),
+        swipeColor: "bg-blue-600",
+        drawerClass: "text-blue-600",
+      });
+    }
   }
 
-  if (!isCurrentUser) {
+  if (!isCurrentUser && canManageHierarchy) {
     if (can(PERMISSIONS.USUARIOS.STATUS)) {
       if (status === 'PENDENTE') {
         actions.push({

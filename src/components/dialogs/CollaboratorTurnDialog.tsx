@@ -110,8 +110,8 @@ export function CollaboratorTurnDialog({
         form.reset({
           cliente_id: "",
           empresa_id: "",
-          hora_inicio: "08:00",
-          hora_fim: "18:00",
+          hora_inicio: isMotoboy ? "08:00" : "08:00",
+          hora_fim: isMotoboy ? "18:00" : "18:00",
           valor_contrato: "",
           valor_aluguel: "",
           valor_bonus: "",
@@ -148,11 +148,17 @@ export function CollaboratorTurnDialog({
 
   const onSubmit = async (values: TurnFormData) => {
     try {
+      const isMotoboy = collaborator?.perfil?.nome === ROLES.MOTOBOY;
       const data = {
         ...values,
         colaborador_id: collaboratorId,
-        cliente_id: parseInt(values.cliente_id),
+        cliente_id: isMotoboy && values.cliente_id ? parseInt(values.cliente_id) : null,
         empresa_id: parseInt(values.empresa_id),
+        valor_contrato: isMotoboy ? values.valor_contrato : 0,
+        valor_aluguel: isMotoboy ? values.valor_aluguel : 0,
+        valor_bonus: isMotoboy ? values.valor_bonus : 0,
+        ajuda_custo: isMotoboy ? values.ajuda_custo : 0,
+        mei: isMotoboy ? values.mei : false,
       };
 
       if (turnToEdit) {
@@ -223,30 +229,32 @@ export function CollaboratorTurnDialog({
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2 space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="cliente_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Cliente <span className="text-red-500">*</span></FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
-                                  <SelectValue placeholder="Selecione" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {clients?.map((client) => (
-                                  <SelectItem key={client.id} value={client.id.toString()}>
-                                    {client.nome_fantasia}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      {collaborator?.perfil?.nome === ROLES.MOTOBOY && (
+                        <FormField
+                          control={form.control}
+                          name="cliente_id"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cliente <span className="text-red-500">*</span></FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
+                                    <SelectValue placeholder="Selecione" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {clients?.map((client) => (
+                                    <SelectItem key={client.id} value={client.id.toString()}>
+                                      {client.nome_fantasia}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
 
                       <FormField
                         control={form.control}
@@ -311,88 +319,90 @@ export function CollaboratorTurnDialog({
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="financeiro" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-blue-600" />
-                      Configuração Financeira
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2 space-y-5">
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="valor_contrato"
-                        render={({ field }) => (
-                          <MoneyInput
-                            field={field}
-                            label="Valor Contrato"
-                            required={true}
-                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                          />
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="valor_aluguel"
-                        render={({ field }) => (
-                          <MoneyInput
-                            field={field}
-                            label="Aluguel Moto"
-                            required={false}
-                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                          />
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="ajuda_custo"
-                        render={({ field }) => (
-                          <MoneyInput
-                            field={field}
-                            label="Ajuda Custo"
-                            required={false}
-                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                          />
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="valor_bonus"
-                        render={({ field }) => (
-                          <MoneyInput
-                            field={field}
-                            label="Bônus Zero Falta"
-                            required={false}
-                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-green-700"
-                          />
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="mei"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50 border-gray-100 shadow-sm">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-sm font-semibold text-gray-800">Contratação via MEI</FormLabel>
-                            <p className="text-xs text-muted-foreground">Marque esta opção se a contratação for via MEI</p>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                {collaborator?.perfil?.nome === ROLES.MOTOBOY && (
+                  <AccordionItem value="financeiro" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                    <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-blue-600" />
+                        Configuração Financeira
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-6 pt-2 space-y-5">
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="valor_contrato"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Valor Contrato"
+                              required={true}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                             />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="valor_aluguel"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Aluguel Moto"
+                              required={false}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                            />
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="ajuda_custo"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Ajuda Custo"
+                              required={false}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                            />
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="valor_bonus"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Bônus Zero Falta"
+                              required={false}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-green-700"
+                            />
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="mei"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50 border-gray-100 shadow-sm">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-sm font-semibold text-gray-800">Contratação via MEI</FormLabel>
+                              <p className="text-xs text-muted-foreground">Marque esta opção se a contratação for via MEI</p>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
               </Accordion>
             </form>
           </Form>

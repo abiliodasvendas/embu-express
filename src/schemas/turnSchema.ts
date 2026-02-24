@@ -12,11 +12,11 @@ const optionalMoneySchema = z.string()
   .transform((val) => val ? moneyToNumber(val) : 0);
 
 export const turnSchema = z.object({
-  cliente_id: z.string().min(1, messages.validacao.campoObrigatorio),
+  cliente_id: z.string().optional(),
   empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
   hora_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
   hora_fim: z.string().min(1, messages.validacao.campoObrigatorio),
-  valor_contrato: moneySchema,
+  valor_contrato: optionalMoneySchema,
   valor_aluguel: optionalMoneySchema,
   valor_bonus: optionalMoneySchema,
   ajuda_custo: optionalMoneySchema,

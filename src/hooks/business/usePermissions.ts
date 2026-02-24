@@ -37,8 +37,8 @@ export function usePermissions() {
   const isMotoboy = roleName === ROLES.MOTOBOY;
   const isFinanceiro = roleName?.startsWith('financeiro');
 
-  // Acesso Operacional via Permissão Real
-  const canOperate = can(PERMISSIONS.PONTO.REGISTRAR);
+  // Acesso Operacional (Bypass Global): Todos exceto o CLIENTE podem acessar o ponto e as funções operacionais.
+  const canOperate = roleName !== ROLES.CLIENTE;
 
   // Regras de Visualização
   // Quem pode ter acesso ao painel Master é quem tem QUALQUER permissão administrativa:

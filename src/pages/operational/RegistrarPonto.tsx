@@ -31,6 +31,7 @@ export default function RegistrarPonto() {
     const { mutateAsync: iniciarPausa } = useIniciarPausa();
     const { mutateAsync: finalizarPausa } = useFinalizarPausa();
 
+    const [isProcessing, setIsProcessing] = useState(false);
     const [status, setStatus] = useState<PontoAction>("idle");
     const [selectedLinkId, setSelectedLinkId] = useState<string>("");
     const [activeShift, setActiveShift] = useState<{
@@ -64,9 +65,9 @@ export default function RegistrarPonto() {
 
     useEffect(() => {
         const calculateActiveShift = (pontoId?: number, clienteIdFromPonto?: number) => {
-            // Se já tem ponto batido hoje, fixa o turno do ponto
+            // Se já tem ponto batido hoje, fixa o turno do ponto (Type-safe match)
             if (clienteIdFromPonto) {
-                const matchedLink = userProfile?.links?.find((l: any) => l.cliente_id === clienteIdFromPonto);
+                const matchedLink = userProfile?.links?.find((l: any) => String(l.cliente_id) === String(clienteIdFromPonto));
                 if (matchedLink) {
                     return {
                         id: matchedLink.id.toString(),
@@ -74,6 +75,16 @@ export default function RegistrarPonto() {
                         horario: matchedLink.hora_inicio && matchedLink.hora_fim ?
                             `${matchedLink.hora_inicio.slice(0, 5)} - ${matchedLink.hora_fim.slice(0, 5)}` : undefined,
                         empresa: matchedLink.empresa?.nome_fantasia
+                    };
+                }
+
+                // Fallback robusto caso linkSumuma mas clienteId exista no ponto
+                if (pontoHoje?.cliente) {
+                    return {
+                        id: pontoId?.toString() || "0",
+                        nome: pontoHoje.cliente.nome_fantasia || "Turno Atual",
+                        horario: "Horário Indefinido",
+                        empresa: "Desconhecida"
                     };
                 }
             }
@@ -159,8 +170,10 @@ export default function RegistrarPonto() {
     }, [pontoHoje, userProfile, selectedLinkId]);
 
     const handleToggle = async () => {
+        if (isProcessing) return;
+        setIsProcessing(true);
         const loc = await requestLocation();
-        if (!loc) return;
+        if (!loc) { setIsProcessing(false); return; }
 
         let cliente_id = undefined;
         let empresa_id = undefined;
@@ -180,46 +193,54 @@ export default function RegistrarPonto() {
                 cliente_id,
                 empresa_id
             });
-            refetch();
+            await refetch();
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
     const handlePauseStart = async () => {
-        if (!pontoHoje) return;
+        if (!pontoHoje || isProcessing) return;
+        setIsProcessing(true);
         const loc = await requestLocation();
-        if (!loc) return;
+        if (!loc) { setIsProcessing(false); return; }
         try {
             await iniciarPausa({
                 pontoId: pontoHoje.id,
                 data: { inicio_loc: loc }
             });
-            refetch();
+            await refetch();
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
     const handlePauseEnd = async () => {
-        if (!pontoHoje) return;
+        if (!pontoHoje || isProcessing) return;
         const openPause = pontoHoje.pausas?.find((p: any) => !p.fim_hora);
-        if (!openPause) return;
+        if (!openPause) { setIsProcessing(false); return; }
+        setIsProcessing(true);
         const loc = await requestLocation();
-        if (!loc) return;
+        if (!loc) { setIsProcessing(false); return; }
         try {
             await finalizarPausa({
                 pausaId: openPause.id,
                 data: { fim_loc: loc }
             });
-            refetch();
+            await refetch();
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
     return (
-        <div className="w-full max-w-lg lg:max-w-4xl mx-auto pb-20 mt-4 md:mt-8">
+        <div className="w-full max-w-lg lg:max-w-4xl mx-auto pb-20 md:mt-8">
             {/* Geolocation Alert - Always Visible if Error */}
             {(geoError || (!location && !loadingGeo)) && (
                 <div className="mb-6">
@@ -273,32 +294,33 @@ export default function RegistrarPonto() {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col lg:flex-row gap-6">
+                <div className={`flex gap-6 ${status === 'idle' ? 'flex-col-reverse lg:flex-row' : 'flex-col lg:flex-row'}`}>
                     {/* Esquerda: Status */}
                     <div className="flex-1 flex flex-col">
                         {/* Header / Status Card - Clean Corporate Style */}
-                        <Card className={`border shadow-sm rounded-3xl overflow-hidden relative transition-all duration-500 h-full min-h-[300px] flex flex-col justify-center ${status === 'working' ? 'bg-white border-blue-100' :
+                        <Card className={`border shadow-sm rounded-3xl overflow-hidden relative transition-all duration-500 h-full flex flex-col justify-center ${status === 'idle' ? 'min-h-[180px] lg:min-h-[300px]' : 'min-h-[110px] lg:min-h-[300px]'
+                            } ${status === 'working' ? 'bg-white border-blue-100' :
                                 status === 'paused' ? 'bg-amber-50 border-amber-200' :
                                     'bg-slate-50 border-slate-200'
                             }`}>
-                            <CardContent className="p-8 sm:p-10 relative z-10 flex flex-col items-center justify-center text-center">
-                                <span className={`text-sm font-bold uppercase tracking-[0.2em] mb-4 ${status === 'working' ? 'text-blue-500' :
-                                        status === 'paused' ? 'text-amber-600' :
-                                            'text-slate-400'
+                            <CardContent className={`p-4 sm:p-10 relative z-10 flex flex-col items-center justify-center text-center ${status !== 'idle' ? 'py-4' : 'py-8'}`}>
+                                <span className={`text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] mb-0 sm:mb-4 ${status === 'working' ? 'text-blue-500' :
+                                    status === 'paused' ? 'text-amber-600' :
+                                        'text-slate-400'
                                     }`}>
                                     Status Atual
                                 </span>
-                                <h2 className={`text-2xl font-black mb-2 tracking-tight ${status === 'working' ? 'text-slate-800' :
-                                        status === 'paused' ? 'text-amber-900' :
-                                            'text-slate-700'
+                                <h2 className={`text-lg sm:text-2xl font-black mb-0 sm:mb-2 tracking-tight ${status === 'working' ? 'text-slate-800' :
+                                    status === 'paused' ? 'text-amber-900' :
+                                        'text-slate-700'
                                     }`}>
                                     {status === 'idle' && "AGUARDANDO INÍCIO"}
                                     {status === 'working' && "EM SERVIÇO"}
                                     {status === 'paused' && "EM PAUSA"}
                                 </h2>
-                                <div className={`text-5xl md:text-6xl font-mono font-bold mt-4 tabular-nums tracking-tighter ${status === 'working' ? 'text-blue-600' :
-                                        status === 'paused' ? 'text-amber-700' :
-                                            'text-slate-800'
+                                <div className={`text-4xl md:text-6xl font-mono font-bold mt-1 sm:mt-4 tabular-nums tracking-tighter ${status === 'working' ? 'text-blue-600' :
+                                    status === 'paused' ? 'text-amber-700' :
+                                        'text-slate-800'
                                     }`}>
                                     {timer}
                                 </div>
@@ -345,17 +367,23 @@ export default function RegistrarPonto() {
 
                         {/* Info Cards - Visible on Working/Paused */}
                         {status !== 'idle' && hasShifts && (
-                            <Card className="rounded-3xl shadow-sm border-slate-200 overflow-hidden bg-white">
-                                <CardContent className="p-6">
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Turno em Andamento</span>
-                                    {activeShift?.horario ? (
-                                        <p className="text-2xl font-black text-blue-600 leading-tight">{activeShift.horario}</p>
-                                    ) : (
-                                        <p className="text-2xl font-black text-slate-800 leading-tight">--</p>
-                                    )}
-                                    <p className="text-base font-bold text-slate-500 mt-1 truncate">
-                                        {activeShift?.nome}
-                                    </p>
+                            <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden bg-white">
+                                <CardContent className="p-4 sm:p-6 flex justify-between items-center bg-slate-50/50">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1 flex items-center gap-1">
+                                            <Briefcase className="w-3 h-3" /> Turno em Andamento
+                                        </span>
+                                        <p className="text-sm sm:text-base font-bold text-slate-600 truncate max-w-[150px] sm:max-w-[200px]">
+                                            {activeShift?.nome}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        {activeShift?.horario ? (
+                                            <p className="text-xl sm:text-2xl font-black text-blue-600 leading-none">{activeShift.horario}</p>
+                                        ) : (
+                                            <p className="text-xl sm:text-2xl font-black text-slate-800 leading-none">--</p>
+                                        )}
+                                    </div>
                                 </CardContent>
                             </Card>
                         )}
@@ -366,11 +394,11 @@ export default function RegistrarPonto() {
                                 {status === 'idle' && (
                                     <Button
                                         onClick={handleToggle}
-                                        disabled={loadingGeo || !location || !selectedLinkId}
+                                        disabled={loadingGeo || !location || !selectedLinkId || isProcessing}
                                         className="h-20 text-xl font-bold rounded-2xl shadow-md bg-blue-600 text-white hover:bg-blue-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100"
                                     >
-                                        {loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />}
-                                        {loadingGeo ? "LOCALIZANDO..." : "INICIAR EXPEDIENTE"}
+                                        {isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
+                                        {isProcessing ? "PROCESSANDO..." : (loadingGeo ? "LOCALIZANDO..." : "INICIAR TURNO")}
                                     </Button>
                                 )}
 
@@ -379,19 +407,19 @@ export default function RegistrarPonto() {
                                         <Button
                                             variant="outline"
                                             onClick={handlePauseStart}
-                                            disabled={loadingGeo || !location}
+                                            disabled={loadingGeo || !location || isProcessing}
                                             className="h-20 text-lg font-bold rounded-2xl border-2 border-amber-500 text-amber-600 hover:bg-amber-50 shadow-sm disabled:opacity-50 transition-all active:scale-[0.98]"
                                         >
-                                            <Pause className="w-5 h-5 mr-2" />
+                                            {isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2" /> : <Pause className="w-5 h-5 mr-2" />}
                                             PAUSA
                                         </Button>
                                         <Button
                                             onClick={handleToggle}
-                                            disabled={loadingGeo || !location}
+                                            disabled={loadingGeo || !location || isProcessing}
                                             className="h-20 text-lg font-bold rounded-2xl shadow-md bg-slate-800 text-white hover:bg-slate-900 disabled:opacity-50 transition-all active:scale-[0.98]"
                                         >
-                                            {loadingGeo ? <MapPin className="animate-pulse w-5 h-5 mr-2" /> : <Square className="w-5 h-5 mr-2 text-red-500" />}
-                                            ENCERRAR
+                                            {isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2 text-white" /> : (loadingGeo ? <MapPin className="animate-pulse w-5 h-5 mr-2" /> : <Square className="w-5 h-5 mr-2 text-red-500" />)}
+                                            {isProcessing ? "AGUARDE..." : "ENCERRAR"}
                                         </Button>
                                     </div>
                                 )}
@@ -399,11 +427,11 @@ export default function RegistrarPonto() {
                                 {status === 'paused' && (
                                     <Button
                                         onClick={handlePauseEnd}
-                                        disabled={loadingGeo || !location}
+                                        disabled={loadingGeo || !location || isProcessing}
                                         className="h-20 text-xl font-bold rounded-2xl shadow-md bg-amber-500 text-white hover:bg-amber-600 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                                     >
-                                        {loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />}
-                                        {loadingGeo ? "LOCALIZANDO..." : "RETOMAR TRABALHO"}
+                                        {isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
+                                        {isProcessing ? "PROCESSANDO..." : (loadingGeo ? "LOCALIZANDO..." : "RETOMAR TRABALHO")}
                                     </Button>
                                 )}
                             </div>

@@ -13,6 +13,7 @@ import { Building2, CalendarClock, Clock, Edit2, Loader2, MapPin, Pause, Play, U
 import { useState } from "react";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { STATUS_PONTO } from "@/constants/ponto";
 
 interface TimeRecordDetailsDialogProps {
     isOpen: boolean;
@@ -111,16 +112,16 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                     <span className="text-gray-400">Diferença</span>
                     <span className={cn(
                         "font-bold px-2 py-0.5 rounded-md",
-                        status === "VERDE" ? "text-green-600 bg-green-50" :
-                            status === "AMARELO" ? "text-yellow-600 bg-yellow-50" :
-                                status === "ANTECIPADA" ? "text-orange-600 bg-orange-50" :
+                        status === STATUS_PONTO.VERDE ? "text-green-600 bg-green-50" :
+                            status === STATUS_PONTO.AMARELO ? (type === 'entrada' ? "text-red-600 bg-red-50" : "text-amber-600 bg-amber-50") :
+                                status === STATUS_PONTO.ANTECIPADA ? (type === 'entrada' ? "text-blue-600 bg-blue-50" : "text-orange-600 bg-orange-50") :
                                     "text-red-600 bg-red-50"
                     )}>
                         {formatMinutes(diff)}
                     </span>
                 </div>
                 <div className="pt-2 text-center">
-                    <span className={`text-[10px] px-2.5 py-1 rounded-full border uppercase tracking-wider font-bold ${getStatusColorClass(status)}`}>
+                    <span className={`text-[10px] px-2.5 py-1 rounded-full border uppercase tracking-wider font-bold ${getStatusColorClass(status, type)}`}>
                         {getStatusLabel(status, type)}
                     </span>
                 </div>
@@ -179,11 +180,23 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                             <div className="relative">
                                 <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm z-10" />
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase">Entrada</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-bold text-gray-900">{formatTime(record.entrada_hora)}</span>
-                                        <span className="text-[10px] text-gray-500 italic">Início do Turno</span>
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase">Entrada</span>
+                                            <span className="text-sm font-bold text-gray-900">{formatTime(record.entrada_hora)}</span>
+                                        </div>
+                                        {record.entrada_km && (
+                                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
+                                                {record.entrada_km} km
+                                            </span>
+                                        )}
                                     </div>
+                                    {record.entrada_loc && (
+                                        <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5">
+                                            <MapPin className="w-3 h-3" />
+                                            <span className="truncate max-w-[200px]">Localização protegida</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -193,10 +206,16 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                     <div className="relative">
                                         <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-sm z-10" />
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase">Pausa #{idx + 1}</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-bold text-gray-900">{format(new Date(p.inicio_hora), "HH:mm")}</span>
-                                                <span className="text-[10px] text-gray-500 italic">Início do intervalo</span>
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-tighter">Pausa #{idx + 1}</span>
+                                                    <span className="text-sm font-bold text-gray-900">{format(new Date(p.inicio_hora), "HH:mm")}</span>
+                                                </div>
+                                                {p.inicio_km && (
+                                                    <span className="text-[10px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md font-bold">
+                                                        {p.inicio_km} km
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -220,11 +239,23 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                 <div className="relative">
                                     <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm z-10" />
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase">Saída</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-bold text-gray-900">{formatTime(record.saida_hora)}</span>
-                                            <span className="text-[10px] text-gray-500 italic">Término da Jornada</span>
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black text-gray-400 uppercase">Saída</span>
+                                                <span className="text-sm font-bold text-gray-900">{formatTime(record.saida_hora)}</span>
+                                            </div>
+                                            {record.saida_km && (
+                                                <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-md font-bold">
+                                                    {record.saida_km} km
+                                                </span>
+                                            )}
                                         </div>
+                                        {record.saida_loc && (
+                                            <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5">
+                                                <MapPin className="w-3 h-3" />
+                                                <span className="truncate max-w-[200px]">Localização de saída salva</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

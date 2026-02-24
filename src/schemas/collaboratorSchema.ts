@@ -1,4 +1,5 @@
 import { messages } from "@/constants/messages";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { z } from "zod";
 import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
 
@@ -43,7 +44,7 @@ const commonSchema = z.object({
   endereco_completo: z.string().optional(),
   telefone: phoneSchema,
   telefone_recado: z.string().optional(),
-  status: z.enum(["ATIVO", "INATIVO", "PENDENTE"]).default("ATIVO"),
+  status: z.enum([STATUS_CADASTRO.ATIVO, STATUS_CADASTRO.INATIVO, STATUS_CADASTRO.PENDENTE]).default(STATUS_CADASTRO.ATIVO),
   senha_padrao: z.boolean().optional(),
   data_inicio: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),

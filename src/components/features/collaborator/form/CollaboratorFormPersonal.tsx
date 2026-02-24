@@ -19,6 +19,7 @@ import { getPerfilLabel } from "@/utils/formatters";
 import { cpfMask, dateMask, phoneMask, rgMask } from "@/utils/masks";
 import { Eye, Mail, User } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 interface CollaboratorFormPersonalProps {
   roles: Perfil[] | undefined;
@@ -285,8 +286,8 @@ export function CollaboratorFormPersonal({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="ATIVO">Ativo</SelectItem>
-                  <SelectItem value="INATIVO">Inativo</SelectItem>
+                  <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativo</SelectItem>
+                  <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativo</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

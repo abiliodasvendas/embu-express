@@ -6,6 +6,7 @@ import { Usuario } from "@/types/database";
 import { ActionItem } from "@/types/actions";
 import { Ban, Check, Edit, Eye, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 interface UseCollaboratorActionsProps {
   collaborator?: Usuario;
@@ -60,19 +61,19 @@ export function useCollaboratorActions({
 
   if (!isCurrentUser && canManageHierarchy) {
     if (can(PERMISSIONS.USUARIOS.STATUS)) {
-      if (status === 'PENDENTE') {
+      if (status === STATUS_CADASTRO.PENDENTE) {
         actions.push({
           label: "Aprovar",
           icon: <Check className="h-4 w-4" />,
-          onClick: () => onStatusChange(collaborator, 'ATIVO'),
+          onClick: () => onStatusChange(collaborator, STATUS_CADASTRO.ATIVO),
           swipeColor: "bg-green-600",
           drawerClass: "text-green-600",
         });
-      } else if (status === 'ATIVO') {
+      } else if (status === STATUS_CADASTRO.ATIVO) {
         actions.push({
           label: "Desativar",
           icon: <Ban className="h-4 w-4" />,
-          onClick: () => onStatusChange(collaborator, 'INATIVO'),
+          onClick: () => onStatusChange(collaborator, STATUS_CADASTRO.INATIVO),
           swipeColor: "bg-amber-600",
           drawerClass: "text-amber-600",
         });
@@ -80,7 +81,7 @@ export function useCollaboratorActions({
         actions.push({
           label: "Ativar",
           icon: <Check className="h-4 w-4" />,
-          onClick: () => onStatusChange(collaborator, 'ATIVO'),
+          onClick: () => onStatusChange(collaborator, STATUS_CADASTRO.ATIVO),
           swipeColor: "bg-green-600",
           drawerClass: "text-green-600",
         });

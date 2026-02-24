@@ -24,6 +24,7 @@ import { Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 interface CollaboratorsToolbarProps {
   searchTerm: string;
@@ -81,9 +82,9 @@ const FilterControls = ({
         Cliente
       </Label>
       <Combobox
-        options={[{ value: "todos", label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
+        options={[{ value: STATUS_CADASTRO.TODOS, label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
         value={clientValue}
-        onSelect={(val) => onClientChange(val || "todos")}
+        onSelect={(val) => onClientChange(val || STATUS_CADASTRO.TODOS)}
         placeholder="Todos os Clientes"
         searchPlaceholder="Buscar cliente..."
         emptyText="Nenhum cliente encontrado."
@@ -100,9 +101,9 @@ const FilterControls = ({
         Empresa
       </Label>
       <Combobox
-        options={[{ value: "todos", label: "Todas as Empresas" }, ...empresas.map(e => ({ value: e.id.toString(), label: e.nome_fantasia }))]}
+        options={[{ value: STATUS_CADASTRO.TODOS, label: "Todas as Empresas" }, ...empresas.map(e => ({ value: e.id.toString(), label: e.nome_fantasia }))]}
         value={empresaValue}
-        onSelect={(val) => onEmpresaChange(val || "todos")}
+        onSelect={(val) => onEmpresaChange(val || STATUS_CADASTRO.TODOS)}
         placeholder="Todas as Empresas"
         searchPlaceholder="Buscar empresa..."
         emptyText="Nenhuma empresa encontrada."
@@ -128,10 +129,10 @@ const FilterControls = ({
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent className="z-[10001] rounded-xl border-gray-100">
-          <SelectItem value="todos">Todos os Status</SelectItem>
-          <SelectItem value="ativo">Ativos</SelectItem>
-          <SelectItem value="pendente">Pendentes</SelectItem>
-          <SelectItem value="inativo">Inativos</SelectItem>
+          <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os Status</SelectItem>
+          <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativos</SelectItem>
+          <SelectItem value={STATUS_CADASTRO.PENDENTE}>Pendentes</SelectItem>
+          <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativos</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -150,7 +151,7 @@ const FilterControls = ({
           <SelectValue placeholder="Cargo" />
         </SelectTrigger>
         <SelectContent className="z-[10001] rounded-xl border-gray-100">
-          <SelectItem value="todos">Todos os Cargos</SelectItem>
+          <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os Cargos</SelectItem>
           {roles?.map((role: any) => (
             <SelectItem key={role.id} value={role.id.toString()}>
               {getPerfilLabel(role.nome)}
@@ -217,19 +218,19 @@ export function CollaboratorsToolbar({
   }, [isSheetOpen, selectedStatus, selectedRole, selectedClient, selectedEmpresa]);
 
   const hasAdvancedFilters =
-    selectedStatus !== "todos" || selectedRole !== "todos" || selectedClient !== "todos" || selectedEmpresa !== "todos";
+    selectedStatus !== STATUS_CADASTRO.TODOS || selectedRole !== STATUS_CADASTRO.TODOS || selectedClient !== STATUS_CADASTRO.TODOS || selectedEmpresa !== STATUS_CADASTRO.TODOS;
   const hasAnyFilter = hasAdvancedFilters || localSearch !== "";
   const selectedCount =
-    (selectedStatus !== "todos" ? 1 : 0) + (selectedRole !== "todos" ? 1 : 0) + (selectedClient !== "todos" ? 1 : 0) + (selectedEmpresa !== "todos" ? 1 : 0);
+    (selectedStatus !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedRole !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedClient !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedEmpresa !== STATUS_CADASTRO.TODOS ? 1 : 0);
 
   const clearFilters = () => {
     setLocalSearch("");
     onSearchChange("");
     onApplyFilters({
-      status: "todos",
-      categoria: "todos",
-      cliente: "todos",
-      empresa: "todos"
+      status: STATUS_CADASTRO.TODOS,
+      categoria: STATUS_CADASTRO.TODOS,
+      cliente: STATUS_CADASTRO.TODOS,
+      empresa: STATUS_CADASTRO.TODOS
     });
   };
 
@@ -244,10 +245,10 @@ export function CollaboratorsToolbar({
   };
 
   const clearMobileFilters = () => {
-    setMobileStatus("todos");
-    setMobileRole("todos");
-    setMobileClient("todos");
-    setMobileEmpresa("todos");
+    setMobileStatus(STATUS_CADASTRO.TODOS);
+    setMobileRole(STATUS_CADASTRO.TODOS);
+    setMobileClient(STATUS_CADASTRO.TODOS);
+    setMobileEmpresa(STATUS_CADASTRO.TODOS);
   };
 
   return (

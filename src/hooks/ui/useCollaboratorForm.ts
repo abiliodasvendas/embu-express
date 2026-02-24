@@ -4,6 +4,7 @@ import { cnpjMask, cpfMask, phoneMask, rgMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { CollaboratorFormData, collaboratorSchema } from "../../schemas/collaboratorSchema";
 
 interface UseCollaboratorFormProps {
@@ -21,7 +22,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
       cpf: "",
       perfil_id: "",
       isMotoboy: false,
-      status: "ATIVO",
+      status: STATUS_CADASTRO.ATIVO,
       senha_padrao: true,
       links: [],
       rg: "",
@@ -83,7 +84,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           cpf: "",
           perfil_id: "",
           isMotoboy: false,
-          status: "ATIVO",
+          status: STATUS_CADASTRO.ATIVO,
           links: [],
           rg: "",
           data_nascimento: "",

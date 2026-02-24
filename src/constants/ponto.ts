@@ -1,19 +1,14 @@
 export const STATUS_PONTO = {
-  ENTRADA: {
-    NO_HORARIO: "VERDE",
-    ATRASO: "AMARELO",
-    MUITO_ATRASO: "VERMELHO",
-  },
-  SAIDA: {
-    TRABALHANDO: "EM_ANDAMENTO",
-    NO_HORARIO: "VERDE",
-    HORA_EXTRA: "AMARELO",
-    HORA_EXTRA_EXCESSIVA: "VERMELHO",
-    INDEFINIDO: "CINZA"
-  }
+  VERDE: "VERDE",
+  AMARELO: "AMARELO",
+  VERMELHO: "VERMELHO",
+  ANTECIPADA: "ANTECIPADA",
+  CINZA: "CINZA",
+  EM_ANDAMENTO: "EM_ANDAMENTO",
+  PENDENTE: "PENDENTE",
 } as const;
 
 export const FILTER_OPTIONS = {
-    TRABALHANDO: "trabalhando",
-    TODOS: "todos"
+  TRABALHANDO: "trabalhando",
+  TODOS: "todos"
 } as const;

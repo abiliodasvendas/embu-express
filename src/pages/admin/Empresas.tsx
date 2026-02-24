@@ -18,6 +18,7 @@ import { useFilters } from "@/hooks/ui/useFilters";
 import { Empresa } from "@/types/database";
 import { Building2 } from "lucide-react"; // Using Building2 for Empresas icon
 import { useCallback, useEffect, useState } from "react";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export function Empresas() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
@@ -25,7 +26,7 @@ export function Empresas() {
   const {
     searchTerm,
     setSearchTerm,
-    selectedStatus = "todos",
+    selectedStatus = STATUS_CADASTRO.TODOS,
     setSelectedStatus,
     setFilters,
     hasActiveFilters,
@@ -40,7 +41,7 @@ export function Empresas() {
 
   const { data: empresas = [], isLoading, refetch } = useEmpresas({
     searchTerm: searchTerm || undefined,
-    ativo: selectedStatus === "todos" ? undefined : selectedStatus === "ativo" ? "true" : "false",
+    ativo: selectedStatus === STATUS_CADASTRO.TODOS ? undefined : selectedStatus === STATUS_CADASTRO.ATIVO ? "true" : "false",
   });
 
   const createEmpresa = useCreateEmpresa();
@@ -143,7 +144,7 @@ export function Empresas() {
           empresaToEdit={editingEmpresa}
         />
       )}
-      
+
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>
   );

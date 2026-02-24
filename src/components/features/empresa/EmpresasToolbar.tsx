@@ -30,6 +30,7 @@ import * as React from "react";
 import { useState } from "react";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 interface EmpresasToolbarProps {
   searchTerm: string;
@@ -65,9 +66,9 @@ const FilterContent = ({
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent className="z-[10001] rounded-xl border-gray-100">
-          <SelectItem value="todos">Todos os Status</SelectItem>
-          <SelectItem value="ativo">Ativos</SelectItem>
-          <SelectItem value="inativo">Inativos</SelectItem>
+          <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os Status</SelectItem>
+          <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativos</SelectItem>
+          <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativos</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -110,13 +111,13 @@ export function EmpresasToolbar({
   }, [isSheetOpen, selectedStatus]);
 
   // Calculate filter states
-  const hasAdvancedFilters = selectedStatus !== "todos";
+  const hasAdvancedFilters = selectedStatus !== STATUS_CADASTRO.TODOS;
   const hasAnyFilter = hasAdvancedFilters || searchTerm !== "";
 
   const clearFilters = () => {
     setLocalSearch("");
     onSearchChange("");
-    onApplyFilters({ status: "todos" });
+    onApplyFilters({ status: STATUS_CADASTRO.TODOS });
   };
 
   const applyMobileFilters = () => {
@@ -125,7 +126,7 @@ export function EmpresasToolbar({
   };
 
   const clearMobileFilters = () => {
-    setMobileStatus("todos");
+    setMobileStatus(STATUS_CADASTRO.TODOS);
   };
 
   return (
@@ -215,7 +216,7 @@ export function EmpresasToolbar({
                 <FilterButton
                   hasActiveFilters={hasAdvancedFilters}
                   isMobile={isMobile}
-                  selectedCount={selectedStatus !== "todos" ? 1 : 0}
+                  selectedCount={selectedStatus !== STATUS_CADASTRO.TODOS ? 1 : 0}
                 />
               </PopoverTrigger>
               <PopoverContent

@@ -1,24 +1,29 @@
+import { STATUS_PONTO } from "@/constants/ponto";
 
 export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida') => {
     if (!status) return type === 'saida' ? "Em Andamento" : "Pendente";
 
     switch (status) {
-        case "VERDE": return "No Horário";
-        case "AMARELO": return type === 'entrada' ? "Atraso" : "Hora Extra";
-        case "ANTECIPADA": return "Saída Antecipada";
-        case "VERMELHO": return type === 'entrada' ? "Atraso Crítico" : "HE Excessiva";
-        case "CINZA": return "Aguardando";
-        case "EM_ANDAMENTO": return "Em Andamento";
+        case STATUS_PONTO.VERDE: return "No Horário";
+        case STATUS_PONTO.AMARELO: return type === 'entrada' ? "Atraso" : "Hora Extra";
+        case STATUS_PONTO.ANTECIPADA: return type === 'entrada' ? "Entrada Antecipada" : "Saída Antecipada";
+        case STATUS_PONTO.VERMELHO: return type === 'entrada' ? "Atraso Crítico" : "HE Excessiva";
+        case STATUS_PONTO.CINZA: return "Aguardando";
+        case STATUS_PONTO.EM_ANDAMENTO: return "Em Andamento";
+        case STATUS_PONTO.PENDENTE: return "Pendente";
         default: return status;
     }
 };
 
-export const getStatusColorClass = (status: string | null) => {
+export const getStatusColorClass = (status: string | null, type?: 'entrada' | 'saida') => {
     switch (status) {
-        case "VERDE": return "bg-green-100 text-green-700 border-green-200";
-        case "AMARELO": return "bg-yellow-100 text-yellow-700 border-yellow-200";
-        case "ANTECIPADA": return "bg-orange-100 text-orange-700 border-orange-200";
-        case "VERMELHO": return "bg-red-100 text-red-700 border-red-200";
+        case STATUS_PONTO.VERDE: return "bg-green-100 text-green-700 border-green-200";
+        case STATUS_PONTO.AMARELO: return "bg-amber-100 text-amber-700 border-amber-200";
+        case STATUS_PONTO.ANTECIPADA:
+            return type === 'entrada'
+                ? "bg-blue-100 text-blue-700 border-blue-200" // Entrada cedo é bom/neutro
+                : "bg-orange-100 text-orange-700 border-orange-200"; // Saída cedo é alerta
+        case STATUS_PONTO.VERMELHO: return "bg-red-100 text-red-700 border-red-200";
         default: return "bg-gray-100 text-gray-700 border-gray-200";
     }
 };

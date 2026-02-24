@@ -16,8 +16,9 @@ import {
 } from "@/hooks";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { Client } from "@/types/client";
-import { Users } from "lucide-react";
+import { Building2, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export default function Clients() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } =
@@ -42,9 +43,9 @@ export default function Clients() {
   } = useClients({
     searchTerm: searchTerm || undefined,
     ativo:
-      selectedStatus === "todos"
+      selectedStatus === STATUS_CADASTRO.TODOS
         ? undefined
-        : selectedStatus === "ativo"
+        : selectedStatus === STATUS_CADASTRO.ATIVO
           ? "true"
           : "false",
   });

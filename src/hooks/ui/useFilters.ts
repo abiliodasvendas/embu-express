@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export interface UseFiltersOptions {
   searchParam?: string;
@@ -75,18 +76,30 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Internal state for when syncWithUrl is false
-  const [internalState, setInternalState] = useState({
+  const [internalState, setInternalState] = useState<{
+    searchTerm: string;
+    status: string;
+    periodo: string;
+    mes: number;
+    ano: number;
+    categoria: string;
+    cliente: string;
+    empresa: string;
+    usuario: string;
+    statusEntrada: string;
+    statusSaida: string;
+  }>({
     searchTerm: "",
-    status: "todos",
-    periodo: "todos",
+    status: STATUS_CADASTRO.TODOS,
+    periodo: STATUS_CADASTRO.TODOS,
     mes: new Date().getMonth() + 1,
     ano: new Date().getFullYear(),
-    categoria: "todos",
-    cliente: "todos",
-    empresa: "todos",
-    usuario: "todos",
-    statusEntrada: "todos",
-    statusSaida: "todos",
+    categoria: STATUS_CADASTRO.TODOS,
+    cliente: STATUS_CADASTRO.TODOS,
+    empresa: STATUS_CADASTRO.TODOS,
+    usuario: STATUS_CADASTRO.TODOS,
+    statusEntrada: STATUS_CADASTRO.TODOS,
+    statusSaida: STATUS_CADASTRO.TODOS,
   });
 
   // Helper to get value from URL or Internal State
@@ -106,31 +119,31 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   };
 
   const searchTerm = getValue(searchParam, "searchTerm", "");
-  const selectedStatus = getValue(statusParam, "status", "todos");
-  const selectedPeriodo = getValue(periodoParam, "periodo", "todos");
+  const selectedStatus = getValue(statusParam, "status", STATUS_CADASTRO.TODOS);
+  const selectedPeriodo = getValue(periodoParam, "periodo", STATUS_CADASTRO.TODOS);
   const selectedMes = getNumberValue(mesParam, "mes", new Date().getMonth() + 1);
   const selectedAno = getNumberValue(anoParam, "ano", new Date().getFullYear());
-  const selectedCategoria = getValue(categoriaParam, "categoria", "todos");
-  const selectedCliente = getValue(clienteParam, "cliente", "todos");
-  const selectedEmpresa = getValue(empresaParam, "empresa", "todos");
-  const selectedUsuario = getValue(usuarioParam, "usuario", "todos");
-  const selectedStatusEntrada = getValue(statusEntradaParam, "statusEntrada", "todos");
-  const selectedStatusSaida = getValue(statusSaidaParam, "statusSaida", "todos");
+  const selectedCategoria = getValue(categoriaParam, "categoria", STATUS_CADASTRO.TODOS);
+  const selectedCliente = getValue(clienteParam, "cliente", STATUS_CADASTRO.TODOS);
+  const selectedEmpresa = getValue(empresaParam, "empresa", STATUS_CADASTRO.TODOS);
+  const selectedUsuario = getValue(usuarioParam, "usuario", STATUS_CADASTRO.TODOS);
+  const selectedStatusEntrada = getValue(statusEntradaParam, "statusEntrada", STATUS_CADASTRO.TODOS);
+  const selectedStatusSaida = getValue(statusSaidaParam, "statusSaida", STATUS_CADASTRO.TODOS);
 
   const updateState = useCallback((key: keyof typeof internalState, value: any, param?: string) => {
-      if (syncWithUrl && param) {
-          setSearchParams((prev) => {
-              const newParams = new URLSearchParams(prev);
-              if (value && value !== "todos" && value !== "todas") {
-                  newParams.set(param, String(value));
-              } else {
-                  newParams.delete(param);
-              }
-              return newParams;
-          }, { replace: true });
-      } else {
-          setInternalState(prev => ({ ...prev, [key]: value }));
-      }
+    if (syncWithUrl && param) {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        if (value && value !== STATUS_CADASTRO.TODOS && value !== "todas") {
+          newParams.set(param, String(value));
+        } else {
+          newParams.delete(param);
+        }
+        return newParams;
+      }, { replace: true });
+    } else {
+      setInternalState(prev => ({ ...prev, [key]: value }));
+    }
   }, [syncWithUrl, setSearchParams]);
 
   const setSearchTerm = useCallback((v: string) => updateState("searchTerm", v, searchParam), [updateState, searchParam]);
@@ -163,19 +176,19 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         return newParams;
       }, { replace: true });
     } else {
-        setInternalState({
-            searchTerm: "",
-            status: "todos",
-            periodo: "todos",
-            mes: new Date().getMonth() + 1,
-            ano: new Date().getFullYear(),
-            categoria: "todos",
-            cliente: "todos",
-            empresa: "todos",
-            usuario: "todos",
-            statusEntrada: "todos",
-            statusSaida: "todos",
-        });
+      setInternalState({
+        searchTerm: "",
+        status: STATUS_CADASTRO.TODOS,
+        periodo: STATUS_CADASTRO.TODOS,
+        mes: new Date().getMonth() + 1,
+        ano: new Date().getFullYear(),
+        categoria: STATUS_CADASTRO.TODOS,
+        cliente: STATUS_CADASTRO.TODOS,
+        empresa: STATUS_CADASTRO.TODOS,
+        usuario: STATUS_CADASTRO.TODOS,
+        statusEntrada: STATUS_CADASTRO.TODOS,
+        statusSaida: STATUS_CADASTRO.TODOS,
+      });
     }
   }, [
     syncWithUrl,
@@ -209,46 +222,46 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       statusSaida?: string;
     }) => {
       if (syncWithUrl) {
-          setSearchParams((prev) => {
-            const newParams = new URLSearchParams(prev);
-            
-            const updateParam = (key: string | undefined, val: string | number | undefined) => {
-                if (!key || val === undefined) return;
-                if (String(val) !== "todos" && String(val) !== "") newParams.set(key, String(val));
-                else newParams.delete(key);
-            };
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
 
-            updateParam(searchParam, newFilters.searchTerm);
-            updateParam(statusParam, newFilters.status);
-            updateParam(periodoParam, newFilters.periodo);
-            
-            if (newFilters.mes !== undefined && mesParam) newParams.set(mesParam, newFilters.mes.toString());
-            if (newFilters.ano !== undefined && anoParam) newParams.set(anoParam, newFilters.ano.toString());
+          const updateParam = (key: string | undefined, val: string | number | undefined) => {
+            if (!key || val === undefined) return;
+            if (String(val) !== STATUS_CADASTRO.TODOS && String(val) !== "") newParams.set(key, String(val));
+            else newParams.delete(key);
+          };
 
-            updateParam(categoriaParam, newFilters.categoria);
-            updateParam(clienteParam, newFilters.cliente);
-            updateParam(empresaParam, newFilters.empresa);
-            updateParam(usuarioParam, newFilters.usuario);
-            updateParam(statusEntradaParam, newFilters.statusEntrada);
-            updateParam(statusSaidaParam, newFilters.statusSaida);
+          updateParam(searchParam, newFilters.searchTerm);
+          updateParam(statusParam, newFilters.status);
+          updateParam(periodoParam, newFilters.periodo);
 
-            return newParams;
-          }, { replace: true });
+          if (newFilters.mes !== undefined && mesParam) newParams.set(mesParam, newFilters.mes.toString());
+          if (newFilters.ano !== undefined && anoParam) newParams.set(anoParam, newFilters.ano.toString());
+
+          updateParam(categoriaParam, newFilters.categoria);
+          updateParam(clienteParam, newFilters.cliente);
+          updateParam(empresaParam, newFilters.empresa);
+          updateParam(usuarioParam, newFilters.usuario);
+          updateParam(statusEntradaParam, newFilters.statusEntrada);
+          updateParam(statusSaidaParam, newFilters.statusSaida);
+
+          return newParams;
+        }, { replace: true });
       } else {
-          setInternalState(prev => ({
-              ...prev,
-              ...(newFilters.searchTerm !== undefined && { searchTerm: newFilters.searchTerm }),
-              ...(newFilters.status !== undefined && { status: newFilters.status }),
-              ...(newFilters.periodo !== undefined && { periodo: newFilters.periodo }),
-              ...(newFilters.mes !== undefined && { mes: newFilters.mes }),
-              ...(newFilters.ano !== undefined && { ano: newFilters.ano }),
-              ...(newFilters.categoria !== undefined && { categoria: newFilters.categoria }),
-              ...(newFilters.cliente !== undefined && { cliente: newFilters.cliente }),
-              ...(newFilters.empresa !== undefined && { empresa: newFilters.empresa }),
-              ...(newFilters.usuario !== undefined && { usuario: newFilters.usuario }),
-              ...(newFilters.statusEntrada !== undefined && { statusEntrada: newFilters.statusEntrada }),
-              ...(newFilters.statusSaida !== undefined && { statusSaida: newFilters.statusSaida }),
-          }));
+        setInternalState(prev => ({
+          ...prev,
+          ...(newFilters.searchTerm !== undefined && { searchTerm: newFilters.searchTerm }),
+          ...(newFilters.status !== undefined && { status: newFilters.status }),
+          ...(newFilters.periodo !== undefined && { periodo: newFilters.periodo }),
+          ...(newFilters.mes !== undefined && { mes: newFilters.mes }),
+          ...(newFilters.ano !== undefined && { ano: newFilters.ano }),
+          ...(newFilters.categoria !== undefined && { categoria: newFilters.categoria }),
+          ...(newFilters.cliente !== undefined && { cliente: newFilters.cliente }),
+          ...(newFilters.empresa !== undefined && { empresa: newFilters.empresa }),
+          ...(newFilters.usuario !== undefined && { usuario: newFilters.usuario }),
+          ...(newFilters.statusEntrada !== undefined && { statusEntrada: newFilters.statusEntrada }),
+          ...(newFilters.statusSaida !== undefined && { statusSaida: newFilters.statusSaida }),
+        }));
       }
     },
     [
@@ -270,14 +283,14 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
 
   const hasActiveFilters =
     !!searchTerm ||
-    selectedStatus !== "todos" ||
-    (selectedPeriodo !== undefined && selectedPeriodo !== "todos") ||
-    (selectedCategoria !== undefined && selectedCategoria !== "todos") ||
-    (selectedCliente !== undefined && selectedCliente !== "todos") ||
-    (selectedEmpresa !== undefined && selectedEmpresa !== "todos") ||
-    (selectedUsuario !== undefined && selectedUsuario !== "todos") ||
-    (selectedStatusEntrada !== undefined && selectedStatusEntrada !== "todos") ||
-    (selectedStatusSaida !== undefined && selectedStatusSaida !== "todos");
+    selectedStatus !== STATUS_CADASTRO.TODOS ||
+    (selectedPeriodo !== undefined && selectedPeriodo !== STATUS_CADASTRO.TODOS) ||
+    (selectedCategoria !== undefined && selectedCategoria !== STATUS_CADASTRO.TODOS) ||
+    (selectedCliente !== undefined && selectedCliente !== STATUS_CADASTRO.TODOS) ||
+    (selectedEmpresa !== undefined && selectedEmpresa !== STATUS_CADASTRO.TODOS) ||
+    (selectedUsuario !== undefined && selectedUsuario !== STATUS_CADASTRO.TODOS) ||
+    (selectedStatusEntrada !== undefined && selectedStatusEntrada !== STATUS_CADASTRO.TODOS) ||
+    (selectedStatusSaida !== undefined && selectedStatusSaida !== STATUS_CADASTRO.TODOS);
 
   return {
     searchTerm,
@@ -300,23 +313,23 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       selectedCategoria,
       setSelectedCategoria,
     }),
-     ...(selectedCliente !== undefined && {
+    ...(selectedCliente !== undefined && {
       selectedCliente,
       setSelectedCliente,
     }),
-     ...(selectedEmpresa !== undefined && {
+    ...(selectedEmpresa !== undefined && {
       selectedEmpresa,
       setSelectedEmpresa,
     }),
-     ...(selectedUsuario !== undefined && {
+    ...(selectedUsuario !== undefined && {
       selectedUsuario,
       setSelectedUsuario,
     }),
-     ...(selectedStatusEntrada !== undefined && {
+    ...(selectedStatusEntrada !== undefined && {
       selectedStatusEntrada,
       setSelectedStatusEntrada,
     }),
-     ...(selectedStatusSaida !== undefined && {
+    ...(selectedStatusSaida !== undefined && {
       selectedStatusSaida,
       setSelectedStatusSaida,
     }),

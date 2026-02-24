@@ -6,6 +6,7 @@ import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions"
 import { Usuario } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
 import { useNavigate } from "react-router-dom";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 interface CollaboratorListProps {
   collaborators: Usuario[];
@@ -16,8 +17,8 @@ interface CollaboratorListProps {
 
 const getAvatarStyles = (status: string) => {
   switch (status) {
-    case 'ATIVO': return "bg-green-100 text-green-700";
-    case 'PENDENTE': return "bg-yellow-100 text-yellow-700";
+    case STATUS_CADASTRO.ATIVO: return "bg-green-100 text-green-700";
+    case STATUS_CADASTRO.PENDENTE: return "bg-yellow-100 text-yellow-700";
     default: return "bg-gray-100 text-gray-500";
   }
 };

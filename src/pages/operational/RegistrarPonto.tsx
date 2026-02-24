@@ -40,6 +40,7 @@ export default function RegistrarPonto() {
         empresa?: string;
     } | null>(null);
     const [timer, setTimer] = useState<string>("00:00:00");
+    const [pausasMetric, setPausasMetric] = useState<{ count: number; totalMs: number }>({ count: 0, totalMs: 0 });
 
     const hasShifts = !!userProfile?.links?.length;
 
@@ -126,46 +127,70 @@ export default function RegistrarPonto() {
             if (shift?.id && !selectedLinkId) setSelectedLinkId(shift.id);
             return;
         }
-
         if (pontoHoje.saida_hora) {
             setStatus("idle");
             const shift = calculateActiveShift();
             setActiveShift(shift);
             if (shift?.id && !selectedLinkId) setSelectedLinkId(shift.id);
+            return;
+        }
+
+        const openPause = pontoHoje.pausas?.find((p: any) => !p.fim_hora);
+
+        const shift = calculateActiveShift(pontoHoje.id, pontoHoje.cliente_id);
+        setActiveShift(shift);
+        if (shift?.id) setSelectedLinkId(shift.id);
+
+        // Calculate Pause Metrics
+        const finishedPausas = pontoHoje.pausas?.filter((p: any) => p.fim_hora) || [];
+        const totalPausasMs = finishedPausas.reduce((acc: number, p: any) => {
+            const s = new Date(p.inicio_hora).getTime();
+            const e = new Date(p.fim_hora).getTime();
+            return acc + (e - s);
+        }, 0);
+        setPausasMetric({
+            count: pontoHoje.pausas?.length || 0,
+            totalMs: totalPausasMs
+        });
+
+        if (openPause) {
+            setStatus("paused");
+
+            // Smart Timer for Paused State: Net time accumulated until pause start
+            const entradaIso = pontoHoje.entrada_hora;
+            const start = entradaIso ? new Date(entradaIso).getTime() : 0;
+            const pauseStart = new Date(openPause.inicio_hora).getTime();
+
+            const diff = (pauseStart - start) - totalPausasMs;
+            const h = Math.floor(diff / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
         } else {
-            const openPause = pontoHoje.pausas?.find((p: any) => !p.fim_hora);
+            setStatus("working");
 
-            if (openPause) {
-                setStatus("paused");
-                setTimer("EM PAUSA");
+            const entradaIso = pontoHoje.entrada_hora;
+            const start = entradaIso ? new Date(entradaIso).getTime() : 0;
+
+            if (!start || isNaN(start)) {
+                setTimer("00:00:00");
             } else {
-                setStatus("working");
+                const interval = setInterval(() => {
+                    const now = new Date().getTime();
+                    // Smart Timer: (Now - Start) - Finished Pauses
+                    const diff = (now - start) - totalPausasMs;
 
-                const entradaIso = pontoHoje.entrada_hora;
-                const start = entradaIso ? new Date(entradaIso).getTime() : 0;
-
-                if (!start || isNaN(start)) {
-                    setTimer("00:00:00");
-                } else {
-                    const interval = setInterval(() => {
-                        const now = new Date().getTime();
-                        const diff = now - start;
-                        if (diff < 0) {
-                            setTimer("00:00:00");
-                            return;
-                        }
-                        const h = Math.floor(diff / (1000 * 60 * 60));
-                        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                        const s = Math.floor((diff % (1000 * 60)) / 1000);
-                        setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-                    }, 1000);
-                    return () => clearInterval(interval);
-                }
+                    if (diff < 0) {
+                        setTimer("00:00:00");
+                        return;
+                    }
+                    const h = Math.floor(diff / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+                    setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+                }, 1000);
+                return () => clearInterval(interval);
             }
-
-            const shift = calculateActiveShift(pontoHoje.id, pontoHoje.cliente_id);
-            setActiveShift(shift);
-            if (shift?.id) setSelectedLinkId(shift.id);
         }
     }, [pontoHoje, userProfile, selectedLinkId]);
 
@@ -324,6 +349,28 @@ export default function RegistrarPonto() {
                                     }`}>
                                     {timer}
                                 </div>
+
+                                {status !== 'idle' && (
+                                    <div className="mt-6 grid grid-cols-3 gap-8 w-full border-t border-slate-200/50 pt-6">
+                                        <div className="text-center">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Entrada</span>
+                                            <span className="text-sm font-bold text-slate-600">
+                                                {pontoHoje?.entrada_hora ? new Date(pontoHoje.entrada_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                                            </span>
+                                        </div>
+                                        <div className="text-center">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pausas</span>
+                                            <span className="text-sm font-bold text-slate-600">{pausasMetric.count}</span>
+                                        </div>
+                                        <div className="text-center">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Total Pausa</span>
+                                            <span className="text-sm font-bold text-slate-600">
+                                                {Math.floor(pausasMetric.totalMs / 3600000).toString().padStart(2, '0')}:
+                                                {Math.floor((pausasMetric.totalMs % 3600000) / 60000).toString().padStart(2, '0')}h
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </div>

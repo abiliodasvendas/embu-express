@@ -27,7 +27,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                         <FormLabel>CNPJ (MEI) {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                             <Input
-                                className={cn("h-11 rounded-xl bg-white", form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200")}
+                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200")}
                                 {...field}
                                 onChange={(e) => field.onChange(cnpjMask(e.target.value))}
                                 maxLength={18}
@@ -41,7 +41,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                     <FormItem>
                         <FormLabel>Chave Pix <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                            <Input className={cn("h-11 rounded-xl bg-white", form.formState.errors.chave_pix && "border-red-500 focus-visible:ring-red-200")} {...field} placeholder="CPF, Email ou Aleatória" />
+                            <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.chave_pix && "border-red-500 focus-visible:ring-red-200")} {...field} placeholder="CPF, Email ou Aleatória" />
                         </FormControl>
                         <FormMessage />
                     </FormItem>

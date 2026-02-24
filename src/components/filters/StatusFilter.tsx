@@ -39,7 +39,7 @@ export function StatusFilter({
       <div className="space-y-2">
         <Label htmlFor={id}>{label}</Label>
         <Select value={value} onValueChange={onValueChange}>
-          <SelectTrigger id={id} className="h-11 rounded-xl bg-white border-gray-200">
+          <SelectTrigger id={id} className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent className="max-h-60 overflow-y-auto">

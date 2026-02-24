@@ -5,6 +5,7 @@ import { LayoutProvider } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
+import { ROUTES } from "@/constants/routes";
 import { Outlet, useNavigate } from "react-router-dom";
 
 export default function AppLayout() {
@@ -38,7 +39,7 @@ export default function AppLayout() {
               src="/assets/logo-embuexpress.png"
               alt="Embu Express"
               className="h-12 cursor-pointer"
-              onClick={() => navigate("/")}
+              onClick={() => navigate(ROUTES.PUBLIC.ROOT)}
             />
           </div>
           <div className="flex-1 overflow-y-auto px-5 py-6">

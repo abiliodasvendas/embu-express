@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 
 // React Router
 import { useLocation, useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 // Third-party
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,7 +74,7 @@ export default function NovaSenha() {
         description: "Agora você já pode acessar o sistema com sua nova senha.",
       });
 
-      setTimeout(() => navigate("/", { replace: true }), 1200);
+      setTimeout(() => navigate(ROUTES.PUBLIC.ROOT, { replace: true }), 1200);
     } catch (err: any) {
       setLoading(false);
       console.error(err);

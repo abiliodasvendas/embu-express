@@ -1,4 +1,5 @@
 import { PermissionKey, PERMISSIONS } from "@/constants/permissions.enum";
+import { ROUTES } from "@/constants/routes";
 import { Briefcase, Building, Clock, Users } from "lucide-react";
 
 export interface PageItem {
@@ -11,37 +12,36 @@ export interface PageItem {
 export const pagesItems: PageItem[] = [
     {
         title: "Registrar Ponto",
-        href: "/registrar-ponto",
+        href: ROUTES.PRIVATE.REGISTRAR_PONTO,
         icon: Clock,
-        permissionKey: PERMISSIONS.PONTO.REGISTRAR,
     },
     {
         title: "Controle de Ponto",
-        href: "/controle-ponto",
+        href: ROUTES.PRIVATE.CONTROLE_PONTO,
         icon: Clock,
         permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
     },
     {
         title: "Colaboradores",
-        href: "/colaboradores",
+        href: ROUTES.PRIVATE.COLABORADORES,
         icon: Users,
         permissionKey: PERMISSIONS.USUARIOS.VER,
     },
     {
         title: "Perfis",
-        href: "/perfis",
+        href: ROUTES.PRIVATE.PERFIS,
         icon: Users,
         permissionKey: PERMISSIONS.PERFIS.VER,
     },
     {
         title: "Clientes",
-        href: "/clientes",
+        href: ROUTES.PRIVATE.CLIENTES,
         icon: Briefcase,
         permissionKey: PERMISSIONS.CLIENTES.VER,
     },
     {
         title: "Empresas",
-        href: "/empresas",
+        href: ROUTES.PRIVATE.EMPRESAS,
         icon: Building,
         permissionKey: PERMISSIONS.EMPRESAS.VER,
     },

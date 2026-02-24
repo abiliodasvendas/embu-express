@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { useSession } from "@/hooks/business/useSession";
 import { Navigate, useLocation } from "react-router-dom";
 
@@ -5,10 +6,10 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useSession();
   const location = useLocation();
 
-  const publicPaths = [
-    "/",
-    "/login",
-    "/nova-senha",
+  const publicPaths: string[] = [
+    ROUTES.PUBLIC.ROOT,
+    ROUTES.PUBLIC.LOGIN,
+    ROUTES.PUBLIC.NEW_PASSWORD,
   ];
 
   const isPublic = publicPaths.includes(location.pathname);
@@ -29,12 +30,13 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
 
   // 🔹 Se não está logado e a rota é protegida → manda pro login
   if (!session && !isPublic) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
   }
 
   // 🔹 Se já está logado e tentar acessar login/nova-senha desnecessariamente -> manda pro root
-  if (session && ["/login", "/nova-senha"].includes(location.pathname)) {
-    return <Navigate to="/" replace />;
+  const loginPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.NEW_PASSWORD];
+  if (session && loginPaths.includes(location.pathname)) {
+    return <Navigate to={ROUTES.PUBLIC.ROOT} replace />;
   }
 
   // Caso normal → renderiza conteúdo

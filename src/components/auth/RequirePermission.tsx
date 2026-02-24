@@ -1,4 +1,5 @@
 import { PermissionKey } from "@/constants/permissions.enum";
+import { ROUTES } from "@/constants/routes";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { Loader2 } from "lucide-react";
 import { Navigate, Outlet } from "react-router-dom";
@@ -22,7 +23,7 @@ export function RequirePermission({ permissions, requireAdminPanel, requireOpera
 
     // Se nao tem role (nao logado ou erro), manda pro login
     if (!roleName) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
     }
 
     let hasAccess = true;
@@ -39,8 +40,8 @@ export function RequirePermission({ permissions, requireAdminPanel, requireOpera
 
     if (!hasAccess) {
         // Redirecionamento inteligente
-        if (canViewAdminPanel) return <Navigate to="/controle-ponto" replace />;
-        return <Navigate to="/registrar-ponto" replace />;
+        if (canViewAdminPanel) return <Navigate to={ROUTES.PRIVATE.CONTROLE_PONTO} replace />;
+        return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
     }
 
     return <Outlet />;

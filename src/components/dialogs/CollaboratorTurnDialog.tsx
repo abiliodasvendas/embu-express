@@ -231,7 +231,7 @@ export function CollaboratorTurnDialog({
                             <FormLabel>Cliente <span className="text-red-500">*</span></FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
-                                <SelectTrigger className="rounded-xl bg-gray-50 border-gray-100">
+                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
                                   <SelectValue placeholder="Selecione" />
                                 </SelectTrigger>
                               </FormControl>
@@ -256,7 +256,7 @@ export function CollaboratorTurnDialog({
                             <FormLabel>Empresa (Contratante) <span className="text-red-500">*</span></FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
-                                <SelectTrigger className="rounded-xl bg-gray-50 border-gray-100">
+                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
                                   <SelectValue placeholder="Selecione" />
                                 </SelectTrigger>
                               </FormControl>

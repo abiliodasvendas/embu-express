@@ -66,7 +66,7 @@ export function CollaboratorFormPersonal({
                     className={cn(
                       "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.nome_completo &&
-                        "border-red-500 focus-visible:ring-red-200",
+                      "border-red-500 focus-visible:ring-red-200",
                     )}
                     {...field}
                   />
@@ -92,7 +92,7 @@ export function CollaboratorFormPersonal({
                   className={cn(
                     "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                     errors.data_nascimento &&
-                      "border-red-500 focus-visible:ring-red-200",
+                    "border-red-500 focus-visible:ring-red-200",
                   )}
                   {...field}
                   onChange={(e) => {
@@ -122,7 +122,7 @@ export function CollaboratorFormPersonal({
                     className={cn(
                       "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.email &&
-                        "border-red-500 focus-visible:ring-red-200",
+                      "border-red-500 focus-visible:ring-red-200",
                     )}
                     {...field}
                   />
@@ -133,7 +133,7 @@ export function CollaboratorFormPersonal({
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
           <FormField
             control={control}
             name="cpf"
@@ -199,7 +199,7 @@ export function CollaboratorFormPersonal({
                     className={cn(
                       "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.telefone &&
-                        "border-red-500 focus-visible:ring-red-200",
+                      "border-red-500 focus-visible:ring-red-200",
                     )}
                     {...field}
                     onChange={(e) => field.onChange(phoneMask(e.target.value))}
@@ -222,7 +222,7 @@ export function CollaboratorFormPersonal({
                     className={cn(
                       "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.telefone_recado &&
-                        "border-red-500 focus-visible:ring-red-200",
+                      "border-red-500 focus-visible:ring-red-200",
                     )}
                     {...field}
                     onChange={(e) => field.onChange(phoneMask(e.target.value))}
@@ -247,7 +247,7 @@ export function CollaboratorFormPersonal({
                 <FormControl>
                   <SelectTrigger
                     className={cn(
-                      "h-11 rounded-xl bg-white border-gray-200",
+                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.perfil_id && "border-red-500 focus:ring-red-200",
                     )}
                   >
@@ -277,7 +277,7 @@ export function CollaboratorFormPersonal({
                 <FormControl>
                   <SelectTrigger
                     className={cn(
-                      "h-11 rounded-xl bg-white border-gray-200",
+                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.status && "border-red-500 focus:ring-red-200",
                     )}
                   >

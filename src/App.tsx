@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { AppGate } from "@/components/auth/AppGate";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 import {
@@ -205,18 +206,18 @@ const App = () => {
 
                   {/* Rotas Operacionais (Motoboy) */}
                   <Route element={<RequirePermission requireOperational={true} />}>
-                    <Route path="registrar-ponto" element={<RegistrarPonto />} />
+                    <Route path={ROUTES.PRIVATE.REGISTRAR_PONTO.replace("/", "")} element={<RegistrarPonto />} />
                   </Route>
 
                   {/* Rotas Administrativas (Admin/SuperAdmin) */}
                   <Route element={<RequirePermission requireAdminPanel={true} />}>
-                    <Route path="controle-ponto" element={<TimeTracking />} />
-                    <Route path="colaboradores" element={<Collaborators />} />
-                    <Route path="colaboradores/:id" element={<CollaboratorDetails />} />
-                    <Route path="clientes" element={<Clients />} />
-                    <Route path="clientes/:id" element={<ClientDetails />} />
-                    <Route path="empresas" element={<Empresas />} />
-                    <Route path="perfis" element={<Perfis />} />
+                    <Route path={ROUTES.PRIVATE.CONTROLE_PONTO.replace("/", "")} element={<TimeTracking />} />
+                    <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />
+                    <Route path={ROUTES.PRIVATE.COLABORADOR_DETAILS.replace(/^\//, "")} element={<CollaboratorDetails />} />
+                    <Route path={ROUTES.PRIVATE.CLIENTES.replace("/", "")} element={<Clients />} />
+                    <Route path={ROUTES.PRIVATE.CLIENTE_DETAILS.replace(/^\//, "")} element={<ClientDetails />} />
+                    <Route path={ROUTES.PRIVATE.EMPRESAS.replace("/", "")} element={<Empresas />} />
+                    <Route path={ROUTES.PRIVATE.PERFIS.replace("/", "")} element={<Perfis />} />
                   </Route>
                 </Route>
 
@@ -309,14 +310,14 @@ const RedirectByRole = () => {
   }
 
   if (isAdmin) {
-    return <Navigate to="/controle-ponto" replace />;
+    return <Navigate to={ROUTES.PRIVATE.CONTROLE_PONTO} replace />;
   }
   if (isMotoboy) {
-    return <Navigate to="/registrar-ponto" replace />;
+    return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
   }
 
   // Default fallback
-  return <Navigate to="/registrar-ponto" replace />;
+  return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
 };
 
 export default App;

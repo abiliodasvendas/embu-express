@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 
 // React Router
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 // Third-party
 import { cpfSchema } from "@/schemas/common";

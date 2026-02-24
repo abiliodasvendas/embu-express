@@ -6,7 +6,7 @@ import { useFinalizarPausa, useIniciarPausa } from "@/hooks/api/usePontoMutation
 import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { getStatusColorClass, getStatusLabel } from "@/utils/ponto";
+import { getStatusColorClass, getStatusLabel, formatMinutes } from "@/utils/ponto";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Building2, CalendarClock, Clock, Edit2, Loader2, MapPin, Pause, Play, User, X } from "lucide-react";
@@ -109,8 +109,14 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                 <div className="border-t border-gray-50 my-1"></div>
                 <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-400">Diferença</span>
-                    <span className={`font-bold px-2 py-0.5 rounded-md ${diff > 0 ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"}`}>
-                        {diff > 0 ? "+" : ""}{diff} min
+                    <span className={cn(
+                        "font-bold px-2 py-0.5 rounded-md",
+                        status === "VERDE" ? "text-green-600 bg-green-50" :
+                            status === "AMARELO" ? "text-yellow-600 bg-yellow-50" :
+                                status === "ANTECIPADA" ? "text-orange-600 bg-orange-50" :
+                                    "text-red-600 bg-red-50"
+                    )}>
+                        {formatMinutes(diff)}
                     </span>
                 </div>
                 <div className="pt-2 text-center">
@@ -154,7 +160,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                         <h3 className="text-xl font-bold text-gray-900 leading-tight">{record.usuario?.nome_completo}</h3>
                         <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                             <Building2 className="w-4 h-4" />
-                            <span>{record.usuario?.cliente?.nome_fantasia}</span>
+                            <span>{(record as any).cliente?.nome_fantasia || record.usuario?.links?.[0]?.cliente?.nome_fantasia || "Sem Cliente"}</span>
                         </div>
                         <div className="flex items-center justify-center gap-2 text-xs font-medium text-gray-400">
                             <MapPin className="w-3 h-3" />
@@ -162,32 +168,101 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Timeline Section */}
+                    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+                        <h4 className="font-black text-[11px] text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                            <Clock className="w-3 h-3" /> Linha do Tempo
+                        </h4>
+
+                        <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
+                            {/* Entry */}
+                            <div className="relative">
+                                <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm z-10" />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase">Entrada</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold text-gray-900">{formatTime(record.entrada_hora)}</span>
+                                        <span className="text-[10px] text-gray-500 italic">Início do Turno</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Pauses */}
+                            {pausas.map((p: any, idx: number) => (
+                                <div key={p.id} className="space-y-4">
+                                    <div className="relative">
+                                        <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-sm z-10" />
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase">Pausa #{idx + 1}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-bold text-gray-900">{format(new Date(p.inicio_hora), "HH:mm")}</span>
+                                                <span className="text-[10px] text-gray-500 italic">Início do intervalo</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {p.fim_hora && (
+                                        <div className="relative">
+                                            <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-blue-400 border-2 border-white shadow-sm z-10" />
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-bold text-gray-900">{format(new Date(p.fim_hora), "HH:mm")}</span>
+                                                    <span className="text-[10px] text-gray-500 italic">Retorno ao trabalho</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Exit */}
+                            {record.saida_hora && (
+                                <div className="relative">
+                                    <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm z-10" />
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase">Saída</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-gray-900">{formatTime(record.saida_hora)}</span>
+                                            <span className="text-[10px] text-gray-500 italic">Término da Jornada</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-28 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-2">Saldo Diário</span>
-                            <span className={`text-2xl font-black ${record.saldo_minutos !== undefined ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-300"}`}>
-                                {record.saldo_minutos !== undefined ? (record.saldo_minutos > 0 ? "+" : "") + record.saldo_minutos : "--"} <span className="text-xs">min</span>
+                            <span className={`text-xl font-black ${record.saldo_minutos !== undefined && record.saldo_minutos !== null ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-300"}`}>
+                                {record.saldo_minutos !== undefined && record.saldo_minutos !== null ? formatMinutes(record.saldo_minutos) : "--"}
                             </span>
                         </div>
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-28 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-2">Trabalhadas</span>
-                            <span className="text-2xl font-black text-gray-700 font-mono">
+                            <span className="text-xl font-black text-gray-700 font-mono">
                                 {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
+                            </span>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-28 transition-all hover:bg-gray-50 col-span-2 sm:col-span-1">
+                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-2">KM Rodados</span>
+                            <span className="text-xl font-black text-blue-600 font-mono">
+                                {record.detalhes_calculo?.resumo?.diff_km !== undefined ? `${record.detalhes_calculo.resumo.diff_km} km` : "--"}
                             </span>
                         </div>
                     </div>
 
                     {/* Pauses Section */}
-                    {isShiftOpen && (
+                    {(isShiftOpen || pausas.length > 0) && (
                         <div className="bg-orange-50/50 rounded-2xl p-5 border border-orange-100 space-y-4">
                             <div className="flex items-center justify-between">
                                 <h4 className="font-bold text-orange-900 flex items-center gap-2">
                                     <div className="p-1.5 bg-orange-100 rounded-lg">
                                         <Pause className="w-4 h-4 text-orange-600" />
                                     </div>
-                                    Pausas
+                                    Histórico de Pausas
                                 </h4>
-                                {!showPauseForm && (
+                                {isShiftOpen && !showPauseForm && (
                                     <Button
                                         size="sm"
                                         variant={openPause ? "default" : "outline"}

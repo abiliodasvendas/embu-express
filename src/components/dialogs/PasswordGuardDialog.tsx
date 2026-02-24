@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
@@ -55,13 +55,21 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      
-      await api.put("/auth/update-password", { 
-          password: data.senha 
+
+      const response = await api.put("/auth/update-password", {
+        password: data.senha
       });
 
-      await sessionManager.refreshToken();
-      
+      if (response.data?.session) {
+        await sessionManager.setSession(
+          response.data.session.access_token,
+          response.data.session.refresh_token
+        );
+      } else {
+        // Backup plan, should not be reached normally now
+        await sessionManager.refreshToken();
+      }
+
       toast.success("Senha definida com sucesso!", {
         description: "Agora você já pode acessar o sistema com sua nova senha.",
       });
@@ -79,21 +87,21 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent 
+    <Dialog open={open} onOpenChange={() => { }}>
+      <DialogContent
         className="w-full max-w-md p-0 gap-0 bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         hideCloseButton={true}
       >
         <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white flex flex-col items-center text-center relative shrink-0">
-            <div className="bg-white/20 p-3 rounded-2xl mb-4 backdrop-blur-sm shadow-inner">
-                <ShieldAlert className="w-8 h-8 text-white" />
-            </div>
-            <DialogTitle className="text-2xl font-black mb-2 text-white uppercase tracking-tight">Segurança Obrigatória</DialogTitle>
-            <DialogDescription className="text-blue-50/90 text-sm font-medium leading-relaxed">
-                Identificamos que você ainda está usando a senha padrão. Por favor, defina uma nova senha pessoal para continuar.
-            </DialogDescription>
+          <div className="bg-white/20 p-3 rounded-2xl mb-4 backdrop-blur-sm shadow-inner">
+            <ShieldAlert className="w-8 h-8 text-white" />
+          </div>
+          <DialogTitle className="text-2xl font-black mb-2 text-white uppercase tracking-tight">Segurança Obrigatória</DialogTitle>
+          <DialogDescription className="text-blue-50/90 text-sm font-medium leading-relaxed">
+            Identificamos que você ainda está usando a senha padrão. Por favor, defina uma nova senha pessoal para continuar.
+          </DialogDescription>
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 py-8 bg-gray-50/30">

@@ -72,7 +72,7 @@ class SessionManager {
 
     private refreshPromise: Promise<{ success: boolean; data?: Session }> | null = null;
 
-    // Calls Backend to refresh, then updates local client
+    // Local Client Native Refresh
     async refreshToken(): Promise<{ success: boolean; data?: Session }> {
         // Singleton pattern: if a refresh is already in progress, return the existing promise
         if (this.refreshPromise) {
@@ -81,39 +81,16 @@ class SessionManager {
 
         this.refreshPromise = (async () => {
             try {
-                // Get current refresh token
-                const { data: currentSession } = await this.getSession();
-                const refresh_token = currentSession.session?.refresh_token;
+                // Use frontend's native Supabase client to refresh the token
+                // This talks directly to Supabase Auth API, preventing race conditions
+                // with our backend and ensuring local storage is updated natively.
+                const { data, error } = await supabase.auth.refreshSession();
 
-                if (!refresh_token) {
-                    return { success: false };
+                if (error || !data.session) {
+                    throw new Error(error?.message || "Failed to refresh via Supabase Client");
                 }
 
-                // Call Backend
-                const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
-                const response = await fetch(`${API_URL}/auth/refresh`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ refresh_token })
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to refresh");
-                }
-
-                const newSession = await response.json();
-
-                // Update Local State (Supabase Client)
-                await this.setSession(newSession.access_token, newSession.refresh_token);
-
-                const mapped = this.mapSupabaseSession({
-                    access_token: newSession.access_token,
-                    refresh_token: newSession.refresh_token,
-                    user: newSession.user,
-                    expires_in: 3600,
-                    token_type: "bearer"
-                } as any);
-
+                const mapped = this.mapSupabaseSession(data.session);
                 return { success: true, data: mapped };
             } catch (error) {
                 console.error("Refresh failed", error);

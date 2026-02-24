@@ -17,13 +17,14 @@ interface CollaboratorFormFinancialProps {
 
 export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancialProps) {
     const form = useFormContext();
+    const isMotoboy = form.watch("isMotoboy");
 
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField name="cnpj" control={form.control} render={({ field }) => (
                     <FormItem>
-                        <FormLabel>CNPJ (MEI)</FormLabel>
+                        <FormLabel>CNPJ (MEI) {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                             <Input
                                 className={cn("h-11 rounded-xl bg-white", form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200")}
@@ -45,12 +46,6 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                         <FormMessage />
                     </FormItem>
                 )} />
-            </div>
-
-
-
-            <div className="text-sm text-gray-500 italic p-4 bg-gray-50 rounded-lg">
-                Os valores de contrato agora são definidos na aba "Vínculos", individualmente por cliente/turno.
             </div>
         </div>
     );

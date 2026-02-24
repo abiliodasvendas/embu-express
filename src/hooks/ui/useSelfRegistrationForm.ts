@@ -19,7 +19,9 @@ export function useSelfRegistrationForm() {
     defaultValues: {
       nome_completo: "",
       email: "",
-      cpfcnpj: "",
+      cpf: "",
+      cnpj: "",
+      rg: "",
       telefone: "",
       telefone_recado: "",
       senha: "",
@@ -48,11 +50,10 @@ export function useSelfRegistrationForm() {
         password: values.senha,
         data_nascimento: values.data_nascimento ? formatDateToISO(values.data_nascimento) : values.data_nascimento,
         cnh_vencimento: values.cnh_vencimento ? formatDateToISO(values.cnh_vencimento) : values.cnh_vencimento,
-        // Map cpfcnpj to cpf or cnpj based on length (formatted or not)
-        // CPF formatted is 14 chars, CNPJ formatted is 18 chars
-        // Unformatted CPF is 11, CNPJ is 14
-        cpf: values.cpfcnpj.length <= 14 ? values.cpfcnpj : undefined,
-        cnpj: values.cpfcnpj.length > 14 ? values.cpfcnpj : undefined,
+        // Send distinct fields
+        cpf: values.cpf,
+        cnpj: values.cnpj,
+        rg: values.rg,
         role: ROLES.MOTOBOY, // Usando o slug em vez do ID 3 fixo
       };
       // Remove cpfcnpj from payload if not needed by backend, but keeping it doesn't hurt usually

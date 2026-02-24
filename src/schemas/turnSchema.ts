@@ -7,15 +7,19 @@ const moneySchema = z.string()
   .min(1, messages.validacao.campoObrigatorio)
   .transform((val) => moneyToNumber(val));
 
+const optionalMoneySchema = z.string()
+  .optional()
+  .transform((val) => val ? moneyToNumber(val) : 0);
+
 export const turnSchema = z.object({
   cliente_id: z.string().min(1, messages.validacao.campoObrigatorio),
   empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
   hora_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
   hora_fim: z.string().min(1, messages.validacao.campoObrigatorio),
   valor_contrato: moneySchema,
-  valor_aluguel: moneySchema,
-  valor_bonus: moneySchema,
-  ajuda_custo: moneySchema,
+  valor_aluguel: optionalMoneySchema,
+  valor_bonus: optionalMoneySchema,
+  ajuda_custo: optionalMoneySchema,
   mei: z.boolean().optional().default(false),
 });
 

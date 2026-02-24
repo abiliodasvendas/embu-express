@@ -12,45 +12,10 @@ export default function AppLayout() {
   const { profile, isLoading } = usePermissions();
   const navigate = useNavigate();
 
-  if (loadingSession || isLoading) {
+  if (loadingSession || isLoading || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <span className="text-2xl">⚠️</span>
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            Erro ao carregar perfil
-          </h1>
-          <p className="text-gray-500 mb-6">
-            Não foi possível encontrar seus dados de usuário. Isso pode acontecer se o cadastro não foi concluído corretamente.
-          </p>
-          <div className="flex flex-col gap-3">
-             <button
-              onClick={() => window.location.reload()}
-              className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Tentar Novamente
-            </button>
-            <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-                window.location.href = "/login";
-              }}
-              className="w-full py-2.5 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Sair e Tentar Login
-            </button>
-          </div>
-        </div>
       </div>
     );
   }
@@ -61,9 +26,9 @@ export default function AppLayout() {
   return (
     <LayoutProvider>
       <div className="min-h-screen bg-gray-50">
-        <PasswordGuardDialog 
-            open={showGuard} 
-            onSuccess={() => window.location.reload()} 
+        <PasswordGuardDialog
+          open={showGuard}
+          onSuccess={() => window.location.reload()}
         />
         <AppNavbar />
 

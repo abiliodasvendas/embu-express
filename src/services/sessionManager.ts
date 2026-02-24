@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { queryClient } from "./queryClient";
 import { Session as SupabaseSession } from "@supabase/supabase-js";
 
 export type AuthChangeEvent = "SIGNED_IN" | "SIGNED_OUT" | "INITIAL_SESSION" | "TOKEN_REFRESHED" | "password_recovery";
@@ -6,7 +7,7 @@ export type AuthChangeEvent = "SIGNED_IN" | "SIGNED_OUT" | "INITIAL_SESSION" | "
 export interface AuthUser {
     id: string;
     email?: string;
-    perfil_id?: number | null; 
+    perfil_id?: number | null;
     [key: string]: any;
 }
 
@@ -32,11 +33,13 @@ class SessionManager {
         });
 
         // Subscribe to Supabase auth changes
-        // Even though we authenticate via Backend, Supabase Client can still
-        // be used to "listen" if we set the session on it manually or if
-        // the backend login returns a session useful for RLS.
         supabase.auth.onAuthStateChange((event, session) => {
             this.currentSession = this.mapSupabaseSession(session);
+
+            if (event === 'SIGNED_OUT') {
+                localStorage.clear();
+                queryClient.clear();
+            }
         });
     }
 
@@ -99,10 +102,10 @@ class SessionManager {
                 }
 
                 const newSession = await response.json();
-                
+
                 // Update Local State (Supabase Client)
                 await this.setSession(newSession.access_token, newSession.refresh_token);
-                
+
                 const mapped = this.mapSupabaseSession({
                     access_token: newSession.access_token,
                     refresh_token: newSession.refresh_token,
@@ -125,17 +128,29 @@ class SessionManager {
     }
 
     async signOut() {
-        // Call Backend to invalidate if needed (Logic can be added)
-        // For now, clear local state
-        const { error } = await supabase.auth.signOut();
-        return { error };
+        try {
+            // Drop cache explicitly before we even try
+            localStorage.clear();
+            queryClient.clear();
+
+            const { error } = await supabase.auth.signOut();
+
+            // If supabase fails to logout globally (ex: 403 token already invalid), force local logout
+            if (error) {
+                await supabase.auth.signOut({ scope: "local" });
+            }
+
+            return { error };
+        } catch (err: any) {
+            return { error: err };
+        }
     }
 
     onAuthStateChange(callback: (event: AuthChangeEvent, session: Session) => void): { data: AuthListener } {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-             const mappedSession = this.mapSupabaseSession(session);
-             const mappedEvent = event as AuthChangeEvent;
-             callback(mappedEvent, mappedSession);
+            const mappedSession = this.mapSupabaseSession(session);
+            const mappedEvent = event as AuthChangeEvent;
+            callback(mappedEvent, mappedSession);
         });
 
         return { data: { subscription } };

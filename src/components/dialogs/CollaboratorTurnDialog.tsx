@@ -59,20 +59,20 @@ export function CollaboratorTurnDialog({
   const [openSections, setOpenSections] = useState<string[]>(["vinculo", "financeiro"]);
   const { data: clients } = useClientSelection(undefined, { enabled: open });
   const { data: empresas } = useEmpresas({ ativo: "true" }, { enabled: open });
-  
+
   const createVinculo = useCreateVinculo();
   const updateVinculo = useUpdateVinculo();
 
   // Helper to format currency for default values
   const formatCurrency = (val: number = 0) => {
     return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-        minimumFractionDigits: 2,
+      style: "currency",
+      currency: "BRL",
+      minimumFractionDigits: 2,
     }).format(val);
   };
 
-  const form = useForm<any>({ 
+  const form = useForm<any>({
     resolver: zodResolver(turnSchema),
     defaultValues: {
       cliente_id: "",
@@ -121,15 +121,15 @@ export function CollaboratorTurnDialog({
   const handleMagicFill = (e: React.MouseEvent) => {
     e.preventDefault();
     const mockTurn = mockGenerator.turn();
-    
+
     if (clients && clients.length > 0) {
-        const randomClient = clients[Math.floor(Math.random() * clients.length)];
-        form.setValue("cliente_id", randomClient.id.toString());
+      const randomClient = clients[Math.floor(Math.random() * clients.length)];
+      form.setValue("cliente_id", randomClient.id.toString());
     }
-    
+
     if (empresas && empresas.length > 0) {
-        const randomEmpresa = empresas[Math.floor(Math.random() * empresas.length)];
-        form.setValue("empresa_id", randomEmpresa.id.toString());
+      const randomEmpresa = empresas[Math.floor(Math.random() * empresas.length)];
+      form.setValue("empresa_id", randomEmpresa.id.toString());
     }
 
     form.setValue("hora_inicio", mockTurn.hora_inicio);
@@ -166,7 +166,7 @@ export function CollaboratorTurnDialog({
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}>
-      <DialogContent 
+      <DialogContent
         className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
@@ -203,105 +203,105 @@ export function CollaboratorTurnDialog({
         <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
           <Form {...form}>
             <form id="collaborator-turn-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <Accordion 
-                type="multiple" 
-                value={openSections} 
-                onValueChange={setOpenSections} 
+              <Accordion
+                type="multiple"
+                value={openSections}
+                onValueChange={setOpenSections}
                 className="space-y-4"
               >
                 <AccordionItem value="vinculo" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                     <div className="flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-blue-600" />
-                        Dados do Vínculo
+                      <Briefcase className="w-4 h-4 text-blue-600" />
+                      Dados do Vínculo
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2 space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="cliente_id"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Cliente <span className="text-red-500">*</span></FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="rounded-xl bg-gray-50 border-gray-100">
-                                                <SelectValue placeholder="Selecione" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {clients?.map((client) => (
-                                                <SelectItem key={client.id} value={client.id.toString()}>
-                                                    {client.nome_fantasia}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                      <FormField
+                        control={form.control}
+                        name="cliente_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Cliente <span className="text-red-500">*</span></FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="rounded-xl bg-gray-50 border-gray-100">
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {clients?.map((client) => (
+                                  <SelectItem key={client.id} value={client.id.toString()}>
+                                    {client.nome_fantasia}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                        <FormField
-                            control={form.control}
-                            name="empresa_id"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Empresa (Contratante) <span className="text-red-500">*</span></FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="rounded-xl bg-gray-50 border-gray-100">
-                                                <SelectValue placeholder="Selecione" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {empresas?.map((emp) => (
-                                                <SelectItem key={emp.id} value={emp.id.toString()}>
-                                                    {emp.nome_fantasia}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                      <FormField
+                        control={form.control}
+                        name="empresa_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Empresa (Contratante) <span className="text-red-500">*</span></FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="rounded-xl bg-gray-50 border-gray-100">
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {empresas?.map((emp) => (
+                                  <SelectItem key={emp.id} value={emp.id.toString()}>
+                                    {emp.nome_fantasia}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="hora_inicio"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Início <span className="text-red-500">*</span></FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                            <Input type="time" {...field} className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="hora_fim"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Fim <span className="text-red-500">*</span></FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                            <Input type="time" {...field} className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                      <FormField
+                        control={form.control}
+                        name="hora_inicio"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Início <span className="text-red-500">*</span></FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input type="time" {...field} className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="hora_fim"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fim <span className="text-red-500">*</span></FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input type="time" {...field} className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -309,82 +309,82 @@ export function CollaboratorTurnDialog({
                 <AccordionItem value="financeiro" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                     <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-green-600" />
-                        Configuração Financeira
+                      <DollarSign className="w-4 h-4 text-green-600" />
+                      Configuração Financeira
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2 space-y-5">
                     <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="valor_contrato"
-                            render={({ field }) => (
-                                <MoneyInput
-                                    field={field}
-                                    label="Valor Contrato"
-                                    required={true}
-                                    inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                />
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="valor_aluguel"
-                            render={({ field }) => (
-                                <MoneyInput
-                                    field={field}
-                                    label="Aluguel Moto"
-                                    required={true}
-                                    inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                />
-                            )}
-                        />
+                      <FormField
+                        control={form.control}
+                        name="valor_contrato"
+                        render={({ field }) => (
+                          <MoneyInput
+                            field={field}
+                            label="Valor Contrato"
+                            required={true}
+                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                          />
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="valor_aluguel"
+                        render={({ field }) => (
+                          <MoneyInput
+                            field={field}
+                            label="Aluguel Moto"
+                            required={false}
+                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                          />
+                        )}
+                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="ajuda_custo"
-                            render={({ field }) => (
-                                <MoneyInput
-                                    field={field}
-                                    label="Ajuda Custo"
-                                    required={true}
-                                    inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                />
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="valor_bonus"
-                            render={({ field }) => (
-                                <MoneyInput
-                                    field={field}
-                                    label="Bônus Zero Falta"
-                                    required={true}
-                                    inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-green-700"
-                                />
-                            )}
-                        />
+                      <FormField
+                        control={form.control}
+                        name="ajuda_custo"
+                        render={({ field }) => (
+                          <MoneyInput
+                            field={field}
+                            label="Ajuda Custo"
+                            required={false}
+                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                          />
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="valor_bonus"
+                        render={({ field }) => (
+                          <MoneyInput
+                            field={field}
+                            label="Bônus Zero Falta"
+                            required={false}
+                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-green-700"
+                          />
+                        )}
+                      />
                     </div>
 
                     <FormField
-                        control={form.control}
-                        name="mei"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50 border-gray-100 shadow-sm">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-sm font-semibold text-gray-800">Contratação via MEI</FormLabel>
-                                    <p className="text-xs text-muted-foreground">O colaborador emitirá nota fiscal para recebimento?</p>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
+                      control={form.control}
+                      name="mei"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50 border-gray-100 shadow-sm">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm font-semibold text-gray-800">Contratação via MEI</FormLabel>
+                            <p className="text-xs text-muted-foreground">Marque esta opção se a contratação for via MEI</p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
                     />
                   </AccordionContent>
                 </AccordionItem>
@@ -402,10 +402,10 @@ export function CollaboratorTurnDialog({
           >
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             form="collaborator-turn-form"
-            disabled={isSubmitting} 
+            disabled={isSubmitting}
             className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
           >
             {isSubmitting ? (

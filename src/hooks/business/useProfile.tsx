@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+import { colaboradorApi } from "@/services/api/colaborador.api";
+import { sessionManager } from "@/services/sessionManager";
 import { Perfil, Usuario } from "@/types/database";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -8,27 +9,15 @@ export type ProfileWithRole = Usuario & {
 };
 
 export async function fetchProfile(uid: string): Promise<ProfileWithRole | null> {
-  const { data, error } = await (supabase as any)
-    .from("usuarios")
-    .select(
-      `
-      *,
-      perfil:perfis (
-        *,
-        perfil_permissoes(permissao:permissoes(nome_interno))
-      ),
-      links:colaborador_clientes(
-        *,
-        cliente:clientes(nome_fantasia),
-        empresa:empresas(nome_fantasia)
-      )
-    `
-    )
-    .eq("id", uid)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as unknown as ProfileWithRole | null;
+  try {
+    const data = await colaboradorApi.getColaborador(uid);
+    return data as unknown as ProfileWithRole;
+  } catch (error: any) {
+    if (error.response && [401, 403, 404].includes(error.response.status)) {
+      throw error;
+    }
+    throw error;
+  }
 }
 
 export function useProfile(uid?: string) {
@@ -46,7 +35,7 @@ export function useProfile(uid?: string) {
 
   useEffect(() => {
     if (error) {
-      supabase.auth.signOut().catch(() => { });
+      sessionManager.signOut().catch(() => { });
     }
   }, [error]);
 

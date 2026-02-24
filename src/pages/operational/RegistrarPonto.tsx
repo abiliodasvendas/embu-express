@@ -175,152 +175,162 @@ export default function RegistrarPonto() {
     };
 
     return (
-        <div className="space-y-6 max-w-lg mx-auto pb-20">
+        <div className="w-full max-w-lg lg:max-w-5xl mx-auto pb-20">
             {/* Geolocation Alert - Always Visible if Error */}
             {(geoError || (!location && !loadingGeo)) && (
-                <Alert variant="destructive" className="rounded-3xl border-none shadow-lg bg-red-50 text-red-900 animate-in fade-in slide-in-from-top-4 duration-500 mb-2">
-                    <ShieldAlert className="h-5 w-5 text-red-600" />
-                    <AlertTitle className="font-bold">Localização Requerida</AlertTitle>
-                    <AlertDescription className="text-red-700 font-medium">
-                        {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível.") : "Aguardando sinal de GPS para liberar o registro."}
+                <div className="mb-6">
+                    <Alert variant="destructive" className="rounded-3xl border-none shadow-lg bg-red-50 text-red-900 animate-in fade-in slide-in-from-top-4 duration-500 mb-2">
+                        <ShieldAlert className="h-5 w-5 text-red-600" />
+                        <AlertTitle className="font-bold">Localização Requerida</AlertTitle>
+                        <AlertDescription className="text-red-700 font-medium">
+                            {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível.") : "Aguardando sinal de GPS para liberar o registro."}
 
-                        {permissionDenied ? (
-                            isWeb ? (
-                                <div className="mt-4 p-3 bg-red-100 rounded-xl text-red-900 text-sm font-semibold flex items-start text-left">
-                                    Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1">Cadeado</strong> ou <strong className="mx-1">Ajustes</strong> ao lado da barra de endereço e reative a localização.
-                                </div>
+                            {permissionDenied ? (
+                                isWeb ? (
+                                    <p className="mt-4 text-sm font-semibold text-red-800 text-balance leading-relaxed">
+                                        Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1 text-red-900 border border-red-200 bg-red-100 rounded px-1 py-0.5">Cadeado</strong> ou <strong className="mx-1 text-red-900 border border-red-200 bg-red-100 rounded px-1 py-0.5">Ajustes</strong> ao lado da barra de endereço e reative a localização.
+                                    </p>
+                                ) : (
+                                    <button
+                                        onClick={() => NativeSettings.open({
+                                            optionAndroid: AndroidSettings.ApplicationDetails,
+                                            optionIOS: IOSSettings.App
+                                        })}
+                                        className="mt-3 bg-red-100 px-4 py-2 rounded-xl text-red-900 font-bold hover:bg-red-200 transition-colors flex items-center w-full justify-center"
+                                    >
+                                        <Settings className="w-4 h-4 mr-2" /> Abrir Config. do Aparelho
+                                    </button>
+                                )
                             ) : (
                                 <button
-                                    onClick={() => NativeSettings.open({
-                                        optionAndroid: AndroidSettings.ApplicationDetails,
-                                        optionIOS: IOSSettings.App
-                                    })}
-                                    className="mt-3 bg-red-100 px-4 py-2 rounded-xl text-red-900 font-bold hover:bg-red-200 transition-colors flex items-center w-full justify-center"
+                                    onClick={() => requestLocation()}
+                                    className="block mt-2 text-red-900 font-bold underline hover:text-red-700 transition-colors flex items-center"
                                 >
-                                    <Settings className="w-4 h-4 mr-2" /> Abrir Config. do Aparelho
+                                    <RefreshCw className="w-3 h-3 mr-1" /> Tentar Novamente
                                 </button>
-                            )
-                        ) : (
-                            <button
-                                onClick={() => requestLocation()}
-                                className="block mt-2 text-red-900 font-bold underline hover:text-red-700 transition-colors flex items-center"
-                            >
-                                <RefreshCw className="w-3 h-3 mr-1" /> Tentar Novamente
-                            </button>
-                        )}
-                    </AlertDescription>
-                </Alert>
+                            )}
+                        </AlertDescription>
+                    </Alert>
+                </div>
             )}
 
             {!hasShifts ? (
-                /* MISSING SHIFT PROMINENT ALERT */
-                <div className="bg-white rounded-[2rem] shadow-xl border-t-8 border-amber-500 p-8 sm:p-12 text-center flex flex-col items-center animate-in zoom-in-95 duration-500">
-                    <div className="bg-amber-100 p-6 rounded-3xl mb-8">
-                        <ShieldAlert className="w-20 h-20 text-amber-600" />
+                /* MISSING SHIFT PROMINENT ALERT - Centered on standalone */
+                <div className="w-full max-w-2xl mx-auto bg-white rounded-[2rem] shadow-xl border-t-8 border-amber-500 p-6 sm:p-12 text-center flex flex-col items-center animate-in zoom-in-95 duration-500 min-h-[400px] justify-center">
+                    <div className="bg-amber-100 p-6 rounded-3xl mb-6 sm:mb-8">
+                        <ShieldAlert className="w-16 h-16 sm:w-20 sm:h-20 text-amber-600" />
                     </div>
-                    <h2 className="text-3xl font-black text-gray-900 mb-6 tracking-tight">Turnos não configurados</h2>
-                    <p className="text-gray-600 text-lg leading-relaxed mb-8">
+                    <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4 sm:mb-6 tracking-tight">Turnos não configurados</h2>
+                    <p className="text-gray-600 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
                         Identificamos que seu cadastro ainda não possui vínculos de turno registrados no sistema.
                     </p>
-                    <div className="w-full p-6 bg-amber-50/50 rounded-2xl border border-amber-100 text-amber-900 font-medium">
+                    <div className="w-full p-5 sm:p-6 bg-amber-50/50 rounded-2xl border border-amber-100 text-amber-900 text-sm sm:text-base font-medium">
                         Por favor, solicite ao administrador que vincule sua conta a um cliente para liberar o registro de ponto.
                     </div>
                 </div>
             ) : (
-                /* Header / Status Card */
-                <Card className={`border-none shadow-2xl rounded-[2rem] text-white overflow-hidden relative transition-colors duration-500 ${status === 'working' ? 'bg-gradient-to-br from-blue-600 to-blue-800' :
-                    status === 'paused' ? 'bg-gradient-to-br from-yellow-500 to-amber-700' :
-                        'bg-gradient-to-br from-slate-700 to-slate-900'
-                    }`}>
-                    <CardContent className="p-10 relative z-10 flex flex-col items-center justify-center min-h-[220px]">
-                        <span className="text-white/70 text-sm font-bold uppercase tracking-[0.2em] mb-4">Status Atual</span>
-                        <h2 className="text-2xl font-black mb-2 tracking-tight">
-                            {status === 'idle' && "AGUARDANDO INÍCIO"}
-                            {status === 'working' && "EM SERVIÇO"}
-                            {status === 'paused' && "EM PAUSA"}
-                        </h2>
-                        <div className="text-5xl font-mono font-bold mt-4 tabular-nums drop-shadow-2xl">
-                            {timer}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
+                <div className="flex flex-col lg:flex-row gap-6">
+                    {/* Esquerda: Status */}
+                    <div className="flex-1 flex flex-col">
+                        {/* Header / Status Card */}
+                        <Card className={`border-none shadow-2xl rounded-[2rem] text-white overflow-hidden relative transition-colors duration-500 h-full min-h-[300px] flex flex-col justify-center ${status === 'working' ? 'bg-gradient-to-br from-blue-600 to-blue-800' :
+                            status === 'paused' ? 'bg-gradient-to-br from-yellow-500 to-amber-700' :
+                                'bg-gradient-to-br from-slate-700 to-slate-900'
+                            }`}>
+                            <CardContent className="p-8 sm:p-10 relative z-10 flex flex-col items-center justify-center">
+                                <span className="text-white/70 text-sm font-bold uppercase tracking-[0.2em] mb-4">Status Atual</span>
+                                <h2 className="text-2xl font-black mb-2 tracking-tight">
+                                    {status === 'idle' && "AGUARDANDO INÍCIO"}
+                                    {status === 'working' && "EM SERVIÇO"}
+                                    {status === 'paused' && "EM PAUSA"}
+                                </h2>
+                                <div className="text-5xl font-mono font-bold mt-4 tabular-nums drop-shadow-2xl">
+                                    {timer}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-            {/* Smart Action Button - Hidden if no shifts */}
-            {hasShifts && (
-                <div className="grid grid-cols-1 gap-4">
-                    {status === 'idle' && (
-                        <Button
-                            onClick={handleToggle}
-                            disabled={loadingGeo || !location}
-                            className="h-28 text-2xl font-black rounded-[2rem] shadow-xl bg-green-600 hover:bg-green-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100"
-                        >
-                            {loadingGeo ? <MapPin className="animate-pulse w-8 h-8 mr-3" /> : <Play className="w-8 h-8 mr-3" />}
-                            {loadingGeo ? "LOCALIZANDO..." : "INICIAR DIA"}
-                        </Button>
-                    )}
+                    {/* Direita: Ações e Informações */}
+                    <div className="w-full lg:w-[400px] xl:w-[450px] flex flex-col gap-6 shrink-0">
+                        {/* Smart Action Button - Hidden if no shifts */}
+                        {hasShifts && (
+                            <div className="grid grid-cols-1 gap-4">
+                                {status === 'idle' && (
+                                    <Button
+                                        onClick={handleToggle}
+                                        disabled={loadingGeo || !location}
+                                        className="h-28 text-2xl font-black rounded-[2rem] shadow-xl bg-green-600 hover:bg-green-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100"
+                                    >
+                                        {loadingGeo ? <MapPin className="animate-pulse w-8 h-8 mr-3" /> : <Play className="w-8 h-8 mr-3" />}
+                                        {loadingGeo ? "LOCALIZANDO..." : "INICIAR DIA"}
+                                    </Button>
+                                )}
 
-                    {status === 'working' && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <Button
-                                variant="outline"
-                                onClick={handlePauseStart}
-                                disabled={loadingGeo || !location}
-                                className="h-24 text-xl font-bold rounded-[2rem] border-4 border-yellow-500 text-yellow-600 hover:bg-yellow-50 shadow-lg disabled:opacity-50"
-                            >
-                                <Pause className="w-7 h-7 mr-2" />
-                                PAUSA
-                            </Button>
-                            <Button
-                                onClick={handleToggle}
-                                disabled={loadingGeo || !location}
-                                className="h-24 text-xl font-bold rounded-[2rem] shadow-xl bg-red-600 hover:bg-red-700 disabled:opacity-50"
-                            >
-                                {loadingGeo ? <MapPin className="animate-pulse w-7 h-7 mr-2" /> : <Square className="w-7 h-7 mr-2" />}
-                                ENCERRAR
-                            </Button>
-                        </div>
-                    )}
+                                {status === 'working' && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Button
+                                            variant="outline"
+                                            onClick={handlePauseStart}
+                                            disabled={loadingGeo || !location}
+                                            className="h-24 text-xl font-bold rounded-[2rem] border-4 border-yellow-500 text-yellow-600 hover:bg-yellow-50 shadow-lg disabled:opacity-50"
+                                        >
+                                            <Pause className="w-7 h-7 mr-2" />
+                                            PAUSA
+                                        </Button>
+                                        <Button
+                                            onClick={handleToggle}
+                                            disabled={loadingGeo || !location}
+                                            className="h-24 text-xl font-bold rounded-[2rem] shadow-xl bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                                        >
+                                            {loadingGeo ? <MapPin className="animate-pulse w-7 h-7 mr-2" /> : <Square className="w-7 h-7 mr-2" />}
+                                            ENCERRAR
+                                        </Button>
+                                    </div>
+                                )}
 
-                    {status === 'paused' && (
-                        <Button
-                            onClick={handlePauseEnd}
-                            disabled={loadingGeo || !location}
-                            className="h-28 text-2xl font-black rounded-[2rem] shadow-xl bg-yellow-600 hover:bg-yellow-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                        >
-                            {loadingGeo ? <MapPin className="animate-pulse w-8 h-8 mr-3" /> : <Play className="w-8 h-8 mr-3" />}
-                            {loadingGeo ? "LOCALIZANDO..." : "RETOMAR TRABALHO"}
-                        </Button>
-                    )}
-                </div>
-            )}
-
-            {/* Info Cards - Hidden if no shifts */}
-            {hasShifts && (
-                <div className="grid grid-cols-1 gap-4">
-                    <Card className="rounded-3xl shadow-md border-gray-100 overflow-hidden">
-                        <CardContent className="p-6">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Turno</span>
-                            {activeShift?.horario ? (
-                                <p className="text-3xl font-black text-blue-600 leading-tight">{activeShift.horario}</p>
-                            ) : (
-                                <p className="text-3xl font-black text-gray-900 leading-tight">--</p>
-                            )}
-                            <p className="text-base font-bold text-gray-400 mt-1 truncate">
-                                {activeShift?.nome}
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="rounded-3xl shadow-md border-gray-100 overflow-hidden">
-                        <CardContent className="p-6">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Localização</span>
-                            <div className="flex items-center text-gray-900 font-black text-xl truncate">
-                                <MapPin className={`w-6 h-6 mr-3 flex-shrink-0 ${location ? 'text-green-500' : 'text-gray-300'}`} />
-                                <span className="truncate">{loadingGeo ? "Obtendo..." : location ? "Ativa" : "--"}</span>
+                                {status === 'paused' && (
+                                    <Button
+                                        onClick={handlePauseEnd}
+                                        disabled={loadingGeo || !location}
+                                        className="h-28 text-2xl font-black rounded-[2rem] shadow-xl bg-yellow-600 hover:bg-yellow-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                    >
+                                        {loadingGeo ? <MapPin className="animate-pulse w-8 h-8 mr-3" /> : <Play className="w-8 h-8 mr-3" />}
+                                        {loadingGeo ? "LOCALIZANDO..." : "RETOMAR TRABALHO"}
+                                    </Button>
+                                )}
                             </div>
-                        </CardContent>
-                    </Card>
+                        )}
+
+                        {/* Info Cards - Hidden if no shifts */}
+                        {hasShifts && (
+                            <div className="grid grid-cols-1 gap-4">
+                                <Card className="rounded-3xl shadow-md border-gray-100 overflow-hidden">
+                                    <CardContent className="p-6">
+                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Turno</span>
+                                        {activeShift?.horario ? (
+                                            <p className="text-3xl font-black text-blue-600 leading-tight">{activeShift.horario}</p>
+                                        ) : (
+                                            <p className="text-3xl font-black text-gray-900 leading-tight">--</p>
+                                        )}
+                                        <p className="text-base font-bold text-gray-400 mt-1 truncate">
+                                            {activeShift?.nome}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="rounded-3xl shadow-md border-gray-100 overflow-hidden">
+                                    <CardContent className="p-6">
+                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Localização</span>
+                                        <div className="flex items-center text-gray-900 font-black text-xl truncate">
+                                            <MapPin className={`w-6 h-6 mr-3 flex-shrink-0 ${location ? 'text-green-500' : 'text-gray-300'}`} />
+                                            <span className="truncate">{loadingGeo ? "Obtendo..." : location ? "Ativa" : "--"}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

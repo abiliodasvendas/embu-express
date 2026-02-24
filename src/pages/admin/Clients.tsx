@@ -1,4 +1,3 @@
-import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ClientList } from "@/components/features/client/ClientList";
 import { ClientsToolbar } from "@/components/features/client/ClientsToolbar";
@@ -16,12 +15,12 @@ import {
 } from "@/hooks";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { Client } from "@/types/client";
-import { Building2, Users } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Users } from "lucide-react";
+import { useCallback, useEffect } from "react";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export default function Clients() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } =
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openClientFormDialog } =
     useLayout();
 
   const {
@@ -32,9 +31,6 @@ export default function Clients() {
     setFilters,
     hasActiveFilters,
   } = useFilters();
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const {
     data: clients,
@@ -62,13 +58,13 @@ export default function Clients() {
   }, [refetch]);
 
   const handleEdit = (client: Client) => {
-    setEditingClient(client);
-    setIsFormOpen(true);
+    openClientFormDialog({
+      editingClient: client
+    });
   };
 
   const handleAdd = () => {
-    setEditingClient(null);
-    setIsFormOpen(true);
+    openClientFormDialog({});
   };
 
   const handleToggleStatus = (client: Client) => {
@@ -141,15 +137,6 @@ export default function Clients() {
           </Card>
         </div>
       </PullToRefreshWrapper>
-
-      {isFormOpen && (
-        <ClientFormDialog
-          key={editingClient?.id ? `edit-${editingClient.id}` : "new"}
-          isOpen={isFormOpen}
-          onClose={() => setIsFormOpen(false)}
-          editingClient={editingClient}
-        />
-      )}
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

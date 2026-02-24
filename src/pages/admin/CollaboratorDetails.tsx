@@ -1,4 +1,3 @@
-import { CollaboratorFormDialog } from "@/components/dialogs/CollaboratorFormDialog";
 import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,18 +28,28 @@ export default function CollaboratorDetails() {
   const deleteVinculo = useDeleteVinculo();
   const updateStatus = useUpdateCollaboratorStatus();
   const deleteCollaborator = useDeleteCollaborator();
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openCollaboratorFormDialog } = useLayout();
 
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isTurnDialogOpen, setIsTurnDialogOpen] = useState(false);
   const [turnToEdit, setTurnToEdit] = useState<ColaboradorCliente | null>(null);
 
   const handleToggleStatus = async (collab: Usuario, newStatus: string) => {
     const confirmMessage = newStatus === STATUS.ATIVO ? messages.dialogo.ativar.descricao : messages.dialogo.desativar.descricao;
 
-    if (window.confirm(confirmMessage)) {
-      await updateStatus.mutateAsync({ id: collab.id, status: newStatus });
-    }
+    openConfirmationDialog({
+      title: newStatus === STATUS.ATIVO ? "Ativar Colaborador" : "Desativar Colaborador",
+      description: confirmMessage,
+      confirmText: "Confirmar",
+      variant: newStatus === STATUS.ATIVO ? "success" : "warning",
+      onConfirm: async () => {
+        try {
+          await updateStatus.mutateAsync({ id: collab.id, status: newStatus });
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
   }
 
   const handleDelete = async () => {
@@ -64,7 +73,7 @@ export default function CollaboratorDetails() {
 
   const actions = useCollaboratorActions({
     collaborator: collaborator as Usuario,
-    onEdit: () => setIsEditDialogOpen(true),
+    onEdit: () => openCollaboratorFormDialog({ mode: "edit", editingCollaborator: collaborator as Usuario }),
     onStatusChange: handleToggleStatus,
     onDelete: handleDelete,
     hideDetails: true,
@@ -104,9 +113,20 @@ export default function CollaboratorDetails() {
   };
 
   const handleDeleteTurn = async (turnId: number) => {
-    if (window.confirm(messages.dialogo.remover.descricao)) {
-      await deleteVinculo.mutateAsync(turnId);
-    }
+    openConfirmationDialog({
+      title: messages.dialogo.remover.titulo,
+      description: messages.dialogo.remover.descricao,
+      confirmText: messages.dialogo.remover.botao,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await deleteVinculo.mutateAsync(turnId);
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -383,14 +403,6 @@ export default function CollaboratorDetails() {
         </div>
       </div>
 
-      <CollaboratorFormDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        collaboratorToEdit={collaborator}
-        onSuccess={() => {
-          setIsEditDialogOpen(false);
-        }}
-      />
 
       <CollaboratorTurnDialog
         open={isTurnDialogOpen}

@@ -1,6 +1,4 @@
-/**
- * Utilitário para gerar dados fictícios brasileiros para testes e desenvolvimento.
- */
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 // Listas de dados para geração aleatória
 const nomes = [
@@ -237,7 +235,7 @@ export const generateCollaboratorData = (clienteId?: string | number, empresaId?
     perfil_id: randomNumber(1, 3), // 1: Admin, 2: Colaborador, 3: Motorista
     cliente_id: clienteId ? (typeof clienteId === "string" ? parseInt(clienteId) : clienteId) : null,
     empresa_id: empresaId ? (typeof empresaId === "string" ? parseInt(empresaId) : empresaId) : null,
-    ativo: true,
+    status: STATUS_CADASTRO.ATIVO,
     turnos: [
       {
         hora_inicio: "08:00:00",

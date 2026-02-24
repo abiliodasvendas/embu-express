@@ -1,4 +1,3 @@
-import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { EmpresaList } from "@/components/features/empresa/EmpresaList";
 import { EmpresasToolbar } from "@/components/features/empresa/EmpresasToolbar";
@@ -21,7 +20,7 @@ import { useCallback, useEffect, useState } from "react";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export function Empresas() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEmpresaFormDialog } = useLayout();
 
   const {
     searchTerm,
@@ -35,8 +34,6 @@ export function Empresas() {
     statusParam: "status",
   });
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingEmpresa, setEditingEmpresa] = useState<Empresa | undefined>(undefined);
   const [isQuickCreateLoading, setIsQuickCreateLoading] = useState(false);
 
   const { data: empresas = [], isLoading, refetch } = useEmpresas({
@@ -57,13 +54,11 @@ export function Empresas() {
   }, [refetch]);
 
   const handleEdit = (empresa: Empresa) => {
-    setEditingEmpresa(empresa);
-    setIsFormOpen(true);
+    openEmpresaFormDialog({ empresaToEdit: empresa });
   };
 
   const handleRegister = () => {
-    setEditingEmpresa(undefined);
-    setIsFormOpen(true);
+    openEmpresaFormDialog({});
   };
 
   const handleDelete = async (empresa: Empresa) => {
@@ -135,15 +130,6 @@ export function Empresas() {
           </Card>
         </div>
       </PullToRefreshWrapper>
-
-      {isFormOpen && (
-        <EmpresaFormDialog
-          key={editingEmpresa?.id ? `edit-${editingEmpresa.id}` : 'new'}
-          open={isFormOpen}
-          onOpenChange={setIsFormOpen}
-          empresaToEdit={editingEmpresa}
-        />
-      )}
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

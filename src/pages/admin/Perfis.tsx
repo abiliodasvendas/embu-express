@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { PerfisTable } from "@/components/features/perfil/PerfisTable";
 import { usePerfis } from "@/hooks/api/usePerfis";
@@ -6,7 +6,6 @@ import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Can } from "@/components/auth/Can";
 import { Button } from "@/components/ui/button";
-import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useDeletePerfil } from "@/hooks/api/usePerfis";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -16,19 +15,15 @@ import { Perfil } from "@/types/database";
 export default function Perfis() {
     const { data: perfis, isLoading } = usePerfis();
     const deletePerfil = useDeletePerfil();
-    const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+    const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openPerfilFormDialog } = useLayout();
 
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [perfilToEdit, setPerfilToEdit] = useState<Perfil | null>(null);
 
     const handleEdit = (perfil: Perfil) => {
-        setPerfilToEdit(perfil);
-        setIsDialogOpen(true);
+        openPerfilFormDialog({ perfilToEdit: perfil });
     };
 
     const handleCreate = () => {
-        setPerfilToEdit(null);
-        setIsDialogOpen(true);
+        openPerfilFormDialog({});
     };
 
     const handleDelete = (perfil: Perfil) => {
@@ -83,11 +78,6 @@ export default function Perfis() {
                 </CardContent>
             </Card>
 
-            <PerfilFormDialog
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                perfilToEdit={perfilToEdit}
-            />
         </div>
     );
 }

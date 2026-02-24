@@ -1,4 +1,3 @@
-import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,16 +6,13 @@ import { useClients } from "@/hooks/api/useClients";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import { useDeleteClient, useToggleClientStatus } from "@/hooks/api/useClientMutations";
 import { cn } from "@/lib/utils";
-import { cnpjMask, phoneMask } from "@/utils/masks";
-import { ChevronLeft, Edit2, MapPin, Power, Users, User, Trash2, Building2, ChevronDown, MoreVertical } from "lucide-react";
-import { useState } from "react";
+import { cnpjMask } from "@/utils/masks";
+import { ChevronLeft, MapPin, Power, Users, User, Trash2, Building2, ChevronDown, MoreVertical } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useLayout } from "@/contexts/LayoutContext";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { useClientActions } from "@/hooks/business/useClientActions";
-import { Can } from "@/components/auth/Can";
-import { PERMISSIONS } from "@/constants/permissions.enum";
 import { ColaboradorCliente, Client } from "@/types/database";
 import { messages } from "@/constants/messages";
 import { STATUS } from "@/constants/roles";
@@ -34,18 +30,28 @@ export default function ClientDetails() {
 
     const toggleStatus = useToggleClientStatus();
     const deleteClient = useDeleteClient();
-    const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+    const { openConfirmationDialog, closeConfirmationDialog, openClientFormDialog } = useLayout();
 
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
     const handleToggleStatus = async () => {
         if (!client) return;
         const newStatus = !client.ativo;
         const confirmMessage = newStatus ? messages.dialogo.ativar.descricao : messages.dialogo.desativar.descricao;
 
-        if (window.confirm(confirmMessage)) {
-            await toggleStatus.mutateAsync({ id: client.id, ativo: newStatus });
-        }
+        openConfirmationDialog({
+            title: newStatus ? "Ativar Cliente" : "Desativar Cliente",
+            description: confirmMessage,
+            confirmText: "Confirmar",
+            variant: newStatus ? "success" : "warning",
+            onConfirm: async () => {
+                try {
+                    await toggleStatus.mutateAsync({ id: client.id, ativo: newStatus });
+                    closeConfirmationDialog();
+                } catch (error) {
+                    console.error(error);
+                }
+            },
+        });
     }
 
     const handleDelete = () => {
@@ -69,7 +75,7 @@ export default function ClientDetails() {
 
     const actions = useClientActions({
         client: client as unknown as Client,
-        onEdit: () => setIsEditDialogOpen(true),
+        onEdit: () => openClientFormDialog({ editingClient: client }),
         onToggleStatus: handleToggleStatus,
         onDelete: handleDelete,
     });
@@ -278,15 +284,6 @@ export default function ClientDetails() {
                 </div>
             </div>
 
-            <ClientFormDialog
-                isOpen={isEditDialogOpen}
-                onClose={() => setIsEditDialogOpen(false)}
-                editingClient={client}
-                onSuccess={() => {
-                    setIsEditDialogOpen(false);
-                    // O queryClient já invalida 'clients' no hook de update
-                }}
-            />
         </div>
     );
 }

@@ -16,25 +16,25 @@ const BackButtonController = () => {
     if (!Capacitor.isNativePlatform()) {
       return;
     }
-    
+
     let handler: any;
 
     const setupListener = async () => {
       handler = await App.addListener("backButton", () => {
-        
-        const currentPath = locationRef.current; 
-        const homeRoutes = ['/inicio', '/'];
-        
+
+        const currentPath = locationRef.current;
+        const homeRoutes = ['/'];
+
         if (homeRoutes.includes(currentPath) && window.history.length > 1) {
-            App.exitApp();
-        } 
-        
-        else if (window.history.length > 1) {
-            window.history.back();
+          App.exitApp();
         }
-        
+
+        else if (window.history.length > 1) {
+          window.history.back();
+        }
+
         else {
-            App.exitApp();
+          App.exitApp();
         }
       });
     };
@@ -42,11 +42,11 @@ const BackButtonController = () => {
     setupListener();
 
     return () => {
-        if (handler) {
-             handler.then(h => h.remove()); 
-        }
+      if (handler) {
+        handler.then(h => h.remove());
+      }
     };
-    
+
   }, []);
 
   return null;

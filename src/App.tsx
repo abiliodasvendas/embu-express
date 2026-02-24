@@ -201,7 +201,7 @@ const App = () => {
                     </AppGate>
                   }
                 >
-                  <Route path="inicio" element={<RedirectByRole />} />
+                  <Route index element={<RedirectByRole />} />
 
                   {/* Rotas Operacionais (Motoboy) */}
                   <Route element={<RequirePermission requireOperational={true} />}>

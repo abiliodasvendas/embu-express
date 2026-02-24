@@ -13,12 +13,12 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Lock } from "lucide-react";
@@ -58,22 +58,22 @@ export default function NovaSenha() {
   const handleRedefinir = async (data: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      
+
       // Update Password via Backend API (to reset primeiro_acesso flag)
-      await api.put("/auth/update-password", { 
-          password: data.senha 
+      await api.put("/auth/update-password", {
+        password: data.senha
       });
 
       // Update session info locally
       const { success } = await sessionManager.refreshToken();
-      
+
       setLoading(false);
 
       toast.success("Senha definida com sucesso!", {
         description: "Agora você já pode acessar o sistema com sua nova senha.",
       });
 
-      setTimeout(() => navigate("/inicio", { replace: true }), 1200);
+      setTimeout(() => navigate("/", { replace: true }), 1200);
     } catch (err: any) {
       setLoading(false);
       console.error(err);
@@ -101,8 +101,8 @@ export default function NovaSenha() {
               {isForced ? "Definir senha de acesso" : "Redefinir senha"}
             </h1>
             <p className="text-gray-500 text-sm">
-              {isForced 
-                ? "Para sua segurança, crie uma nova senha pessoal" 
+              {isForced
+                ? "Para sua segurança, crie uma nova senha pessoal"
                 : "Crie uma nova senha segura para sua conta"}
             </p>
           </div>

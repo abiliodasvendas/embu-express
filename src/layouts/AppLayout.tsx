@@ -38,8 +38,7 @@ export default function AppLayout() {
               src="/assets/logo-embuexpress.png"
               alt="Embu Express"
               className="h-12 cursor-pointer"
-              title="Embu Express"
-              onClick={() => navigate("/inicio")}
+              onClick={() => navigate("/")}
             />
           </div>
           <div className="flex-1 overflow-y-auto px-5 py-6">

@@ -21,7 +21,7 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { aplicarMascaraPlaca, cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { Loader2, User, Wand2, X } from "lucide-react";
+import { Loader2, User, Wand2, X, Briefcase, DollarSign } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
 import { CollaboratorFormProfessional } from "../features/collaborator/form/CollaboratorFormProfessional";
@@ -185,9 +185,9 @@ export function CollaboratorFormDialog({
           </DialogTitle>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-6">
+            <form id="collaborator-form" onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-6">
               <Accordion
                 type="multiple"
                 value={openSections}
@@ -196,7 +196,10 @@ export function CollaboratorFormDialog({
               >
                 <AccordionItem value="personal" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    Dados Pessoais
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-blue-600" />
+                      Dados Pessoais
+                    </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2">
                     <CollaboratorFormPersonal roles={roles} />
@@ -205,7 +208,10 @@ export function CollaboratorFormDialog({
 
                 <AccordionItem value="professional" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    Profissional & Moto
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-4 h-4 text-blue-600" />
+                      Profissional & Moto
+                    </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2">
                     <CollaboratorFormProfessional />
@@ -214,7 +220,10 @@ export function CollaboratorFormDialog({
 
                 <AccordionItem value="financial" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    Financeiro
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-blue-600" />
+                      Financeiro
+                    </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2">
                     <CollaboratorFormFinancial empresas={empresas} />
@@ -222,32 +231,34 @@ export function CollaboratorFormDialog({
                 </AccordionItem>
               </Accordion>
 
-              <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    collaboratorToEdit ? "Salvar Alterações" : "Criar Colaborador"
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
+        </div>
+
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="collaborator-form"
+            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              collaboratorToEdit ? "Salvar Alterações" : "Criar Colaborador"
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

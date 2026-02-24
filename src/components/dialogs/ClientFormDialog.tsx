@@ -1,32 +1,32 @@
 import { CepInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
@@ -38,14 +38,14 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-    Building2,
-    FileText,
-    Hash,
-    Loader2,
-    MapPin,
-    Wand2,
-    X,
-    Zap,
+  Building2,
+  FileText,
+  Hash,
+  Loader2,
+  MapPin,
+  Wand2,
+  X,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -232,9 +232,9 @@ export function ClientFormDialog({
           </DialogTitle>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
           <Form {...form}>
-            <form
+            <form id="client-form"
               onSubmit={form.handleSubmit(onSubmit, onFormError)}
               className="space-y-4"
             >
@@ -245,9 +245,9 @@ export function ClientFormDialog({
                 className="w-full"
               >
                 <AccordionItem value="dados-cliente" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100 mb-4">
-                  <AccordionTrigger className="hover:no-underline py-4">
-                    <div className="flex items-center gap-2 text-lg font-bold text-gray-700">
-                      <Building2 className="w-5 h-5 text-blue-600" />
+                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-blue-600" />
                       Dados do Cliente
                     </div>
                   </AccordionTrigger>
@@ -266,7 +266,7 @@ export function ClientFormDialog({
                               <Building2 className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                               <Input
                                 placeholder="Ex: Logística ABC"
-                                className="pl-12 h-11 rounded-xl bg-gray-50"
+                                className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                 {...field}
                               />
                             </div>
@@ -291,7 +291,7 @@ export function ClientFormDialog({
                                 <FileText className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                 <Input
                                   placeholder="Ex: ABC Transportes LTDA"
-                                  className="pl-12 h-11 rounded-xl bg-gray-50"
+                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                   {...field}
                                 />
                               </div>
@@ -314,7 +314,7 @@ export function ClientFormDialog({
                                 <Hash className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                 <Input
                                   placeholder="00.000.000/0000-00"
-                                  className="pl-12 h-11 rounded-xl bg-gray-50"
+                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                   {...field}
                                   onChange={(e) => {
                                     field.onChange(cnpjMask(e.target.value));
@@ -355,9 +355,9 @@ export function ClientFormDialog({
                 </AccordionItem>
 
                 <AccordionItem value="endereco" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                  <AccordionTrigger className="hover:no-underline py-4">
-                    <div className="flex items-center gap-2 text-lg font-bold text-gray-700">
-                      <MapPin className="w-5 h-5 text-blue-600" />
+                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-blue-600" />
                       Endereço
                     </div>
                   </AccordionTrigger>
@@ -387,7 +387,7 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary"
+                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                 disabled={isCepLoading}
                               />
                             </FormControl>
@@ -407,7 +407,7 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary"
+                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                               />
                             </FormControl>
                             <FormMessage />
@@ -423,7 +423,7 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary"
+                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                               />
                             </FormControl>
                             <FormMessage />
@@ -442,7 +442,7 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary"
+                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                 disabled={isCepLoading}
                               />
                             </FormControl>
@@ -461,7 +461,7 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary"
+                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                 disabled={isCepLoading}
                               />
                             </FormControl>
@@ -483,7 +483,7 @@ export function ClientFormDialog({
                             >
                               <FormControl>
                                 <SelectTrigger
-                                  className="h-11 rounded-xl bg-gray-50 border-gray-200"
+                                  className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                   disabled={isCepLoading}
                                 >
                                   <SelectValue placeholder="UF" />
@@ -543,13 +543,13 @@ export function ClientFormDialog({
             variant="outline"
             onClick={() => safeCloseDialog(() => onClose())}
             disabled={isPending}
-            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
-            onClick={form.handleSubmit(onSubmit, onFormError)}
+            form="client-form"
             disabled={isPending}
             className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
           >

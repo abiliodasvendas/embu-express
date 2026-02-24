@@ -309,7 +309,7 @@ export function CollaboratorTurnDialog({
                 <AccordionItem value="financeiro" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                     <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-green-600" />
+                      <DollarSign className="w-4 h-4 text-blue-600" />
                       Configuração Financeira
                     </div>
                   </AccordionTrigger>

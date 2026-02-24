@@ -64,7 +64,7 @@ export function CollaboratorFormPersonal({
                   <Input
                     placeholder="Nome completo"
                     className={cn(
-                      "pl-12 h-11 rounded-xl bg-white",
+                      "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.nome_completo &&
                         "border-red-500 focus-visible:ring-red-200",
                     )}
@@ -90,7 +90,7 @@ export function CollaboratorFormPersonal({
                   placeholder="DD/MM/AAAA"
                   maxLength={10}
                   className={cn(
-                    "h-11 rounded-xl bg-white",
+                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                     errors.data_nascimento &&
                       "border-red-500 focus-visible:ring-red-200",
                   )}
@@ -120,7 +120,7 @@ export function CollaboratorFormPersonal({
                   <Input
                     placeholder="email@exemplo.com"
                     className={cn(
-                      "pl-12 h-11 rounded-xl bg-white",
+                      "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.email &&
                         "border-red-500 focus-visible:ring-red-200",
                     )}
@@ -146,7 +146,7 @@ export function CollaboratorFormPersonal({
                   <Input
                     placeholder="000.000.000-00"
                     className={cn(
-                      "h-11 rounded-xl bg-white",
+                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.cpf && "border-red-500 focus-visible:ring-red-200",
                     )}
                     {...field}
@@ -170,7 +170,7 @@ export function CollaboratorFormPersonal({
                   <Input
                     placeholder="00.000.000-0"
                     className={cn(
-                      "h-11 rounded-xl bg-white",
+                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.rg && "border-red-500 focus-visible:ring-red-200",
                     )}
                     {...field}
@@ -197,7 +197,7 @@ export function CollaboratorFormPersonal({
                   <Input
                     placeholder="(11) 99999-9999"
                     className={cn(
-                      "h-11 rounded-xl bg-white",
+                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.telefone &&
                         "border-red-500 focus-visible:ring-red-200",
                     )}
@@ -220,7 +220,7 @@ export function CollaboratorFormPersonal({
                   <Input
                     placeholder="(11) 99999-9999"
                     className={cn(
-                      "h-11 rounded-xl bg-white",
+                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                       errors.telefone_recado &&
                         "border-red-500 focus-visible:ring-red-200",
                     )}

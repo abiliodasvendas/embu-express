@@ -404,8 +404,8 @@ export const generateSelfRegistrationData = () => {
   return {
     nome_completo: nomeCompleto,
     email: generateEmail(nomeCompleto),
-    cpf: generateCPF(false),
-    cnpj: generateCNPJ(false),
+    cpf: generateCPF(true),
+    cnpj: generateCNPJ(true),
     rg: generateRG(),
     data_nascimento: formatDateBR(birthDate),
     nome_mae: generateName().split(" ").slice(0, 3).join(" "), // Shorter name

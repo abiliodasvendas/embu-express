@@ -1,8 +1,14 @@
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
-    DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -18,7 +24,7 @@ import { useCreatePerfil, useUpdatePerfil, usePermissoes } from "@/hooks/api/use
 import { PerfilFormData, perfilSchema } from "@/schemas/perfilSchema";
 import { Perfil } from "@/types/database";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck, X, FileText, Key } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/utils/notifications/toast";
@@ -112,116 +118,155 @@ export function PerfilFormDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-                <DialogHeader className="p-6 pb-2 shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-2 rounded-lg">
-                            <ShieldCheck className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <div>
-                            <DialogTitle className="text-xl">
-                                {perfilToEdit ? "Editar Perfil" : "Novo Perfil"}
-                            </DialogTitle>
-                            <p className="text-sm text-slate-500 mt-1">
-                                Determine quais partes do sistema este perfil tem acesso.
-                            </p>
-                        </div>
+            <DialogContent
+                className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
+                hideCloseButton
+            >
+                <div className="bg-blue-600 p-4 text-center relative shrink-0">
+                    <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+                        <X className="h-6 w-6" />
+                        <span className="sr-only">Fechar</span>
+                    </DialogClose>
+                    <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+                        <ShieldCheck className="w-5 h-5 text-white" />
                     </div>
-                </DialogHeader>
+                    <DialogTitle className="text-xl font-bold text-white">
+                        {perfilToEdit ? "Editar Perfil" : "Novo Perfil"}
+                    </DialogTitle>
+                    <p className="text-sm text-white/80 mt-1">
+                        Determine quais partes do sistema este perfil tem acesso.
+                    </p>
+                </div>
 
-                <div className="flex-1 overflow-y-auto p-6 pt-2 scrollbar-thin">
+                <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
                     <Form {...form}>
-                        <form id="perfil-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="nome"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Nome do Perfil *</FormLabel>
-                                            <FormControl>
-                                                <Input disabled={!!isProtected} placeholder="Ex: Diretor de RH" {...field} />
-                                            </FormControl>
-                                            {!!isProtected && <p className="text-xs text-orange-500">Nome de perfil nativo não pode ser alterado.</p>}
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="descricao"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Descrição</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Breve descrição sobre o perfil" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="border-t pt-4">
-                                <h3 className="font-semibold text-slate-800 mb-4 block">Permissões de Acesso</h3>
-
-                                {Object.entries(permissoesAgrupadas).map(([modulo, perms]) => (
-                                    <div key={modulo} className="mb-6 bg-slate-50 p-4 rounded-xl border">
-                                        <h4 className="font-medium text-slate-700 mb-3 border-b pb-2">{modulo}</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            {perms.map((permissao) => (
-                                                <FormField
-                                                    key={permissao.id}
-                                                    control={form.control}
-                                                    name="permissoes"
-                                                    render={({ field }) => {
-                                                        return (
-                                                            <FormItem
-                                                                key={permissao.id}
-                                                                className="flex flex-row items-start space-x-3 space-y-0"
-                                                            >
-                                                                <FormControl>
-                                                                    <Checkbox
-                                                                        checked={field.value?.includes(permissao.id)}
-                                                                        onCheckedChange={(checked) => {
-                                                                            return checked
-                                                                                ? field.onChange([...field.value, permissao.id])
-                                                                                : field.onChange(
-                                                                                    field.value?.filter(
-                                                                                        (value) => value !== permissao.id
-                                                                                    )
-                                                                                )
-                                                                        }}
-                                                                    />
-                                                                </FormControl>
-                                                                <div className="space-y-1 leading-none">
-                                                                    <FormLabel className="cursor-pointer font-normal">
-                                                                        {permissao.descricao}
-                                                                    </FormLabel>
-                                                                </div>
-                                                            </FormItem>
-                                                        )
-                                                    }}
-                                                />
-                                            ))}
+                        <form id="perfil-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <Accordion type="multiple" defaultValue={["dados-perfil", "permissoes"]} className="space-y-4">
+                                <AccordionItem value="dados-perfil" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                                    <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-blue-600" />
+                                            Dados do Perfil
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-6 pt-2">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <FormField
+                                                control={form.control}
+                                                name="nome"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Nome do Perfil *</FormLabel>
+                                                        <FormControl>
+                                                            <Input disabled={!!isProtected} placeholder="Ex: Diretor de RH" className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" {...field} />
+                                                        </FormControl>
+                                                        {!!isProtected && <p className="text-xs text-orange-500">Nome de perfil nativo não pode ser alterado.</p>}
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="descricao"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Descrição</FormLabel>
+                                                        <FormControl>
+                                                            <Input placeholder="Breve descrição sobre o perfil" className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                <AccordionItem value="permissoes" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                                    <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                                        <div className="flex items-center gap-2">
+                                            <Key className="w-4 h-4 text-blue-600" />
+                                            Permissões de Acesso
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-6 pt-2">
+                                        {Object.entries(permissoesAgrupadas).map(([modulo, perms]) => (
+                                            <div key={modulo} className="mb-6 bg-slate-50 p-4 rounded-xl border">
+                                                <h4 className="font-medium text-slate-700 mb-3 border-b pb-2">{modulo}</h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    {perms.map((permissao) => (
+                                                        <FormField
+                                                            key={permissao.id}
+                                                            control={form.control}
+                                                            name="permissoes"
+                                                            render={({ field }) => {
+                                                                return (
+                                                                    <FormItem
+                                                                        key={permissao.id}
+                                                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                                                    >
+                                                                        <FormControl>
+                                                                            <Checkbox
+                                                                                checked={field.value?.includes(permissao.id)}
+                                                                                onCheckedChange={(checked) => {
+                                                                                    return checked
+                                                                                        ? field.onChange([...field.value, permissao.id])
+                                                                                        : field.onChange(
+                                                                                            field.value?.filter(
+                                                                                                (value) => value !== permissao.id
+                                                                                            )
+                                                                                        )
+                                                                                }}
+                                                                            />
+                                                                        </FormControl>
+                                                                        <div className="space-y-1 leading-none">
+                                                                            <FormLabel className="cursor-pointer font-normal">
+                                                                                {permissao.descricao}
+                                                                            </FormLabel>
+                                                                        </div>
+                                                                    </FormItem>
+                                                                )
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
                         </form>
                     </Form>
                 </div>
 
-                <div className="p-6 border-t bg-slate-50 shrink-0 flex justify-end gap-3 rounded-b-lg">
-                    <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
+                <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
+                    >
                         Cancelar
                     </Button>
-                    <Button type="submit" form="perfil-form" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {perfilToEdit ? "Salvar Alterações" : "Criar Perfil"}
+                    <Button
+                        type="submit"
+                        form="perfil-form"
+                        disabled={isSubmitting}
+                        className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Salvando
+                            </>
+                        ) : perfilToEdit ? (
+                            "Salvar Alterações"
+                        ) : (
+                            "Criar Perfil"
+                        )}
                     </Button>
                 </div>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

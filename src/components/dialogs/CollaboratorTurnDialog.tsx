@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useCreateVinculo, useEmpresas, useUpdateVinculo } from "@/hooks";
+import { useCreateVinculo, useEmpresas, useUpdateVinculo, useCollaborator } from "@/hooks";
 import { useClientSelection } from "@/hooks/ui/useClientSelection";
 import { ColaboradorCliente } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -40,6 +40,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { TurnFormData, turnSchema } from "@/schemas/turnSchema";
+import { ROLES } from "@/constants/permissions.enum";
 
 interface CollaboratorTurnDialogProps {
   open: boolean;
@@ -59,6 +60,7 @@ export function CollaboratorTurnDialog({
   const [openSections, setOpenSections] = useState<string[]>(["vinculo", "financeiro"]);
   const { data: clients } = useClientSelection(undefined, { enabled: open });
   const { data: empresas } = useEmpresas({ ativo: "true" }, { enabled: open });
+  const { data: collaborator } = useCollaborator(collaboratorId);
 
   const createVinculo = useCreateVinculo();
   const updateVinculo = useUpdateVinculo();
@@ -102,6 +104,9 @@ export function CollaboratorTurnDialog({
           mei: turnToEdit.mei || false,
         });
       } else {
+        // Automatic MEI check if role is motoboy
+        const isMotoboy = collaborator?.perfil?.nome === ROLES.MOTOBOY;
+
         form.reset({
           cliente_id: "",
           empresa_id: "",
@@ -111,12 +116,12 @@ export function CollaboratorTurnDialog({
           valor_aluguel: "",
           valor_bonus: "",
           ajuda_custo: "",
-          mei: false,
+          mei: isMotoboy,
         });
       }
       setOpenSections(["vinculo", "financeiro"]);
     }
-  }, [open, turnToEdit, form]);
+  }, [open, turnToEdit, form, collaborator]);
 
   const handleMagicFill = (e: React.MouseEvent) => {
     e.preventDefault();

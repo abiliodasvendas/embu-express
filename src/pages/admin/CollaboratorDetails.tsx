@@ -150,15 +150,22 @@ export default function CollaboratorDetails() {
                 <User className="h-12 w-12 text-white" />
               </div>
               <h2 className="text-xl font-bold text-gray-800">{collaborator.nome_completo}</h2>
-              <Badge
-                variant="secondary"
-                className={cn(
-                  "mt-2 px-3 py-1 rounded-full font-bold border",
-                  getStatusColor(collaborator.status)
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "px-3 py-1 rounded-full font-bold border",
+                    getStatusColor(collaborator.status)
+                  )}
+                >
+                  {collaborator.status}
+                </Badge>
+                {role?.nome && (
+                  <Badge variant="outline" className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border-blue-200 uppercase tracking-wider text-[10px]">
+                    {role.nome}
+                  </Badge>
                 )}
-              >
-                {collaborator.status}
-              </Badge>
+              </div>
             </CardContent>
             <CardContent className="border-t border-gray-100 space-y-4 pt-6">
               <div className="flex items-start gap-3">

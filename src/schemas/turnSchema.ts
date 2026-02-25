@@ -10,8 +10,8 @@ const moneySchema = z.string()
 
 const optionalMoneySchema = z.string()
   .optional()
-  .transform((val) => val ? moneyToNumber(val) : 0)
-  .refine(val => val === 0 || val > 0.01, "O valor deve ser maior que zero");
+  .refine(val => !val || moneyToNumber(val) > 0, "O valor deve ser maior que zero")
+  .transform((val) => val ? moneyToNumber(val) : 0);
 
 export const turnSchema = z.object({
   cliente_id: z.string().optional(),

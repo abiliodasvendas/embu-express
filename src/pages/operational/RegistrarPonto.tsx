@@ -8,9 +8,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { MileageDialog } from "@/components/dialogs/MileageDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useFinalizarPausa, useIniciarPausa, useTogglePonto } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { useGeolocation } from "@/hooks/ui/useGeolocation";
 import { apiClient } from "@/services/api/client";
@@ -25,6 +27,7 @@ export default function RegistrarPonto() {
     const { setPageTitle } = useLayout();
     const { user } = useSession();
     const { profile: userProfile } = useProfile(user?.id);
+    const { isMotoboy } = usePermissions();
     const { location, requestLocation, loading: loadingGeo, error: geoError, permissionDenied, isWeb } = useGeolocation();
 
     const { mutateAsync: togglePonto } = useTogglePonto();
@@ -41,6 +44,23 @@ export default function RegistrarPonto() {
     } | null>(null);
     const [timer, setTimer] = useState<string>("00:00:00");
     const [pausasMetric, setPausasMetric] = useState<{ count: number; totalMs: number }>({ count: 0, totalMs: 0 });
+
+    // Mileage Phase
+    const [mileageModal, setMileageModal] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        action: 'toggle' | 'pauseStart' | 'pauseEnd';
+        tempLoc: any;
+        lastKm: number;
+    }>({
+        open: false,
+        title: "",
+        description: "",
+        action: 'toggle',
+        tempLoc: null,
+        lastKm: 0
+    });
 
     const hasShifts = !!userProfile?.links?.length;
 
@@ -194,12 +214,8 @@ export default function RegistrarPonto() {
         }
     }, [pontoHoje, userProfile, selectedLinkId]);
 
-    const handleToggle = async () => {
-        if (isProcessing) return;
+    const executeToggle = async (loc: any, km?: number) => {
         setIsProcessing(true);
-        const loc = await requestLocation();
-        if (!loc) { setIsProcessing(false); return; }
-
         let cliente_id = undefined;
         let empresa_id = undefined;
 
@@ -215,8 +231,50 @@ export default function RegistrarPonto() {
             await togglePonto({
                 usuario_id: user?.id,
                 location: loc,
+                km,
                 cliente_id,
                 empresa_id
+            });
+            await refetch();
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleToggle = async () => {
+        if (isProcessing) return;
+        setIsProcessing(true);
+        const loc = await requestLocation();
+        if (!loc) { setIsProcessing(false); return; }
+
+        if (isMotoboy) {
+            const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
+            const lastKm = data?.km || 0;
+
+            setMileageModal({
+                open: true,
+                title: status === 'idle' ? "Início de Turno" : "Fim de Turno",
+                description: status === 'idle' ? "Informe o KM inicial da moto para começar." : "Informe o KM final da moto para encerrar.",
+                action: 'toggle',
+                tempLoc: loc,
+                lastKm
+            });
+            setIsProcessing(false);
+            return;
+        }
+
+        await executeToggle(loc);
+    };
+
+    const executePauseStart = async (loc: any, km?: number) => {
+        if (!pontoHoje) return;
+        setIsProcessing(true);
+        try {
+            await iniciarPausa({
+                pontoId: pontoHoje.id,
+                data: { inicio_loc: loc, inicio_km: km }
             });
             await refetch();
         } catch (error) {
@@ -231,10 +289,34 @@ export default function RegistrarPonto() {
         setIsProcessing(true);
         const loc = await requestLocation();
         if (!loc) { setIsProcessing(false); return; }
+
+        if (isMotoboy) {
+            const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
+            const lastKm = data?.km || 0;
+
+            setMileageModal({
+                open: true,
+                title: "Início de Pausa",
+                description: "Informe o KM da moto ao iniciar a pausa.",
+                action: 'pauseStart',
+                tempLoc: loc,
+                lastKm
+            });
+            setIsProcessing(false);
+            return;
+        }
+
+        await executePauseStart(loc);
+    };
+
+    const executePauseEnd = async (loc: any, km?: number) => {
+        const openPause = pontoHoje?.pausas?.find((p: any) => !p.fim_hora);
+        if (!openPause) return;
+        setIsProcessing(true);
         try {
-            await iniciarPausa({
-                pontoId: pontoHoje.id,
-                data: { inicio_loc: loc }
+            await finalizarPausa({
+                pausaId: openPause.id,
+                data: { fim_loc: loc, fim_km: km }
             });
             await refetch();
         } catch (error) {
@@ -251,17 +333,33 @@ export default function RegistrarPonto() {
         setIsProcessing(true);
         const loc = await requestLocation();
         if (!loc) { setIsProcessing(false); return; }
-        try {
-            await finalizarPausa({
-                pausaId: openPause.id,
-                data: { fim_loc: loc }
+
+        if (isMotoboy) {
+            const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
+            const lastKm = data?.km || 0;
+
+            setMileageModal({
+                open: true,
+                title: "Retorno de Pausa",
+                description: "Informe o KM da moto ao retomar o trabalho.",
+                action: 'pauseEnd',
+                tempLoc: loc,
+                lastKm
             });
-            await refetch();
-        } catch (error) {
-            console.error(error);
-        } finally {
             setIsProcessing(false);
+            return;
         }
+
+        await executePauseEnd(loc);
+    };
+
+    const onMileageConfirm = async (km: number) => {
+        const { action, tempLoc } = mileageModal;
+        setMileageModal(prev => ({ ...prev, open: false }));
+
+        if (action === 'toggle') await executeToggle(tempLoc, km);
+        else if (action === 'pauseStart') await executePauseStart(tempLoc, km);
+        else if (action === 'pauseEnd') await executePauseEnd(tempLoc, km);
     };
 
     return (
@@ -492,6 +590,15 @@ export default function RegistrarPonto() {
                     </div>
                 </div>
             )}
+
+            <MileageDialog
+                open={mileageModal.open}
+                onClose={() => setMileageModal(prev => ({ ...prev, open: false }))}
+                onConfirm={onMileageConfirm}
+                title={mileageModal.title}
+                description={mileageModal.description}
+                lastKm={mileageModal.lastKm}
+            />
         </div>
     );
 }

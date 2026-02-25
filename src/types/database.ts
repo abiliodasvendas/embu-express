@@ -128,4 +128,18 @@ export interface RegistroPonto {
     resumo?: { diff_km?: number; horas_trabalhadas?: string };
   };
   saldo_minutos?: number | null;
+  pausas?: RegistroPausa[];
+}
+
+export interface RegistroPausa {
+  id: number;
+  ponto_id: number;
+  inicio_hora: string;
+  fim_hora?: string | null;
+  inicio_km?: number | null;
+  fim_km?: number | null;
+  inicio_loc?: any;
+  fim_loc?: any;
+  created_at?: string;
+  updated_at?: string;
 }

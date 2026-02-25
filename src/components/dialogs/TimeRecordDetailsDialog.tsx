@@ -179,13 +179,13 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                             {/* Entry */}
                             <div className="relative">
                                 <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm z-10" />
-                                <div className="flex flex-col">
-                                    <div className="flex justify-between items-start">
+                                <div className="flex flex-col w-full">
+                                    <div className="flex justify-between items-start w-full">
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-black text-gray-400 uppercase">Entrada</span>
                                             <span className="text-sm font-bold text-gray-900">{formatTime(record.entrada_hora)}</span>
                                         </div>
-                                        {record.entrada_km && (
+                                        {(record.entrada_km !== null && record.entrada_km !== undefined) && (
                                             <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
                                                 {record.entrada_km} km
                                             </span>
@@ -205,13 +205,13 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                 <div key={p.id} className="space-y-4">
                                     <div className="relative">
                                         <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-sm z-10" />
-                                        <div className="flex flex-col">
-                                            <div className="flex justify-between items-start">
+                                        <div className="flex flex-col w-full">
+                                            <div className="flex justify-between items-start w-full">
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] font-black text-amber-500 uppercase tracking-tighter">Pausa #{idx + 1}</span>
                                                     <span className="text-sm font-bold text-gray-900">{format(new Date(p.inicio_hora), "HH:mm")}</span>
                                                 </div>
-                                                {p.inicio_km && (
+                                                {(p.inicio_km !== null && p.inicio_km !== undefined) && (
                                                     <span className="text-[10px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md font-bold">
                                                         {p.inicio_km} km
                                                     </span>
@@ -223,10 +223,17 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                     {p.fim_hora && (
                                         <div className="relative">
                                             <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-blue-400 border-2 border-white shadow-sm z-10" />
-                                            <div className="flex flex-col">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-bold text-gray-900">{format(new Date(p.fim_hora), "HH:mm")}</span>
-                                                    <span className="text-[10px] text-gray-500 italic">Retorno ao trabalho</span>
+                                            <div className="flex flex-col w-full">
+                                                <div className="flex justify-between items-start w-full">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-bold text-gray-900">{format(new Date(p.fim_hora), "HH:mm")}</span>
+                                                        <span className="text-[10px] text-gray-500 italic">Retorno ao trabalho</span>
+                                                    </div>
+                                                    {(p.fim_km !== undefined && p.fim_km !== null) && (
+                                                        <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
+                                                            {p.fim_km} km
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -238,13 +245,13 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                             {record.saida_hora && (
                                 <div className="relative">
                                     <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm z-10" />
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-start">
+                                    <div className="flex flex-col w-full">
+                                        <div className="flex justify-between items-start w-full">
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] font-black text-gray-400 uppercase">Saída</span>
                                                 <span className="text-sm font-bold text-gray-900">{formatTime(record.saida_hora)}</span>
                                             </div>
-                                            {record.saida_km && (
+                                            {(record.saida_km !== null && record.saida_km !== undefined) && (
                                                 <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-md font-bold">
                                                     {record.saida_km} km
                                                 </span>

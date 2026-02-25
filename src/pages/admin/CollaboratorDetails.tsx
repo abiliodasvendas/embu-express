@@ -9,8 +9,8 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { ColaboradorCliente } from "@/types/database";
 import { cnpjMask, cpfMask, dateMask, phoneMask } from "@/utils/masks";
 import { Bike, Calendar, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, Phone, Plus, Power, Trash2, User, ChevronDown, MoreVertical } from "lucide-react";
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
@@ -22,12 +22,33 @@ import { Usuario } from "@/types/database";
 export default function CollaboratorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: collaborator, isLoading, refetch } = useCollaborator(id);
   const { data: roles } = useRoles();
   const deleteVinculo = useDeleteVinculo();
   const updateStatus = useUpdateCollaboratorStatus();
   const deleteCollaborator = useDeleteCollaborator();
   const { openConfirmationDialog, closeConfirmationDialog, openCollaboratorFormDialog, openCollaboratorTurnDialog } = useLayout();
+
+  const handleAddTurn = () => {
+    openCollaboratorTurnDialog({
+      collaboratorId: id!
+    });
+  };
+
+  const [hasAutoOpened, setHasAutoOpened] = useState(false);
+
+  useEffect(() => {
+    if (!hasAutoOpened && searchParams.get('openTurnDialog') === 'true' && collaborator && !isLoading) {
+      setHasAutoOpened(true);
+      handleAddTurn();
+
+      // Properly clear the search param
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('openTurnDialog');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, collaborator, isLoading, hasAutoOpened, setSearchParams]);
 
 
   const handleToggleStatus = async (collab: Usuario, newStatus: string) => {
@@ -99,11 +120,6 @@ export default function CollaboratorDetails() {
 
   const role = roles?.find(r => r.id === Number(collaborator.perfil_id));
 
-  const handleAddTurn = () => {
-    openCollaboratorTurnDialog({
-      collaboratorId: id!
-    });
-  };
 
   const handleEditTurn = (turn: ColaboradorCliente) => {
     openCollaboratorTurnDialog({

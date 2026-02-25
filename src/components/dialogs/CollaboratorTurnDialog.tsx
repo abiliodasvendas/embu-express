@@ -67,7 +67,8 @@ export function CollaboratorTurnDialog({
   const updateVinculo = useUpdateVinculo();
 
   // Helper to format currency for default values
-  const formatCurrency = (val: number = 0) => {
+  const formatCurrency = (val: number | null = 0) => {
+    if (val === null || val === 0) return "";
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -137,7 +138,7 @@ export function CollaboratorTurnDialog({
 
     form.setValue("hora_inicio", mockTurn.hora_inicio);
     form.setValue("hora_fim", mockTurn.hora_fim);
-    form.setValue("valor_contrato", formatCurrency(mockTurn.valor_contrato));
+    form.setValue("valor_contrato", formatCurrency(mockTurn.valor_contrato || 3500));
     form.setValue("valor_aluguel", formatCurrency(mockTurn.valor_aluguel));
     form.setValue("valor_bonus", formatCurrency(mockTurn.valor_bonus));
     form.setValue("ajuda_custo", formatCurrency(mockTurn.ajuda_custo));

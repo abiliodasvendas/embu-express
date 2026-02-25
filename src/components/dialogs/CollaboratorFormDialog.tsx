@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { messages } from "@/constants/messages";
-import { useCreateCollaborator, useRoles, useUpdateCollaborator, useEmpresas } from "@/hooks";
+import { useCreateCollaborator, useRoles, useUpdateCollaborator, useEmpresas, useLayout } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
 import { CollaboratorFormData } from "@/schemas/collaboratorSchema";
 import { Usuario } from "@/types/database";
@@ -21,7 +21,7 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { aplicarMascaraPlaca, cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { Loader2, User, Wand2, X, Briefcase, DollarSign } from "lucide-react";
+import { Loader2, User, Wand2, X, Briefcase, DollarSign, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, Phone, Plus, Power, Trash2, ChevronDown, MoreVertical } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
 import { CollaboratorFormProfessional } from "../features/collaborator/form/CollaboratorFormProfessional";
@@ -47,6 +47,7 @@ export function CollaboratorFormDialog({
   const { data: empresas } = useEmpresas();
   const [openSections, setOpenSections] = useState(["personal", "professional", "financial"]);
 
+  const { openConfirmationDialog, closeConfirmationDialog, openCollaboratorFormDialog, openCollaboratorTurnDialog, openSuccessRegistrationDialog } = useLayout();
   const createCollaborator = useCreateCollaborator();
   const updateCollaborator = useUpdateCollaborator();
 
@@ -140,11 +141,20 @@ export function CollaboratorFormDialog({
       if (collaboratorToEdit) {
         // @ts-ignore - links not needed for partial personal update
         await updateCollaborator.mutateAsync({ id: collaboratorToEdit.id, ...data });
+        onSuccess?.();
+        safeCloseDialog(() => onClose());
       } else {
-        await createCollaborator.mutateAsync(data as any);
+        // Execute creation with 'silent' to handle feedback with the success dialog
+        const result = await createCollaborator.mutateAsync({ ...data, silent: true } as any);
+        onSuccess?.(result);
+        safeCloseDialog(() => {
+          onClose();
+          // Small delay to ensure the registration dialog is fully closed
+          setTimeout(() => {
+            openSuccessRegistrationDialog({ collaborator: result });
+          }, 100);
+        });
       }
-      onSuccess?.();
-      safeCloseDialog(() => onClose());
     } catch (error) {
       // Error handled by the mutation or global toast
     }

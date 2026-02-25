@@ -6,6 +6,7 @@ import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDia
 import { MileageDialog } from "@/components/dialogs/MileageDialog";
 import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
 import { EditTimeRecordDialog } from "@/components/dialogs/EditTimeRecordDialog";
+import { SuccessRegistrationDialog } from "@/components/dialogs/SuccessRegistrationDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -69,6 +70,10 @@ export interface OpenEditTimeRecordProps {
   record: RegistroPonto | null;
 }
 
+export interface OpenSuccessRegistrationProps {
+  collaborator: Collaborator;
+}
+
 // --- Context Type ---
 
 interface LayoutContextType {
@@ -104,6 +109,9 @@ interface LayoutContextType {
 
   openEditTimeRecordDialog: (props: OpenEditTimeRecordProps) => void;
   closeEditTimeRecordDialog: () => void;
+
+  openSuccessRegistrationDialog: (props: OpenSuccessRegistrationProps) => void;
+  closeSuccessRegistrationDialog: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -186,6 +194,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [editTimeRecordDialogState, setEditTimeRecordDialogState] = useState<{
     open: boolean;
     props?: OpenEditTimeRecordProps;
+  }>({
+    open: false,
+  });
+
+  const [successRegistrationDialogState, setSuccessRegistrationDialogState] = useState<{
+    open: boolean;
+    props?: OpenSuccessRegistrationProps;
   }>({
     open: false,
   });
@@ -288,6 +303,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openSuccessRegistrationDialog = (props: OpenSuccessRegistrationProps) => {
+    setSuccessRegistrationDialogState({ open: true, props });
+  };
+
+  const closeSuccessRegistrationDialog = () => {
+    closeDialog(() => {
+      setSuccessRegistrationDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
   return (
     <LayoutContext.Provider value={{
       pageTitle,
@@ -311,7 +336,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openTimeRecordDetailsDialog,
       closeTimeRecordDetailsDialog,
       openEditTimeRecordDialog,
-      closeEditTimeRecordDialog
+      closeEditTimeRecordDialog,
+      openSuccessRegistrationDialog,
+      closeSuccessRegistrationDialog
     }}>
       {children}
 
@@ -422,6 +449,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           isOpen={true}
           onClose={closeEditTimeRecordDialog}
           record={editTimeRecordDialogState.props.record}
+        />
+      )}
+
+      {successRegistrationDialogState.open && successRegistrationDialogState.props?.collaborator && (
+        <SuccessRegistrationDialog
+          open={true}
+          onOpenChange={(open) => !open && closeSuccessRegistrationDialog()}
+          collaborator={successRegistrationDialogState.props.collaborator}
         />
       )}
 

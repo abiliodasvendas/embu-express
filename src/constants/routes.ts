@@ -12,7 +12,8 @@ export const ROUTES = {
         CLIENTES: "/clientes",
         CLIENTE_DETAILS: "/clientes/:id",
         EMPRESAS: "/empresas",
-        PERFIS: "/perfis"
+        PERFIS: "/perfis",
+        CONFIGURACOES: "/configuracoes"
     }
 } as const;
 

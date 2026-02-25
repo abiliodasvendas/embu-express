@@ -1,6 +1,6 @@
 import { PermissionKey, PERMISSIONS } from "@/constants/permissions.enum";
 import { ROUTES } from "@/constants/routes";
-import { Briefcase, Building, Clock, Users } from "lucide-react";
+import { Briefcase, Building, Clock, Users, Settings } from "lucide-react";
 
 export interface PageItem {
     title: string;
@@ -44,5 +44,11 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.EMPRESAS,
         icon: Building,
         permissionKey: PERMISSIONS.EMPRESAS.VER,
+    },
+    {
+        title: "Configurações",
+        href: ROUTES.PRIVATE.CONFIGURACOES,
+        icon: Settings,
+        permissionKey: PERMISSIONS.CONFIGURACAO.VER,
     },
 ];

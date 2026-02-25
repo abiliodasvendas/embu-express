@@ -102,44 +102,65 @@ export interface ColaboradorCliente {
   empresa?: Empresa;
 }
 
-export interface RegistroPonto {
+export interface Ponto {
   id: number; // BIGINT
   usuario_id: string; // UUID
   data_referencia: string; // DATE (YYYY-MM-DD)
   entrada_hora: string; // TIMESTAMP WITH TIME ZONE
-  entrada_km?: number | null;
-  saida_hora?: string | null; // TIMESTAMP WITH TIME ZONE
-  saida_km?: number | null;
-  status_entrada?: string | null; // 'VERDE', 'AMARELO', 'VERMELHO', 'CINZA'
-  status_saida?: string | null;
-  observacao?: string | null;
-  criado_por?: string | null; // UUID
+  entrada_km?: number;
+  saida_hora?: string; // TIMESTAMP WITH TIME ZONE
+  saida_km?: number;
+  status_entrada?: string; // 'VERDE', 'AMARELO', 'VERMELHO', 'CINZA'
+  status_saida?: string;
+  observacao?: string;
+  criado_por?: string; // UUID
   created_at?: string;
   updated_at?: string;
-  cliente_id?: number | null;
-  empresa_id?: number | null;
-  entrada_loc?: any; // JSONB geolocalização
-  saida_loc?: any; // JSONB geolocalização
-  // Relacionamentos (virtual)
-  usuario?: Usuario;
-  detalhes_calculo?: {
-    entrada?: { turno_base: string; diff_minutos: number; tolerancia: number };
-    saida?: { turno_base: string; diff_minutos: number; tolerancia: number };
-    resumo?: { diff_km?: number; horas_trabalhadas?: string };
-  };
-  saldo_minutos?: number | null;
-  pausas?: RegistroPausa[];
+  detalhes_calculo?: any;
+  saldo_minutos?: number;
+  cliente_id?: number;
+  empresa_id?: number;
+
+  // Novas colunas de localização
+  entrada_lat?: number;
+  entrada_lng?: number;
+  entrada_metadata?: any;
+  saida_lat?: number;
+  saida_lng?: number;
+  saida_metadata?: any;
+
+  // Legado (serão removidos após migração completa)
+  entrada_loc?: any;
+  saida_loc?: any;
+
+  // Joins
+  cliente?: Partial<Client>;
+  empresa?: Partial<Empresa>; // Added for consistency with empresa_id
+  usuario?: Partial<Usuario>;
+  pausas?: Pausa[];
 }
 
-export interface RegistroPausa {
+export interface Pausa {
   id: number;
   ponto_id: number;
   inicio_hora: string;
-  fim_hora?: string | null;
-  inicio_km?: number | null;
-  fim_km?: number | null;
+  fim_hora?: string;
+  inicio_km?: number;
+  fim_km?: number;
+
+  // Novas colunas de localização
+  inicio_lat?: number;
+  inicio_lng?: number;
+  inicio_metadata?: any;
+  fim_lat?: number;
+  fim_lng?: number;
+  fim_metadata?: any;
+
+  // Legado
   inicio_loc?: any;
   fim_loc?: any;
+
   created_at?: string;
   updated_at?: string;
-}
+}export type RegistroPonto = Ponto;
+export type RegistroPausa = Pausa;

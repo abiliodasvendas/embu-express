@@ -331,7 +331,7 @@ export default function RegistrarPonto() {
 
 
     return (
-        <div className="w-full max-w-lg lg:max-w-4xl mx-auto pb-20 md:mt-8">
+        <div className="w-full max-w-lg lg:max-w-5xl mx-auto pb-20 md:mt-8">
             {/* Geolocation Alert - Always Visible if Error */}
             {(geoError || (!location && !loadingGeo)) && (
                 <div className="mb-6">
@@ -385,11 +385,11 @@ export default function RegistrarPonto() {
                     </div>
                 </div>
             ) : (
-                <div className={`flex gap-6 ${status === 'idle' ? 'flex-col-reverse lg:flex-row' : 'flex-col lg:flex-row'}`}>
+                <div className={`flex gap-6 ${status === 'idle' ? 'flex-col-reverse md:flex-row' : 'flex-col md:flex-row'}`}>
                     {/* Esquerda: Status */}
-                    <div className="flex-1 flex flex-col">
+                    <div className="flex-1 flex flex-col min-w-0">
                         {/* Header / Status Card - Clean Corporate Style */}
-                        <Card className={`border shadow-sm rounded-3xl overflow-hidden relative transition-all duration-500 h-full flex flex-col justify-center ${status === 'idle' ? 'min-h-[180px] lg:min-h-[300px]' : 'min-h-[110px] lg:min-h-[300px]'
+                        <Card className={`border shadow-sm rounded-3xl overflow-hidden relative transition-all duration-500 h-full flex flex-col justify-center ${status === 'idle' ? 'min-h-[180px] md:min-h-[300px]' : 'min-h-[110px] md:min-h-[300px]'
                             } ${status === 'working' ? 'bg-white border-blue-100' :
                                 status === 'paused' ? 'bg-amber-50 border-amber-200' :
                                     'bg-slate-50 border-slate-200'
@@ -442,7 +442,7 @@ export default function RegistrarPonto() {
                     </div>
 
                     {/* Direita: Ações e Informações */}
-                    <div className="w-full lg:w-[400px] flex flex-col gap-6 shrink-0">
+                    <div className="w-full md:w-64 lg:w-80 xl:w-[400px] flex flex-col gap-6 shrink-0">
                         {/* Area de Selecao de Turno - Somente Visivel no IDLE */}
                         {status === 'idle' && hasShifts && (
                             <Card className="rounded-3xl shadow-sm border-slate-200 overflow-visible bg-white">

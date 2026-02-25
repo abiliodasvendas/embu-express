@@ -459,6 +459,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           open={true}
           onOpenChange={(open) => !open && closeSuccessRegistrationDialog()}
           collaborator={successRegistrationDialogState.props.collaborator}
+          onOpenCollaboratorForm={() => openCollaboratorFormDialog({ mode: "create" })}
         />
       )}
 

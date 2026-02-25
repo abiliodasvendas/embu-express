@@ -5,7 +5,6 @@ import {
     DialogDescription,
     DialogTitle
 } from "@/components/ui/dialog";
-import { useLayout } from "@/contexts/LayoutContext";
 import { Usuario } from "@/types/database";
 import { ROUTES } from "@/constants/routes";
 import { CheckCircle2, X } from "lucide-react";
@@ -17,6 +16,7 @@ interface SuccessRegistrationDialogProps {
     collaborator: Usuario;
     title?: string;
     description?: React.ReactNode;
+    onOpenCollaboratorForm: () => void;
 }
 
 export function SuccessRegistrationDialog({
@@ -25,15 +25,15 @@ export function SuccessRegistrationDialog({
     collaborator,
     title = "Cadastro Realizado!",
     description,
+    onOpenCollaboratorForm,
 }: SuccessRegistrationDialogProps) {
     const navigate = useNavigate();
-    const { openCollaboratorFormDialog } = useLayout();
 
     const handleNewCollaborator = () => {
         onOpenChange(false);
         // Small delay to prevent animation conflicts between dialogs
         setTimeout(() => {
-            openCollaboratorFormDialog({ mode: "create" });
+            onOpenCollaboratorForm();
         }, 100);
     };
 

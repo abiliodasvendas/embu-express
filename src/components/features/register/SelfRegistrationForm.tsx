@@ -4,7 +4,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { SelfRegistrationFormData } from "@/schemas/selfRegistrationSchema";
 import { aplicarMascaraPlaca, cnpjMask, cpfMask, dateMask, phoneMask, rgMask } from "@/utils/masks";
-import { Eye, EyeOff } from "lucide-react";
+import { Briefcase, DollarSign, Eye, EyeOff, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 
@@ -22,9 +22,14 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
             <Accordion type="multiple" defaultValue={["dados-pessoais", "dados-profissionais", "dados-financeiros"]} className="w-full space-y-4">
 
                 {/* 1. SEÇÃO DE DADOS PESSOAIS */}
-                <AccordionItem value="dados-pessoais" className="border rounded-xl bg-white shadow-sm px-4 overflow-hidden">
-                    <AccordionTrigger className="hover:no-underline py-4">
-                        <span className="text-base font-semibold text-gray-800">Dados Pessoais & Acesso</span>
+                <AccordionItem value="dados-pessoais" className="border rounded-[2rem] bg-white shadow-sm px-4 overflow-hidden border-gray-100">
+                    <AccordionTrigger className="hover:no-underline py-5 font-bold text-gray-700">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-blue-50 rounded-xl">
+                                <User className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <span className="text-base">Dados Pessoais & Acesso</span>
+                        </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-4 pb-4 px-2 sm:px-4 space-y-4 border-t border-gray-100">
                         <FormField
@@ -32,11 +37,14 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                             name="nome_completo"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Nome Completo <span className="text-red-500">*</span></FormLabel>
+                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome Completo <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
-                                        <Input className="h-11 rounded-xl bg-white" placeholder="Seu nome completo" {...field} />
+                                        <div className="relative">
+                                            <User className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors" placeholder="Seu nome completo" {...field} />
+                                        </div>
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="ml-1" />
                                 </FormItem>
                             )}
                         />
@@ -46,11 +54,14 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>E-mail <span className="text-red-500">*</span></FormLabel>
+                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">E-mail <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
-                                        <Input className="h-11 rounded-xl bg-white" placeholder="seu@email.com" type="email" {...field} />
+                                        <div className="relative">
+                                            <Mail className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors" placeholder="seu@email.com" type="email" {...field} />
+                                        </div>
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="ml-1" />
                                 </FormItem>
                             )}
                         />
@@ -63,15 +74,14 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     <FormItem>
                                         <FormLabel>CPF <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input
-                                                className="h-11 rounded-xl bg-white"
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                 placeholder="000.000.000-00"
                                                 {...field}
                                                 onChange={(e) => field.onChange(cpfMask(e.target.value))}
                                                 maxLength={14}
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -82,15 +92,14 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     <FormItem>
                                         <FormLabel>RG <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input
-                                                className="h-11 rounded-xl bg-white"
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                 placeholder="00.000.000-0"
                                                 {...field}
                                                 onChange={(e) => field.onChange(rgMask(e.target.value))}
                                                 maxLength={12}
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -104,8 +113,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     <FormItem>
                                         <FormLabel>Data de Nascimento <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input
-                                                className="h-11 rounded-xl bg-white"
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                 placeholder="DD/MM/AAAA"
                                                 maxLength={10}
                                                 {...field}
@@ -115,7 +123,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                                 }}
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -126,15 +134,14 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     <FormItem>
                                         <FormLabel>Telefone / WhatsApp <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input
-                                                className="h-11 rounded-xl bg-white"
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                 placeholder="(11) 99999-9999"
                                                 {...field}
                                                 onChange={(e) => field.onChange(phoneMask(e.target.value))}
                                                 maxLength={15}
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -145,11 +152,11 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                             name="nome_mae"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Nome da Mãe</FormLabel>
+                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome da Mãe</FormLabel>
                                     <FormControl>
-                                        <Input className="h-11 rounded-xl bg-white" placeholder="Nome completo da mãe" {...field} />
+                                        <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="Nome completo da mãe" {...field} />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="ml-1" />
                                 </FormItem>
                             )}
                         />
@@ -159,11 +166,11 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                             name="endereco_completo"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Endereço com CEP</FormLabel>
+                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Endereço com CEP</FormLabel>
                                     <FormControl>
-                                        <Input className="h-11 rounded-xl bg-white" placeholder="Rua, Número, Bairro, Cidade - CEP" {...field} />
+                                        <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="Rua, Número, Bairro, Cidade - CEP" {...field} />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="ml-1" />
                                 </FormItem>
                             )}
                         />
@@ -176,8 +183,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     <FormItem>
                                         <FormLabel>Telefone Recado</FormLabel>
                                         <FormControl>
-                                            <Input
-                                                className="h-11 rounded-xl bg-white"
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                 placeholder="(11) 99999-9999"
                                                 {...field}
                                                 onChange={(e) => field.onChange(phoneMask(e.target.value))}
@@ -193,11 +199,11 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                 name="senha"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Senha de Acesso <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Senha de Acesso <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input
-                                                    className="h-11 rounded-xl bg-white pr-10"
+                                                    className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pr-10 transition-colors"
                                                     placeholder="******"
                                                     type={showPassword ? "text" : "password"}
                                                     {...field}
@@ -213,7 +219,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                                 </button>
                                             </div>
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -223,9 +229,14 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
 
 
                 {/* 2. SEÇÃO DE DADOS PROFISSIONAIS (CNH & MOTO) */}
-                <AccordionItem value="dados-profissionais" className="border rounded-xl bg-white shadow-sm px-4 overflow-hidden">
-                    <AccordionTrigger className="hover:no-underline py-4">
-                        <span className="text-base font-semibold text-gray-800">Dados da CNH & Moto</span>
+                <AccordionItem value="dados-profissionais" className="border rounded-[2rem] bg-white shadow-sm px-4 overflow-hidden border-gray-100">
+                    <AccordionTrigger className="hover:no-underline py-5 font-bold text-gray-700">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-blue-50 rounded-xl">
+                                <Briefcase className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <span className="text-base">Dados da CNH & Moto</span>
+                        </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-4 pb-4 px-2 sm:px-4 space-y-4 border-t border-gray-100">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -234,11 +245,11 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                 name="cnh_registro"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Registro CNH <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input className="h-11 rounded-xl bg-white" placeholder="Nº Registro" {...field} />
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="Nº Registro" {...field} />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -249,8 +260,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     <FormItem>
                                         <FormLabel>Vencimento <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input
-                                                className="h-11 rounded-xl bg-white"
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                 placeholder="DD/MM/AAAA"
                                                 maxLength={10}
                                                 {...field}
@@ -266,11 +276,11 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                 name="cnh_categoria"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Categoria <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input className="h-11 rounded-xl bg-white uppercase" placeholder="Ex: A, AB" {...field} />
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase" placeholder="Ex: A, AB" {...field} />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -282,11 +292,11 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                 name="moto_modelo"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Modelo da Moto <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo da Moto <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input className="h-11 rounded-xl bg-white" placeholder="Ex: CG 160" {...field} />
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="Ex: CG 160" {...field} />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -295,10 +305,10 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                 name="moto_placa"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Placa <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input
-                                                className="h-11 rounded-xl bg-white uppercase"
+                                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase"
                                                 placeholder="ABC-1234"
                                                 {...field}
                                                 maxLength={8}
@@ -307,7 +317,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                                 }}
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -318,11 +328,11 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                 name="moto_cor"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Cor <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input className="h-11 rounded-xl bg-white" placeholder="Ex: Preta" {...field} />
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="Ex: Preta" {...field} />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -333,8 +343,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     <FormItem>
                                         <FormLabel>Ano <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input
-                                                className="h-11 rounded-xl bg-white"
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                 placeholder="Ex: 2024"
                                                 {...field}
                                                 maxLength={4}
@@ -354,9 +363,14 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
 
 
                 {/* 3. SEÇÃO DE DADOS FINANCEIROS */}
-                <AccordionItem value="dados-financeiros" className="border rounded-xl bg-white shadow-sm px-4 overflow-hidden">
-                    <AccordionTrigger className="hover:no-underline py-4">
-                        <span className="text-base font-semibold text-gray-800">Dados Financeiros</span>
+                <AccordionItem value="dados-financeiros" className="border rounded-[2rem] bg-white shadow-sm px-4 overflow-hidden border-gray-100">
+                    <AccordionTrigger className="hover:no-underline py-5 font-bold text-gray-700">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-blue-50 rounded-xl">
+                                <DollarSign className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <span className="text-base">Dados Financeiros</span>
+                        </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-4 pb-4 px-2 sm:px-4 space-y-4 border-t border-gray-100">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -367,8 +381,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     <FormItem>
                                         <FormLabel>CNPJ (MEI) <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input
-                                                className="h-11 rounded-xl bg-white"
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                 {...field}
                                                 onChange={(e) => field.onChange(cnpjMask(e.target.value))}
                                                 maxLength={18}
@@ -384,11 +397,11 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                 name="chave_pix"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Chave Pix <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Chave Pix <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input className="h-11 rounded-xl bg-white" placeholder="CPF, Email, ou Aleatória" {...field} />
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="CPF, Email, ou Aleatória" {...field} />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -398,7 +411,7 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
 
             </Accordion>
 
-            <Button type="submit" className="w-full h-12 text-lg font-bold mt-6 shadow-lg hover:shadow-xl transition-all rounded-xl">
+            <Button type="submit" className="w-full h-14 text-lg font-black mt-6 shadow-xl hover:shadow-2xl transition-all rounded-[1.5rem] bg-blue-600 hover:bg-blue-700 text-white uppercase tracking-wider">
                 Solicitar Cadastro
             </Button>
         </form>

@@ -175,7 +175,7 @@ export function EmpresaFormDialog({
                       name="nome_fantasia"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome Fantasia <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome Fantasia <span className="text-red-500">*</span></FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -196,7 +196,7 @@ export function EmpresaFormDialog({
                       name="razao_social"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Razão Social</FormLabel>
+                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Razão Social</FormLabel>
                           <FormControl>
                             <div className="relative">
                               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -217,7 +217,7 @@ export function EmpresaFormDialog({
                       name="cnpj"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>CNPJ</FormLabel>
+                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">CNPJ</FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

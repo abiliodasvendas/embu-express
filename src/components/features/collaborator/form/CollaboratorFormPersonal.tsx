@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { Perfil } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
 import { cpfMask, dateMask, phoneMask, rgMask } from "@/utils/masks";
-import { Eye, Mail, User } from "lucide-react";
+import { Eye, Mail, MapPin, User, Users } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
 
@@ -56,7 +56,7 @@ export function CollaboratorFormPersonal({
           name="nome_completo"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 Nome Completo <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
@@ -80,10 +80,37 @@ export function CollaboratorFormPersonal({
 
         <FormField
           control={control}
+          name="nome_mae"
+          render={({ field }) => (
+            <FormItem className="md:col-span-2">
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                Nome da Mãe
+              </FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Users className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    placeholder="Nome da mãe"
+                    className={cn(
+                      "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                      errors.nome_mae &&
+                      "border-red-500 focus-visible:ring-red-200",
+                    )}
+                    {...field}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
           name="data_nascimento"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 Data de Nascimento <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
@@ -112,7 +139,7 @@ export function CollaboratorFormPersonal({
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 E-mail <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
@@ -140,7 +167,7 @@ export function CollaboratorFormPersonal({
             name="cpf"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
+                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                   CPF <span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
@@ -164,7 +191,7 @@ export function CollaboratorFormPersonal({
             name="rg"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
+                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                   RG <span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
@@ -185,13 +212,40 @@ export function CollaboratorFormPersonal({
           />
         </div>
 
+        <FormField
+          control={control}
+          name="endereco_completo"
+          render={({ field }) => (
+            <FormItem className="md:col-span-2">
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                Endereço Completo
+              </FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    placeholder="Rua, número, bairro, cidade - UF"
+                    className={cn(
+                      "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                      errors.endereco_completo &&
+                      "border-red-500 focus-visible:ring-red-200",
+                    )}
+                    {...field}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
           <FormField
             control={control}
             name="telefone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
+                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                   Telefone / WhatsApp <span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
@@ -216,7 +270,7 @@ export function CollaboratorFormPersonal({
             name="telefone_recado"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Telefone Recado</FormLabel>
+                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Telefone Recado</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="(11) 99999-9999"
@@ -241,7 +295,7 @@ export function CollaboratorFormPersonal({
           name="perfil_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 Cargo / Permissão <span className="text-red-500">*</span>
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
@@ -273,7 +327,7 @@ export function CollaboratorFormPersonal({
           name="status"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Status <span className="text-red-500">*</span></FormLabel>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Status <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger

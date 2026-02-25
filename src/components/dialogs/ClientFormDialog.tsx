@@ -257,7 +257,7 @@ export function ClientFormDialog({
                       name="nome_fantasia"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>
+                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                             Nome Fantasia{" "}
                             <span className="text-red-500">*</span>
                           </FormLabel>
@@ -282,7 +282,7 @@ export function ClientFormDialog({
                         name="razao_social"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               Razão Social{" "}
                               <span className="text-red-500">*</span>
                             </FormLabel>
@@ -306,7 +306,7 @@ export function ClientFormDialog({
                         name="cnpj"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               CNPJ <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
@@ -335,7 +335,7 @@ export function ClientFormDialog({
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70 text-base">
                               Status Ativo
                             </FormLabel>
                             <div className="text-sm text-muted-foreground">
@@ -381,15 +381,18 @@ export function ClientFormDialog({
                         name="logradouro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               Logradouro <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                disabled={isCepLoading}
-                              />
+                              <div className="relative">
+                                <MapPin className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
+                                <Input
+                                  {...field}
+                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                  disabled={isCepLoading}
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -401,7 +404,7 @@ export function ClientFormDialog({
                         name="numero"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               Número <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
@@ -419,7 +422,7 @@ export function ClientFormDialog({
                         name="complemento"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Complemento</FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Complemento</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -436,7 +439,7 @@ export function ClientFormDialog({
                         name="bairro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-3">
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               Bairro <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
@@ -455,7 +458,7 @@ export function ClientFormDialog({
                         name="cidade"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               Cidade <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
@@ -474,7 +477,7 @@ export function ClientFormDialog({
                         name="estado"
                         render={({ field }) => (
                           <FormItem className="md:col-span-1">
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               UF <span className="text-red-500">*</span>
                             </FormLabel>
                             <Select

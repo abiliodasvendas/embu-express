@@ -63,7 +63,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     name={`links.${index}.cliente_id`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Cliente <span className="text-red-500">*</span></FormLabel>
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cliente <span className="text-red-500">*</span></FormLabel>
                                             <ClienteCombobox
                                                 value={field.value}
                                                 onChange={field.onChange}
@@ -78,7 +78,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     name={`links.${index}.empresa_id`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Empresa (Contrato) <span className="text-red-500">*</span></FormLabel>
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Empresa (Contrato) <span className="text-red-500">*</span></FormLabel>
                                             <EmpresaCombobox
                                                 value={field.value}
                                                 onChange={field.onChange}
@@ -96,7 +96,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     name={`links.${index}.hora_inicio`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Início</FormLabel>
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Início</FormLabel>
                                             <Input type="time" className="bg-white" {...field} />
                                             <FormMessage />
                                         </FormItem>
@@ -107,7 +107,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     name={`links.${index}.hora_fim`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Fim</FormLabel>
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Fim</FormLabel>
                                             <Input type="time" className="bg-white" {...field} />
                                             <FormMessage />
                                         </FormItem>
@@ -121,7 +121,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     name={`links.${index}.valor_contrato`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs">Val. Contrato</FormLabel>
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Val. Contrato</FormLabel>
                                             <Input type="number" step="0.01" className="h-9 bg-white text-sm" {...field} />
                                             <FormMessage />
                                         </FormItem>
@@ -132,7 +132,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     name={`links.${index}.valor_aluguel`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs">Aluguel Moto</FormLabel>
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Aluguel Moto</FormLabel>
                                             <Input type="number" step="0.01" className="h-9 bg-white text-sm" {...field} />
                                             <FormMessage />
                                         </FormItem>
@@ -143,7 +143,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     name={`links.${index}.ajuda_custo`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs">Ajuda Custo</FormLabel>
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Ajuda Custo</FormLabel>
                                             <Input type="number" step="0.01" className="h-9 bg-white text-sm" {...field} />
                                             <FormMessage />
                                         </FormItem>
@@ -154,7 +154,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     name={`links.${index}.valor_bonus`}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs text-green-600">Zero Falta</FormLabel>
+                                            <FormLabel className="text-green-700 font-bold ml-1 text-xs opacity-70">Zero Falta</FormLabel>
                                             <Input type="number" step="0.01" className="h-9 bg-white text-sm border-green-100" {...field} />
                                             <FormMessage />
                                         </FormItem>

@@ -229,7 +229,7 @@ export function CollaboratorTurnDialog({
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className={cn("grid gap-4", collaborator?.perfil?.nome === ROLES.MOTOBOY ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
                       {collaborator?.perfil?.nome === ROLES.MOTOBOY && (
                         <FormField
                           control={form.control}

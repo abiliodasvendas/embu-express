@@ -243,8 +243,7 @@ export const generateCollaboratorData = (clienteId?: string | number, empresaId?
         valor_contrato: 3500,
         valor_aluguel: 500,
         ajuda_custo: 200,
-        valor_bonus: 0,
-        mei: false
+        valor_bonus: null
       },
       {
         hora_inicio: "13:00:00",
@@ -252,8 +251,7 @@ export const generateCollaboratorData = (clienteId?: string | number, empresaId?
         valor_contrato: 3500,
         valor_aluguel: 500,
         ajuda_custo: 200,
-        valor_bonus: 0,
-        mei: false
+        valor_bonus: null
       }
     ]
   };
@@ -444,10 +442,9 @@ export const generateTurnData = () => {
     hora_inicio: "08:00",
     hora_fim: "18:00",
     valor_contrato: 3500,
-    valor_aluguel: Math.random() > 0.5 ? 500 : 0,
-    ajuda_custo: Math.random() > 0.5 ? 200 : 0,
-    valor_bonus: Math.random() > 0.5 ? 150 : 0,
-    mei: Math.random() > 0.5
+    valor_aluguel: Math.random() > 0.5 ? 500 : null,
+    ajuda_custo: Math.random() > 0.5 ? 200 : null,
+    valor_bonus: Math.random() > 0.5 ? 150 : null
   };
 };
 

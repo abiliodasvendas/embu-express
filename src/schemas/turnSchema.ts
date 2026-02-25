@@ -10,7 +10,7 @@ const moneySchema = z.string()
 
 const optionalMoneySchema = z.string()
   .optional()
-  .refine(val => !val || moneyToNumber(val) > 0, "O valor deve ser maior que zero")
+  .refine(val => !val || moneyToNumber(val) > 0, "O valor deve ser maior que zero ou vazio")
   .transform((val) => val ? moneyToNumber(val) : 0);
 
 export const turnSchema = z.object({
@@ -22,7 +22,6 @@ export const turnSchema = z.object({
   valor_aluguel: optionalMoneySchema,
   valor_bonus: optionalMoneySchema,
   ajuda_custo: optionalMoneySchema,
-  mei: z.boolean().optional().default(false),
 });
 
 export type TurnFormData = z.infer<typeof turnSchema>;

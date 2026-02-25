@@ -58,7 +58,6 @@ const commonSchema = z.object({
     valor_aluguel: z.coerce.number().optional(),
     valor_bonus: z.coerce.number().optional(),
     ajuda_custo: z.coerce.number().optional(),
-    mei: z.boolean().optional(),
   })).superRefine(checkLinkConflicts).optional().default([]),
   chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
 });

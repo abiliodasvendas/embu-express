@@ -19,7 +19,7 @@ export const colaboradorApi = {
 
   deleteColaborador: (id: string): Promise<void> =>
     apiClient.delete(`/usuarios/${id}`).then(res => res.data),
-    
+
   listPerfis: (): Promise<Perfil[]> =>
     apiClient.get(`/perfis`).then(res => res.data),
 
@@ -37,7 +37,6 @@ export const colaboradorApi = {
     valor_aluguel?: number;
     valor_bonus?: number;
     ajuda_custo?: number;
-    mei?: boolean;
   }): Promise<any> =>
     apiClient.post(`/usuarios/vinculos`, data).then(res => res.data),
 

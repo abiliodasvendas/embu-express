@@ -96,7 +96,6 @@ export interface ColaboradorCliente {
   valor_aluguel?: number;
   valor_bonus?: number;
   ajuda_custo?: number;
-  mei?: boolean;
   // Virtual
   cliente?: Client;
   empresa?: Empresa;

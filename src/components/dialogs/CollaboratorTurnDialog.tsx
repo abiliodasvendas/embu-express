@@ -86,7 +86,6 @@ export function CollaboratorTurnDialog({
       valor_aluguel: "",
       valor_bonus: "",
       ajuda_custo: "",
-      mei: false,
     },
   });
 
@@ -102,7 +101,6 @@ export function CollaboratorTurnDialog({
           valor_aluguel: formatCurrency(turnToEdit.valor_aluguel || 0),
           valor_bonus: formatCurrency(turnToEdit.valor_bonus || 0),
           ajuda_custo: formatCurrency(turnToEdit.ajuda_custo || 0),
-          mei: turnToEdit.mei || false,
         });
       } else {
         // Automatic MEI check if role is motoboy
@@ -117,7 +115,6 @@ export function CollaboratorTurnDialog({
           valor_aluguel: "",
           valor_bonus: "",
           ajuda_custo: "",
-          mei: isMotoboy,
         });
       }
       setOpenSections(["vinculo", "financeiro"]);
@@ -144,7 +141,6 @@ export function CollaboratorTurnDialog({
     form.setValue("valor_aluguel", formatCurrency(mockTurn.valor_aluguel));
     form.setValue("valor_bonus", formatCurrency(mockTurn.valor_bonus));
     form.setValue("ajuda_custo", formatCurrency(mockTurn.ajuda_custo));
-    form.setValue("mei", mockTurn.mei);
   };
 
   const onSubmit = async (values: TurnFormData) => {
@@ -159,7 +155,6 @@ export function CollaboratorTurnDialog({
         valor_aluguel: isMotoboy ? values.valor_aluguel : 0,
         valor_bonus: isMotoboy ? values.valor_bonus : 0,
         ajuda_custo: isMotoboy ? values.ajuda_custo : 0,
-        mei: isMotoboy ? values.mei : false,
       };
 
       if (turnToEdit) {
@@ -380,30 +375,12 @@ export function CollaboratorTurnDialog({
                                 field={field}
                                 label="Bônus Zero Falta"
                                 required={false}
-                                inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-green-700"
+                                inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                               />
                             )}
                           />
                         </div>
 
-                        <FormField
-                          control={form.control}
-                          name="mei"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50 border-gray-100 shadow-sm">
-                              <div className="space-y-0.5">
-                                <FormLabel className="text-sm font-semibold text-gray-800">Contratação via MEI</FormLabel>
-                                <p className="text-xs text-muted-foreground">Marque esta opção se a contratação for via MEI</p>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
                       </>
                     )}
                   </AccordionContent>

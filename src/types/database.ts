@@ -1,7 +1,8 @@
 export interface Perfil {
   id: number;
-  nome: string; // 'super_admin', 'admin', 'motoboy', 'financeiro'
+  nome: string;
   descricao?: string;
+  total_colaboradores?: number;
   created_at?: string;
 }
 

@@ -1,5 +1,4 @@
 import { Perfil } from "@/types/database";
-import { format } from "date-fns";
 import { Shield, ShieldAlert } from "lucide-react";
 import { PROTECTED_ROLES_NAMES } from "@/constants/permissions.enum";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
@@ -26,7 +25,6 @@ const PerfilMobileItem = ({
 }) => {
     const actions = usePerfilActions({ perfil, onEdit, onDelete });
     const isProtected = PROTECTED_ROLES_NAMES.includes(perfil.nome as any);
-    const dataCriacao = perfil.created_at ? format(new Date(perfil.created_at), "dd/MM/yyyy") : "-";
 
     return (
         <MobileActionItem actions={actions} showHint={index === 0}>
@@ -48,7 +46,10 @@ const PerfilMobileItem = ({
                     <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">ID: #{perfil.id}</span>
                 </div>
                 <p className="text-sm text-gray-600 mb-3 truncate">{perfil.descricao || "Sem descrição"}</p>
-                <p className="text-xs text-muted-foreground">Criado em: {dataCriacao}</p>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100 w-fit">
+                    <span className="text-xs font-bold text-slate-400">COLABORADORES ATIVOS:</span>
+                    <span className="text-xs font-black text-blue-600">{perfil.total_colaboradores || 0}</span>
+                </div>
             </div>
         </MobileActionItem>
     );
@@ -65,7 +66,6 @@ const PerfilTableRow = ({
 }) => {
     const actions = usePerfilActions({ perfil, onEdit, onDelete });
     const isProtected = PROTECTED_ROLES_NAMES.includes(perfil.nome as any);
-    const dataCriacao = perfil.created_at ? format(new Date(perfil.created_at), "dd/MM/yyyy") : "-";
 
     return (
         <tr className="hover:bg-gray-50/80 transition-colors">
@@ -85,7 +85,9 @@ const PerfilTableRow = ({
                 {perfil.descricao || "-"}
             </td>
             <td className="px-6 py-4 align-middle text-sm text-gray-600 hidden sm:table-cell">
-                {dataCriacao}
+                <div className="flex items-center gap-2 px-3 py-1 bg-blue-50/50 rounded-full border border-blue-100 w-fit">
+                    <span className="text-xs font-bold text-blue-600">{perfil.total_colaboradores || 0} ativos</span>
+                </div>
             </td>
             <td className="px-6 py-4 text-right align-middle">
                 <ActionsDropdown actions={actions} />
@@ -132,7 +134,7 @@ export function PerfisTable({ perfis, onEdit, onDelete }: PerfisTableProps) {
                                 Descrição
                             </th>
                             <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:table-cell">
-                                Criado em
+                                Colaboradores Ativos
                             </th>
                             <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                 Ações

@@ -38,12 +38,12 @@ const EmpresaMobileItem = ({
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-3 pr-20">
 
-            <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 text-sm truncate">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
                 {empresa.nome_fantasia}
               </h3>
               {empresa.razao_social && (
-                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{empresa.razao_social}</p>
+                <p className="text-[10px] text-gray-400 mt-1 line-clamp-2 leading-tight">{empresa.razao_social}</p>
               )}
             </div>
           </div>

@@ -33,8 +33,8 @@ const PerfilMobileItem = ({
                     <div className="min-w-0 pr-10">
                         <div className="flex items-center gap-2">
                             <Shield className={`h-4 w-4 shrink-0 ${isProtected ? 'text-blue-500' : 'text-slate-400'}`} />
-                            <p className="font-bold text-gray-900 text-sm truncate uppercase">
-                                {perfil.nome}
+                            <p className="font-bold text-gray-900 text-sm break-words leading-tight capitalize">
+                                {perfil.nome.replace(/_/g, ' ')}
                             </p>
                             {isProtected && (
                                 <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold shrink-0">

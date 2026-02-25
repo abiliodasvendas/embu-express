@@ -51,8 +51,8 @@ const CollaboratorMobileItem = ({
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(collaborator.status)}`}>
               {collaborator.nome_completo.charAt(0)}
             </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 text-sm truncate">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
                 {collaborator.nome_completo}
               </h3>
               {collaborator.cliente?.nome_fantasia && (

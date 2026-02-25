@@ -38,19 +38,19 @@ const ClientMobileItem = ({
         className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform relative cursor-pointer"
       >
         <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="min-w-0 pr-20">
-            <p className="font-bold text-gray-900 text-sm truncate">
+          <div className="min-w-0 flex-1 pr-16 text-left">
+            <p className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
               {client.nome_fantasia}
             </p>
             {client.cnpj && (
-              <p className="text-xs text-muted-foreground">{cnpjMask(client.cnpj)}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{cnpjMask(client.cnpj)}</p>
+            )}
+            {client.razao_social && (
+              <p className="text-[10px] text-gray-500 line-clamp-2 leading-tight mt-1">{client.razao_social}</p>
             )}
           </div>
           <StatusBadge status={client.ativo} className="absolute top-4 right-4" />
         </div>
-        {client.razao_social && (
-          <p className="text-xs text-gray-500 truncate">{client.razao_social}</p>
-        )}
       </div>
     </MobileActionItem>
   );

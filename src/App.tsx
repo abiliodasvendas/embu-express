@@ -189,10 +189,7 @@ const App = () => {
                   }
                 />
 
-                <Route
-                  path="/"
-                  element={<Navigate to="/login" replace />}
-                />
+
 
                 {/* Rotas Protegidas - Admin */}
                 <Route

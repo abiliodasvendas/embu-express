@@ -7,7 +7,6 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   const publicPaths: string[] = [
-    ROUTES.PUBLIC.ROOT,
     ROUTES.PUBLIC.LOGIN,
     ROUTES.PUBLIC.NEW_PASSWORD,
   ];

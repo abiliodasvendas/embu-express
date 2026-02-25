@@ -5,11 +5,13 @@ import { moneyToNumber } from "@/utils/masks";
 
 const moneySchema = z.string()
   .min(1, messages.validacao.campoObrigatorio)
-  .transform((val) => moneyToNumber(val));
+  .transform((val) => moneyToNumber(val))
+  .refine(val => val > 0, "O valor deve ser maior que zero");
 
 const optionalMoneySchema = z.string()
   .optional()
-  .transform((val) => val ? moneyToNumber(val) : 0);
+  .transform((val) => val ? moneyToNumber(val) : 0)
+  .refine(val => val === 0 || val > 0.01, "O valor deve ser maior que zero");
 
 export const turnSchema = z.object({
   cliente_id: z.string().optional(),

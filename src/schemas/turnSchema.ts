@@ -16,7 +16,7 @@ export const turnSchema = z.object({
   empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
   hora_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
   hora_fim: z.string().min(1, messages.validacao.campoObrigatorio),
-  valor_contrato: optionalMoneySchema,
+  valor_contrato: moneySchema,
   valor_aluguel: optionalMoneySchema,
   valor_bonus: optionalMoneySchema,
   ajuda_custo: optionalMoneySchema,

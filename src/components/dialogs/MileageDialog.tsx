@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Gauge, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { kmMask, kmToNumber } from "@/utils/masks";
 
 interface MileageDialogProps {
     open: boolean;
@@ -36,10 +37,9 @@ interface MileageDialogProps {
 const createSchema = (lastKm: number) => z.object({
     km: z.string()
         .min(1, "Campo obrigatório")
-        .refine((val) => !isNaN(parseFloat(val)), "Informe um número válido")
-        .transform((val) => parseFloat(val))
+        .transform((val) => kmToNumber(val))
         .refine((val) => val >= lastKm, {
-            message: `O KM não pode ser menor que o último registrado`,
+            message: `O KM não pode ser menor que o último registrado (${lastKm})`,
         }),
 });
 
@@ -110,8 +110,12 @@ export function MileageDialog({
                                             <div className="relative group">
                                                 <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
+                                                    onChange={(e) => {
+                                                        const masked = kmMask(e.target.value);
+                                                        field.onChange(masked);
+                                                    }}
                                                     autoFocus
                                                     className={cn(
                                                         "pl-12 pr-14 h-14 rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500/10 transition-all font-mono text-xl font-bold text-slate-700",

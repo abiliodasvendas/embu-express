@@ -1,28 +1,28 @@
 export const phoneMask = (value: string): string => {
   if (!value) return value;
-  
+
   const numericValue = value.replace(/\D/g, '');
-  
+
   if (numericValue.length <= 11) {
     return numericValue
       .replace(/(\d{2})(\d)/, '($1) $2')
       .replace(/(\d{5})(\d{1,4})/, '$1-$2');
   }
-  
+
   return value;
 };
 
 export const moneyMask = (value: string): string => {
   if (!value) return '';
-  
+
   let numericValue = value.replace(/\D/g, '');
-  
+
   if (numericValue.length === 1) {
     numericValue = '0' + numericValue;
   }
-  
+
   const numberValue = Number(numericValue) / 100;
-  
+
   return numberValue.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -33,20 +33,20 @@ export const moneyMask = (value: string): string => {
 
 export const moneyToNumber = (value: string): number => {
   if (!value) return 0;
-  
+
   const numericString = value
     .replace(/[R$\s]/g, '')
     .replace(/\./g, '')
     .replace(',', '.');
-    
+
   return parseFloat(numericString) || 0;
 };
 
 export const cepMask = (value: string): string => {
   if (!value) return value;
-  
+
   const numericValue = value.replace(/\D/g, '');
-  
+
   return numericValue.replace(/(\d{5})(\d{1,3})/, '$1-$2');
 };
 
@@ -88,14 +88,14 @@ export const aplicarMascaraPlaca = (valor: string): string => {
   const isMercosul = v.length >= 5 && isNaN(Number(v[4]));
 
   if (isMercosul) {
-      return v; // Mercosul não usa hífen
+    return v; // Mercosul não usa hífen
   }
 
   if (v.length > 3) {
-      // Se ainda não temos 5 caracteres, assumimos o hífen preventivamente (padrão mais comum)
-      // Mas se o 4º caractere for digitado e o 5º for letra, o formatador de exibição ou blur limpa.
-      // Para uma máscara fluida, apenas adicionamos o hífen se for padrão antigo completo ou se estivermos digitando números.
-      return `${v.slice(0, 3)}-${v.slice(3)}`;
+    // Se ainda não temos 5 caracteres, assumimos o hífen preventivamente (padrão mais comum)
+    // Mas se o 4º caractere for digitado e o 5º for letra, o formatador de exibição ou blur limpa.
+    // Para uma máscara fluida, apenas adicionamos o hífen se for padrão antigo completo ou se estivermos digitando números.
+    return `${v.slice(0, 3)}-${v.slice(3)}`;
   }
 
   return v;
@@ -118,4 +118,23 @@ export const rgMask = (value: string): string => {
     .replace(/(\d{2})(\d)/, "$1.$2")
     .replace(/(\d{3})(\d)/, "$1.$2")
     .replace(/(\d{3})(\d{1})$/, "$1-$2");
+};
+
+export const kmMask = (value: string | number): string => {
+  if (value === undefined || value === null || value === "") return "";
+  const numericValue = value.toString().replace(/\D/g, "");
+  if (!numericValue) return "";
+
+  return new Intl.NumberFormat("pt-BR").format(parseInt(numericValue));
+};
+
+export const kmToNumber = (value: string): number => {
+  if (!value) return 0;
+  const numericString = value.replace(/\D/g, "");
+  return parseInt(numericString) || 0;
+};
+
+export const formatKm = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) return "--";
+  return new Intl.NumberFormat("pt-BR").format(value);
 };

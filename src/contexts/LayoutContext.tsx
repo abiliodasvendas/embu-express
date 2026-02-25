@@ -72,6 +72,8 @@ export interface OpenEditTimeRecordProps {
 
 export interface OpenSuccessRegistrationProps {
   collaborator: Collaborator;
+  title?: string;
+  description?: ReactNode;
 }
 
 // --- Context Type ---

@@ -28,7 +28,13 @@ export default function CollaboratorDetails() {
   const deleteVinculo = useDeleteVinculo();
   const updateStatus = useUpdateCollaboratorStatus();
   const deleteCollaborator = useDeleteCollaborator();
-  const { openConfirmationDialog, closeConfirmationDialog, openCollaboratorFormDialog, openCollaboratorTurnDialog } = useLayout();
+  const {
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openCollaboratorFormDialog,
+    openCollaboratorTurnDialog,
+    openSuccessRegistrationDialog
+  } = useLayout();
 
   const handleAddTurn = () => {
     openCollaboratorTurnDialog({
@@ -63,6 +69,21 @@ export default function CollaboratorDetails() {
         try {
           await updateStatus.mutateAsync({ id: collab.id, status: newStatus });
           closeConfirmationDialog();
+
+          if (newStatus === STATUS.ATIVO) {
+            // Pequeno delay para suavizar a transição entre diálogos
+            setTimeout(() => {
+              openSuccessRegistrationDialog({
+                collaborator: collab,
+                title: "Aprovação Realizada!",
+                description: (
+                  <>
+                    O colaborador <span className="text-gray-900 font-bold">{collab.nome_completo}</span> foi aprovado com sucesso.
+                  </>
+                )
+              });
+            }, 300);
+          }
         } catch (error) {
           console.error(error);
         }

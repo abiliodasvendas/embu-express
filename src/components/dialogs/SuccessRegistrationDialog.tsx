@@ -15,12 +15,16 @@ interface SuccessRegistrationDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     collaborator: Usuario;
+    title?: string;
+    description?: React.ReactNode;
 }
 
 export function SuccessRegistrationDialog({
     open,
     onOpenChange,
     collaborator,
+    title = "Cadastro Realizado!",
+    description,
 }: SuccessRegistrationDialogProps) {
     const navigate = useNavigate();
     const { openCollaboratorFormDialog } = useLayout();
@@ -56,10 +60,14 @@ export function SuccessRegistrationDialog({
 
                     <div className="space-y-2">
                         <DialogTitle className="text-xl font-black text-gray-900 leading-tight uppercase tracking-tight">
-                            Cadastro Realizado!
+                            {title}
                         </DialogTitle>
                         <DialogDescription className="text-gray-500 text-sm leading-relaxed px-2 font-medium">
-                            O colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi cadastrado com sucesso.
+                            {description || (
+                                <>
+                                    O colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi cadastrado com sucesso.
+                                </>
+                            )}
                         </DialogDescription>
                     </div>
                 </div>
@@ -68,9 +76,9 @@ export function SuccessRegistrationDialog({
                     <Button
                         variant="outline"
                         onClick={handleNewCollaborator}
-                        className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs"
+                        className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs uppercase"
                     >
-                        CADASTRAR NOVO
+                        CADASTRAR COLABORADOR
                     </Button>
                     <Button
                         onClick={handleAddTurn}

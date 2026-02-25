@@ -1,14 +1,11 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
-import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import { EditTimeRecordDialog } from "@/components/dialogs/EditTimeRecordDialog";
-import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { useTimeRecordActions } from "@/hooks/business/useTimeRecordActions";
-import { useDialogClose } from "@/hooks/ui/useDialogClose";
+import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
 import { calculateTotalTime, formatMinutes, formatTime, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
@@ -266,12 +263,7 @@ const TimeRecordTableRow = ({
 // ...
 
 export function TimeTrackingList({ records }: TimeTrackingListProps) {
-  const [editingRecord, setEditingRecord] = useState<RegistroPonto | null>(null);
-  const [detailsRecordId, setDetailsRecordId] = useState<number | null>(null);
-  const { closeDialog } = useDialogClose();
-
-  // Find the interactive record from the current list
-  const detailsRecord = records.find(r => r.id === detailsRecordId) || null;
+  const { openTimeRecordDetailsDialog, openEditTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   const { mutateAsync: deletePonto } = useDeletePonto();
 
@@ -280,31 +272,29 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
      Radix Dialogs stack automatically. ensure z-index is handled if needed, usually is.
   */
   const handleEditFromDetails = (record: RegistroPonto) => {
-    // setDetailsRecord(null); // Keep details open behind
-    setEditingRecord(record);
-  };
-
-  const [recordToDelete, setRecordToDelete] = useState<RegistroPonto | null>(null);
-
-  const confirmDelete = async () => {
-    if (recordToDelete) {
-      await deletePonto(recordToDelete.id);
-
-      // Use safe close to prevent frozen screen
-      closeDialog(() => {
-        setRecordToDelete(null);
-        setDetailsRecordId(null);
-      });
-    }
+    openEditTimeRecordDialog({ record });
   };
 
   const handleDelete = (record: RegistroPonto) => {
-    // Abre o dialog de confirmação
-    setRecordToDelete(record);
+    openConfirmationDialog({
+      title: "Excluir Registro",
+      description: "Tem certeza que deseja excluir permanentemente este registro de ponto? Esta ação não pode ser desfeita.",
+      confirmText: "Sim, excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+        await deletePonto(record.id);
+        closeConfirmationDialog();
+      }
+    });
   };
 
-  const openDetails = (record: RegistroPonto) => setDetailsRecordId(record.id);
-  const closeDetails = () => setDetailsRecordId(null);
+  const openDetails = (record: RegistroPonto) => {
+    openTimeRecordDetailsDialog({
+      record,
+      onEdit: handleEditFromDetails,
+      onDelete: handleDelete
+    });
+  };
 
   return (
     <>
@@ -316,7 +306,7 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
             key={record.id}
             record={record}
             onDetails={openDetails}
-            onEdit={setEditingRecord} // Ensure edit uses state
+            onEdit={(record) => openEditTimeRecordDialog({ record })}
             onDelete={handleDelete}
           />
         )}
@@ -338,7 +328,7 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
                   key={record.id}
                   record={record}
                   onDetails={openDetails}
-                  onEdit={setEditingRecord}
+                  onEdit={(record) => openEditTimeRecordDialog({ record })}
                   onDelete={handleDelete}
                 />
               ))}
@@ -346,36 +336,6 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
           </table>
         </div>
       </ResponsiveDataList>
-
-      {!!detailsRecordId && (
-        <TimeRecordDetailsDialog
-          isOpen={!!detailsRecordId}
-          onClose={closeDetails}
-          record={detailsRecord}
-          onEdit={handleEditFromDetails}
-          onDelete={handleDelete}
-        />
-      )}
-
-      {!!editingRecord && (
-        <EditTimeRecordDialog
-          isOpen={!!editingRecord}
-          onClose={() => setEditingRecord(null)}
-          record={editingRecord}
-        />
-      )}
-
-      <ConfirmationDialog
-        open={!!recordToDelete}
-        onOpenChange={(open) => !open && setRecordToDelete(null)}
-        title="Excluir Registro"
-        description="Tem certeza que deseja excluir permanentemente este registro de ponto? Esta ação não pode ser desfeita."
-        onConfirm={confirmDelete}
-        confirmText="Sim, excluir"
-        cancelText="Cancelar"
-        variant="destructive"
-        isLoading={false} // useDeletePonto async handled in promise
-      />
     </>
   );
 }

@@ -2,11 +2,15 @@ import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
 import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
 import { CollaboratorFormDialog } from "@/components/dialogs/CollaboratorFormDialog";
+import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDialog";
+import { MileageDialog } from "@/components/dialogs/MileageDialog";
+import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
+import { EditTimeRecordDialog } from "@/components/dialogs/EditTimeRecordDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
-import { Usuario as Collaborator, Client, Empresa, Perfil } from '@/types/database';
+import { Usuario as Collaborator, Client, Empresa, Perfil, ColaboradorCliente, RegistroPonto } from '@/types/database';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 // --- Interfaces ---
@@ -42,6 +46,29 @@ export interface OpenPerfilFormProps {
   onSuccess?: () => void;
 }
 
+export interface OpenMileageDialogProps {
+  onConfirm: (km: number) => void;
+  title: string;
+  description: string;
+  lastKm?: number;
+}
+
+export interface OpenCollaboratorTurnProps {
+  collaboratorId: string;
+  turnToEdit?: ColaboradorCliente | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenTimeRecordDetailsProps {
+  record: RegistroPonto | null;
+  onEdit?: (record: RegistroPonto) => void;
+  onDelete?: (record: RegistroPonto) => void;
+}
+
+export interface OpenEditTimeRecordProps {
+  record: RegistroPonto | null;
+}
+
 // --- Context Type ---
 
 interface LayoutContextType {
@@ -65,6 +92,18 @@ interface LayoutContextType {
 
   openPerfilFormDialog: (props: OpenPerfilFormProps) => void;
   closePerfilFormDialog: () => void;
+
+  openMileageDialog: (props: OpenMileageDialogProps) => void;
+  closeMileageDialog: () => void;
+
+  openCollaboratorTurnDialog: (props: OpenCollaboratorTurnProps) => void;
+  closeCollaboratorTurnDialog: () => void;
+
+  openTimeRecordDetailsDialog: (props: OpenTimeRecordDetailsProps) => void;
+  closeTimeRecordDetailsDialog: () => void;
+
+  openEditTimeRecordDialog: (props: OpenEditTimeRecordProps) => void;
+  closeEditTimeRecordDialog: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -119,6 +158,34 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [perfilFormDialogState, setPerfilFormDialogState] = useState<{
     open: boolean;
     props?: OpenPerfilFormProps;
+  }>({
+    open: false,
+  });
+
+  const [mileageDialogState, setMileageDialogState] = useState<{
+    open: boolean;
+    props?: OpenMileageDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [collaboratorTurnDialogState, setCollaboratorTurnDialogState] = useState<{
+    open: boolean;
+    props?: OpenCollaboratorTurnProps;
+  }>({
+    open: false,
+  });
+
+  const [timeRecordDetailsDialogState, setTimeRecordDetailsDialogState] = useState<{
+    open: boolean;
+    props?: OpenTimeRecordDetailsProps;
+  }>({
+    open: false,
+  });
+
+  const [editTimeRecordDialogState, setEditTimeRecordDialogState] = useState<{
+    open: boolean;
+    props?: OpenEditTimeRecordProps;
   }>({
     open: false,
   });
@@ -181,6 +248,46 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openMileageDialog = (props: OpenMileageDialogProps) => {
+    setMileageDialogState({ open: true, props });
+  };
+
+  const closeMileageDialog = () => {
+    closeDialog(() => {
+      setMileageDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
+  const openCollaboratorTurnDialog = (props: OpenCollaboratorTurnProps) => {
+    setCollaboratorTurnDialogState({ open: true, props });
+  };
+
+  const closeCollaboratorTurnDialog = () => {
+    closeDialog(() => {
+      setCollaboratorTurnDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
+  const openTimeRecordDetailsDialog = (props: OpenTimeRecordDetailsProps) => {
+    setTimeRecordDetailsDialogState({ open: true, props });
+  };
+
+  const closeTimeRecordDetailsDialog = () => {
+    closeDialog(() => {
+      setTimeRecordDetailsDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
+  const openEditTimeRecordDialog = (props: OpenEditTimeRecordProps) => {
+    setEditTimeRecordDialogState({ open: true, props });
+  };
+
+  const closeEditTimeRecordDialog = () => {
+    closeDialog(() => {
+      setEditTimeRecordDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
   return (
     <LayoutContext.Provider value={{
       pageTitle,
@@ -196,7 +303,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openEmpresaFormDialog,
       closeEmpresaFormDialog,
       openPerfilFormDialog,
-      closePerfilFormDialog
+      closePerfilFormDialog,
+      openMileageDialog,
+      closeMileageDialog,
+      openCollaboratorTurnDialog,
+      closeCollaboratorTurnDialog,
+      openTimeRecordDetailsDialog,
+      closeTimeRecordDetailsDialog,
+      openEditTimeRecordDialog,
+      closeEditTimeRecordDialog
     }}>
       {children}
 
@@ -257,6 +372,56 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           open={true}
           onOpenChange={(open) => !open && closePerfilFormDialog()}
           perfilToEdit={perfilFormDialogState.props?.perfilToEdit}
+        />
+      )}
+
+      {mileageDialogState.open && (
+        <MileageDialog
+          open={true}
+          onClose={closeMileageDialog}
+          onConfirm={(km) => {
+            mileageDialogState.props?.onConfirm(km);
+            closeMileageDialog();
+          }}
+          title={mileageDialogState.props?.title || ""}
+          description={mileageDialogState.props?.description || ""}
+          lastKm={mileageDialogState.props?.lastKm}
+        />
+      )}
+
+      {collaboratorTurnDialogState.open && (
+        <CollaboratorTurnDialog
+          open={true}
+          onOpenChange={(open) => !open && closeCollaboratorTurnDialog()}
+          collaboratorId={collaboratorTurnDialogState.props?.collaboratorId || ""}
+          turnToEdit={collaboratorTurnDialogState.props?.turnToEdit}
+          onSuccess={() => {
+            collaboratorTurnDialogState.props?.onSuccess?.();
+            closeCollaboratorTurnDialog();
+          }}
+        />
+      )}
+
+      {timeRecordDetailsDialogState.open && timeRecordDetailsDialogState.props?.record && (
+        <TimeRecordDetailsDialog
+          isOpen={true}
+          onClose={closeTimeRecordDetailsDialog}
+          record={timeRecordDetailsDialogState.props.record}
+          onEdit={(record) => {
+            timeRecordDetailsDialogState.props?.onEdit?.(record);
+            // We usually don't close details when editing, they stack
+          }}
+          onDelete={(record) => {
+            timeRecordDetailsDialogState.props?.onDelete?.(record);
+          }}
+        />
+      )}
+
+      {editTimeRecordDialogState.open && editTimeRecordDialogState.props?.record && (
+        <EditTimeRecordDialog
+          isOpen={true}
+          onClose={closeEditTimeRecordDialog}
+          record={editTimeRecordDialogState.props.record}
         />
       )}
 

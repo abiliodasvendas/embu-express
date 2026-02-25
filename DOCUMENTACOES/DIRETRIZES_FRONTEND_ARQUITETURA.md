@@ -34,6 +34,10 @@ A organização da pasta `src/hooks` é estrita e deve ser seguida rigorosamente
 - **`features/`**: Componentes compostos específicos de uma funcionalidade (ex: `PassageirosList`, `CobrancaCard`).
 - **`forms/`**: Inputs controlados com lógica específica de formulário.
 - **`dialogs/`**: Modais de negócio reutilizáveis.
+    - [!IMPORTANT]
+    - **Centralização Obrigatória:** Todos os diálogos de negócio (formulários, confirmações, detalhes) **DEVEM** ser centralizados no `LayoutContext.tsx` e renderizados no `LayoutProvider`.
+    - Chamadas a diálogos em páginas e componentes devem ser feitas exclusivamente via hook `useLayout()` (ex: `openCollaboratorFormDialog`).
+    - **PROIBIDO** instanciar diálogos de negócio localmente em páginas ou subcomponentes para evitar problemas de empilhamento (z-index) e inconsistência de estado.
 
 ---
 

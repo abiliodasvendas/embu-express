@@ -1,4 +1,3 @@
-import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,10 +27,8 @@ export default function CollaboratorDetails() {
   const deleteVinculo = useDeleteVinculo();
   const updateStatus = useUpdateCollaboratorStatus();
   const deleteCollaborator = useDeleteCollaborator();
-  const { openConfirmationDialog, closeConfirmationDialog, openCollaboratorFormDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openCollaboratorFormDialog, openCollaboratorTurnDialog } = useLayout();
 
-  const [isTurnDialogOpen, setIsTurnDialogOpen] = useState(false);
-  const [turnToEdit, setTurnToEdit] = useState<ColaboradorCliente | null>(null);
 
   const handleToggleStatus = async (collab: Usuario, newStatus: string) => {
     const confirmMessage = newStatus === STATUS.ATIVO ? messages.dialogo.ativar.descricao : messages.dialogo.desativar.descricao;
@@ -103,13 +100,16 @@ export default function CollaboratorDetails() {
   const role = roles?.find(r => r.id === Number(collaborator.perfil_id));
 
   const handleAddTurn = () => {
-    setTurnToEdit(null);
-    setIsTurnDialogOpen(true);
+    openCollaboratorTurnDialog({
+      collaboratorId: id!
+    });
   };
 
   const handleEditTurn = (turn: ColaboradorCliente) => {
-    setTurnToEdit(turn);
-    setIsTurnDialogOpen(true);
+    openCollaboratorTurnDialog({
+      collaboratorId: id!,
+      turnToEdit: turn
+    });
   };
 
   const handleDeleteTurn = async (turnId: number) => {
@@ -404,15 +404,6 @@ export default function CollaboratorDetails() {
       </div>
 
 
-      <CollaboratorTurnDialog
-        open={isTurnDialogOpen}
-        onOpenChange={setIsTurnDialogOpen}
-        collaboratorId={id!}
-        turnToEdit={turnToEdit}
-        onSuccess={() => {
-          setIsTurnDialogOpen(false);
-        }}
-      />
     </div>
   );
 }

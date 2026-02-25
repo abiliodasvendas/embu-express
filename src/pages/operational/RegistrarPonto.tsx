@@ -8,7 +8,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { MileageDialog } from "@/components/dialogs/MileageDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useFinalizarPausa, useIniciarPausa, useTogglePonto } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -24,7 +23,7 @@ import { useEffect, useState } from "react";
 type PontoAction = 'idle' | 'working' | 'paused';
 
 export default function RegistrarPonto() {
-    const { setPageTitle } = useLayout();
+    const { setPageTitle, openMileageDialog } = useLayout();
     const { user } = useSession();
     const { profile: userProfile } = useProfile(user?.id);
     const { isMotoboy } = usePermissions();
@@ -44,23 +43,6 @@ export default function RegistrarPonto() {
     } | null>(null);
     const [timer, setTimer] = useState<string>("00:00:00");
     const [pausasMetric, setPausasMetric] = useState<{ count: number; totalMs: number }>({ count: 0, totalMs: 0 });
-
-    // Mileage Phase
-    const [mileageModal, setMileageModal] = useState<{
-        open: boolean;
-        title: string;
-        description: string;
-        action: 'toggle' | 'pauseStart' | 'pauseEnd';
-        tempLoc: any;
-        lastKm: number;
-    }>({
-        open: false,
-        title: "",
-        description: "",
-        action: 'toggle',
-        tempLoc: null,
-        lastKm: 0
-    });
 
     const hasShifts = !!userProfile?.links?.length;
 
@@ -253,13 +235,11 @@ export default function RegistrarPonto() {
             const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
             const lastKm = data?.km || 0;
 
-            setMileageModal({
-                open: true,
+            openMileageDialog({
                 title: status === 'idle' ? "Início de Turno" : "Fim de Turno",
                 description: status === 'idle' ? "Informe o KM inicial da moto para começar." : "Informe o KM final da moto para encerrar.",
-                action: 'toggle',
-                tempLoc: loc,
-                lastKm
+                lastKm,
+                onConfirm: (km) => executeToggle(loc, km)
             });
             setIsProcessing(false);
             return;
@@ -294,13 +274,11 @@ export default function RegistrarPonto() {
             const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
             const lastKm = data?.km || 0;
 
-            setMileageModal({
-                open: true,
+            openMileageDialog({
                 title: "Início de Pausa",
                 description: "Informe o KM da moto ao iniciar a pausa.",
-                action: 'pauseStart',
-                tempLoc: loc,
-                lastKm
+                lastKm,
+                onConfirm: (km) => executePauseStart(loc, km)
             });
             setIsProcessing(false);
             return;
@@ -338,13 +316,11 @@ export default function RegistrarPonto() {
             const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
             const lastKm = data?.km || 0;
 
-            setMileageModal({
-                open: true,
+            openMileageDialog({
                 title: "Retorno de Pausa",
                 description: "Informe o KM da moto ao retomar o trabalho.",
-                action: 'pauseEnd',
-                tempLoc: loc,
-                lastKm
+                lastKm,
+                onConfirm: (km) => executePauseEnd(loc, km)
             });
             setIsProcessing(false);
             return;
@@ -353,14 +329,6 @@ export default function RegistrarPonto() {
         await executePauseEnd(loc);
     };
 
-    const onMileageConfirm = async (km: number) => {
-        const { action, tempLoc } = mileageModal;
-        setMileageModal(prev => ({ ...prev, open: false }));
-
-        if (action === 'toggle') await executeToggle(tempLoc, km);
-        else if (action === 'pauseStart') await executePauseStart(tempLoc, km);
-        else if (action === 'pauseEnd') await executePauseEnd(tempLoc, km);
-    };
 
     return (
         <div className="w-full max-w-lg lg:max-w-4xl mx-auto pb-20 md:mt-8">
@@ -591,14 +559,6 @@ export default function RegistrarPonto() {
                 </div>
             )}
 
-            <MileageDialog
-                open={mileageModal.open}
-                onClose={() => setMileageModal(prev => ({ ...prev, open: false }))}
-                onConfirm={onMileageConfirm}
-                title={mileageModal.title}
-                description={mileageModal.description}
-                lastKm={mileageModal.lastKm}
-            />
         </div>
     );
 }

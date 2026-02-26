@@ -437,7 +437,7 @@ export default function RegistrarPonto() {
                                 Identificamos que seu cadastro ainda não possui vínculos de turno registrados no sistema.
                             </p>
                             <div className="w-full p-5 sm:p-6 bg-slate-50 rounded-2xl border border-slate-200 text-slate-600 text-sm sm:text-base font-medium">
-                                Por favor, solicite ao administrador que vincule sua conta a um cliente para liberar o registro de ponto.
+                                Por favor, solicite ao administrador que inclua o(s) turno(s) de trabalho para liberar o registro de ponto.
                             </div>
                         </div>
                     ) : (

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { dateMask } from "@/utils/masks";
+import { aplicarMascaraPlaca, dateMask } from "@/utils/masks";
 import { useFormContext } from "react-hook-form";
 
 export function CollaboratorFormCNH() {
@@ -127,5 +127,3 @@ export function CollaboratorFormMoto() {
         </div>
     );
 }
-
-import { aplicarMascaraPlaca } from "@/utils/masks";

@@ -57,6 +57,7 @@ export function CollaboratorFormDialog({
   });
 
   const perfilIdWatch = form.watch("perfil_id");
+  const isMotoboy = form.watch("isMotoboy");
 
   useEffect(() => {
     if (roles && open) {
@@ -216,29 +217,33 @@ export function CollaboratorFormDialog({
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="cnh" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-blue-600" />
-                      Dados da CNH
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2">
-                    <CollaboratorFormCNH />
-                  </AccordionContent>
-                </AccordionItem>
+                {isMotoboy && (
+                  <>
+                    <AccordionItem value="cnh" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                      <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-blue-600" />
+                          Dados da CNH
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-6 pt-2">
+                        <CollaboratorFormCNH />
+                      </AccordionContent>
+                    </AccordionItem>
 
-                <AccordionItem value="moto" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4 text-blue-600" />
-                      Dados da Moto
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2">
-                    <CollaboratorFormMoto />
-                  </AccordionContent>
-                </AccordionItem>
+                    <AccordionItem value="moto" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                      <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 text-blue-600" />
+                          Dados da Moto
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-6 pt-2">
+                        <CollaboratorFormMoto />
+                      </AccordionContent>
+                    </AccordionItem>
+                  </>
+                )}
 
                 <AccordionItem value="financial" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">

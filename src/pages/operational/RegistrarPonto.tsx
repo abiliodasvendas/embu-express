@@ -17,6 +17,7 @@ import { useGeolocation } from "@/hooks/ui/useGeolocation";
 import { apiClient } from "@/services/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { AndroidSettings, IOSSettings, NativeSettings } from 'capacitor-native-settings';
+import { AnimatePresence, motion } from "framer-motion";
 import { Briefcase, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -333,42 +334,50 @@ export default function RegistrarPonto() {
     return (
         <div className="w-full max-w-lg lg:max-w-5xl mx-auto pb-20 md:mt-8">
             {/* Geolocation Alert - Always Visible if Error */}
-            {(geoError || (!location && !loadingGeo)) && (
-                <div className="mb-6">
-                    <Alert variant="destructive" className="rounded-2xl border border-red-200 shadow-sm bg-red-50 text-red-900 animate-in fade-in slide-in-from-top-4 duration-500 mb-2">
-                        <ShieldAlert className="h-5 w-5 text-red-600" />
-                        <AlertTitle className="font-bold">Localização Requerida</AlertTitle>
-                        <AlertDescription className="text-red-700 font-medium">
-                            {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível.") : "Aguardando sinal de GPS para liberar o registro."}
+            <AnimatePresence>
+                {(geoError || (!location && !loadingGeo)) && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="mb-6"
+                    >
+                        <Alert variant="destructive" className="rounded-3xl border-2 border-red-100 shadow-xl shadow-red-500/10 bg-white/80 backdrop-blur-md text-red-900 mb-2 p-6 overflow-hidden relative group">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
+                            <ShieldAlert className="h-6 w-6 text-red-600 mb-2" />
+                            <AlertTitle className="font-black text-lg">Localização Requerida</AlertTitle>
+                            <AlertDescription className="text-red-700 font-medium leading-relaxed">
+                                {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível ou fraco demais.") : "Aguardando sinal de GPS para liberar o registro seguramente."}
 
-                            {permissionDenied ? (
-                                isWeb ? (
-                                    <p className="mt-4 text-sm font-semibold text-red-800 text-balance leading-relaxed">
-                                        Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1 text-red-900 border border-red-200 bg-red-100 rounded px-1 py-0.5">Cadeado</strong> ou <strong className="mx-1 text-red-900 border border-red-200 bg-red-100 rounded px-1 py-0.5">Ajustes</strong> ao lado da barra de endereço e reative a localização.
-                                    </p>
+                                {permissionDenied ? (
+                                    isWeb ? (
+                                        <p className="mt-4 text-sm font-semibold text-red-800 text-balance bg-red-50 p-4 rounded-2xl border border-red-100">
+                                            Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1 text-red-900 font-black">Cadeado</strong> ou <strong className="mx-1 text-red-900 font-black">Ajustes</strong> ao lado da barra de endereço e reative a localização.
+                                        </p>
+                                    ) : (
+                                        <button
+                                            onClick={() => NativeSettings.open({
+                                                optionAndroid: AndroidSettings.ApplicationDetails,
+                                                optionIOS: IOSSettings.App
+                                            })}
+                                            className="mt-6 bg-red-600 px-6 py-4 rounded-2xl text-white font-black hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 flex items-center w-full justify-center hover:-translate-y-0.5 active:translate-y-0"
+                                        >
+                                            <Settings className="w-5 h-5 mr-3" /> Abrir Config. do Aparelho
+                                        </button>
+                                    )
                                 ) : (
                                     <button
-                                        onClick={() => NativeSettings.open({
-                                            optionAndroid: AndroidSettings.ApplicationDetails,
-                                            optionIOS: IOSSettings.App
-                                        })}
-                                        className="mt-3 bg-red-100 px-4 py-2 rounded-xl text-red-900 font-bold hover:bg-red-200 transition-colors flex items-center w-full justify-center"
+                                        onClick={() => requestLocation()}
+                                        className="mt-4 bg-white border border-red-200 px-6 py-3 rounded-2xl text-red-900 font-black hover:bg-red-50 transition-all flex items-center w-full justify-center shadow-sm"
                                     >
-                                        <Settings className="w-4 h-4 mr-2" /> Abrir Config. do Aparelho
+                                        <RefreshCw className="w-4 h-4 mr-2" /> Tentar Novamente
                                     </button>
-                                )
-                            ) : (
-                                <button
-                                    onClick={() => requestLocation()}
-                                    className="block mt-2 text-red-900 font-bold underline hover:text-red-700 transition-colors flex items-center"
-                                >
-                                    <RefreshCw className="w-3 h-3 mr-1" /> Tentar Novamente
-                                </button>
-                            )}
-                        </AlertDescription>
-                    </Alert>
-                </div>
-            )}
+                                )}
+                            </AlertDescription>
+                        </Alert>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {location && (
                 <>

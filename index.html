@@ -7,20 +7,6 @@
     <meta name="description" content="Embu Express - Área Administrativa" />
     <meta name="robots" content="noindex, nofollow" />
 
-    <script>
-      // Early Error Catcher - Captura erros de módulos e top-level imports
-      window.onerror = function(msg, url, line, col, error) {
-        var errorInfo = "[EARLY_BOOT_ERROR] " + msg + " at " + url + ":" + line;
-        localStorage.setItem('lastOTAError', errorInfo);
-        console.error(errorInfo);
-        return false;
-      };
-      window.onunhandledrejection = function(event) {
-        var errorInfo = "[EARLY_BOOT_REJECTION] " + event.reason;
-        localStorage.setItem('lastOTAError', errorInfo);
-        console.error(errorInfo);
-      };
-    </script>
 
     <!-- Favicon padrão -->
     <link rel="icon" type="image/x-icon" href="./favicon/favicon.ico" />

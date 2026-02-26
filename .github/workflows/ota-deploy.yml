@@ -24,23 +24,18 @@ jobs:
       - name: Instalar dependências
         run: npm install
 
-      - name: Verificar Segredos
-        run: |
-          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then echo "❌ VITE_SUPABASE_URL is MISSING"; else echo "✅ VITE_SUPABASE_URL is set"; fi
-          if [ -z "${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" ]; then echo "❌ VITE_SUPABASE_PUBLISHABLE_KEY is MISSING"; else echo "✅ VITE_SUPABASE_PUBLISHABLE_KEY is set"; fi
 
-      - name: Definir variáveis de ambiente da Web
+      - name: Criar .env.production
         run: |
-          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> $GITHUB_ENV
-          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> $GITHUB_ENV
-          echo "VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
+          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env.production
+          echo "VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" >> .env.production
+          echo "VITE_PUBLIC_APP_DOMAIN=${{ secrets.VITE_PUBLIC_APP_DOMAIN }}" >> .env.production
+          echo "--- CONTEÚDO DO .env.production (OCULTANDO SEGREDOS) ---"
+          sed 's/=.*/=*** /' .env.production
 
       - name: Build app
         run: npm run build
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Compactar bundle
         run: |

@@ -7,26 +7,41 @@
     <meta name="description" content="Embu Express - Área Administrativa" />
     <meta name="robots" content="noindex, nofollow" />
 
+    <script>
+      // Early Error Catcher - Captura erros de módulos e top-level imports
+      window.onerror = function(msg, url, line, col, error) {
+        var errorInfo = "[EARLY_BOOT_ERROR] " + msg + " at " + url + ":" + line;
+        localStorage.setItem('lastOTAError', errorInfo);
+        console.error(errorInfo);
+        return false;
+      };
+      window.onunhandledrejection = function(event) {
+        var errorInfo = "[EARLY_BOOT_REJECTION] " + event.reason;
+        localStorage.setItem('lastOTAError', errorInfo);
+        console.error(errorInfo);
+      };
+    </script>
+
     <!-- Favicon padrão -->
-    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="./favicon/favicon.ico" />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href="/favicon/favicon-16x16.png"
+      href="./favicon/favicon-16x16.png"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href="/favicon/favicon-32x32.png"
+      href="./favicon/favicon-32x32.png"
     />
 
     <!-- Favicon para Apple (iOS) -->
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href="/favicon/apple-touch-icon.png"
+      href="./favicon/apple-touch-icon.png"
     />
 
     <!-- Ícones Android (PWA) -->
@@ -34,13 +49,13 @@
       rel="icon"
       type="image/png"
       sizes="192x192"
-      href="/favicon/android-chrome-192x192.png"
+      href="./favicon/android-chrome-192x192.png"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="512x512"
-      href="/favicon/android-chrome-512x512.png"
+      href="./favicon/android-chrome-512x512.png"
     />
 
     <!-- Manifesto Web -->
@@ -49,10 +64,11 @@
 
     <!-- Microsoft Tiles -->
     <meta name="msapplication-TileColor" content="#0A66C2" />
+    <script type="module" crossorigin src="./assets/index-go1tVo7H.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D65Hfn5Z.css">
   </head>
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

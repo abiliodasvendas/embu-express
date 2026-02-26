@@ -63,7 +63,6 @@ export function useSelfRegistrationForm() {
       await authApi.register(payload);
 
       setSuccess(true);
-      toast.success(messages.sucesso.operacao);
 
     } catch (error: any) {
       console.error(error);

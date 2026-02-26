@@ -229,8 +229,8 @@ export default function Login() {
                 </div>
 
                 <div className="text-center mt-2">
-                  <span className="text-[10px] text-gray-400 font-mono tracking-widest opacity-50">
-                    OTA_STATUS: READY_FOR_TEST_V1
+                  <span className="text-[10px] text-red-600 font-mono tracking-widest opacity-50">
+                    OTA_STATUS: READY_FOR_TEST_V2
                   </span>
                 </div>
 

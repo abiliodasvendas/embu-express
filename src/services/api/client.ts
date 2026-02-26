@@ -44,16 +44,21 @@ api.interceptors.response.use(
 
     // 403 (Forbidden) logic - immediate sign out
     if (error.response && error.response.status === 403) {
-      sessionManager.signOut().catch(() => { });
-      // const message = handleApiError(error);
-      // (error as AxiosError & { userMessage?: string }).userMessage = message;
+      if (!originalRequest.url?.includes("/app/updates")) {
+        console.warn('[ApiClient] 403 Forbidden: Sessão revogada.', originalRequest.url);
+        sessionManager.signOut().catch(() => { });
+      }
       return Promise.reject(error);
     }
 
     // 401 (Unauthorized) Logic
     if (error.response && error.response.status === 401) {
-      // Ignora interceptação global de logout se for na própria tela de login ou refresh
-      if (originalRequest.url?.includes("/auth/login") || originalRequest.url?.includes("/auth/refresh")) {
+      // Ignora interceptação global de logout se for na própria tela de login, refresh ou OTA
+      if (
+        originalRequest.url?.includes("/auth/login") ||
+        originalRequest.url?.includes("/auth/refresh") ||
+        originalRequest.url?.includes("/app/updates")
+      ) {
         return Promise.reject(error);
       }
 

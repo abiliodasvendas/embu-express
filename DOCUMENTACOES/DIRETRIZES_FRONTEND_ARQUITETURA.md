@@ -5,7 +5,7 @@ Este documento serve como referência única de verdade para a arquitetura do pr
 
 ---
 
-## 1. Princípios Gerais
+### 1. Princípios Gerais
 - **Não Reinventar a Roda:** Reutilize componentes, hooks e utilitários existentes antes de criar novos.
 - **Constantes > Magic Strings:** **PROIBIDO** usar strings ou números soltos para definir status, tipos ou regras de negócio. Use os `ENUMS` definidos em `src/types/enums.ts` ou constantes em `src/constants`.
 - **Navegação Centralizada:** Toda navegação no sistema (uso de `navigate` ou `Link`) **DEVE** utilizar as chaves definidas em `src/constants/routes.ts`. Strings hardcoded de caminhos são proibidas para evitar erros 404 e facilitar futuras manutenções.

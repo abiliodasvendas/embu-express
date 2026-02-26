@@ -1,17 +1,17 @@
 import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
-import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
-import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
 import { CollaboratorFormDialog } from "@/components/dialogs/CollaboratorFormDialog";
 import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDialog";
-import { MileageDialog } from "@/components/dialogs/MileageDialog";
-import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
-import { EditTimeRecordDialog } from "@/components/dialogs/EditTimeRecordDialog";
-import { SuccessRegistrationDialog } from "@/components/dialogs/SuccessRegistrationDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import { EditTimeRecordDialog } from "@/components/dialogs/EditTimeRecordDialog";
+import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
+import { MileageDialog } from "@/components/dialogs/MileageDialog";
+import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
+import { SuccessRegistrationDialog } from "@/components/dialogs/SuccessRegistrationDialog";
+import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
-import { Usuario as Collaborator, Client, Empresa, Perfil, ColaboradorCliente, RegistroPonto } from '@/types/database';
+import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Perfil, RegistroPonto } from '@/types/database';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 // --- Interfaces ---
@@ -74,6 +74,7 @@ export interface OpenSuccessRegistrationProps {
   collaborator: Collaborator;
   title?: string;
   description?: ReactNode;
+  hideNewCollaboratorButton?: boolean;
 }
 
 // --- Context Type ---
@@ -459,6 +460,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           open={true}
           onOpenChange={(open) => !open && closeSuccessRegistrationDialog()}
           collaborator={successRegistrationDialogState.props.collaborator}
+          title={successRegistrationDialogState.props.title}
+          description={successRegistrationDialogState.props.description}
+          hideNewCollaboratorButton={successRegistrationDialogState.props.hideNewCollaboratorButton}
           onOpenCollaboratorForm={() => openCollaboratorFormDialog({ mode: "create" })}
         />
       )}

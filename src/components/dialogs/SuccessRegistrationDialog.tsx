@@ -5,8 +5,9 @@ import {
     DialogDescription,
     DialogTitle
 } from "@/components/ui/dialog";
-import { Usuario } from "@/types/database";
 import { ROUTES } from "@/constants/routes";
+import { cn } from "@/lib/utils";
+import { Usuario } from "@/types/database";
 import { CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +18,7 @@ interface SuccessRegistrationDialogProps {
     title?: string;
     description?: React.ReactNode;
     onOpenCollaboratorForm: () => void;
+    hideNewCollaboratorButton?: boolean;
 }
 
 export function SuccessRegistrationDialog({
@@ -26,6 +28,7 @@ export function SuccessRegistrationDialog({
     title = "Cadastro Realizado!",
     description,
     onOpenCollaboratorForm,
+    hideNewCollaboratorButton = false
 }: SuccessRegistrationDialogProps) {
     const navigate = useNavigate();
 
@@ -72,17 +75,25 @@ export function SuccessRegistrationDialog({
                     </div>
                 </div>
 
-                <div className="p-4 grid grid-cols-2 gap-3 bg-gray-50/50 border-t border-gray-50 mt-2">
-                    <Button
-                        variant="outline"
-                        onClick={handleNewCollaborator}
-                        className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs uppercase"
-                    >
-                        CADASTRAR COLABORADOR
-                    </Button>
+                <div className={cn(
+                    "p-4 gap-3 bg-gray-50/50 border-t border-gray-50 mt-2",
+                    hideNewCollaboratorButton ? "flex" : "grid grid-cols-2"
+                )}>
+                    {!hideNewCollaboratorButton && (
+                        <Button
+                            variant="outline"
+                            onClick={handleNewCollaborator}
+                            className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs uppercase"
+                        >
+                            CADASTRAR COLABORADOR
+                        </Button>
+                    )}
                     <Button
                         onClick={handleAddTurn}
-                        className="h-11 rounded-xl font-bold shadow-lg transition-all text-white bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20 text-[10px] sm:text-xs"
+                        className={cn(
+                            "h-11 rounded-xl font-bold shadow-lg transition-all text-white bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20 text-[10px] sm:text-xs",
+                            hideNewCollaboratorButton && "w-full"
+                        )}
                     >
                         VINCULAR TURNO
                     </Button>

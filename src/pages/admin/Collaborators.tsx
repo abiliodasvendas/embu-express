@@ -9,9 +9,9 @@ import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useFilters } from "@/hooks";
 import {
-  useCreateCollaborator,
-  useDeleteCollaborator,
-  useUpdateCollaboratorStatus,
+    useCreateCollaborator,
+    useDeleteCollaborator,
+    useUpdateCollaboratorStatus,
 } from "@/hooks/api/useCollaboratorMutations";
 import { useCollaborators, useRoles } from "@/hooks/api/useCollaborators";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
@@ -26,6 +26,7 @@ export function Collaborators() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openCollaboratorFormDialog,
+    openSuccessRegistrationDialog,
   } = useLayout();
   // Filters Hook
   const {
@@ -120,6 +121,21 @@ export function Collaborators() {
       id: collaborator.id,
       status: newStatus,
     });
+
+    if (newStatus === "ATIVO") {
+      setTimeout(() => {
+        openSuccessRegistrationDialog({
+          collaborator: collaborator,
+          title: "Aprovação Realizada!",
+          hideNewCollaboratorButton: true,
+          description: (
+            <>
+              O colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi aprovado com sucesso.
+            </>
+          )
+        });
+      }, 300);
+    }
   };
 
   const isCreatingCollaborator = createCollaborator.isPending;

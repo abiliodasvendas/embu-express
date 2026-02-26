@@ -1,23 +1,22 @@
+import { Can } from "@/components/auth/Can";
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCollaborator, useDeleteVinculo, useRoles } from "@/hooks";
-import { useUpdateCollaboratorStatus, useDeleteCollaborator } from "@/hooks/api/useCollaboratorMutations";
-import { cn } from "@/lib/utils";
-import { useLayout } from "@/contexts/LayoutContext";
-import { ColaboradorCliente } from "@/types/database";
-import { cnpjMask, cpfMask, dateMask, phoneMask } from "@/utils/masks";
-import { Bike, Calendar, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, Phone, Plus, Power, Trash2, User, ChevronDown, MoreVertical } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Can } from "@/components/auth/Can";
+import { messages } from "@/constants/messages";
 import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
-import { messages } from "@/constants/messages";
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useCollaborator, useDeleteVinculo, useRoles } from "@/hooks";
+import { useDeleteCollaborator, useUpdateCollaboratorStatus } from "@/hooks/api/useCollaboratorMutations";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
-import { Usuario } from "@/types/database";
+import { cn } from "@/lib/utils";
+import { ColaboradorCliente, Usuario } from "@/types/database";
+import { cnpjMask, cpfMask, dateMask, phoneMask } from "@/utils/masks";
+import { Bike, Calendar, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, MoreVertical, Phone, Plus, Trash2, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 export default function CollaboratorDetails() {
   const { id } = useParams();
@@ -76,6 +75,7 @@ export default function CollaboratorDetails() {
               openSuccessRegistrationDialog({
                 collaborator: collab,
                 title: "Aprovação Realizada!",
+                hideNewCollaboratorButton: true,
                 description: (
                   <>
                     O colaborador <span className="text-gray-900 font-bold">{collab.nome_completo}</span> foi aprovado com sucesso.

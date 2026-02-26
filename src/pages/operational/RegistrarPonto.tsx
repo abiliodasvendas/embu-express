@@ -1,6 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
     Select,
     SelectContent,
@@ -44,6 +45,7 @@ export default function RegistrarPonto() {
     } | null>(null);
     const [timer, setTimer] = useState<string>("00:00:00");
     const [pausasMetric, setPausasMetric] = useState<{ count: number; totalMs: number }>({ count: 0, totalMs: 0 });
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const hasShifts = !!userProfile?.links?.length;
 
@@ -52,6 +54,18 @@ export default function RegistrarPonto() {
         // Auto-request location on mount for better UX
         requestLocation().catch(() => { });
     }, [setPageTitle, requestLocation]);
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await Promise.all([
+                refetch(),
+                requestLocation()
+            ]);
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
 
     // Fetch Status from Backend
     const { data: pontoHoje, refetch } = useQuery({
@@ -332,7 +346,38 @@ export default function RegistrarPonto() {
 
 
     return (
-        <div className="w-full max-w-lg lg:max-w-5xl mx-auto pb-20 md:mt-8">
+        <div className="w-full max-w-lg lg:max-w-5xl mx-auto pb-20 md:mt-8 relative">
+            <LoadingOverlay active={loadingGeo && !isRefreshing} text="Buscando localização..." />
+
+            {/* Pull to Refresh Indicator */}
+            <motion.div
+                style={{ 
+                    position: 'absolute', 
+                    top: -40, 
+                    left: 0, 
+                    right: 0, 
+                    display: 'flex', 
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                    zIndex: 50
+                }}
+                animate={{ y: isRefreshing ? 60 : 0 }}
+            >
+                <div className="bg-white p-2 rounded-full shadow-lg border border-slate-100">
+                    <RefreshCw className={`w-5 h-5 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </div>
+            </motion.div>
+
+            <motion.div
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                onDragEnd={(_, info) => {
+                    if (info.offset.y > 100) {
+                        handleRefresh();
+                    }
+                }}
+                className="w-full"
+            >
             {/* Geolocation Alert - Always Visible if Error */}
             <AnimatePresence>
                 {(geoError || (!location && !loadingGeo)) && (
@@ -362,7 +407,7 @@ export default function RegistrarPonto() {
                                             })}
                                             className="mt-6 bg-red-600 px-6 py-4 rounded-2xl text-white font-black hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 flex items-center w-full justify-center hover:-translate-y-0.5 active:translate-y-0"
                                         >
-                                            <Settings className="w-5 h-5 mr-3" /> Abrir Config. do Aparelho
+                                            <Settings className="w-5 h-5 mr-3" /> Abrir Configurações
                                         </button>
                                     )
                                 ) : (
@@ -572,6 +617,7 @@ export default function RegistrarPonto() {
                 </>
             )}
 
+            </motion.div>
         </div>
     );
 }

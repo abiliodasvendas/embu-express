@@ -1,4 +1,3 @@
-import { toast } from '@/utils/notifications/toast';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation, PermissionStatus } from '@capacitor/geolocation';
 import { useCallback, useState } from 'react';
@@ -37,7 +36,6 @@ export function useGeolocation() {
           : "Permissão de localização foi negada.";
         setError(msg);
         setPermissionDenied(true);
-        toast.error(msg);
         setLoading(false);
         return null;
       }
@@ -52,7 +50,6 @@ export function useGeolocation() {
               : "Permissão de localização foi negada pelo usuário.";
             setError(msg);
             setPermissionDenied(true);
-            toast.error(msg);
             setLoading(false);
             return null;
           }
@@ -93,7 +90,6 @@ export function useGeolocation() {
       }
 
       setError(msg);
-      toast.error(msg);
       setLoading(false);
       return null;
     }

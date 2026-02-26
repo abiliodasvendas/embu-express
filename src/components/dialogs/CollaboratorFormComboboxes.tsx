@@ -22,9 +22,10 @@ interface EmpresaComboboxProps {
     value?: string | null;
     onChange: (value: string | null) => void;
     empresas: any[];
+    hasError?: boolean;
 }
 
-export function EmpresaCombobox({ value, onChange, empresas }: EmpresaComboboxProps) {
+export function EmpresaCombobox({ value, onChange, empresas, hasError }: EmpresaComboboxProps) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -37,7 +38,8 @@ export function EmpresaCombobox({ value, onChange, empresas }: EmpresaComboboxPr
                 aria-expanded={open}
                 className={cn(
                     "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none px-3 text-left focus-visible:ring-primary/20 font-normal hover:bg-gray-50 transition-none",
-                    !value && "text-muted-foreground hover:text-muted-foreground"
+                    !value && "text-muted-foreground hover:text-muted-foreground",
+                    hasError && "border-red-500 focus-visible:ring-red-200"
                 )}
                 >
                 {value
@@ -83,9 +85,10 @@ interface ClienteComboboxProps {
     value?: string | null;
     onChange: (value: string | null) => void;
     clients: any[];
+    hasError?: boolean;
 }
 
-export function ClienteCombobox({ value, onChange, clients }: ClienteComboboxProps) {
+export function ClienteCombobox({ value, onChange, clients, hasError }: ClienteComboboxProps) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -98,7 +101,8 @@ export function ClienteCombobox({ value, onChange, clients }: ClienteComboboxPro
                 aria-expanded={open}
                 className={cn(
                     "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none px-3 text-left focus-visible:ring-primary/20 font-normal hover:bg-gray-50 transition-none",
-                    !value && "text-muted-foreground hover:text-muted-foreground"
+                    !value && "text-muted-foreground hover:text-muted-foreground",
+                    hasError && "border-red-500 focus-visible:ring-red-200"
                 )}
                 >
                 {value
@@ -114,7 +118,6 @@ export function ClienteCombobox({ value, onChange, clients }: ClienteComboboxPro
                 <CommandList>
                 <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
                 <CommandGroup>
-
                     {clients?.map((client: any) => (
                     <CommandItem
                         value={client.nome_fantasia}

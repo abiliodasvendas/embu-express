@@ -1,36 +1,37 @@
 import { CepInput } from "@/components/forms";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
 import { useCreateClient, useUpdateClient } from "@/hooks";
+import { cn } from "@/lib/utils";
 import { Client } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { cepMask, cnpjMask } from "@/utils/masks";
@@ -38,14 +39,14 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Building2,
-  FileText,
-  Hash,
-  Loader2,
-  MapPin,
-  Wand2,
-  X,
-  Zap,
+    Building2,
+    FileText,
+    Hash,
+    Loader2,
+    MapPin,
+    Wand2,
+    X,
+    Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -266,7 +267,10 @@ export function ClientFormDialog({
                               <Building2 className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                               <Input
                                 placeholder="Ex: Logística ABC"
-                                className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className={cn(
+                                  "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  form.formState.errors.nome_fantasia && "border-red-500 focus-visible:ring-red-200"
+                                )}
                                 {...field}
                               />
                             </div>
@@ -291,7 +295,10 @@ export function ClientFormDialog({
                                 <FileText className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                 <Input
                                   placeholder="Ex: ABC Transportes LTDA"
-                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                  className={cn(
+                                    "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                    form.formState.errors.razao_social && "border-red-500 focus-visible:ring-red-200"
+                                  )}
                                   {...field}
                                 />
                               </div>
@@ -314,7 +321,10 @@ export function ClientFormDialog({
                                 <Hash className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                 <Input
                                   placeholder="00.000.000/0000-00"
-                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                  className={cn(
+                                    "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                    form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200"
+                                  )}
                                   {...field}
                                   onChange={(e) => {
                                     field.onChange(cnpjMask(e.target.value));
@@ -389,7 +399,10 @@ export function ClientFormDialog({
                                 <MapPin className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                 <Input
                                   {...field}
-                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                  className={cn(
+                                    "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                    form.formState.errors.logradouro && "border-red-500 focus-visible:ring-red-200"
+                                  )}
                                   disabled={isCepLoading}
                                 />
                               </div>
@@ -410,7 +423,10 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className={cn(
+                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  form.formState.errors.numero && "border-red-500 focus-visible:ring-red-200"
+                                )}
                               />
                             </FormControl>
                             <FormMessage />
@@ -426,7 +442,10 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className={cn(
+                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  form.formState.errors.complemento && "border-red-500 focus-visible:ring-red-200"
+                                )}
                               />
                             </FormControl>
                             <FormMessage />
@@ -445,7 +464,10 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className={cn(
+                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  form.formState.errors.bairro && "border-red-500 focus-visible:ring-red-200"
+                                )}
                                 disabled={isCepLoading}
                               />
                             </FormControl>
@@ -464,7 +486,10 @@ export function ClientFormDialog({
                             <FormControl>
                               <Input
                                 {...field}
-                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className={cn(
+                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  form.formState.errors.cidade && "border-red-500 focus-visible:ring-red-200"
+                                )}
                                 disabled={isCepLoading}
                               />
                             </FormControl>
@@ -486,7 +511,10 @@ export function ClientFormDialog({
                             >
                               <FormControl>
                                 <SelectTrigger
-                                  className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                  className={cn(
+                                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                    form.formState.errors.estado && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2"
+                                  )}
                                   disabled={isCepLoading}
                                 >
                                   <SelectValue placeholder="UF" />

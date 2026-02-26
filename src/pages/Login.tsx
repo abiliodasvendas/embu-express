@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 
 // React Router
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
 
 // Third-party
 import { cpfSchema } from "@/schemas/common";
@@ -18,12 +17,12 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -33,6 +32,7 @@ import { sessionManager } from "@/services/sessionManager";
 
 // Utils
 import { messages } from "@/constants/messages";
+import { cn } from "@/lib/utils";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 
@@ -154,7 +154,10 @@ export default function Login() {
                             autoFocus
                             placeholder="000.000.000-00"
                             autoComplete="username"
-                            className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                            className={cn(
+                              "pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all",
+                              form.formState.errors.cpfcnpj && "border-red-500 focus:border-red-500 focus:ring-red-200"
+                            )}
                             onChange={(e) =>
                               field.onChange(cpfMask(e.target.value))
                             }
@@ -182,7 +185,10 @@ export default function Login() {
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
                             autoComplete="current-password"
-                            className="pl-12 pr-10 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                            className={cn(
+                              "pl-12 pr-10 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all",
+                              form.formState.errors.senha && "border-red-500 focus:border-red-500 focus:ring-red-200"
+                            )}
                           />
                           <button
                             type="button"

@@ -1,25 +1,25 @@
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { cn } from "@/lib/utils";
 import { Perfil } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
 import { cpfMask, dateMask, phoneMask, rgMask } from "@/utils/masks";
 import { Eye, Mail, MapPin, User, Users } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 interface CollaboratorFormPersonalProps {
   roles: Perfil[] | undefined;
@@ -303,7 +303,7 @@ export function CollaboratorFormPersonal({
                   <SelectTrigger
                     className={cn(
                       "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.perfil_id && "border-red-500 focus:ring-red-200",
+                      errors.perfil_id && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2",
                     )}
                   >
                     <SelectValue placeholder="Selecione o cargo" />
@@ -333,7 +333,7 @@ export function CollaboratorFormPersonal({
                   <SelectTrigger
                     className={cn(
                       "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.status && "border-red-500 focus:ring-red-200",
+                      errors.status && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2",
                     )}
                   >
                     <SelectValue placeholder="Selecione o status" />

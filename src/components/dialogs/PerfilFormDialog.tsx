@@ -5,6 +5,7 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogClose,
@@ -20,16 +21,16 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useCreatePerfil, useUpdatePerfil, usePermissoes } from "@/hooks/api/usePerfis";
+import { PROTECTED_ROLES_NAMES } from "@/constants/permissions.enum";
+import { useCreatePerfil, usePermissoes, useUpdatePerfil } from "@/hooks/api/usePerfis";
+import { cn } from "@/lib/utils";
 import { PerfilFormData, perfilSchema } from "@/schemas/perfilSchema";
 import { Perfil } from "@/types/database";
+import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, ShieldCheck, X, FileText, Key } from "lucide-react";
+import { FileText, Key, Loader2, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/utils/notifications/toast";
-import { Checkbox } from "@/components/ui/checkbox";
-import { PROTECTED_ROLES_NAMES } from "@/constants/permissions.enum";
 
 interface PerfilFormDialogProps {
     open: boolean;
@@ -158,7 +159,15 @@ export function PerfilFormDialog({
                                                     <FormItem>
                                                         <FormLabel>Nome do Perfil *</FormLabel>
                                                         <FormControl>
-                                                            <Input disabled={!!isProtected} placeholder="Ex: Diretor de RH" className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" {...field} />
+                                                            <Input 
+                                                                disabled={!!isProtected} 
+                                                                placeholder="Ex: Diretor de RH" 
+                                                                className={cn(
+                                                                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                                                    form.formState.errors.nome && "border-red-500 focus-visible:ring-red-200"
+                                                                )} 
+                                                                {...field} 
+                                                            />
                                                         </FormControl>
                                                         {!!isProtected && <p className="text-xs text-orange-500">Nome de perfil nativo não pode ser alterado.</p>}
                                                         <FormMessage />
@@ -172,7 +181,14 @@ export function PerfilFormDialog({
                                                     <FormItem>
                                                         <FormLabel>Descrição</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Breve descrição sobre o perfil" className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" {...field} />
+                                                            <Input 
+                                                                placeholder="Breve descrição sobre o perfil" 
+                                                                className={cn(
+                                                                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                                                    form.formState.errors.descricao && "border-red-500 focus-visible:ring-red-200"
+                                                                )} 
+                                                                {...field} 
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>

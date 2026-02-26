@@ -1,27 +1,28 @@
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
 import { useCreateEmpresa, useUpdateEmpresa } from "@/hooks/api/useEmpresaMutations";
+import { cn } from "@/lib/utils";
 import { Empresa } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { cnpjMask } from "@/utils/masks";
@@ -118,7 +119,7 @@ export function EmpresaFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}>
-      <DialogContent className="w-full max-w-lg p-0 gap-0 h-[100dvh] sm:h-auto sm:max-h-[90vh] bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl" hideCloseButton>
+      <DialogContent className="w-full max-lg p-0 gap-0 h-[100dvh] sm:h-auto sm:max-h-[90vh] bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl" hideCloseButton>
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
@@ -181,7 +182,10 @@ export function EmpresaFormDialog({
                               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                               <Input
                                 placeholder="Ex: Flow Logistics"
-                                className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className={cn(
+                                  "pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  form.formState.errors.nome_fantasia && "border-red-500 focus-visible:ring-red-200"
+                                )}
                                 {...field}
                               />
                             </div>
@@ -202,7 +206,10 @@ export function EmpresaFormDialog({
                               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                               <Input
                                 placeholder="Ex: Flow Logistics LTDA"
-                                className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className={cn(
+                                  "pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  form.formState.errors.razao_social && "border-red-500 focus-visible:ring-red-200"
+                                )}
                                 {...field}
                               />
                             </div>
@@ -223,7 +230,10 @@ export function EmpresaFormDialog({
                               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                               <Input
                                 placeholder="00.000.000/0000-00"
-                                className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className={cn(
+                                  "pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200"
+                                )}
                                 {...field}
                                 onChange={(e) => field.onChange(cnpjMask(e.target.value))}
                               />

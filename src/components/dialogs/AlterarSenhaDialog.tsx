@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { cn } from "@/lib/utils";
 import { ChangePasswordFormData, changePasswordSchema } from "@/schemas/userSchema";
 import { api } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
@@ -128,7 +129,10 @@ export default function AlterarSenhaDialog({
                           type={showCurrentPassword ? "text" : "password"}
                           placeholder="••••••••"
                           {...field}
-                          className="pl-10 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all shadow-none"
+                          className={cn(
+                            "pl-10 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all shadow-none",
+                            form.formState.errors.senhaAtual && "border-red-500 focus-visible:ring-red-200"
+                          )}
                         />
                         <button
                           type="button"
@@ -161,7 +165,10 @@ export default function AlterarSenhaDialog({
                           type={showNewPassword ? "text" : "password"}
                           placeholder="••••••••"
                           {...field}
-                          className="pl-10 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all shadow-none"
+                          className={cn(
+                            "pl-10 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all shadow-none",
+                            form.formState.errors.novaSenha && "border-red-500 focus-visible:ring-red-200"
+                          )}
                         />
                         <button
                           type="button"

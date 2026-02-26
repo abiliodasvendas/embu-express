@@ -7,6 +7,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { Client, Empresa } from "@/types/database";
 import { Link as LinkIcon, Trash2 } from "lucide-react";
 import { useFieldArray, useFormContext } from "react-hook-form";
@@ -68,6 +69,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                                 value={field.value}
                                                 onChange={field.onChange}
                                                 clients={clients || []}
+                                                hasError={!!form.formState.errors.links?.[index]?.cliente_id}
                                             />
                                             <FormMessage />
                                         </FormItem>
@@ -83,6 +85,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                                 value={field.value}
                                                 onChange={field.onChange}
                                                 empresas={empresas || []}
+                                                hasError={!!form.formState.errors.links?.[index]?.empresa_id}
                                             />
                                             <FormMessage />
                                         </FormItem>
@@ -97,7 +100,11 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Início</FormLabel>
-                                            <Input type="time" className="bg-white" {...field} />
+                                            <Input 
+                                                type="time" 
+                                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.links?.[index]?.hora_inicio && "border-red-500 focus-visible:ring-red-200")} 
+                                                {...field} 
+                                            />
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -108,7 +115,11 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Fim</FormLabel>
-                                            <Input type="time" className="bg-white" {...field} />
+                                            <Input 
+                                                type="time" 
+                                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.links?.[index]?.hora_fim && "border-red-500 focus-visible:ring-red-200")} 
+                                                {...field} 
+                                            />
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -122,7 +133,12 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Val. Contrato</FormLabel>
-                                            <Input type="number" step="0.01" className="h-9 bg-white text-sm" {...field} />
+                                            <Input 
+                                                type="number" 
+                                                step="0.01" 
+                                                className={cn("h-9 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-sm", form.formState.errors.links?.[index]?.valor_contrato && "border-red-500 focus-visible:ring-red-200")} 
+                                                {...field} 
+                                            />
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -133,7 +149,12 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Aluguel Moto</FormLabel>
-                                            <Input type="number" step="0.01" className="h-9 bg-white text-sm" {...field} />
+                                            <Input 
+                                                type="number" 
+                                                step="0.01" 
+                                                className={cn("h-9 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-sm", form.formState.errors.links?.[index]?.valor_aluguel && "border-red-500 focus-visible:ring-red-200")} 
+                                                {...field} 
+                                            />
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -144,7 +165,12 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Ajuda Custo</FormLabel>
-                                            <Input type="number" step="0.01" className="h-9 bg-white text-sm" {...field} />
+                                            <Input 
+                                                type="number" 
+                                                step="0.01" 
+                                                className={cn("h-9 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-sm", form.formState.errors.links?.[index]?.ajuda_custo && "border-red-500 focus-visible:ring-red-200")} 
+                                                {...field} 
+                                            />
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -155,7 +181,12 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-green-700 font-bold ml-1 text-xs opacity-70">Zero Falta</FormLabel>
-                                            <Input type="number" step="0.01" className="h-9 bg-white text-sm border-green-100" {...field} />
+                                            <Input 
+                                                type="number" 
+                                                step="0.01" 
+                                                className={cn("h-9 rounded-xl bg-gray-50 border-green-100 focus:bg-white transition-colors text-sm", form.formState.errors.links?.[index]?.valor_bonus && "border-red-500 focus-visible:ring-red-200")} 
+                                                {...field} 
+                                            />
                                             <FormMessage />
                                         </FormItem>
                                     )}

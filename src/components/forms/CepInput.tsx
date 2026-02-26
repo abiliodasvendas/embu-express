@@ -147,7 +147,11 @@ export function CepInput<T extends FieldValues>({
             placeholder="00000-000"
             maxLength={9}
             type="text"
-            className={cn("pl-12 pr-8", inputClassName)}
+            className={cn(
+              "pl-12 pr-8 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+              error && "border-red-500 focus-visible:ring-red-200",
+              inputClassName
+            )}
             onChange={(e) => handleCepChange(e.target.value)}
             aria-invalid={!!error}
           />

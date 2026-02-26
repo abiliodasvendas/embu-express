@@ -1,16 +1,12 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
     AlertDialog,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+    AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
@@ -20,10 +16,13 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Gauge, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { kmMask, kmToNumber } from "@/utils/masks";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Gauge, X } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 interface MileageDialogProps {
     open: boolean;
@@ -39,7 +38,7 @@ const createSchema = (lastKm: number) => z.object({
         .min(1, "Campo obrigatório")
         .transform((val) => kmToNumber(val))
         .refine((val) => val >= lastKm, {
-            message: `O KM não pode ser menor que o último registrado (${lastKm})`,
+            message: `O KM não pode ser menor que o último registrado`,
         }),
 });
 

@@ -1,17 +1,16 @@
+import { Can } from "@/components/auth/Can";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RegistroPonto } from "@/types/database";
-import { safeCloseDialog } from "@/utils/dialogUtils";
-import { getStatusColorClass, getStatusLabel, formatMinutes } from "@/utils/ponto";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { formatKm } from "@/utils/masks";
-import { Building2, CalendarClock, Clock, Edit2, MapPin, Pause, User, X } from "lucide-react";
-import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { STATUS_PONTO } from "@/constants/ponto";
+import { cn } from "@/lib/utils";
+import { RegistroPonto } from "@/types/database";
+import { safeCloseDialog } from "@/utils/dialogUtils";
+import { formatKm } from "@/utils/masks";
+import { formatMinutes, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Building2, CalendarClock, Clock, Edit2, MapPin, Pause, User, X } from "lucide-react";
 
 interface TimeRecordDetailsDialogProps {
     isOpen: boolean;

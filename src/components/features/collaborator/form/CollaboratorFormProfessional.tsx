@@ -7,134 +7,125 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { aplicarMascaraPlaca, dateMask } from "@/utils/masks";
+import { dateMask } from "@/utils/masks";
 import { useFormContext } from "react-hook-form";
 
-export function CollaboratorFormProfessional() {
+export function CollaboratorFormCNH() {
     const { formState: { errors }, watch, control } = useFormContext();
     const isMotoboy = watch("isMotoboy");
 
-    if (!isMotoboy) {
-        return (
-            <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                <p className="text-gray-500 text-sm">Este perfil não requer dados de veículo.</p>
-            </div>
-        );
-    }
+    if (!isMotoboy) return null;
 
     return (
-        <div className="space-y-4">
-            <div className="p-4 bg-white rounded-xl border border-gray-200 mb-4 shadow-sm">
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
-                    Dados da CNH
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                        control={control}
-                        name="cnh_registro"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
-                                    <Input
-                                        className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")}
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={control}
-                        name="cnh_vencimento"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento CNH <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="DD/MM/AAAA"
-                                        maxLength={10}
-                                        className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.cnh_vencimento && "border-red-500 focus-visible:ring-red-200")}
-                                        {...field}
-                                        onChange={(e) => field.onChange(dateMask(e.target.value))}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={control}
-                        name="cnh_categoria"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="A / AB"
-                                        className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", errors.cnh_categoria && "border-red-500 focus-visible:ring-red-200")}
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-            </div>
-
-            <div className="p-4 bg-white rounded-xl border border-gray-200 mb-4 shadow-sm">
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    <span className="w-1 h-4 bg-orange-500 rounded-full"></span>
-                    Dados da Moto
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField name="moto_modelo" control={control} render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo <span className="text-red-500">*</span></FormLabel>
-                            <FormControl>
-                                <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_modelo && "border-red-500 focus-visible:ring-red-200")} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField name="moto_cor" control={control} render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor <span className="text-red-500">*</span></FormLabel>
-                            <FormControl>
-                                <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField name="moto_ano" control={control} render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano <span className="text-red-500">*</span></FormLabel>
-                            <FormControl>
-                                <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_ano && "border-red-500 focus-visible:ring-red-200")} {...field} maxLength={4} onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 4))} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField name="moto_placa" control={control} render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa <span className="text-red-500">*</span></FormLabel>
-                            <FormControl>
-                                <Input
-                                    className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}
-                                    {...field}
-                                    maxLength={8}
-                                    onChange={(e) => field.onChange(aplicarMascaraPlaca(e.target.value))}
-                                    placeholder="ABC-1234"
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+                control={control}
+                name="cnh_registro"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                            <Input
+                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")}
+                                {...field}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={control}
+                name="cnh_vencimento"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento CNH <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                            <Input
+                                placeholder="DD/MM/AAAA"
+                                maxLength={10}
+                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.cnh_vencimento && "border-red-500 focus-visible:ring-red-200")}
+                                {...field}
+                                onChange={(e) => field.onChange(dateMask(e.target.value))}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={control}
+                name="cnh_categoria"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                            <Input
+                                placeholder="A / AB"
+                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", errors.cnh_categoria && "border-red-500 focus-visible:ring-red-200")}
+                                {...field}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
         </div>
     );
 }
+
+export function CollaboratorFormMoto() {
+    const { formState: { errors }, watch, control } = useFormContext();
+    const isMotoboy = watch("isMotoboy");
+
+    if (!isMotoboy) return null;
+
+    return (
+        <div className="grid grid-cols-2 gap-4">
+            <FormField name="moto_modelo" control={control} render={({ field }) => (
+                <FormItem>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo <span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_modelo && "border-red-500 focus-visible:ring-red-200")} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )} />
+            <FormField name="moto_cor" control={control} render={({ field }) => (
+                <FormItem>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor <span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )} />
+            <FormField name="moto_ano" control={control} render={({ field }) => (
+                <FormItem>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano <span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_ano && "border-red-500 focus-visible:ring-red-200")} {...field} maxLength={4} onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 4))} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )} />
+            <FormField name="moto_placa" control={control} render={({ field }) => (
+                <FormItem>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa <span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                        <Input
+                            className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}
+                            {...field}
+                            maxLength={8}
+                            onChange={(e) => field.onChange(aplicarMascaraPlaca(e.target.value))}
+                            placeholder="ABC-1234"
+                        />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )} />
+        </div>
+    );
+}
+
+import { aplicarMascaraPlaca } from "@/utils/masks";

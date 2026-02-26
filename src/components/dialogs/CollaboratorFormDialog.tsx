@@ -1,19 +1,20 @@
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { messages } from "@/constants/messages";
-import { useCreateCollaborator, useRoles, useUpdateCollaborator, useEmpresas, useLayout } from "@/hooks";
+import { ROLES } from "@/constants/permissions.enum";
+import { useCreateCollaborator, useEmpresas, useLayout, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
 import { CollaboratorFormData } from "@/schemas/collaboratorSchema";
 import { Usuario } from "@/types/database";
@@ -21,12 +22,11 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { aplicarMascaraPlaca, cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { Loader2, User, Wand2, X, Briefcase, DollarSign, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, Phone, Plus, Power, Trash2, ChevronDown, MoreVertical } from "lucide-react";
+import { Briefcase, CreditCard, DollarSign, Loader2, User, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
-import { CollaboratorFormProfessional } from "../features/collaborator/form/CollaboratorFormProfessional";
 import { CollaboratorFormFinancial } from "../features/collaborator/form/CollaboratorFormFinancial";
-import { ROLES } from "@/constants/permissions.enum";
+import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
+import { CollaboratorFormCNH, CollaboratorFormMoto } from "../features/collaborator/form/CollaboratorFormProfessional";
 
 interface CollaboratorFormProps {
   open: boolean;
@@ -45,7 +45,7 @@ export function CollaboratorFormDialog({
 
   const { data: roles } = useRoles();
   const { data: empresas } = useEmpresas();
-  const [openSections, setOpenSections] = useState(["personal", "professional", "financial"]);
+  const [openSections, setOpenSections] = useState(["personal", "cnh", "moto", "financial"]);
 
   const { openConfirmationDialog, closeConfirmationDialog, openCollaboratorFormDialog, openCollaboratorTurnDialog, openSuccessRegistrationDialog } = useLayout();
   const createCollaborator = useCreateCollaborator();
@@ -67,7 +67,7 @@ export function CollaboratorFormDialog({
 
   const onFormError = (errors: any) => {
     toast.error(messages.validacao.formularioComErros);
-    setOpenSections(["personal", "professional", "financial"]);
+    setOpenSections(["personal", "cnh", "moto", "financial"]);
   };
 
   /* Helper to convert DD/MM/YYYY to YYYY-MM-DD */
@@ -216,15 +216,27 @@ export function CollaboratorFormDialog({
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="professional" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                <AccordionItem value="cnh" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                     <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4 text-blue-600" />
-                      Profissional & Moto
+                      <CreditCard className="w-4 h-4 text-blue-600" />
+                      Dados da CNH
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2">
-                    <CollaboratorFormProfessional />
+                    <CollaboratorFormCNH />
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="moto" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-4 h-4 text-blue-600" />
+                      Dados da Moto
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-6 pt-2">
+                    <CollaboratorFormMoto />
                   </AccordionContent>
                 </AccordionItem>
 

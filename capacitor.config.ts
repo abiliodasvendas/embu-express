@@ -7,8 +7,8 @@ const config: CapacitorConfig = {
   plugins: {
     CapacitorUpdater: {
       autoUpdate: false,
-      autoDeleteFailed: true,
-      autoDeletePrevious: true,
+      autoDeleteFailed: false,
+      autoDeletePrevious: false,
       resetWhenUpdate: false,
       appReadyTimeout: 10000,
       responseTimeout: 20,

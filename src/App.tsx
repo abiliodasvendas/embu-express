@@ -67,7 +67,12 @@ const App = () => {
         const current = await CapacitorUpdater.current();
         const list = await CapacitorUpdater.list();
         console.log("[OTA] INITIAL_STATE - Current info:", JSON.stringify(current));
-        console.log("[OTA] INITIAL_STATE - All Bundles:", JSON.stringify(list));
+        console.log("[OTA] INITIAL_STATE - All Bundles:", JSON.stringify(list.bundles.map(b => ({
+          id: b.id,
+          version: b.version,
+          status: b.status,
+          message: (b as any).message || 'No message'
+        }))));
       } catch (err) {
         console.error("[OTA] INITIAL_STATE - Error:", err);
       }
@@ -81,6 +86,9 @@ const App = () => {
         console.log("[OTA] Skip: Not a native platform.");
         return;
       }
+
+      // Pequeno delay para garantir que a rede está estável no boot
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       console.log("[OTA] Starting update check...");
 
@@ -127,7 +135,7 @@ const App = () => {
             url: url_zip,
           });
 
-          console.log("[OTA] Download complete:", version);
+          console.log("[OTA] Download complete:", JSON.stringify(version));
 
           await CapacitorUpdater.next({ id: version.id });
           console.log("[OTA] Set as next bundle:", version.id);
@@ -138,7 +146,7 @@ const App = () => {
             description: "O aplicativo será atualizado no próximo acesso.",
           });
         } catch (err: any) {
-          console.error("[OTA] Silent update error:", err);
+          console.error("[OTA] Silent update error:", err?.message || JSON.stringify(err));
         }
       } catch (err: any) {
         console.error("[OTA] General update check error:", err?.response?.data || err?.message || JSON.stringify(err));

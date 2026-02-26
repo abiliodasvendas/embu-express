@@ -13,7 +13,8 @@ export const ROUTES = {
         CLIENTE_DETAILS: "/clientes/:id",
         EMPRESAS: "/empresas",
         PERFIS: "/perfis",
-        CONFIGURACOES: "/configuracoes"
+        CONFIGURACOES: "/configuracoes",
+        INICIO: "/inicio"
     }
 } as const;
 

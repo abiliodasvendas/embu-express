@@ -1,26 +1,26 @@
-import { ROUTES } from "@/constants/routes";
 import { AppGate } from "@/components/auth/AppGate";
 import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ROUTES } from "@/constants/routes";
 import AppLayout from "@/layouts/AppLayout";
 import { apiClient } from "@/services/api/client";
-import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { toast } from "sonner";
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
 
@@ -35,6 +35,7 @@ const SelfRegistration = lazyLoad(() => import("./pages/public/SelfRegistration"
 
 // Admin - Embu Express
 const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
+const Inicio = lazyLoad(() => import("./pages/admin/Inicio.tsx"));
 const Collaborators = lazyLoad(() => import("./pages/admin/Collaborators"));
 const CollaboratorDetails = lazyLoad(() => import("./pages/admin/CollaboratorDetails"));
 const Clients = lazyLoad(() => import("./pages/admin/Clients"));
@@ -209,6 +210,7 @@ const App = () => {
 
                   {/* Rotas Administrativas (Admin/SuperAdmin) */}
                   <Route element={<RequirePermission requireAdminPanel={true} />}>
+                    <Route path={ROUTES.PRIVATE.INICIO.replace("/", "")} element={<Inicio />} />
                     <Route path={ROUTES.PRIVATE.CONTROLE_PONTO.replace("/", "")} element={<TimeTracking />} />
                     <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />
                     <Route path={ROUTES.PRIVATE.COLABORADOR_DETAILS.replace(/^\//, "")} element={<CollaboratorDetails />} />
@@ -298,7 +300,7 @@ const App = () => {
 
 // Componente auxiliar para redirecionamento inteligente
 const RedirectByRole = () => {
-  const { isAdmin, isMotoboy, isLoading } = usePermissions();
+  const { isAdmin, isSuperAdmin, isMotoboy, isLoading } = usePermissions();
 
   if (isLoading) {
     return (
@@ -308,8 +310,8 @@ const RedirectByRole = () => {
     );
   }
 
-  if (isAdmin) {
-    return <Navigate to={ROUTES.PRIVATE.CONTROLE_PONTO} replace />;
+  if (isAdmin || isSuperAdmin) {
+    return <Navigate to={ROUTES.PRIVATE.INICIO} replace />;
   }
   if (isMotoboy) {
     return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;

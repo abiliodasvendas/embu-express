@@ -21,8 +21,6 @@ export function usePermissions() {
     (pp: any) => pp.permissao?.nome_interno
   ) || [];
 
-  // Super Admin Base
-  const isSuperAdmin = roleName === ROLES.SUPER_ADMIN;
 
   // Função centralizada para verificar permissões granulares
   const can = (permissaoNecessaria: PermissionKey) => {
@@ -32,8 +30,10 @@ export function usePermissions() {
   };
 
   // Helpers para o legado enquanto migramos, ou para lógicas macro
-  // Removemos as checagens por roleName ('motoboy', 'admin', etc) para depender puramente das Permissões!
-  const isAdmin = isSuperAdmin;
+  // Agora separamos Admin de Super Admin para redirecionamentos precisos
+  const isSuperAdmin = roleName === ROLES.SUPER_ADMIN;
+  const isAdmin = roleName === ROLES.ADMIN;
+  const isAnyAdmin = isSuperAdmin || isAdmin;
   const isMotoboy = roleName === ROLES.MOTOBOY;
   const isFinanceiro = roleName?.startsWith('financeiro');
 
@@ -57,6 +57,7 @@ export function usePermissions() {
     // Role Helpers (Legado/Atalhos)
     isSuperAdmin,
     isAdmin,
+    isAnyAdmin,
     isMotoboy,
     isFinanceiro,
     roleName,

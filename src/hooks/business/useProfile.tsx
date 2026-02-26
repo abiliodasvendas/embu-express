@@ -3,6 +3,7 @@ import { sessionManager } from "@/services/sessionManager";
 import { Perfil, Usuario } from "@/types/database";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useSession } from "./useSession";
 
 export type ProfileWithRole = Usuario & {
   perfil?: Perfil;
@@ -21,13 +22,14 @@ export async function fetchProfile(uid: string): Promise<ProfileWithRole | null>
 }
 
 export function useProfile(uid?: string) {
+  const { session } = useSession();
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: uid ? ["profile", uid] : ["profile"],
     queryFn: () => {
       if (!uid) return null;
       return fetchProfile(uid);
     },
-    enabled: !!uid,
+    enabled: !!uid && !!session,
     staleTime: 5000,
     refetchOnWindowFocus: true,
     retry: false,

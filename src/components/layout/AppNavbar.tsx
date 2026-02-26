@@ -38,7 +38,7 @@ export function AppNavbar() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const navigate = useNavigate();
   const { user } = useSession();
-  const { profile } = useProfile(user?.id);
+  const { profile } = useProfile(!isSigningOut ? user?.id : undefined);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -87,7 +87,7 @@ export function AppNavbar() {
                         className="h-14 cursor-pointer"
                         title="Embu Express"
                         onClick={() => {
-                          navigate("/controle-ponto");
+                          navigate("/");
                           setIsSheetOpen(false);
                         }}
                       />

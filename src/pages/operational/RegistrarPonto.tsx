@@ -1,3 +1,4 @@
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -346,39 +347,11 @@ export default function RegistrarPonto() {
 
 
     return (
-        <div className="w-full max-w-lg lg:max-w-5xl mx-auto pb-20 md:mt-8 relative">
-            <LoadingOverlay active={loadingGeo && !isRefreshing} text="Buscando localização..." />
+        <PullToRefreshWrapper onRefresh={handleRefresh}>
+            <div className="w-full max-w-lg lg:max-w-5xl mx-auto pb-20 md:mt-8 relative">
+                <LoadingOverlay active={loadingGeo && !isRefreshing} text="Buscando localização..." />
 
-            {/* Pull to Refresh Indicator */}
-            <motion.div
-                style={{ 
-                    position: 'absolute', 
-                    top: -40, 
-                    left: 0, 
-                    right: 0, 
-                    display: 'flex', 
-                    justifyContent: 'center',
-                    pointerEvents: 'none',
-                    zIndex: 50
-                }}
-                animate={{ y: isRefreshing ? 60 : 0 }}
-            >
-                <div className="bg-white p-2 rounded-full shadow-lg border border-slate-100">
-                    <RefreshCw className={`w-5 h-5 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
-                </div>
-            </motion.div>
-
-            <motion.div
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                onDragEnd={(_, info) => {
-                    if (info.offset.y > 100) {
-                        handleRefresh();
-                    }
-                }}
-                className="w-full"
-            >
-            {/* Geolocation Alert - Always Visible if Error */}
+                {/* Geolocation Alert - Always Visible if Error */}
             <AnimatePresence>
                 {(geoError || (!location && !loadingGeo)) && (
                     <motion.div 
@@ -433,11 +406,11 @@ export default function RegistrarPonto() {
                                 <ShieldAlert className="w-16 h-16 sm:w-20 sm:h-20 text-amber-500" />
                             </div>
                             <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-4 sm:mb-6 tracking-tight">Turnos não configurados</h2>
-                            <p className="text-slate-500 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
-                                Identificamos que seu cadastro ainda não possui vínculos de turno registrados no sistema.
+                            <p className="text-slate-500 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8 text-balance">
+                                Ainda não é possível registrar seu ponto pois não identificamos vínculos de turno ativos no seu perfil.
                             </p>
                             <div className="w-full p-5 sm:p-6 bg-slate-50 rounded-2xl border border-slate-200 text-slate-600 text-sm sm:text-base font-medium">
-                                Por favor, solicite ao administrador que inclua o(s) turno(s) de trabalho para liberar o registro de ponto.
+                                Por favor, solicite ao seu <strong className="text-slate-900 font-bold">gestor ou administrador</strong> que vincule seu cadastro a uma empresa para liberar o registro de ponto.
                             </div>
                         </div>
                     ) : (
@@ -617,7 +590,7 @@ export default function RegistrarPonto() {
                 </>
             )}
 
-            </motion.div>
-        </div>
+            </div>
+        </PullToRefreshWrapper>
     );
 }

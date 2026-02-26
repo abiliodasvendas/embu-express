@@ -94,6 +94,8 @@ export default function Login() {
 
       if (msg.includes("Credenciais inválidas") || msg.includes("não encontrado")) {
         form.setError("root", { message: "CPF ou senha incorretos" });
+      } else if (msg.includes("em análise")) {
+        form.setError("root", { message: "Seu cadastro está em análise. Aguarde a aprovação do administrador." });
       } else {
         toast.error("Erro ao entrar", { description: msg });
       }

@@ -17,12 +17,12 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -226,6 +226,12 @@ export default function Login() {
                   >
                     {loading ? "Acessando..." : "Entrar"}
                   </Button>
+                </div>
+
+                <div className="text-center mt-2">
+                  <span className="text-[10px] text-gray-400 font-mono tracking-widest opacity-50">
+                    OTA_STATUS: READY_FOR_TEST_V1
+                  </span>
                 </div>
 
                 <div className="flex flex-col items-center gap-3 sm:gap-4 mt-4 sm:mt-6">

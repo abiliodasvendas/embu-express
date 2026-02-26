@@ -44,7 +44,7 @@ export function CollaboratorFormLinks({ clients, empresas }: CollaboratorFormLin
             </div>
             <div className="space-y-4">
                 {fields.map((field, index) => (
-                    <div key={field.id} className="relative p-4 pt-7 rounded-2xl bg-gray-50 border border-gray-100 group transition-all">
+                    <div key={field.id} className="relative p-4 pt-7 rounded-2xl bg-white border border-gray-200 shadow-sm group transition-all">
                         <Button
                             type="button"
                             variant="ghost"

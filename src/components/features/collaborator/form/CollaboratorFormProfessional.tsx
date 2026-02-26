@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { aplicarMascaraPlaca, cnpjMask, dateMask } from "@/utils/masks";
+import { aplicarMascaraPlaca, dateMask } from "@/utils/masks";
 import { useFormContext } from "react-hook-form";
 
 export function CollaboratorFormProfessional() {
@@ -24,7 +24,7 @@ export function CollaboratorFormProfessional() {
 
     return (
         <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-4">
+            <div className="p-4 bg-white rounded-xl border border-gray-200 mb-4 shadow-sm">
                 <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                     <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
                     Dados da CNH
@@ -85,7 +85,7 @@ export function CollaboratorFormProfessional() {
                 </div>
             </div>
 
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-4">
+            <div className="p-4 bg-white rounded-xl border border-gray-200 mb-4 shadow-sm">
                 <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                     <span className="w-1 h-4 bg-orange-500 rounded-full"></span>
                     Dados da Moto

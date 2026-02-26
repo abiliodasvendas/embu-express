@@ -1,7 +1,7 @@
 import { toast } from '@/utils/notifications/toast';
-import { useCallback, useState } from 'react';
-import { Geolocation, PermissionStatus } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
+import { Geolocation, PermissionStatus } from '@capacitor/geolocation';
+import { useCallback, useState } from 'react';
 
 export interface LocationData {
   latitude: number;
@@ -43,7 +43,7 @@ export function useGeolocation() {
       }
 
       // Se precisar, requisitamos ativamente (abre popup)
-      if (check.location === 'prompt' || check.location === 'prompt-with-rationale') {
+      if (check.location === 'prompt' || check.location === 'prompt-with-rationale' || !isWeb) {
         try {
           const req = await Geolocation.requestPermissions();
           if (req.location === 'denied') {
@@ -56,7 +56,9 @@ export function useGeolocation() {
             setLoading(false);
             return null;
           }
-        } catch (e) { }
+        } catch (e) {
+          console.error("Request permission error:", e);
+        }
       }
 
       // Procura ativamente a posição exata, aumento de timeout para dar tempo em popups nativos severos

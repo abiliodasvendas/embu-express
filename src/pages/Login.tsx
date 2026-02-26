@@ -228,12 +228,6 @@ export default function Login() {
                   </Button>
                 </div>
 
-                <div className="text-center mt-2">
-                  <span className="text-[10px] text-red-600 font-mono tracking-widest opacity-50">
-                    OTA_STATUS: READY_FOR_TEST_V2.5
-                  </span>
-                </div>
-
                 <div className="flex flex-col items-center gap-3 sm:gap-4 mt-4 sm:mt-6">
                   <button
                     type="button"

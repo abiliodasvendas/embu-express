@@ -66,7 +66,12 @@ const App = () => {
       try {
         const current = await CapacitorUpdater.current();
         const list = await CapacitorUpdater.list();
+        const lastError = localStorage.getItem('lastOTAError');
+        
         console.log("[OTA] INITIAL_STATE - Current info:", JSON.stringify(current));
+        console.log("[OTA] INITIAL_STATE - Last Boot Error:", lastError || "None");
+        if (lastError) localStorage.removeItem('lastOTAError');
+
         console.log("[OTA] INITIAL_STATE - All Bundles:", JSON.stringify(list.bundles.map(b => ({
           id: b.id,
           version: b.version,

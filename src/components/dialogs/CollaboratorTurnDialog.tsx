@@ -28,17 +28,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { useCreateVinculo, useEmpresas, useUpdateVinculo, useCollaborator } from "@/hooks";
 import { useClientSelection } from "@/hooks/ui/useClientSelection";
 import { ColaboradorCliente } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Briefcase, Clock, DollarSign, Loader2, Wand2, X } from "lucide-react";
+import { Briefcase, Clock, DollarSign, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
+import { timeMask } from "@/utils/masks";
 
 import { TurnFormData, turnSchema } from "@/schemas/turnSchema";
 import { ROLES } from "@/constants/permissions.enum";
@@ -66,7 +65,6 @@ export function CollaboratorTurnDialog({
   const createVinculo = useCreateVinculo();
   const updateVinculo = useUpdateVinculo();
 
-  // Helper to format currency for default values
   const formatCurrency = (val: number | null = 0) => {
     if (val === null || val === 0) return "";
     return new Intl.NumberFormat("pt-BR", {
@@ -81,12 +79,13 @@ export function CollaboratorTurnDialog({
     defaultValues: {
       cliente_id: "",
       empresa_id: "",
-      hora_inicio: "08:00",
-      hora_fim: "18:00",
+      hora_inicio: "",
+      hora_fim: "",
       valor_contrato: "",
       valor_aluguel: "",
       valor_bonus: "",
       ajuda_custo: "",
+      isMotoboy: false,
     },
   });
 
@@ -94,7 +93,7 @@ export function CollaboratorTurnDialog({
     if (open) {
       if (turnToEdit) {
         form.reset({
-          cliente_id: turnToEdit.cliente_id.toString(),
+          cliente_id: turnToEdit.cliente_id?.toString() || "",
           empresa_id: turnToEdit.empresa_id.toString(),
           hora_inicio: turnToEdit.hora_inicio.substring(0, 5),
           hora_fim: turnToEdit.hora_fim.substring(0, 5),
@@ -102,47 +101,27 @@ export function CollaboratorTurnDialog({
           valor_aluguel: formatCurrency(turnToEdit.valor_aluguel || 0),
           valor_bonus: formatCurrency(turnToEdit.valor_bonus || 0),
           ajuda_custo: formatCurrency(turnToEdit.ajuda_custo || 0),
+          isMotoboy: collaborator?.perfil?.nome === ROLES.MOTOBOY,
         });
       } else {
-        // Automatic MEI check if role is motoboy
-        const isMotoboy = collaborator?.perfil?.nome === ROLES.MOTOBOY;
-
+        const isM = collaborator?.perfil?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase();
         form.reset({
           cliente_id: "",
           empresa_id: "",
-          hora_inicio: isMotoboy ? "08:00" : "08:00",
-          hora_fim: isMotoboy ? "18:00" : "18:00",
+          hora_inicio: "",
+          hora_fim: "",
           valor_contrato: "",
           valor_aluguel: "",
           valor_bonus: "",
           ajuda_custo: "",
+          isMotoboy: isM,
         });
       }
       setOpenSections(["vinculo", "financeiro"]);
+    } else {
+      form.reset();
     }
   }, [open, turnToEdit, form, collaborator]);
-
-  const handleMagicFill = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const mockTurn = mockGenerator.turn();
-
-    if (clients && clients.length > 0) {
-      const randomClient = clients[Math.floor(Math.random() * clients.length)];
-      form.setValue("cliente_id", randomClient.id.toString());
-    }
-
-    if (empresas && empresas.length > 0) {
-      const randomEmpresa = empresas[Math.floor(Math.random() * empresas.length)];
-      form.setValue("empresa_id", randomEmpresa.id.toString());
-    }
-
-    form.setValue("hora_inicio", mockTurn.hora_inicio);
-    form.setValue("hora_fim", mockTurn.hora_fim);
-    form.setValue("valor_contrato", formatCurrency(mockTurn.valor_contrato || 3500));
-    form.setValue("valor_aluguel", formatCurrency(mockTurn.valor_aluguel));
-    form.setValue("valor_bonus", formatCurrency(mockTurn.valor_bonus));
-    form.setValue("ajuda_custo", formatCurrency(mockTurn.ajuda_custo));
-  };
 
   const onSubmit = async (values: TurnFormData) => {
     try {
@@ -150,9 +129,9 @@ export function CollaboratorTurnDialog({
       const data = {
         ...values,
         colaborador_id: collaboratorId,
-        cliente_id: isMotoboy && values.cliente_id ? parseInt(values.cliente_id) : null,
+        cliente_id: (isMotoboy && values.cliente_id) ? parseInt(values.cliente_id) : null,
         empresa_id: parseInt(values.empresa_id),
-        valor_contrato: values.valor_contrato, // Always use provided value
+        valor_contrato: values.valor_contrato,
         valor_aluguel: isMotoboy ? values.valor_aluguel : 0,
         valor_bonus: isMotoboy ? values.valor_bonus : 0,
         ajuda_custo: isMotoboy ? values.ajuda_custo : 0,
@@ -180,21 +159,6 @@ export function CollaboratorTurnDialog({
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
-          <div className="absolute left-4 top-4 flex gap-2">
-            {!turnToEdit && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-                onClick={handleMagicFill}
-                title="Preencher Automaticamente"
-              >
-                <Wand2 className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Fechar</span>
@@ -211,6 +175,7 @@ export function CollaboratorTurnDialog({
         <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
           <Form {...form}>
             <form id="collaborator-turn-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <input type="hidden" {...form.register("isMotoboy")} />
               <Accordion
                 type="multiple"
                 value={openSections}
@@ -289,7 +254,15 @@ export function CollaboratorTurnDialog({
                             <FormControl>
                               <div className="relative">
                                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input type="time" {...field} className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
+                                <Input
+                                  type="text"
+                                  placeholder="00:00"
+                                  maxLength={5}
+                                  {...field}
+                                  className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors font-mono"
+                                  onChange={(e) => field.onChange(timeMask(e.target.value))}
+                                  autoComplete="off"
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -305,7 +278,15 @@ export function CollaboratorTurnDialog({
                             <FormControl>
                               <div className="relative">
                                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input type="time" {...field} className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
+                                <Input
+                                  type="text"
+                                  placeholder="00:00"
+                                  maxLength={5}
+                                  {...field}
+                                  className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors font-mono"
+                                  onChange={(e) => field.onChange(timeMask(e.target.value))}
+                                  autoComplete="off"
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />

@@ -161,3 +161,41 @@ export const formatKm = (value: number | null | undefined): string => {
     }).format(value) + " km"
   );
 };
+
+export const timeMask = (value: string): string => {
+  if (!value) return value;
+
+  // Remove tudo que não for dígito e limita a 4 caracteres
+  let numericValue = value.replace(/\D/g, "").slice(0, 4);
+
+  // Validação do primeiro dígito (0, 1 ou 2)
+  if (numericValue.length >= 1) {
+    const firstDigit = parseInt(numericValue[0]);
+    if (firstDigit > 2) {
+      numericValue = "2" + numericValue.slice(1);
+    }
+  }
+
+  // Validação do segundo dígito (se primeiro for 2, segundo max 3)
+  if (numericValue.length >= 2) {
+    const hours = parseInt(numericValue.slice(0, 2));
+    if (hours > 23) {
+      numericValue = "23" + numericValue.slice(2);
+    }
+  }
+
+  // Validação do terceiro dígito (minutos - max 5)
+  if (numericValue.length >= 3) {
+    const thirdDigit = parseInt(numericValue[2]);
+    if (thirdDigit > 5) {
+      numericValue = numericValue.slice(0, 2) + "5" + numericValue.slice(3);
+    }
+  }
+
+  if (numericValue.length <= 2) {
+    return numericValue;
+  }
+
+  // Adiciona os dois pontos após os primeiros dois dígitos
+  return numericValue.replace(/(\d{2})(\d)/, "$1:$2");
+};

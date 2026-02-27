@@ -75,10 +75,6 @@ export default function Configuracoes() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
-                    <Shield className="h-4 w-4 text-amber-600" />
-                    <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">Acesso Restrito</span>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -142,8 +138,8 @@ function ConfigCard({ config, onSave, isSaving }: {
 
                 <Button
                     className={`w-full h-12 rounded-xl font-bold transition-all ${hasChanged
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200'
-                            : 'bg-slate-100 text-slate-400 cursor-not-allowed hover:bg-slate-100'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200'
+                        : 'bg-slate-100 text-slate-400 cursor-not-allowed hover:bg-slate-100'
                         }`}
                     onClick={() => hasChanged && onSave(value)}
                     disabled={!hasChanged || isSaving}

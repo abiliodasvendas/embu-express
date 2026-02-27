@@ -109,9 +109,15 @@ export function PerfilFormDialog({
             }
             onOpenChange(false);
         } catch (error: any) {
-            toast.error("Erro ao salvar", {
-                description: error.response?.data?.error || "Verifique os dados.",
-            });
+            console.error("Erro ao salvar perfil:", error);
+            const message = error.message || "";
+            if (message.toLowerCase().includes("perfis_nome_key") || message.toLowerCase().includes("nome já existe")) {
+                form.setError("nome", { message: "Já existe um perfil com este nome." });
+            } else {
+                toast.error("Erro ao salvar", {
+                    description: error.response?.data?.error || message || "Verifique os dados.",
+                });
+            }
         }
     };
 

@@ -1,15 +1,15 @@
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { messages } from "@/constants/messages";
@@ -119,8 +119,6 @@ export function CollaboratorFormDialog({
 
     form.setValue("cnpj", cnpjMask(mockGenerator.cnpj()));
     form.setValue("chave_pix", mockGenerator.cpf());
-
-    toast.success(messages.mock.sucesso.preenchido);
   };
 
   const onSubmit = async (vals: CollaboratorFormData) => {
@@ -141,7 +139,7 @@ export function CollaboratorFormDialog({
 
       if (collaboratorToEdit) {
         // @ts-ignore - links not needed for partial personal update
-        await updateCollaborator.mutateAsync({ id: collaboratorToEdit.id, ...data });
+        await updateCollaborator.mutateAsync({ id: collaboratorToEdit.id, ...data, silent: true });
         onSuccess?.();
         safeCloseDialog(() => onClose());
       } else {
@@ -156,8 +154,34 @@ export function CollaboratorFormDialog({
           }, 100);
         });
       }
-    } catch (error) {
-      // Error handled by the mutation or global toast
+    } catch (error: any) {
+      console.error("Erro ao salvar colaborador:", error);
+      const message = error.response?.data?.error || error.message || "";
+
+      // Map backend error messages to form fields
+      if (message.toLowerCase().includes("cpf")) {
+        const errorMessage = messages.usuario.erro.cpfJaExiste;
+        form.setError("cpf", { message: errorMessage });
+        toast.error(errorMessage);
+        setOpenSections(prev => prev.includes("personal") ? prev : [...prev, "personal"]);
+      } else if (message.toLowerCase().includes("email") || message.toLowerCase().includes("e-mail")) {
+        const errorMessage = messages.usuario.erro.emailJaExiste;
+        form.setError("email", { message: errorMessage });
+        toast.error(errorMessage);
+        setOpenSections(prev => prev.includes("personal") ? prev : [...prev, "personal"]);
+      } else if (message.toLowerCase().includes("cnpj")) {
+        const errorMessage = messages.usuario.erro.cnpjJaExiste;
+        form.setError("cnpj", { message: errorMessage });
+        toast.error(errorMessage);
+        setOpenSections(prev => prev.includes("personal") ? prev : [...prev, "personal"]);
+      } else if (message.toLowerCase().includes("chave_pix")) {
+        const errorMessage = "Esta chave PIX já está em uso";
+        form.setError("chave_pix", { message: errorMessage });
+        toast.error(errorMessage);
+        setOpenSections(prev => prev.includes("financial") ? prev : [...prev, "financial"]);
+      } else {
+        toast.error(message || messages.erro.salvar);
+      }
     }
   };
 

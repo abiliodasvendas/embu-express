@@ -18,8 +18,10 @@ export function useCreateClient() {
         toast.success(messages.cliente.sucesso.criado);
       }
     },
-    onError: (error: any) => {
-      toast.error(messages.cliente.erro.criar, { description: error.message });
+    onError: (error: any, variables) => {
+      if (!variables.silent) {
+        toast.error(messages.cliente.erro.criar, { description: error.message });
+      }
     },
   });
 }
@@ -27,7 +29,7 @@ export function useCreateClient() {
 export function useUpdateClient() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: Partial<Client> & { id: number }) => 
+    mutationFn: ({ id, ...data }: Partial<Client> & { id: number }) =>
       clienteApi.updateCliente(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
@@ -36,8 +38,10 @@ export function useUpdateClient() {
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
       toast.success(messages.cliente.sucesso.atualizado);
     },
-    onError: (error: any) => {
-      toast.error(messages.cliente.erro.atualizar, { description: error.message });
+    onError: (error: any, variables: any) => {
+      if (!variables.silent) {
+        toast.error(messages.cliente.erro.atualizar, { description: error.message });
+      }
     },
   });
 }
@@ -45,7 +49,7 @@ export function useUpdateClient() {
 export function useToggleClientStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) => 
+    mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) =>
       clienteApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
@@ -66,7 +70,7 @@ export function useDeleteClient() {
     mutationFn: (id: number) => clienteApi.deleteCliente(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      
+
       // Force reset to ensure fresh fetch
       queryClient.resetQueries({ queryKey: ["collaborators"] });
       queryClient.resetQueries({ queryKey: ["active-collaborators-filter"] });

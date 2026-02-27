@@ -1,32 +1,32 @@
 import { CepInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
@@ -39,14 +39,14 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-    Building2,
-    FileText,
-    Hash,
-    Loader2,
-    MapPin,
-    Wand2,
-    X,
-    Zap,
+  Building2,
+  FileText,
+  Hash,
+  Loader2,
+  MapPin,
+  Wand2,
+  X,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -140,7 +140,6 @@ export function ClientFormDialog({
     const mockData = mockGenerator.client();
     form.reset(mockData);
     setOpenAccordionItems(["dados-cliente", "endereco"]);
-    toast.success(messages.mock.sucesso.preenchido);
   };
 
   const handleQuickCreate = async () => {
@@ -175,13 +174,24 @@ export function ClientFormDialog({
       };
 
       if (editingClient) {
-        await updateClient.mutateAsync({ id: editingClient.id, ...data });
+        // @ts-ignore - id is already in editingClient
+        await updateClient.mutateAsync({ id: editingClient.id, ...data, silent: true } as any);
       } else {
-        await createClient.mutateAsync(data);
+        await createClient.mutateAsync({ ...data, silent: true } as any);
       }
       safeCloseDialog(() => onClose());
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("Erro ao salvar cliente:", error);
+      const message = error.response?.data?.error || error.message || "";
+      if (message.toLowerCase().includes("cnpj")) {
+        const errorMessage = messages.cliente.erro.cnpjJaExiste;
+        form.setError("cnpj", { message: errorMessage });
+        toast.error(errorMessage);
+      } else {
+        toast.error(editingClient ? messages.cliente.erro.atualizar : messages.cliente.erro.criar, {
+          description: message
+        });
+      }
     }
   };
 

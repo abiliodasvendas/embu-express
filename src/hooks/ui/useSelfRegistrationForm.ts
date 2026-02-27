@@ -66,9 +66,30 @@ export function useSelfRegistrationForm() {
 
     } catch (error: any) {
       console.error(error);
-      toast.error(messages.erro.operacao, {
-        description: error.response?.data?.error || error.message || messages.erro.generico
-      });
+      const message = error.response?.data?.error || error.message || "";
+
+      // Map background error messages to specific form fields
+      if (message.toLowerCase().includes("cpf")) {
+        const errorMessage = messages.usuario.erro.cpfJaExiste;
+        form.setError("cpf", { message: errorMessage });
+        toast.error(errorMessage);
+      } else if (message.toLowerCase().includes("email") || message.toLowerCase().includes("e-mail")) {
+        const errorMessage = messages.usuario.erro.emailJaExiste;
+        form.setError("email", { message: errorMessage });
+        toast.error(errorMessage);
+      } else if (message.toLowerCase().includes("cnpj")) {
+        const errorMessage = messages.usuario.erro.cnpjJaExiste;
+        form.setError("cnpj", { message: errorMessage });
+        toast.error(errorMessage);
+      } else if (message.toLowerCase().includes("chave_pix")) {
+        const errorMessage = "Esta chave PIX já está em uso";
+        form.setError("chave_pix", { message: errorMessage });
+        toast.error(errorMessage);
+      } else {
+        toast.error(messages.erro.operacao, {
+          description: message || messages.erro.generico
+        });
+      }
     } finally {
       setIsLoading(false);
     }

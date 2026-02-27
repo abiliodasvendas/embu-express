@@ -1,23 +1,23 @@
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
@@ -86,7 +86,6 @@ export function EmpresaFormDialog({
       razao_social: mockData.razao_social,
       cnpj: cnpjMask(mockData.cnpj),
     });
-    toast.success(messages.mock.sucesso.preenchido);
   };
 
   const handleQuickCreate = async () => {
@@ -104,16 +103,26 @@ export function EmpresaFormDialog({
     }
   };
 
-  const onSubmit = async (data: EmpresaFormValues) => {
+  const onSubmit = async (values: EmpresaFormValues) => {
     try {
       if (isEditing && empresaToEdit) {
-        await updateEmpresa.mutateAsync({ id: empresaToEdit.id, ...data });
+        await updateEmpresa.mutateAsync({ id: empresaToEdit.id, ...values, silent: true });
       } else {
-        await createEmpresa.mutateAsync(data as any);
+        await createEmpresa.mutateAsync({ ...values, silent: true });
       }
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar empresa:", error);
+      const message = error.response?.data?.error || error.message || "";
+      if (message.toLowerCase().includes("cnpj")) {
+        const errorMessage = messages.empresa.erro.cnpjJaExiste;
+        form.setError("cnpj", { message: errorMessage });
+        toast.error(errorMessage);
+      } else {
+        toast.error(isEditing ? messages.empresa.erro.atualizar : messages.empresa.erro.criar, {
+          description: message
+        });
+      }
     }
   };
 

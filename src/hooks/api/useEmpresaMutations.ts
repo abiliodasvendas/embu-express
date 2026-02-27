@@ -17,10 +17,12 @@ export function useCreateEmpresa() {
         toast.success(messages.empresa.sucesso.criada);
       }
     },
-    onError: (error: any) => {
-      toast.error(messages.empresa.erro.criar, {
-        description: error.userMessage || error.message,
-      });
+    onError: (error: any, variables) => {
+      if (!variables.silent) {
+        toast.error(messages.empresa.erro.criar, {
+          description: error.userMessage || error.message,
+        });
+      }
     },
   });
 }
@@ -32,13 +34,15 @@ export function useUpdateEmpresa() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["empresas"] });
       // Invalidate collaborators in case we show company info there
-      queryClient.invalidateQueries({ queryKey: ["collaborators"] }); 
+      queryClient.invalidateQueries({ queryKey: ["collaborators"] });
       toast.success(messages.empresa.sucesso.atualizada);
     },
-    onError: (error: any) => {
-      toast.error(messages.empresa.erro.atualizar, {
-        description: error.userMessage || error.message,
-      });
+    onError: (error: any, variables) => {
+      if (!variables.silent) {
+        toast.error(messages.empresa.erro.atualizar, {
+          description: error.userMessage || error.message,
+        });
+      }
     },
   });
 }
@@ -46,8 +50,8 @@ export function useUpdateEmpresa() {
 export function useToggleEmpresaStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) => 
-        empresaApi.toggleStatus(id, ativo),
+    mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) =>
+      empresaApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["empresas"] });
       toast.success(messages.empresa.sucesso.status);

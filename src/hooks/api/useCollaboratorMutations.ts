@@ -28,10 +28,12 @@ export function useCreateCollaborator() {
         toast.success(messages.colaborador.sucesso.criado);
       }
     },
-    onError: (error: any) => {
-      toast.error(messages.colaborador.erro.criar, {
-        description: error.message,
-      });
+    onError: (error: any, variables) => {
+      if (!variables.silent) {
+        toast.error(messages.colaborador.erro.criar, {
+          description: error.message,
+        });
+      }
     },
   });
 }
@@ -55,10 +57,12 @@ export function useUpdateCollaborator() {
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
       toast.success(messages.colaborador.sucesso.atualizado);
     },
-    onError: (error: any) => {
-      toast.error(messages.colaborador.erro.atualizar, {
-        description: error.message,
-      });
+    onError: (error: any, variables) => {
+      if (!variables.silent) {
+        toast.error(messages.colaborador.erro.atualizar, {
+          description: error.message,
+        });
+      }
     },
   });
 }

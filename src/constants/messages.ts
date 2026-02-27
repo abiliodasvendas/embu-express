@@ -33,6 +33,7 @@ export const messages = {
       atualizar: "Erro ao atualizar cliente.",
       excluir: "Erro ao excluir cliente.",
       toggleStatus: "Erro ao alterar status do cliente.",
+      cnpjJaExiste: "Este CNPJ já está cadastrado para outro cliente.",
     },
     sucesso: {
       criado: "Cliente cadastrado com sucesso.",
@@ -182,8 +183,9 @@ export const messages = {
       criar: "Erro ao cadastrar usuário.",
       atualizar: "Erro ao atualizar usuário.",
       excluir: "Erro ao excluir usuário.",
-      cpfJaExiste: "CPF/CNPJ já existe.",
-      emailJaExiste: "Email já existe.",
+      cpfJaExiste: "CPF já cadastrado.",
+      emailJaExiste: "Email já cadastrado.",
+      cnpjJaExiste: "CNPJ já cadastrado.",
       invalido: "Usuário selecionado é inválido ou não possui um ID de autenticação.",
       atualizacao: "Erro na Atualização.",
     },
@@ -202,6 +204,7 @@ export const messages = {
       excluir: "Erro ao excluir empresa",
       status: "Erro ao alterar status",
       quickCreate: "Erro no Quick Create",
+      cnpjJaExiste: "Este CNPJ já está cadastrado para outra empresa.",
     },
     sucesso: {
       criada: "Empresa criada com sucesso!",
@@ -254,7 +257,7 @@ export const messages = {
 /**
  * Tipo para as chaves de mensagens (para autocomplete)
  */
-export type MessageKey = 
+export type MessageKey =
   | `erro.${keyof typeof messages.erro}`
   | `sucesso.${keyof typeof messages.sucesso}`
   | `cliente.erro.${keyof typeof messages.cliente.erro}`
@@ -285,7 +288,7 @@ export type MessageKey =
 export function getMessage(key: MessageKey | string): string {
   const keys = key.split('.');
   let value: unknown = messages;
-  
+
   for (const k of keys) {
     if (value && typeof value === 'object' && k in value) {
       value = value[k as keyof typeof value];
@@ -293,6 +296,6 @@ export function getMessage(key: MessageKey | string): string {
       return key; // Retorna a chave se não encontrar
     }
   }
-  
+
   return typeof value === 'string' ? value : key;
 }

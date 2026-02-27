@@ -61,8 +61,19 @@ export function CollaboratorFormDialog({
 
   useEffect(() => {
     if (roles && open) {
-      const isMotoboy = roles.find(r => r.id.toString() === perfilIdWatch)?.nome === ROLES.MOTOBOY;
-      form.setValue("isMotoboy", !!isMotoboy, { shouldValidate: true });
+      const isMotoboySelected = roles.find(r => r.id.toString() === perfilIdWatch)?.nome === ROLES.MOTOBOY;
+      form.setValue("isMotoboy", !!isMotoboySelected, { shouldValidate: true });
+
+      if (!isMotoboySelected) {
+        // Limpar campos profissionais ao trocar para perfil que não seja Motoboy
+        form.setValue("cnh_registro", "");
+        form.setValue("cnh_vencimento", "");
+        form.setValue("cnh_categoria", "");
+        form.setValue("moto_modelo", "");
+        form.setValue("moto_placa", "");
+        form.setValue("moto_cor", "");
+        form.setValue("moto_ano", "");
+      }
     }
   }, [perfilIdWatch, roles, form, open]);
 
@@ -85,11 +96,16 @@ export function CollaboratorFormDialog({
     const cnh = mockGenerator.cnh();
 
     // Personal
+    const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase().includes("motoboy"));
+    if (motoboyRole) {
+      form.setValue("perfil_id", motoboyRole.id.toString() as any);
+      form.setValue("isMotoboy", true);
+    }
+
     form.setValue("nome_completo", mockData.nome_completo);
     form.setValue("email", mockData.email);
     form.setValue("cpf", cpfMask(mockData.cpf));
     form.setValue("rg", mockGenerator.rg());
-    form.setValue("perfil_id", (roles ? roles.find(r => r.nome === ROLES.MOTOBOY)?.id.toString() || "3" : "3") as any);
 
     // Fix: Format Date of Birth as DD/MM/YYYY for the mask
     const birthDate = new Date();

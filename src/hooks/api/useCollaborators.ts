@@ -18,10 +18,10 @@ export function useCollaborator(id?: string) {
   });
 }
 
-export function useRoles() {
+export function useRoles(isPublic: boolean = false) {
   return useQuery({
-    queryKey: ["perfis"],
-    queryFn: () => colaboradorApi.listPerfis(),
+    queryKey: ["perfis", isPublic],
+    queryFn: () => isPublic ? colaboradorApi.listPublicPerfis() : colaboradorApi.listPerfis(),
   });
 }
 

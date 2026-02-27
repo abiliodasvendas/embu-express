@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { useRoles } from "@/hooks";
 import { useSelfRegistrationForm } from "@/hooks/ui/useSelfRegistrationForm";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { ArrowLeft, CheckCircle2, UserPlus, Wand2 } from "lucide-react";
 
 export default function SelfRegistration() {
   const { form, isLoading, success, onSubmit, navigate } = useSelfRegistrationForm();
+  const { data: roles } = useRoles(true);
 
   if (success) {
     return (
@@ -57,10 +59,17 @@ export default function SelfRegistration() {
             size="icon"
             onClick={() => {
               const mockData = mockGenerator.selfRegistration();
+              const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase().includes("motoboy"));
+
               Object.keys(mockData).forEach((key) => {
                 // @ts-ignore
                 form.setValue(key, mockData[key]);
               });
+
+              if (motoboyRole) {
+                form.setValue("perfil_id", motoboyRole.id.toString());
+                form.setValue("isMotoboy", true);
+              }
             }}
             className="absolute top-6 right-6 w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
             title="Preencher Mock"
@@ -73,16 +82,20 @@ export default function SelfRegistration() {
           </div>
 
           <CardTitle className="text-2xl font-black text-white uppercase tracking-tight">
-            Cadastro de Motoboy
+            Solicitação de Cadastro
           </CardTitle>
           <p className="text-blue-100 text-sm mt-2 opacity-90 max-w-xs mx-auto">
-            Preencha seus dados com atenção para solicitar acesso à plataforma.
+            Escolha seu cargo e preencha seus dados para solicitar acesso à plataforma.
           </p>
         </div>
 
         <CardContent className="p-6 sm:p-8">
           <Form {...form}>
-            <SelfRegistrationForm form={form} onSubmit={onSubmit} />
+            <SelfRegistrationForm
+              form={form}
+              onSubmit={(values) => onSubmit(values, roles)}
+              roles={roles}
+            />
           </Form>
         </CardContent>
       </Card>

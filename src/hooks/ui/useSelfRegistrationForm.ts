@@ -36,13 +36,18 @@ export function useSelfRegistrationForm() {
       cnh_vencimento: "",
       cnh_categoria: "",
       chave_pix: "",
+      perfil_id: "",
+      isMotoboy: false,
     },
     mode: "onChange",
   });
 
-  const onSubmit = async (values: SelfRegistrationFormData) => {
+  const onSubmit = async (values: SelfRegistrationFormData, roles?: any[]) => {
     setIsLoading(true);
     try {
+      // Find role name by id if roles are provided
+      const roleName = roles?.find(r => r.id.toString() === values.perfil_id)?.nome || ROLES.MOTOBOY;
+
       // Use our custom backend registration API instead of direct Supabase signUp
       const payload = {
         ...values,
@@ -54,7 +59,7 @@ export function useSelfRegistrationForm() {
         cpf: values.cpf,
         cnpj: values.cnpj,
         rg: values.rg,
-        role: ROLES.MOTOBOY, // Usando o slug em vez do ID 3 fixo
+        role: roleName,
       };
       // Remove cpfcnpj from payload if not needed by backend, but keeping it doesn't hurt usually
       // unless strict validation.

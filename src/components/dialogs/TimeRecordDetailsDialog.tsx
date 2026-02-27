@@ -144,7 +144,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                         </div>
                                         {(record.entrada_km !== null && record.entrada_km !== undefined) && (
                                             <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
-                                                {formatKm(record.entrada_km)} km
+                                                {formatKm(record.entrada_km)}
                                             </span>
                                         )}
                                     </div>
@@ -170,7 +170,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                                 </div>
                                                 {(p.inicio_km !== null && p.inicio_km !== undefined) && (
                                                     <span className="text-[10px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md font-bold">
-                                                        {formatKm(p.inicio_km)} km
+                                                        {formatKm(p.inicio_km)}
                                                     </span>
                                                 )}
                                             </div>
@@ -188,7 +188,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                                     </div>
                                                     {(p.fim_km !== undefined && p.fim_km !== null) && (
                                                         <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
-                                                            {formatKm(p.fim_km)} km
+                                                            {formatKm(p.fim_km)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -210,7 +210,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                             </div>
                                             {(record.saida_km !== null && record.saida_km !== undefined) && (
                                                 <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-md font-bold">
-                                                    {formatKm(record.saida_km)} km
+                                                    {formatKm(record.saida_km)}
                                                 </span>
                                             )}
                                         </div>
@@ -242,7 +242,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-28 transition-all hover:bg-gray-50 col-span-2 sm:col-span-1">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-2">KM Rodados</span>
                             <span className="text-xl font-black text-blue-600 font-mono">
-                                {record.detalhes_calculo?.resumo?.diff_km !== undefined ? `${formatKm(record.detalhes_calculo.resumo.diff_km)} km` : "--"}
+                                {record.detalhes_calculo?.resumo?.diff_km !== undefined ? formatKm(record.detalhes_calculo.resumo.diff_km) : "--"}
                             </span>
                         </div>
                     </div>

@@ -11,18 +11,35 @@ import {
   DialogContent,
   DialogTitle
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { messages } from "@/constants/messages";
 import { ROLES } from "@/constants/permissions.enum";
+import { cn } from "@/lib/utils";
 import { useCreateCollaborator, useEmpresas, useLayout, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
 import { CollaboratorFormData } from "@/schemas/collaboratorSchema";
-import { Usuario } from "@/types/database";
+import { Perfil, Usuario } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { getPerfilLabel } from "@/utils/formatters";
 import { aplicarMascaraPlaca, cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { Briefcase, CreditCard, DollarSign, Loader2, User, Wand2, X } from "lucide-react";
+import { Briefcase, CreditCard, DollarSign, Loader2, User, UserPlus, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CollaboratorFormFinancial } from "../features/collaborator/form/CollaboratorFormFinancial";
 import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
@@ -239,64 +256,120 @@ export function CollaboratorFormDialog({
         <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
           <Form {...form}>
             <form id="collaborator-form" onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-6">
-              <Accordion
-                type="multiple"
-                value={openSections}
-                onValueChange={setOpenSections}
-                className="space-y-4"
-              >
-                <AccordionItem value="personal" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-blue-600" />
-                      Dados Pessoais
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2">
-                    <CollaboratorFormPersonal roles={roles} />
-                  </AccordionContent>
-                </AccordionItem>
+              {/* 0. SELEÇÃO DE CARGO */}
+              <div className="bg-white border border-blue-100 rounded-2xl p-5 shadow-sm mb-2">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
+                    <UserPlus className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-gray-800 leading-none">Perfil do Colaborador</h3>
+                    <p className="text-xs text-gray-500 mt-1">Selecione o cargo para liberar o formulário</p>
+                  </div>
+                </div>
 
-                {isMotoboy && (
-                  <>
-                    <AccordionItem value="cnh" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                <FormField
+                  control={form.control}
+                  name="perfil_id"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                        Cargo / Permissão <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger
+                            className={cn(
+                              "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
+                              form.formState.errors.perfil_id && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2",
+                            )}
+                          >
+                            <SelectValue placeholder="Selecione o cargo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-xl shadow-xl">
+                          {roles?.map((role: Perfil) => (
+                            <SelectItem key={role.id} value={role.id.toString()} className="h-10 rounded-lg cursor-pointer">
+                              {getPerfilLabel(role.nome)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {perfilIdWatch ? (
+                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                  <Accordion
+                    type="multiple"
+                    value={openSections}
+                    onValueChange={setOpenSections}
+                    className="space-y-4"
+                  >
+                    <AccordionItem value="personal" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                       <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                         <div className="flex items-center gap-2">
-                          <CreditCard className="w-4 h-4 text-blue-600" />
-                          Dados da CNH
+                          <User className="w-4 h-4 text-blue-600" />
+                          Dados Pessoais
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pb-6 pt-2">
-                        <CollaboratorFormCNH />
+                        <CollaboratorFormPersonal roles={roles} />
                       </AccordionContent>
                     </AccordionItem>
 
-                    <AccordionItem value="moto" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                    {isMotoboy && (
+                      <>
+                        <AccordionItem value="cnh" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                          <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="w-4 h-4 text-blue-600" />
+                              Dados da CNH
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-6 pt-2">
+                            <CollaboratorFormCNH />
+                          </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="moto" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                          <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="w-4 h-4 text-blue-600" />
+                              Dados da Moto
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-6 pt-2">
+                            <CollaboratorFormMoto />
+                          </AccordionContent>
+                        </AccordionItem>
+                      </>
+                    )}
+
+                    <AccordionItem value="financial" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                       <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                         <div className="flex items-center gap-2">
-                          <Briefcase className="w-4 h-4 text-blue-600" />
-                          Dados da Moto
+                          <DollarSign className="w-4 h-4 text-blue-600" />
+                          Financeiro
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pb-6 pt-2">
-                        <CollaboratorFormMoto />
+                        <CollaboratorFormFinancial empresas={empresas} />
                       </AccordionContent>
                     </AccordionItem>
-                  </>
-                )}
-
-                <AccordionItem value="financial" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-blue-600" />
-                      Financeiro
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2">
-                    <CollaboratorFormFinancial empresas={empresas} />
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                  </Accordion>
+                </div>
+              ) : (
+                <div className="py-16 text-center space-y-4 opacity-40">
+                  <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+                    <Briefcase className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 font-medium">Selecione um cargo para visualizar o restante do formulário.</p>
+                </div>
+              )}
 
             </form>
           </Form>

@@ -1,17 +1,17 @@
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { cn } from "@/lib/utils";
@@ -289,38 +289,6 @@ export function CollaboratorFormPersonal({
             )}
           />
         </div>
-
-        <FormField
-          control={control}
-          name="perfil_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                Cargo / Permissão <span className="text-red-500">*</span>
-              </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger
-                    className={cn(
-                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.perfil_id && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2",
-                    )}
-                  >
-                    <SelectValue placeholder="Selecione o cargo" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {roles?.map((role: Perfil) => (
-                    <SelectItem key={role.id} value={role.id.toString()}>
-                      {getPerfilLabel(role.nome)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <FormField
           control={control}

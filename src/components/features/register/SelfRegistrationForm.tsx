@@ -50,20 +50,54 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
 
                         <FormField
                             control={form.control}
-                            name="email"
+                            name="nome_mae"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">E-mail <span className="text-red-500">*</span></FormLabel>
+                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome da Mãe</FormLabel>
                                     <FormControl>
-                                        <div className="relative">
-                                            <Mail className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
-                                            <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors", form.formState.errors.email && "border-red-500 focus-visible:ring-red-200")} placeholder="seu@email.com" type="email" {...field} />
-                                        </div>
+                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.nome_mae && "border-red-500 focus-visible:ring-red-200")} placeholder="Nome completo da mãe" {...field} />
                                     </FormControl>
                                     <FormMessage className="ml-1" />
                                 </FormItem>
                             )}
                         />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="data_nascimento"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Data de Nascimento <span className="text-red-500">*</span></FormLabel>
+                                        <FormControl>
+                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                                placeholder="DD/MM/AAAA"
+                                                maxLength={10}
+                                                {...field}
+                                                onChange={(e) => field.onChange(dateMask(e.target.value))}
+                                            />
+                                        </FormControl>
+                                        <FormMessage className="ml-1" />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">E-mail <span className="text-red-500">*</span></FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Mail className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+                                                <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors", form.formState.errors.email && "border-red-500 focus-visible:ring-red-200")} placeholder="seu@email.com" type="email" {...field} />
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage className="ml-1" />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormField
@@ -104,25 +138,21 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                             />
                         </div>
 
+                        <FormField
+                            control={form.control}
+                            name="endereco_completo"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Endereço com CEP</FormLabel>
+                                    <FormControl>
+                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.endereco_completo && "border-red-500 focus-visible:ring-red-200")} placeholder="Rua, Número, Bairro, Cidade - CEP" {...field} />
+                                    </FormControl>
+                                    <FormMessage className="ml-1" />
+                                </FormItem>
+                            )}
+                        />
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="data_nascimento"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Data de Nascimento <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                                placeholder="DD/MM/AAAA"
-                                                maxLength={10}
-                                                {...field}
-                                                onChange={(e) => field.onChange(dateMask(e.target.value))}
-                                            />
-                                        </FormControl>
-                                        <FormMessage className="ml-1" />
-                                    </FormItem>
-                                )}
-                            />
                             <FormField
                                 control={form.control}
                                 name="telefone"
@@ -141,37 +171,6 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     </FormItem>
                                 )}
                             />
-                        </div>
-
-                        <FormField
-                            control={form.control}
-                            name="nome_mae"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome da Mãe</FormLabel>
-                                    <FormControl>
-                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.nome_mae && "border-red-500 focus-visible:ring-red-200")} placeholder="Nome completo da mãe" {...field} />
-                                    </FormControl>
-                                    <FormMessage className="ml-1" />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="endereco_completo"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Endereço com CEP</FormLabel>
-                                    <FormControl>
-                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.endereco_completo && "border-red-500 focus-visible:ring-red-200")} placeholder="Rua, Número, Bairro, Cidade - CEP" {...field} />
-                                    </FormControl>
-                                    <FormMessage className="ml-1" />
-                                </FormItem>
-                            )}
-                        />
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
                                 name="telefone_recado"
@@ -190,36 +189,37 @@ export function SelfRegistrationForm({ form, onSubmit }: SelfRegistrationFormPro
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="senha"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Senha de Acesso <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
-                                                <Input
-                                                    className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pr-10 transition-colors", form.formState.errors.senha && "border-red-500 focus-visible:ring-red-200")}
-                                                    placeholder="******"
-                                                    type={showPassword ? "text" : "password"}
-                                                    {...field}
-                                                    aria-invalid={!!form.formState.errors.senha}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                                                    tabIndex={-1}
-                                                >
-                                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                                </button>
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage className="ml-1" />
-                                    </FormItem>
-                                )}
-                            />
                         </div>
+
+                        <FormField
+                            control={form.control}
+                            name="senha"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Senha de Acesso <span className="text-red-500">*</span></FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input
+                                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pr-10 transition-colors", form.formState.errors.senha && "border-red-500 focus-visible:ring-red-200")}
+                                                placeholder="******"
+                                                type={showPassword ? "text" : "password"}
+                                                {...field}
+                                                aria-invalid={!!form.formState.errors.senha}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                                tabIndex={-1}
+                                            >
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </button>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage className="ml-1" />
+                                </FormItem>
+                            )}
+                        />
                     </AccordionContent>
                 </AccordionItem>
 

@@ -41,7 +41,7 @@ export function useCreateCollaborator() {
 export function useUpdateCollaborator() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, isMotoboy, ...data }: any) => {
+    mutationFn: ({ id, isMotoboy, silent, ...data }: any) => {
       const payload = {
         ...data,
         data_nascimento: formatDateToISO(data.data_nascimento),
@@ -55,7 +55,10 @@ export function useUpdateCollaborator() {
       queryClient.invalidateQueries({ queryKey: ["collaborator", variables.id.toString()] });
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
-      toast.success(messages.colaborador.sucesso.atualizado);
+
+      if (!variables.silent) {
+        toast.success(messages.colaborador.sucesso.atualizado);
+      }
     },
     onError: (error: any, variables) => {
       if (!variables.silent) {
@@ -125,7 +128,7 @@ export function useCreateVinculo() {
 export function useUpdateVinculo() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: any) => colaboradorApi.updateVinculo(id, data),
+    mutationFn: ({ id, silent, ...data }: any) => colaboradorApi.updateVinculo(id, data),
     onSuccess: (_, variables) => {
       // We might not have colaborador_id here if it's not passed, but usually it is
       queryClient.invalidateQueries({ queryKey: ["collaborator"] });

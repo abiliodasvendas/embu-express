@@ -354,7 +354,7 @@ export default function CollaboratorDetails() {
               <Can I={PERMISSIONS.USUARIOS.EDITAR}>
                 <Button onClick={handleAddTurn} size="sm" className="rounded-xl shadow-md shadow-primary/20">
                   <Plus className="h-4 w-4 mr-2" />
-                  Novo Vínculo
+                  Novo Turno
                 </Button>
               </Can>
             </CardHeader>

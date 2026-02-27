@@ -77,12 +77,15 @@ export function CollaboratorFormDialog({
   const isMotoboy = form.watch("isMotoboy");
 
   useEffect(() => {
-    if (roles && open) {
-      const isMotoboySelected = roles.find(r => r.id.toString() === perfilIdWatch)?.nome === ROLES.MOTOBOY;
+    if (roles && open && perfilIdWatch) {
+      const selectedRole = roles.find(r => r.id.toString() === perfilIdWatch);
+      const isMotoboySelected = selectedRole?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase();
+
       form.setValue("isMotoboy", !!isMotoboySelected, { shouldValidate: true });
 
-      if (!isMotoboySelected) {
-        // Limpar campos profissionais ao trocar para perfil que não seja Motoboy
+      // Só limpamos se estivermos trocando manualmente de um motoboy para não-motoboy
+      // e não quando o formulário está apenas inicializando
+      if (perfilIdWatch && !isMotoboySelected && !collaboratorToEdit) {
         form.setValue("cnh_registro", "");
         form.setValue("cnh_vencimento", "");
         form.setValue("cnh_categoria", "");
@@ -92,7 +95,7 @@ export function CollaboratorFormDialog({
         form.setValue("moto_ano", "");
       }
     }
-  }, [perfilIdWatch, roles, form, open]);
+  }, [perfilIdWatch, roles, form, open, collaboratorToEdit]);
 
   const onFormError = (errors: any) => {
     toast.error(messages.validacao.formularioComErros);

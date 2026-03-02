@@ -28,19 +28,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateVinculo, useEmpresas, useUpdateVinculo, useCollaborator } from "@/hooks";
+import { useCollaborator, useCreateVinculo, useEmpresas, useUpdateVinculo } from "@/hooks";
 import { useClientSelection } from "@/hooks/ui/useClientSelection";
+import { cn } from "@/lib/utils";
 import { ColaboradorCliente } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { timeMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Briefcase, Clock, DollarSign, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { cn } from "@/lib/utils";
-import { timeMask } from "@/utils/masks";
 
-import { TurnFormData, turnSchema } from "@/schemas/turnSchema";
 import { ROLES } from "@/constants/permissions.enum";
+import { TurnFormData, turnSchema } from "@/schemas/turnSchema";
 
 interface CollaboratorTurnDialogProps {
   open: boolean;
@@ -168,7 +168,7 @@ export function CollaboratorTurnDialog({
             <Clock className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            {turnToEdit ? "Editar Vínculo" : "Novo Vínculo"}
+            {turnToEdit ? "Editar Turno" : "Novo Turno"}
           </DialogTitle>
         </div>
 
@@ -186,7 +186,7 @@ export function CollaboratorTurnDialog({
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                     <div className="flex items-center gap-2">
                       <Briefcase className="w-4 h-4 text-blue-600" />
-                      Dados do Vínculo
+                      Dados do Turno
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2 space-y-4">
@@ -392,7 +392,7 @@ export function CollaboratorTurnDialog({
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Salvando...
               </>
-            ) : turnToEdit ? "Salvar Alterações" : "Criar Vínculo"}
+            ) : turnToEdit ? "Salvar Alterações" : "Criar Turno"}
           </Button>
         </div>
       </DialogContent>

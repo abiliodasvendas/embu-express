@@ -115,10 +115,10 @@ export function useCreateVinculo() {
     mutationFn: (data: any) => colaboradorApi.createVinculo(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["collaborator", variables.colaborador_id] });
-      toast.success("Vínculo criado com sucesso!");
+      toast.success("Turno criado com sucesso!");
     },
     onError: (error: any) => {
-      toast.error("Erro ao criar vínculo", {
+      toast.error("Erro ao criar turno", {
         description: error.message,
       });
     },
@@ -132,10 +132,10 @@ export function useUpdateVinculo() {
     onSuccess: (_, variables) => {
       // We might not have colaborador_id here if it's not passed, but usually it is
       queryClient.invalidateQueries({ queryKey: ["collaborator"] });
-      toast.success("Vínculo atualizado!");
+      toast.success("Turno atualizado!");
     },
     onError: (error: any) => {
-      toast.error("Erro ao atualizar vínculo", {
+      toast.error("Erro ao atualizar turno", {
         description: error.message,
       });
     },
@@ -148,10 +148,10 @@ export function useDeleteVinculo() {
     mutationFn: (id: number) => colaboradorApi.deleteVinculo(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collaborator"] });
-      toast.success("Vínculo removido!");
+      toast.success("Turno removido!");
     },
     onError: (error: any) => {
-      toast.error("Erro ao remover vínculo", {
+      toast.error("Erro ao remover turno", {
         description: error.message,
       });
     },

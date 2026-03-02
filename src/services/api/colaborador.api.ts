@@ -26,7 +26,6 @@ export const colaboradorApi = {
   listPublicPerfis: (): Promise<Perfil[]> =>
     apiClient.get(`/perfis/publico`).then(res => res.data),
 
-  // Gestão de Vínculos (Turnos)
   listTurnos: (usuarioId: string): Promise<UsuarioTurno[]> =>
     apiClient.get(`/usuarios/${usuarioId}/turnos`).then(res => res.data),
 

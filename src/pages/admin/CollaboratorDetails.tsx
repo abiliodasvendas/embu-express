@@ -347,7 +347,7 @@ export default function CollaboratorDetails() {
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-primary" />
-                  Vínculos & Turnos
+                  Turnos
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">Configure onde e quando o colaborador trabalha.</p>
               </div>
@@ -366,7 +366,7 @@ export default function CollaboratorDetails() {
                   </div>
                   <h3 className="font-bold text-gray-700">Nenhum turno configurado</h3>
                   <p className="text-sm text-muted-foreground max-w-xs mx-auto mt-2">
-                    Este colaborador ainda não tem vínculos de trabalho atribuídos.
+                    Este colaborador ainda não tem turnos atribuídos.
                   </p>
                 </div>
               ) : (

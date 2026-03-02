@@ -1,21 +1,21 @@
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useClients } from "@/hooks/api/useClients";
-import { useCollaborators } from "@/hooks/api/useCollaborators";
-import { useDeleteClient, useToggleClientStatus } from "@/hooks/api/useClientMutations";
-import { cn } from "@/lib/utils";
-import { cnpjMask } from "@/utils/masks";
-import { ChevronLeft, MapPin, Power, Users, User, Trash2, Building2, ChevronDown, MoreVertical } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useLayout } from "@/contexts/LayoutContext";
-import { StatusBadge } from "@/components/common/StatusBadge";
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { useClientActions } from "@/hooks/business/useClientActions";
-import { ColaboradorCliente, Client } from "@/types/database";
 import { messages } from "@/constants/messages";
 import { STATUS } from "@/constants/roles";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useDeleteClient, useToggleClientStatus } from "@/hooks/api/useClientMutations";
+import { useClients } from "@/hooks/api/useClients";
+import { useCollaborators } from "@/hooks/api/useCollaborators";
+import { useClientActions } from "@/hooks/business/useClientActions";
+import { cn } from "@/lib/utils";
+import { Client, ColaboradorCliente } from "@/types/database";
+import { cnpjMask } from "@/utils/masks";
+import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function ClientDetails() {
     const { id } = useParams();

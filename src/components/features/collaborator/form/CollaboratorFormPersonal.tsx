@@ -309,6 +309,7 @@ export function CollaboratorFormPersonal({
                 </FormControl>
                 <SelectContent>
                   <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativo</SelectItem>
+                  <SelectItem value={STATUS_CADASTRO.PENDENTE}>Pendente</SelectItem>
                   <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativo</SelectItem>
                 </SelectContent>
               </Select>

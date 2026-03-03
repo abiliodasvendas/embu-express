@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { messages } from "@/constants/messages";
 import { useCreateClient, useUpdateClient } from "@/hooks";
 import { cn } from "@/lib/utils";
@@ -93,6 +94,8 @@ export function ClientFormDialog({
       cidade: "",
       estado: "",
       ativo: true,
+      km_contratados: 0,
+      escala_semanal: [1, 2, 3, 4, 5, 6],
     },
   });
 
@@ -111,6 +114,8 @@ export function ClientFormDialog({
           cidade: editingClient.cidade || "",
           estado: editingClient.estado || "",
           ativo: editingClient.ativo,
+          km_contratados: editingClient.km_contratados || 0,
+          escala_semanal: editingClient.escala_semanal || [1, 2, 3, 4, 5, 6],
         });
         setOpenAccordionItems(["dados-cliente", "endereco"]);
       } else {
@@ -126,6 +131,8 @@ export function ClientFormDialog({
           cidade: "",
           estado: "",
           ativo: true,
+          km_contratados: 0,
+          escala_semanal: [1, 2, 3, 4, 5, 6],
         });
         setOpenAccordionItems(["dados-cliente", "endereco"]);
       }
@@ -171,6 +178,8 @@ export function ClientFormDialog({
         bairro: values.bairro,
         cidade: values.cidade,
         estado: values.estado,
+        km_contratados: values.km_contratados,
+        escala_semanal: values.escala_semanal,
       };
 
       if (editingClient) {
@@ -349,25 +358,113 @@ export function ClientFormDialog({
                       />
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="km_contratados"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                              KM Contratados (Diário)
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Zap className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
+                                <Input
+                                  type="number"
+                                  placeholder="Ex: 100"
+                                  className={cn(
+                                    "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                    form.formState.errors.km_contratados && "border-red-500 focus-visible:ring-red-200"
+                                  )}
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="ativo"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-xl border p-2 px-4 bg-gray-50/50">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                                Status Ativo
+                              </FormLabel>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
                     <FormField
                       control={form.control}
-                      name="ativo"
+                      name="escala_semanal"
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-gray-50/50">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70 text-base">
-                              Status Ativo
+                        <FormItem className="space-y-3 p-4 border rounded-xl bg-gray-50/30">
+                          <div className="flex flex-col gap-1">
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                              Escala Semanal (Dias Pagos)
                             </FormLabel>
-                            <div className="text-sm text-muted-foreground">
-                              Define se o cliente está habilitado.
-                            </div>
+                            <span className="text-xs text-muted-foreground ml-1">
+                              Selecione os dias da semana que compõem a escala base deste cliente.
+                            </span>
                           </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
+                          <div className="flex flex-wrap gap-x-6 gap-y-3 ml-1">
+                            {[
+                              { id: 1, label: "Seg" },
+                              { id: 2, label: "Ter" },
+                              { id: 3, label: "Qua" },
+                              { id: 4, label: "Qui" },
+                              { id: 5, label: "Sex" },
+                              { id: 6, label: "Sáb" },
+                              { id: 0, label: "Dom" },
+                            ].map((day) => (
+                              <FormField
+                                key={day.id}
+                                control={form.control}
+                                name="escala_semanal"
+                                render={({ field: checkboxField }) => {
+                                  return (
+                                    <FormItem
+                                      key={day.id}
+                                      className="flex flex-row items-center space-x-2 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={checkboxField.value?.includes(day.id)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? checkboxField.onChange([...checkboxField.value, day.id])
+                                              : checkboxField.onChange(
+                                                checkboxField.value?.filter(
+                                                  (value: number) => value !== day.id
+                                                )
+                                              )
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-medium leading-none cursor-pointer">
+                                        {day.label}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />

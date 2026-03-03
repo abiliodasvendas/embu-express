@@ -25,6 +25,9 @@ export const turnSchema = z.object({
   valor_aluguel: optionalMoneySchema,
   valor_bonus: optionalMoneySchema,
   ajuda_custo: optionalMoneySchema,
+  valor_mei: optionalMoneySchema,
+  valor_adiantamento: optionalMoneySchema,
+  data_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
   isMotoboy: z.any().optional(),
 }).refine((data) => {
   const isM = data.isMotoboy === true || data.isMotoboy === "true";

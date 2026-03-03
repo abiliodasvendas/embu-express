@@ -52,6 +52,12 @@ export const pagesItems: PageItem[] = [
         permissionKey: PERMISSIONS.EMPRESAS.VER,
     },
     {
+        title: "Feriados",
+        href: ROUTES.PRIVATE.FERIADOS,
+        icon: Building, // Or another appropriate icon
+        permissionKey: PERMISSIONS.CONFIGURACAO.VER,
+    },
+    {
         title: "Configurações",
         href: ROUTES.PRIVATE.CONFIGURACOES,
         icon: Settings,

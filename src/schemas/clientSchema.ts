@@ -18,6 +18,8 @@ export const clientSchema = z
     cidade: z.string().min(1, messages.validacao.campoObrigatorio),
     estado: z.string().min(2, messages.validacao.campoObrigatorio),
     ativo: z.boolean().default(true),
+    km_contratados: z.number().min(0).default(0),
+    escala_semanal: z.array(z.number()).default([1, 2, 3, 4, 5, 6]), // Default Seg-Sáb
   })
   .superRefine((data, ctx) => {
     const validation = validateEnderecoFields(

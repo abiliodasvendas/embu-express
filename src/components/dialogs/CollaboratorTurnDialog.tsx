@@ -19,6 +19,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -85,6 +86,9 @@ export function CollaboratorTurnDialog({
       valor_aluguel: "",
       valor_bonus: "",
       ajuda_custo: "",
+      valor_mei: "",
+      valor_adiantamento: "",
+      data_inicio: new Date().toISOString().split('T')[0],
       isMotoboy: false,
     },
   });
@@ -101,6 +105,9 @@ export function CollaboratorTurnDialog({
           valor_aluguel: formatCurrency(turnToEdit.valor_aluguel || 0),
           valor_bonus: formatCurrency(turnToEdit.valor_bonus || 0),
           ajuda_custo: formatCurrency(turnToEdit.ajuda_custo || 0),
+          valor_mei: formatCurrency(turnToEdit.valor_mei || 0),
+          valor_adiantamento: formatCurrency(turnToEdit.valor_adiantamento || 0),
+          data_inicio: turnToEdit.data_inicio || new Date().toISOString().split('T')[0],
           isMotoboy: collaborator?.perfil?.nome === ROLES.MOTOBOY,
         });
       } else {
@@ -114,6 +121,9 @@ export function CollaboratorTurnDialog({
           valor_aluguel: "",
           valor_bonus: "",
           ajuda_custo: "",
+          valor_mei: "",
+          valor_adiantamento: "",
+          data_inicio: new Date().toISOString().split('T')[0],
           isMotoboy: isM,
         });
       }
@@ -135,6 +145,9 @@ export function CollaboratorTurnDialog({
         valor_aluguel: isMotoboy ? values.valor_aluguel : 0,
         valor_bonus: isMotoboy ? values.valor_bonus : 0,
         ajuda_custo: isMotoboy ? values.ajuda_custo : 0,
+        valor_mei: isMotoboy ? values.valor_mei : 0,
+        valor_adiantamento: values.valor_adiantamento,
+        data_inicio: values.data_inicio,
       };
 
       if (turnToEdit) {
@@ -304,67 +317,124 @@ export function CollaboratorTurnDialog({
                       Configuração Financeira
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2 space-y-5">
-                    <div className={cn("grid gap-4", collaborator?.perfil?.nome === ROLES.MOTOBOY ? "grid-cols-2" : "grid-cols-1")}>
-                      <FormField
-                        control={form.control}
-                        name="valor_contrato"
-                        render={({ field }) => (
-                          <MoneyInput
-                            field={field}
-                            label="Valor Contrato"
-                            required={true}
-                            inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                          />
-                        )}
-                      />
-                      {collaborator?.perfil?.nome === ROLES.MOTOBOY && (
+                  <AccordionContent className="pb-6 pt-2 space-y-6">
+                    {/* 1. PERÍODO */}
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-bold text-gray-800 ml-1">Início da Vigência</h4>
+                      <div className="grid grid-cols-1 gap-4">
                         <FormField
                           control={form.control}
-                          name="valor_aluguel"
+                          name="data_inicio"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs opacity-70">Data de Início do Período <span className="text-red-500">*</span></FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
+                              </FormControl>
+                              <FormDescription className="text-[10px] leading-tight">
+                                Usado para calcular o pro-rata automático no primeiro mês de trabalho.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 2. CRÉDITOS */}
+                    <div className="space-y-3 bg-green-50/30 p-4 rounded-2xl border border-green-100">
+                      <h4 className="text-sm font-bold text-green-800 ml-1">Ganhos / Créditos</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="valor_contrato"
                           render={({ field }) => (
                             <MoneyInput
                               field={field}
-                              label="Aluguel Moto"
+                              label="Salário Base"
+                              required={true}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                            />
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="valor_mei"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Valor MEI"
                               required={false}
                               inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                             />
                           )}
                         />
+                      </div>
+
+                      {collaborator?.perfil?.nome === ROLES.MOTOBOY && (
+                        <>
+                          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-green-100">
+                            <FormField
+                              control={form.control}
+                              name="valor_aluguel"
+                              render={({ field }) => (
+                                <MoneyInput
+                                  field={field}
+                                  label="Aluguel Moto"
+                                  required={false}
+                                  inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
+                                />
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="ajuda_custo"
+                              render={({ field }) => (
+                                <MoneyInput
+                                  field={field}
+                                  label="Ajuda Custo"
+                                  required={false}
+                                  inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
+                                />
+                              )}
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 pt-2">
+                            <FormField
+                              control={form.control}
+                              name="valor_bonus"
+                              render={({ field }) => (
+                                <MoneyInput
+                                  field={field}
+                                  label="Bônus Zero Falta"
+                                  required={false}
+                                  inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
+                                />
+                              )}
+                            />
+                          </div>
+                        </>
                       )}
                     </div>
 
-                    {collaborator?.perfil?.nome === ROLES.MOTOBOY && (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="ajuda_custo"
-                            render={({ field }) => (
-                              <MoneyInput
-                                field={field}
-                                label="Ajuda Custo"
-                                required={false}
-                                inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                              />
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="valor_bonus"
-                            render={({ field }) => (
-                              <MoneyInput
-                                field={field}
-                                label="Bônus Zero Falta"
-                                required={false}
-                                inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                              />
-                            )}
-                          />
-                        </div>
-
-                      </>
-                    )}
+                    {/* 3. DÉBITOS */}
+                    <div className="space-y-3 bg-red-50/30 p-4 rounded-2xl border border-red-100">
+                      <h4 className="text-sm font-bold text-red-800 ml-1">Descontos / Débitos</h4>
+                      <div className="grid grid-cols-1 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="valor_adiantamento"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Adiantamento"
+                              required={false}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>

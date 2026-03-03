@@ -44,7 +44,7 @@ const commonSchema = z.object({
   endereco_completo: z.string().optional(),
   telefone: phoneSchema,
   telefone_recado: z.string().optional(),
-  status: z.enum([STATUS_CADASTRO.ATIVO, STATUS_CADASTRO.INATIVO, STATUS_CADASTRO.PENDENTE]).default(STATUS_CADASTRO.ATIVO),
+  status: z.enum([STATUS_CADASTRO.ATIVO, STATUS_CADASTRO.INATIVO, STATUS_CADASTRO.PENDENTE]).default(STATUS_CADASTRO.PENDENTE),
   senha_padrao: z.boolean().optional(),
   data_inicio: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
@@ -59,6 +59,7 @@ const commonSchema = z.object({
     valor_bonus: z.coerce.number().optional(),
     ajuda_custo: z.coerce.number().optional(),
   })).superRefine(checkLinkConflicts).optional().default([]),
+  tipo_chave_pix: z.string().optional(),
   chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
 });
 

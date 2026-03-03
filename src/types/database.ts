@@ -28,6 +28,8 @@ export interface Client {
   ativo: boolean;
   created_at?: string;
   updated_at?: string;
+  km_contratados?: number;
+  escala_semanal?: number[];
 }
 
 export interface Empresa {
@@ -65,6 +67,7 @@ export interface Usuario {
   cnh_vencimento?: string;
   cnh_categoria?: string;
   cnpj?: string;
+  tipo_chave_pix?: string;
   chave_pix?: string;
   moto_modelo?: string;
   moto_cor?: string;
@@ -97,6 +100,10 @@ export interface ColaboradorCliente {
   valor_aluguel?: number;
   valor_bonus?: number;
   ajuda_custo?: number;
+  valor_mei?: number;
+  valor_adiantamento?: number;
+  data_inicio?: string;
+  data_fim?: string;
   // Virtual
   cliente?: Client;
   empresa?: Empresa;

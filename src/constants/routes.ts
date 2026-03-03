@@ -14,6 +14,7 @@ export const ROUTES = {
         EMPRESAS: "/empresas",
         PERFIS: "/perfis",
         CONFIGURACOES: "/configuracoes",
+        FERIADOS: "/feriados",
         INICIO: "/inicio"
     }
 } as const;

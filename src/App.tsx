@@ -43,6 +43,7 @@ const ClientDetails = lazyLoad(() => import("./pages/admin/ClientDetails"));
 const Empresas = lazyLoad(() => import("./pages/admin/Empresas"));
 const Perfis = lazyLoad(() => import("./pages/admin/Perfis"));
 const Configuracoes = lazyLoad(() => import("./pages/admin/Configuracoes"));
+const Feriados = lazyLoad(() => import("./pages/admin/Feriados"));
 const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
 
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -212,6 +213,7 @@ const App = () => {
                     <Route path={ROUTES.PRIVATE.EMPRESAS.replace("/", "")} element={<Empresas />} />
                     <Route path={ROUTES.PRIVATE.PERFIS.replace("/", "")} element={<Perfis />} />
                     <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />
+                    <Route path={ROUTES.PRIVATE.FERIADOS.replace("/", "")} element={<Feriados />} />
                   </Route>
                 </Route>
 

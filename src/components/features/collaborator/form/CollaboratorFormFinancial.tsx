@@ -46,7 +46,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                 )} />
                 <FormField name="tipo_chave_pix" control={form.control} render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX</FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX <span className="text-red-500">*</span></FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">

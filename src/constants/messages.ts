@@ -252,6 +252,19 @@ export const messages = {
       botao: "Ativar",
     },
   },
+
+  // ========== FINANCEIRO ==========
+  financeiro: {
+    erro: {
+      carregar: "Erro ao carregar relatório financeiro.",
+      fecharMes: "Erro ao fechar mês.",
+      registrarPagamento: "Erro ao registrar pagamento.",
+    },
+    sucesso: {
+      fechado: "Mês fechado com sucesso!",
+      pago: "Pagamento registrado com sucesso!",
+    },
+  },
 } as const;
 
 /**
@@ -279,7 +292,9 @@ export type MessageKey =
   | `emptyState.ponto.${keyof typeof messages.emptyState.ponto}`
   | `dialogo.remover.${keyof typeof messages.dialogo.remover}`
   | `dialogo.desativar.${keyof typeof messages.dialogo.desativar}`
-  | `dialogo.ativar.${keyof typeof messages.dialogo.ativar}`;
+  | `dialogo.ativar.${keyof typeof messages.dialogo.ativar}`
+  | `financeiro.erro.${keyof typeof messages.financeiro.erro}`
+  | `financeiro.sucesso.${keyof typeof messages.financeiro.sucesso}`;
 
 /**
  * Função helper para obter mensagem por chave

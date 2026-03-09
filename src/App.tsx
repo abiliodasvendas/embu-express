@@ -44,6 +44,9 @@ const Empresas = lazyLoad(() => import("./pages/admin/Empresas"));
 const Perfis = lazyLoad(() => import("./pages/admin/Perfis"));
 const Configuracoes = lazyLoad(() => import("./pages/admin/Configuracoes"));
 const Feriados = lazyLoad(() => import("./pages/admin/Feriados"));
+const Ocorrencias = lazyLoad(() => import("./pages/admin/Occurrences"));
+const TimeMirror = lazyLoad(() => import("./pages/admin/TimeMirror"));
+const FinancialReport = lazyLoad(() => import("./pages/admin/FinancialReport"));
 const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
 
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -214,6 +217,9 @@ const App = () => {
                     <Route path={ROUTES.PRIVATE.PERFIS.replace("/", "")} element={<Perfis />} />
                     <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />
                     <Route path={ROUTES.PRIVATE.FERIADOS.replace("/", "")} element={<Feriados />} />
+                    <Route path={ROUTES.PRIVATE.OCORRENCIAS.replace("/", "")} element={<Ocorrencias />} />
+                    <Route path={ROUTES.PRIVATE.ESPELHO_PONTO.replace("/", "")} element={<TimeMirror />} />
+                    <Route path={ROUTES.PRIVATE.RELATORIO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
                   </Route>
                 </Route>
 

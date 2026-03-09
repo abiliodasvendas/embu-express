@@ -15,11 +15,35 @@ interface ConfigItem {
     descricao: string;
 }
 
-const CONFIG_METADATA: Record<string, { label: string; icon: any; unit?: string }> = {
-    tolerancia_verde_min: { label: "Tolerância Verde", icon: CheckCircle2, unit: "min" },
-    tolerancia_amarelo_min: { label: "Tolerância Amarela", icon: Clock, unit: "min" },
-    tolerancia_saida_min: { label: "Tolerância de Saída", icon: Clock, unit: "min" },
-    limite_he_excessiva_min: { label: "Limite HE Excessiva", icon: AlertTriangle, unit: "min" },
+const CONFIG_METADATA: Record<string, { label: string; icon: any; unit?: string; description: string; example: string }> = {
+    tolerancia_verde_min: {
+        label: "Tolerância Ideal (Verde)",
+        icon: CheckCircle2,
+        unit: "min",
+        description: "Tempo máximo de atraso permitido para que a entrada ainda seja considerada pontual no painel.",
+        example: "Ex: Se definido como 5 min, entrar às 08:05 em um turno das 08:00 ainda manterá o status Verde."
+    },
+    tolerancia_amarelo_min: {
+        label: "Alerta de Atraso (Amarelo)",
+        icon: Clock,
+        unit: "min",
+        description: "Limite superior para o status de 'Atenção'. Após este tempo, o atraso é considerado crítico (Vermelho).",
+        example: "Ex: Se definido como 15 min, entradas de 6 a 15 min de atraso ficam amarelas. Acima disso, vermelhas."
+    },
+    tolerancia_saida_min: {
+        label: "Flexibilidade de Saída",
+        icon: Clock,
+        unit: "min",
+        description: "Janela aceitável para bater o ponto de saída sem gerar alertas de saída antecipada ou atrasada.",
+        example: "Ex: Se definido como 10 min, sair 10 min antes ou depois do horário oficial não gera inconsistência."
+    },
+    limite_he_excessiva_min: {
+        label: "Limite de Hora Extra Alerta",
+        icon: AlertTriangle,
+        unit: "min",
+        description: "Define o tempo de jornada excedente que dispara um alerta de segurança/fadiga para a gerência.",
+        example: "Ex: Se definido como 120 min, o sistema avisa quando o colaborador trabalhar 2h além do seu horário."
+    },
 };
 
 export default function Configuracoes() {
@@ -53,7 +77,7 @@ export default function Configuracoes() {
                     <Settings className="h-8 w-8 text-blue-600" />
                     <h1 className="text-3xl font-bold text-slate-800">Configurações do Sistema</h1>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     {[1, 2, 3, 4].map((i) => (
                         <Skeleton key={i} className="h-48 w-full rounded-3xl" />
                     ))}
@@ -77,7 +101,7 @@ export default function Configuracoes() {
 
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {configs?.map((config) => (
                     <ConfigCard
                         key={config.chave}
@@ -97,7 +121,7 @@ function ConfigCard({ config, onSave, isSaving }: {
     isSaving: boolean;
 }) {
     const [value, setValue] = useState(config.valor);
-    const metadata = CONFIG_METADATA[config.chave] || { label: config.chave, icon: Settings };
+    const metadata = CONFIG_METADATA[config.chave] || { label: config.chave, icon: Settings, description: config.descricao, example: "" };
     const Icon = metadata.icon;
 
     useEffect(() => {
@@ -115,15 +139,23 @@ function ConfigCard({ config, onSave, isSaving }: {
                     </div>
                     <CardTitle className="text-lg font-bold text-slate-800">{metadata.label}</CardTitle>
                 </div>
-                <CardDescription className="text-slate-500 line-clamp-2 min-h-[40px]">
-                    {config.descricao}
+                <CardDescription className="text-slate-500 min-h-[40px]">
+                    {metadata.description}
                 </CardDescription>
+                {metadata.example && (
+                    <div className="mt-2 p-3 bg-blue-50/50 rounded-xl border border-blue-100/50">
+                        <p className="text-[11px] text-blue-600 font-bold leading-normal italic">
+                            {metadata.example}
+                        </p>
+                    </div>
+                )}
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <Label className="text-gray-700 font-bold ml-1 text-sm opacity-70">Valor Atual</Label>
+                    <Label className="text-gray-700 font-bold ml-1 text-sm opacity-70">Valor em Minutos</Label>
                     <div className="relative">
                         <Input
+                            type="number"
                             value={value}
                             onChange={(e) => setValue(e.target.value)}
                             className="bg-gray-50 border-gray-200 focus:bg-white transition-colors rounded-xl pr-12 h-12 text-lg font-medium"

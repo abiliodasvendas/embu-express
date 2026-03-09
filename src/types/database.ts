@@ -74,6 +74,7 @@ export interface Usuario {
   moto_ano?: string;
   moto_placa?: string;
 
+  ponto_hoje?: Ponto;
   // Relacionamentos (virtual)
   perfil?: Perfil;
   cliente?: Client;
@@ -169,5 +170,37 @@ export interface Pausa {
 
   created_at?: string;
   updated_at?: string;
-}export type RegistroPonto = Ponto;
+}
+
+export interface TipoOcorrencia {
+  id: number;
+  nome: string;
+  descricao?: string;
+  valor_padrao?: number;
+  impacto_financeiro: boolean;
+  created_at?: string;
+}
+
+export interface Ocorrencia {
+  id: number;
+  tipo_id: number;
+  colaborador_id: string;
+  colaborador_cliente_id?: number;
+  data_ocorrencia: string;
+  valor?: number;
+  impacto_financeiro: boolean;
+  observacao?: string;
+  tipo_lancamento: 'ENTRADA' | 'SAIDA';
+  criado_por: string;
+  created_at?: string;
+  updated_at?: string;
+
+  // Joins
+  tipo?: TipoOcorrencia;
+  colaborador?: Partial<Usuario>;
+  criado_por_usuario?: Partial<Usuario>;
+  vinculo?: ColaboradorCliente & { cliente?: Client };
+}
+
+export type RegistroPonto = Ponto;
 export type RegistroPausa = Pausa;

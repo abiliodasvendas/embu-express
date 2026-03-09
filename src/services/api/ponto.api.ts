@@ -22,4 +22,7 @@ export const pontoApi = {
 
   finalizarPausa: (id: number, data: { fim_hora?: string; fim_km?: number; fim_loc?: string }): Promise<any> =>
     apiClient.put(`/pontos/pausas/${id}`, data).then(res => res.data),
+
+  getRelatorioMensal: (usuarioId: string, mes: number, ano: number): Promise<any[]> =>
+    apiClient.get(`/pontos/relatorio-mensal/${usuarioId}`, { params: { mes, ano } }).then(res => res.data),
 };

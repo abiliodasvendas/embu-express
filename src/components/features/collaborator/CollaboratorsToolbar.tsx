@@ -1,5 +1,6 @@
 import { FilterButton } from "@/components/common/FilterButton";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +36,7 @@ interface CollaboratorsToolbarProps {
   onRoleChange: (value: string) => void;
   onRegister: () => void;
   onQuickCreate?: () => void;
-  onApplyFilters: (filters: { status?: string; categoria?: string; cliente?: string; empresa?: string }) => void;
+  onApplyFilters: (filters: { status?: string; categoria?: string; cliente?: string; empresa?: string; sem_ponto_hoje?: boolean }) => void;
   roles: any[];
   clients: any[];
   selectedClient: string;
@@ -43,6 +44,8 @@ interface CollaboratorsToolbarProps {
   empresas: any[];
   selectedEmpresa: string;
   onEmpresaChange: (value: string) => void;
+  selectedSemPontoHoje: boolean;
+  onSemPontoHojeChange: (value: boolean) => void;
 }
 
 const FilterControls = ({
@@ -56,6 +59,8 @@ const FilterControls = ({
   onEmpresaChange,
   onClear,
   onApply,
+  semPontoHojeValue,
+  onSemPontoHojeChange,
   roles,
   clients,
   empresas,
@@ -71,6 +76,8 @@ const FilterControls = ({
   onEmpresaChange: (val: string) => void;
   onClear: () => void;
   onApply?: () => void;
+  semPontoHojeValue: boolean;
+  onSemPontoHojeChange: (val: boolean) => void;
   roles: any[];
   clients: any[];
   empresas: any[];
@@ -160,6 +167,19 @@ const FilterControls = ({
         </SelectContent>
       </Select>
     </div>
+    <div className="flex items-center space-x-2 pt-2 pb-1">
+      <Checkbox
+        id="semPontoHoje"
+        checked={semPontoHojeValue}
+        onCheckedChange={(checked) => onSemPontoHojeChange(!!checked)}
+      />
+      <Label
+        htmlFor="semPontoHoje"
+        className="text-sm font-medium leading-none cursor-pointer text-gray-700"
+      >
+        Apenas sem ponto hoje
+      </Label>
+    </div>
 
   </div>
 );
@@ -181,6 +201,8 @@ export function CollaboratorsToolbar({
   empresas,
   selectedEmpresa,
   onEmpresaChange,
+  selectedSemPontoHoje,
+  onSemPontoHojeChange,
 }: CollaboratorsToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -194,6 +216,7 @@ export function CollaboratorsToolbar({
   const [mobileRole, setMobileRole] = useState(selectedRole);
   const [mobileClient, setMobileClient] = useState(selectedClient);
   const [mobileEmpresa, setMobileEmpresa] = useState(selectedEmpresa);
+  const [mobileSemPontoHoje, setMobileSemPontoHoje] = useState(selectedSemPontoHoje);
 
   useEffect(() => {
     onSearchChange(debouncedSearch);
@@ -214,14 +237,15 @@ export function CollaboratorsToolbar({
       setMobileRole(selectedRole);
       setMobileClient(selectedClient);
       setMobileEmpresa(selectedEmpresa);
+      setMobileSemPontoHoje(selectedSemPontoHoje);
     }
   }, [isSheetOpen, selectedStatus, selectedRole, selectedClient, selectedEmpresa]);
 
   const hasAdvancedFilters =
-    selectedStatus !== STATUS_CADASTRO.TODOS || selectedRole !== STATUS_CADASTRO.TODOS || selectedClient !== STATUS_CADASTRO.TODOS || selectedEmpresa !== STATUS_CADASTRO.TODOS;
+    selectedStatus !== STATUS_CADASTRO.TODOS || selectedRole !== STATUS_CADASTRO.TODOS || selectedClient !== STATUS_CADASTRO.TODOS || selectedEmpresa !== STATUS_CADASTRO.TODOS || selectedSemPontoHoje;
   const hasAnyFilter = hasAdvancedFilters || localSearch !== "";
   const selectedCount =
-    (selectedStatus !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedRole !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedClient !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedEmpresa !== STATUS_CADASTRO.TODOS ? 1 : 0);
+    (selectedStatus !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedRole !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedClient !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedEmpresa !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedSemPontoHoje ? 1 : 0);
 
   const clearFilters = () => {
     setLocalSearch("");
@@ -230,7 +254,8 @@ export function CollaboratorsToolbar({
       status: STATUS_CADASTRO.TODOS,
       categoria: STATUS_CADASTRO.TODOS,
       cliente: STATUS_CADASTRO.TODOS,
-      empresa: STATUS_CADASTRO.TODOS
+      empresa: STATUS_CADASTRO.TODOS,
+      sem_ponto_hoje: false
     });
   };
 
@@ -240,6 +265,7 @@ export function CollaboratorsToolbar({
       categoria: mobileRole,
       cliente: mobileClient,
       empresa: mobileEmpresa,
+      sem_ponto_hoje: mobileSemPontoHoje,
     });
     setIsSheetOpen(false);
   };
@@ -249,6 +275,7 @@ export function CollaboratorsToolbar({
     setMobileRole(STATUS_CADASTRO.TODOS);
     setMobileClient(STATUS_CADASTRO.TODOS);
     setMobileEmpresa(STATUS_CADASTRO.TODOS);
+    setMobileSemPontoHoje(false);
   };
 
   return (
@@ -312,6 +339,8 @@ export function CollaboratorsToolbar({
                     onClientChange={setMobileClient}
                     empresaValue={mobileEmpresa}
                     onEmpresaChange={setMobileEmpresa}
+                    semPontoHojeValue={mobileSemPontoHoje}
+                    onSemPontoHojeChange={setMobileSemPontoHoje}
                     onClear={clearMobileFilters}
                     onApply={applyMobileFilters}
                     roles={roles || []}
@@ -372,6 +401,8 @@ export function CollaboratorsToolbar({
                     onClientChange={onClientChange}
                     empresaValue={selectedEmpresa}
                     onEmpresaChange={onEmpresaChange}
+                    semPontoHojeValue={selectedSemPontoHoje}
+                    onSemPontoHojeChange={onSemPontoHojeChange}
                     onClear={clearFilters}
                     roles={roles || []}
                     clients={clients || []}

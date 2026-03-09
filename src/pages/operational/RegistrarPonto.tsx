@@ -45,7 +45,7 @@ export default function RegistrarPonto() {
         empresa?: string;
     } | null>(null);
     const [timer, setTimer] = useState<string>("00:00:00");
-    const [pausasMetric, setPausasMetric] = useState<{ count: number; totalMs: number }>({ count: 0, totalMs: 0 });
+    const [pausasMetric, setPausasMetric] = useState<{ count: number; totalMs: number; kmTrabalho: number; kmPausa: number }>({ count: 0, totalMs: 0, kmTrabalho: 0, kmPausa: 0 });
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const hasShifts = !!userProfile?.links?.length;
@@ -159,16 +159,25 @@ export default function RegistrarPonto() {
         setActiveShift(shift);
         if (shift?.id) setSelectedLinkId(shift.id);
 
-        // Calculate Pause Metrics
-        const finishedPausas = pontoHoje.pausas?.filter((p: any) => p.fim_hora) || [];
+        // Calculate Pause and KM Metrics
+        const allPausas = pontoHoje.pausas || [];
+        const finishedPausas = allPausas.filter((p: any) => p.fim_hora) || [];
+
         const totalPausasMs = finishedPausas.reduce((acc: number, p: any) => {
             const s = new Date(p.inicio_hora).getTime();
             const e = new Date(p.fim_hora).getTime();
             return acc + (e - s);
         }, 0);
+
+        // KM Metrics: Work (sum of distance_trabalho in pauses + final exit distance) vs Pause (sum of distance_pausa)
+        const kmTrabalho = allPausas.reduce((acc: number, p: any) => acc + (Number(p.distancia_trabalho) || 0), 0) + (Number(pontoHoje.saida_distancia_trabalho) || 0);
+        const kmPausa = allPausas.reduce((acc: number, p: any) => acc + (Number(p.distancia_pausa) || 0), 0);
+
         setPausasMetric({
-            count: pontoHoje.pausas?.length || 0,
-            totalMs: totalPausasMs
+            count: allPausas.length,
+            totalMs: totalPausasMs,
+            kmTrabalho,
+            kmPausa
         });
 
         if (openPause) {
@@ -352,243 +361,262 @@ export default function RegistrarPonto() {
                 <LoadingOverlay active={loadingGeo && !isRefreshing} text="Buscando localização..." />
 
                 {/* Geolocation Alert - Always Visible if Error */}
-            <AnimatePresence>
-                {(geoError || (!location && !loadingGeo)) && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="mb-6"
-                    >
-                        <Alert variant="destructive" className="rounded-3xl border-2 border-red-100 shadow-xl shadow-red-500/10 bg-white/80 backdrop-blur-md text-red-900 mb-2 p-6 overflow-hidden relative group">
-                            <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
-                            <ShieldAlert className="h-6 w-6 text-red-600 mb-2" />
-                            <AlertTitle className="font-black text-lg">Localização Requerida</AlertTitle>
-                            <AlertDescription className="text-red-700 font-medium leading-relaxed">
-                                {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível ou fraco demais.") : "Aguardando sinal de GPS para liberar o registro seguramente."}
+                <AnimatePresence>
+                    {(geoError || (!location && !loadingGeo)) && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="mb-6"
+                        >
+                            <Alert variant="destructive" className="rounded-3xl border-2 border-red-100 shadow-xl shadow-red-500/10 bg-white/80 backdrop-blur-md text-red-900 mb-2 p-6 overflow-hidden relative group">
+                                <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
+                                <ShieldAlert className="h-6 w-6 text-red-600 mb-2" />
+                                <AlertTitle className="font-black text-lg">Localização Requerida</AlertTitle>
+                                <AlertDescription className="text-red-700 font-medium leading-relaxed">
+                                    {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível ou fraco demais.") : "Aguardando sinal de GPS para liberar o registro seguramente."}
 
-                                {permissionDenied ? (
-                                    isWeb ? (
-                                        <p className="mt-4 text-sm font-semibold text-red-800 text-balance bg-red-50 p-4 rounded-2xl border border-red-100">
-                                            Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1 text-red-900 font-black">Cadeado</strong> ou <strong className="mx-1 text-red-900 font-black">Ajustes</strong> ao lado da barra de endereço e reative a localização.
-                                        </p>
+                                    {permissionDenied ? (
+                                        isWeb ? (
+                                            <p className="mt-4 text-sm font-semibold text-red-800 text-balance bg-red-50 p-4 rounded-2xl border border-red-100">
+                                                Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1 text-red-900 font-black">Cadeado</strong> ou <strong className="mx-1 text-red-900 font-black">Ajustes</strong> ao lado da barra de endereço e reative a localização.
+                                            </p>
+                                        ) : (
+                                            <button
+                                                onClick={() => NativeSettings.open({
+                                                    optionAndroid: AndroidSettings.ApplicationDetails,
+                                                    optionIOS: IOSSettings.App
+                                                })}
+                                                className="mt-6 bg-red-600 px-6 py-4 rounded-2xl text-white font-black hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 flex items-center w-full justify-center hover:-translate-y-0.5 active:translate-y-0"
+                                            >
+                                                <Settings className="w-5 h-5 mr-3" /> Abrir Configurações
+                                            </button>
+                                        )
                                     ) : (
                                         <button
-                                            onClick={() => NativeSettings.open({
-                                                optionAndroid: AndroidSettings.ApplicationDetails,
-                                                optionIOS: IOSSettings.App
-                                            })}
-                                            className="mt-6 bg-red-600 px-6 py-4 rounded-2xl text-white font-black hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 flex items-center w-full justify-center hover:-translate-y-0.5 active:translate-y-0"
+                                            onClick={() => requestLocation()}
+                                            className="mt-4 bg-white border border-red-200 px-6 py-3 rounded-2xl text-red-900 font-black hover:bg-red-50 transition-all flex items-center w-full justify-center shadow-sm"
                                         >
-                                            <Settings className="w-5 h-5 mr-3" /> Abrir Configurações
+                                            <RefreshCw className="w-4 h-4 mr-2" /> Tentar Novamente
                                         </button>
-                                    )
-                                ) : (
-                                    <button
-                                        onClick={() => requestLocation()}
-                                        className="mt-4 bg-white border border-red-200 px-6 py-3 rounded-2xl text-red-900 font-black hover:bg-red-50 transition-all flex items-center w-full justify-center shadow-sm"
-                                    >
-                                        <RefreshCw className="w-4 h-4 mr-2" /> Tentar Novamente
-                                    </button>
-                                )}
-                            </AlertDescription>
-                        </Alert>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                                    )}
+                                </AlertDescription>
+                            </Alert>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-            {location && (
-                <>
-                    {!hasShifts ? (
-                        /* MISSING SHIFT PROMINENT ALERT - Centered on standalone */
-                        <div className="w-full max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-amber-200 p-6 sm:p-12 text-center flex flex-col items-center animate-in zoom-in-95 duration-500 min-h-[400px] justify-center">
-                            <div className="bg-amber-50 p-6 rounded-3xl mb-6 sm:mb-8 border border-amber-100">
-                                <ShieldAlert className="w-16 h-16 sm:w-20 sm:h-20 text-amber-500" />
-                            </div>
-                            <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-4 sm:mb-6 tracking-tight">Turnos não configurados</h2>
-                            <p className="text-slate-500 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8 text-balance">
-                                Ainda não é possível registrar seu ponto pois não identificamos vínculos de turno ativos no seu perfil.
-                            </p>
-                            <div className="w-full p-5 sm:p-6 bg-slate-50 rounded-2xl border border-slate-200 text-slate-600 text-sm sm:text-base font-medium">
-                                Por favor, solicite ao seu <strong className="text-slate-900 font-bold">gestor ou administrador</strong> que vincule seu cadastro a uma empresa para liberar o registro de ponto.
-                            </div>
-                        </div>
-                    ) : (
-                        <div className={`flex gap-6 ${status === 'idle' ? 'flex-col-reverse sm:flex-row' : 'flex-col sm:flex-row'}`}>
-                            {/* Esquerda: Status */}
-                            <div className="flex-1 flex flex-col min-w-0">
-                                {/* Header / Status Card - Clean Corporate Style */}
-                                <Card className={`border shadow-sm rounded-3xl overflow-hidden relative transition-all duration-500 h-full flex flex-col justify-center ${status === 'idle' ? 'min-h-[180px] sm:min-h-[300px]' : 'min-h-[110px] sm:min-h-[300px]'
-                                    } ${status === 'working' ? 'bg-white border-blue-100' :
-                                        status === 'paused' ? 'bg-amber-50 border-amber-200' :
-                                            'bg-slate-50 border-slate-200'
-                                    }`}>
-                                    <CardContent className={`p-4 sm:p-5 md:p-6 lg:p-10 relative z-10 flex flex-col items-center justify-center text-center ${status !== 'idle' ? 'py-4' : 'py-8'}`}>
-                                        <span className={`text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] mb-0 sm:mb-4 ${status === 'working' ? 'text-blue-500' :
-                                            status === 'paused' ? 'text-amber-600' :
-                                                'text-slate-400'
-                                            }`}>
-                                            Status Atual
-                                        </span>
-                                        <h2 className={`text-lg sm:text-2xl font-black mb-0 sm:mb-2 tracking-tight ${status === 'working' ? 'text-slate-800' :
-                                            status === 'paused' ? 'text-amber-900' :
-                                                'text-slate-700'
-                                            }`}>
-                                            {status === 'idle' && "AGUARDANDO INÍCIO"}
-                                            {status === 'working' && "EM SERVIÇO"}
-                                            {status === 'paused' && "EM PAUSA"}
-                                        </h2>
-                                        <div className={`text-2xl sm:text-2xl md:text-3xl lg:text-5xl xl:text-6xl font-mono font-bold mt-1 sm:mt-4 tabular-nums tracking-tighter ${status === 'working' ? 'text-blue-600' :
-                                            status === 'paused' ? 'text-amber-700' :
-                                                'text-slate-800'
-                                            }`}>
-                                            {timer}
-                                        </div>
-
-                                        {status !== 'idle' && (
-                                            <div className="mt-6 grid grid-cols-3 gap-8 w-full border-t border-slate-200/50 pt-6">
-                                                <div className="text-center">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Entrada</span>
-                                                    <span className="text-sm font-bold text-slate-600">
-                                                        {pontoHoje?.entrada_hora ? new Date(pontoHoje.entrada_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                                                    </span>
-                                                </div>
-                                                <div className="text-center">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pausas</span>
-                                                    <span className="text-sm font-bold text-slate-600">{pausasMetric.count}</span>
-                                                </div>
-                                                <div className="text-center">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Total Pausa</span>
-                                                    <span className="text-sm font-bold text-slate-600">
-                                                        {Math.floor(pausasMetric.totalMs / 3600000).toString().padStart(2, '0')}:
-                                                        {Math.floor((pausasMetric.totalMs % 3600000) / 60000).toString().padStart(2, '0')}h
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            {/* Direita: Ações e Informações */}
-                            <div className="w-full sm:w-60 md:w-72 lg:w-80 xl:w-[400px] flex flex-col gap-6 shrink-0 min-w-0">
-                                {/* Area de Selecao de Turno - Somente Visivel no IDLE */}
-                                {status === 'idle' && hasShifts && (
-                                    <Card className="rounded-3xl shadow-sm border-slate-200 overflow-visible bg-white">
-                                        <CardContent className="p-6">
-                                            <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-3">Selecione o Turno</label>
-                                            <Select
-                                                value={selectedLinkId}
-                                                onValueChange={setSelectedLinkId}
-                                                disabled={loadingGeo || !location}
-                                            >
-                                                <SelectTrigger className="w-full h-14 rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-semibold focus:ring-blue-500/20 text-base">
-                                                    <SelectValue placeholder="Escolha a empresa e horário..." />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-xl border-slate-200 shadow-xl">
-                                                    {userProfile?.links?.map((link: any) => (
-                                                        <SelectItem
-                                                            key={link.id}
-                                                            value={link.id.toString()}
-                                                            className="rounded-lg cursor-pointer focus:bg-slate-100 py-3"
-                                                        >
-                                                            <div className="flex flex-col">
-                                                                <span className="font-bold text-slate-800">{link.cliente?.nome_fantasia || "Cliente Não Informado"}</span>
-                                                                <span className="text-sm text-slate-500 mt-0.5">
-                                                                    <Briefcase className="w-3 h-3 inline mr-1 opacity-70" />
-                                                                    {link.hora_inicio?.slice(0, 5)} - {link.hora_fim?.slice(0, 5)}
-                                                                </span>
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </CardContent>
-                                    </Card>
-                                )}
-
-                                {/* Info Cards - Visible on Working/Paused */}
-                                {status !== 'idle' && hasShifts && (
-                                    <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden bg-white">
-                                        <CardContent className="p-4 sm:p-6 flex justify-between items-center bg-slate-50/50">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1 flex items-center gap-1">
-                                                    <Briefcase className="w-3 h-3" /> Turno em Andamento
-                                                </span>
-                                                <p className="text-sm sm:text-base font-bold text-slate-600 truncate max-w-[150px] sm:max-w-[200px]">
-                                                    {activeShift?.nome}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                {activeShift?.horario ? (
-                                                    <p className="text-xl sm:text-2xl font-black text-blue-600 leading-none">{activeShift.horario}</p>
-                                                ) : (
-                                                    <p className="text-xl sm:text-2xl font-black text-slate-800 leading-none">--</p>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                )}
-
-                                {/* Action Buttons */}
-                                {hasShifts && (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {status === 'idle' && (
-                                            <Button
-                                                onClick={handleToggle}
-                                                disabled={loadingGeo || !location || !selectedLinkId || isProcessing}
-                                                className="h-20 text-xl font-bold rounded-2xl shadow-md bg-blue-600 text-white hover:bg-blue-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100"
-                                            >
-                                                {isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
-                                                {isProcessing ? "PROCESSANDO..." : (loadingGeo ? "LOCALIZANDO..." : "INICIAR TURNO")}
-                                            </Button>
-                                        )}
-
-                                        {status === 'working' && (
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={handlePauseStart}
-                                                    disabled={loadingGeo || !location || isProcessing}
-                                                    className="h-20 text-lg font-bold rounded-2xl border-2 border-amber-500 text-amber-600 hover:bg-amber-50 shadow-sm disabled:opacity-50 transition-all active:scale-[0.98]"
-                                                >
-                                                    {isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2" /> : <Pause className="w-5 h-5 mr-2" />}
-                                                    PAUSA
-                                                </Button>
-                                                <Button
-                                                    onClick={handleToggle}
-                                                    disabled={loadingGeo || !location || isProcessing}
-                                                    className="h-20 text-lg font-bold rounded-2xl shadow-md bg-slate-800 text-white hover:bg-slate-900 disabled:opacity-50 transition-all active:scale-[0.98]"
-                                                >
-                                                    {isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2 text-white" /> : (loadingGeo ? <MapPin className="animate-pulse w-5 h-5 mr-2" /> : <Square className="w-5 h-5 mr-2 text-red-500" />)}
-                                                    {isProcessing ? "AGUARDE..." : "ENCERRAR"}
-                                                </Button>
-                                            </div>
-                                        )}
-
-                                        {status === 'paused' && (
-                                            <Button
-                                                onClick={handlePauseEnd}
-                                                disabled={loadingGeo || !location || isProcessing}
-                                                className="h-20 text-xl font-bold rounded-2xl shadow-md bg-amber-500 text-white hover:bg-amber-600 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                                            >
-                                                {isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
-                                                {isProcessing ? "PROCESSANDO..." : (loadingGeo ? "LOCALIZANDO..." : "RETOMAR TRABALHO")}
-                                            </Button>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Always visible info - Small block */}
-                                <div className="flex items-center justify-center text-slate-500 text-sm font-medium mt-2 bg-slate-100/50 py-3 rounded-2xl border border-slate-200">
-                                    <MapPin className={`w-4 h-4 mr-2 flex-shrink-0 ${location ? 'text-emerald-500' : 'text-slate-300'}`} />
-                                    <span className="truncate">Localização: {loadingGeo ? "Obtendo..." : location ? "Ativa e Monitorada" : "Indisponível"}</span>
+                {location && (
+                    <>
+                        {!hasShifts ? (
+                            /* MISSING SHIFT PROMINENT ALERT - Centered on standalone */
+                            <div className="w-full max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-amber-200 p-6 sm:p-12 text-center flex flex-col items-center animate-in zoom-in-95 duration-500 min-h-[400px] justify-center">
+                                <div className="bg-amber-50 p-6 rounded-3xl mb-6 sm:mb-8 border border-amber-100">
+                                    <ShieldAlert className="w-16 h-16 sm:w-20 sm:h-20 text-amber-500" />
+                                </div>
+                                <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-4 sm:mb-6 tracking-tight">Turnos não configurados</h2>
+                                <p className="text-slate-500 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8 text-balance">
+                                    Ainda não é possível registrar seu ponto pois não identificamos vínculos de turno ativos no seu perfil.
+                                </p>
+                                <div className="w-full p-5 sm:p-6 bg-slate-50 rounded-2xl border border-slate-200 text-slate-600 text-sm sm:text-base font-medium">
+                                    Por favor, solicite ao seu <strong className="text-slate-900 font-bold">gestor ou administrador</strong> que vincule seu cadastro a uma empresa para liberar o registro de ponto.
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </>
-            )}
+                        ) : (
+                            <div className={`flex gap-6 ${status === 'idle' ? 'flex-col-reverse sm:flex-row' : 'flex-col sm:flex-row'}`}>
+                                {/* Esquerda: Status */}
+                                <div className="flex-1 flex flex-col min-w-0">
+                                    {/* Header / Status Card - Clean Corporate Style */}
+                                    <Card className={`border shadow-sm rounded-3xl overflow-hidden relative transition-all duration-500 h-full flex flex-col justify-center ${status === 'idle' ? 'min-h-[180px] sm:min-h-[300px]' : 'min-h-[110px] sm:min-h-[300px]'
+                                        } ${status === 'working' ? 'bg-white border-blue-100' :
+                                            status === 'paused' ? 'bg-amber-50 border-amber-200' :
+                                                'bg-slate-50 border-slate-200'
+                                        }`}>
+                                        <CardContent className={`p-4 sm:p-5 md:p-6 lg:p-10 relative z-10 flex flex-col items-center justify-center text-center ${status !== 'idle' ? 'py-4' : 'py-8'}`}>
+                                            <span className={`text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] mb-0 sm:mb-4 ${status === 'working' ? 'text-blue-500' :
+                                                status === 'paused' ? 'text-amber-600' :
+                                                    'text-slate-400'
+                                                }`}>
+                                                Status Atual
+                                            </span>
+                                            <h2 className={`text-lg sm:text-2xl font-black mb-0 sm:mb-2 tracking-tight ${status === 'working' ? 'text-slate-800' :
+                                                status === 'paused' ? 'text-amber-900' :
+                                                    'text-slate-700'
+                                                }`}>
+                                                {status === 'idle' && "AGUARDANDO INÍCIO"}
+                                                {status === 'working' && "EM SERVIÇO"}
+                                                {status === 'paused' && "EM PAUSA"}
+                                            </h2>
+                                            <div className={`text-2xl sm:text-2xl md:text-3xl lg:text-5xl xl:text-6xl font-mono font-bold mt-1 sm:mt-4 tabular-nums tracking-tighter ${status === 'working' ? 'text-blue-600' :
+                                                status === 'paused' ? 'text-amber-700' :
+                                                    'text-slate-800'
+                                                }`}>
+                                                {timer}
+                                            </div>
+
+                                            {status !== 'idle' && (
+                                                <div className="mt-6 w-full border-t border-slate-200/50 pt-6 space-y-6">
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        <div className="text-center">
+                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Entrada</span>
+                                                            <span className="text-sm font-bold text-slate-600">
+                                                                {pontoHoje?.entrada_hora ? new Date(pontoHoje.entrada_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pausas</span>
+                                                            <span className="text-sm font-bold text-slate-600">{pausasMetric.count}</span>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Total Pausa</span>
+                                                            <span className="text-sm font-bold text-slate-600">
+                                                                {Math.floor(pausasMetric.totalMs / 3600000).toString().padStart(2, '0')}:
+                                                                {Math.floor((pausasMetric.totalMs % 3600000) / 60000).toString().padStart(2, '0')}h
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {isMotoboy && (
+                                                        <div className="grid grid-cols-2 gap-4 pb-2">
+                                                            <div className="bg-blue-50/50 rounded-2xl p-3 border border-blue-100/50">
+                                                                <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest block mb-1">KM em Serviço</span>
+                                                                <span className="text-lg font-black text-blue-700">
+                                                                    {pausasMetric.kmTrabalho.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <small className="text-[10px] font-bold opacity-70">KM</small>
+                                                                </span>
+                                                            </div>
+                                                            <div className="bg-amber-50/50 rounded-2xl p-3 border border-amber-100/50">
+                                                                <span className="text-[9px] font-bold text-amber-600 uppercase tracking-widest block mb-1">KM em Pausa</span>
+                                                                <span className="text-lg font-black text-amber-700">
+                                                                    {pausasMetric.kmPausa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <small className="text-[10px] font-bold opacity-70">KM</small>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Direita: Ações e Informações */}
+                                <div className="w-full sm:w-60 md:w-72 lg:w-80 xl:w-[400px] flex flex-col gap-6 shrink-0 min-w-0">
+                                    {/* Area de Selecao de Turno - Somente Visivel no IDLE */}
+                                    {status === 'idle' && hasShifts && (
+                                        <Card className="rounded-3xl shadow-sm border-slate-200 overflow-visible bg-white">
+                                            <CardContent className="p-6">
+                                                <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-3">Selecione o Turno</label>
+                                                <Select
+                                                    value={selectedLinkId}
+                                                    onValueChange={setSelectedLinkId}
+                                                    disabled={loadingGeo || !location}
+                                                >
+                                                    <SelectTrigger className="w-full h-14 rounded-xl bg-slate-50 border-slate-200 text-slate-800 font-semibold focus:ring-blue-500/20 text-base">
+                                                        <SelectValue placeholder="Escolha a empresa e horário..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-xl border-slate-200 shadow-xl">
+                                                        {userProfile?.links?.map((link: any) => (
+                                                            <SelectItem
+                                                                key={link.id}
+                                                                value={link.id.toString()}
+                                                                className="rounded-lg cursor-pointer focus:bg-slate-100 py-3"
+                                                            >
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-bold text-slate-800">{link.cliente?.nome_fantasia || "Cliente Não Informado"}</span>
+                                                                    <span className="text-sm text-slate-500 mt-0.5">
+                                                                        <Briefcase className="w-3 h-3 inline mr-1 opacity-70" />
+                                                                        {link.hora_inicio?.slice(0, 5)} - {link.hora_fim?.slice(0, 5)}
+                                                                    </span>
+                                                                </div>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* Info Cards - Visible on Working/Paused */}
+                                    {status !== 'idle' && hasShifts && (
+                                        <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden bg-white">
+                                            <CardContent className="p-4 sm:p-6 flex justify-between items-center bg-slate-50/50">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1 flex items-center gap-1">
+                                                        <Briefcase className="w-3 h-3" /> Turno em Andamento
+                                                    </span>
+                                                    <p className="text-sm sm:text-base font-bold text-slate-600 truncate max-w-[150px] sm:max-w-[200px]">
+                                                        {activeShift?.nome}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    {activeShift?.horario ? (
+                                                        <p className="text-xl sm:text-2xl font-black text-blue-600 leading-none">{activeShift.horario}</p>
+                                                    ) : (
+                                                        <p className="text-xl sm:text-2xl font-black text-slate-800 leading-none">--</p>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* Action Buttons */}
+                                    {hasShifts && (
+                                        <div className="grid grid-cols-1 gap-4">
+                                            {status === 'idle' && (
+                                                <Button
+                                                    onClick={handleToggle}
+                                                    disabled={loadingGeo || !location || !selectedLinkId || isProcessing}
+                                                    className="h-20 text-xl font-bold rounded-2xl shadow-md bg-blue-600 text-white hover:bg-blue-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100"
+                                                >
+                                                    {isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
+                                                    {isProcessing ? "PROCESSANDO..." : (loadingGeo ? "LOCALIZANDO..." : "INICIAR TURNO")}
+                                                </Button>
+                                            )}
+
+                                            {status === 'working' && (
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={handlePauseStart}
+                                                        disabled={loadingGeo || !location || isProcessing}
+                                                        className="h-20 text-lg font-bold rounded-2xl border-2 border-amber-500 text-amber-600 hover:bg-amber-50 shadow-sm disabled:opacity-50 transition-all active:scale-[0.98]"
+                                                    >
+                                                        {isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2" /> : <Pause className="w-5 h-5 mr-2" />}
+                                                        PAUSA
+                                                    </Button>
+                                                    <Button
+                                                        onClick={handleToggle}
+                                                        disabled={loadingGeo || !location || isProcessing}
+                                                        className="h-20 text-lg font-bold rounded-2xl shadow-md bg-slate-800 text-white hover:bg-slate-900 disabled:opacity-50 transition-all active:scale-[0.98]"
+                                                    >
+                                                        {isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2 text-white" /> : (loadingGeo ? <MapPin className="animate-pulse w-5 h-5 mr-2" /> : <Square className="w-5 h-5 mr-2 text-red-500" />)}
+                                                        {isProcessing ? "AGUARDE..." : "ENCERRAR"}
+                                                    </Button>
+                                                </div>
+                                            )}
+
+                                            {status === 'paused' && (
+                                                <Button
+                                                    onClick={handlePauseEnd}
+                                                    disabled={loadingGeo || !location || isProcessing}
+                                                    className="h-20 text-xl font-bold rounded-2xl shadow-md bg-amber-500 text-white hover:bg-amber-600 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                                >
+                                                    {isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
+                                                    {isProcessing ? "PROCESSANDO..." : (loadingGeo ? "LOCALIZANDO..." : "RETOMAR TRABALHO")}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Always visible info - Small block */}
+                                    <div className="flex items-center justify-center text-slate-500 text-sm font-medium mt-2 bg-slate-100/50 py-3 rounded-2xl border border-slate-200">
+                                        <MapPin className={`w-4 h-4 mr-2 flex-shrink-0 ${location ? 'text-emerald-500' : 'text-slate-300'}`} />
+                                        <span className="truncate">Localização: {loadingGeo ? "Obtendo..." : location ? "Ativa e Monitorada" : "Indisponível"}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
 
             </div>
         </PullToRefreshWrapper>

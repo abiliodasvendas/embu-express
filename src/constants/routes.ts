@@ -15,6 +15,9 @@ export const ROUTES = {
         PERFIS: "/perfis",
         CONFIGURACOES: "/configuracoes",
         FERIADOS: "/feriados",
+        OCORRENCIAS: "/admin/ocorrencias",
+        ESPELHO_PONTO: "/admin/espelho-ponto",
+        RELATORIO_FINANCEIRO: "/admin/financeiro",
         INICIO: "/inicio"
     }
 } as const;

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ListSkeleton } from "@/components/skeletons";
 import { messages } from "@/constants/messages";
 import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
@@ -14,9 +15,18 @@ import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions"
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
 import { cnpjMask, cpfMask, dateMask, phoneMask } from "@/utils/masks";
-import { Bike, Calendar, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, Mail, MapPin, MoreVertical, Phone, Plus, Trash2, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
+import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
+import { useOcorrencias } from "@/hooks/api/useOcorrencias";
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { AlertCircle, Bike, Calendar as CalendarIcon, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, FileText, History, Mail, MapPin, MoreVertical, Phone, Plus, Trash2, User, Wallet, Link2 } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { meses, anos } from "@/utils/formatters/constants";
+
 
 export default function CollaboratorDetails() {
   const { id } = useParams();
@@ -32,7 +42,8 @@ export default function CollaboratorDetails() {
     closeConfirmationDialog,
     openCollaboratorFormDialog,
     openCollaboratorTurnDialog,
-    openSuccessRegistrationDialog
+    openSuccessRegistrationDialog,
+    openOccurrenceFormDialog
   } = useLayout();
 
   const handleAddTurn = () => {
@@ -118,6 +129,27 @@ export default function CollaboratorDetails() {
     hideDetails: true,
   });
 
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+
+  const dateRange = useMemo(() => {
+    const date = new Date(selectedYear, selectedMonth - 1, 1);
+    return {
+      inicio: format(startOfMonth(date), "yyyy-MM-dd"),
+      fim: format(endOfMonth(date), "yyyy-MM-dd")
+    };
+  }, [selectedMonth, selectedYear]);
+
+  const { data: occurrences = [], isLoading: isLoadingOccurrences } = useOcorrencias({
+    usuario_id: id,
+    data_inicio: dateRange.inicio,
+    data_fim: dateRange.fim
+  });
+
+  const monthOptions = useMemo(() =>
+    meses.map((label, index) => ({ value: index + 1, label })),
+    []);
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-6 animate-in fade-in duration-500">
@@ -175,6 +207,7 @@ export default function CollaboratorDetails() {
     }
   }
 
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -198,158 +231,198 @@ export default function CollaboratorDetails() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Info - Left Column */}
-        <div className="space-y-6">
-          <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-gradient-to-b from-primary/5 to-white">
-            <CardContent className="pt-8 pb-6 text-center">
-              <div className="mx-auto w-24 h-24 rounded-3xl bg-primary flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
-                <User className="h-12 w-12 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">{collaborator.nome_completo}</h2>
-              <div className="flex items-center justify-center gap-2 mt-3">
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "px-3 py-1 rounded-full font-bold border",
-                    getStatusColor(collaborator.status)
-                  )}
-                >
-                  {collaborator.status}
-                </Badge>
-                {role?.nome && (
-                  <Badge variant="outline" className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border-blue-200 uppercase tracking-wider text-[10px]">
-                    {role.nome}
-                  </Badge>
-                )}
-              </div>
-            </CardContent>
-            <CardContent className="border-t border-gray-100 space-y-4 pt-6">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-50 rounded-lg shrink-0">
-                  <Mail className="h-4 w-4 text-blue-600" />
-                </div>
-                <div className="overflow-hidden">
-                  <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">E-mail</p>
-                  <p className="text-sm font-medium text-gray-700 truncate">{collaborator.email}</p>
-                </div>
-              </div>
+      <Tabs defaultValue="dados" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5 lg:w-max h-12 rounded-2xl bg-gray-100 p-1">
+          <TabsTrigger value="dados" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline">Dados</span>
+          </TabsTrigger>
+          <TabsTrigger value="turnos" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+            <Clock className="h-4 w-4" />
+            <span className="hidden sm:inline">Turnos</span>
+          </TabsTrigger>
+          <TabsTrigger value="ocorrencias" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">Ocorrências</span>
+          </TabsTrigger>
+          <TabsTrigger value="ponto" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+            <Clock className="h-4 w-4" />
+            <span className="hidden sm:inline">Ponto</span>
+          </TabsTrigger>
+          <TabsTrigger value="financeiro" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+            <Wallet className="h-4 w-4" />
+            <span className="hidden sm:inline">Financeiro</span>
+          </TabsTrigger>
+        </TabsList>
 
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-purple-50 rounded-lg shrink-0">
-                  <CreditCard className="h-4 w-4 text-purple-600" />
-                </div>
-                <div className="w-full">
-                  <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Documentos</p>
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground font-semibold">CPF</p>
-                      <p className="text-sm font-medium text-gray-700">{cpfMask(collaborator.cpf)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground font-semibold">RG</p>
-                      <p className="text-sm font-medium text-gray-700">{collaborator.rg || '-'}</p>
-                    </div>
-                    {collaborator.cnpj && (
-                      <div className="col-span-2">
-                        <p className="text-[10px] text-muted-foreground font-semibold">CNPJ (MEI)</p>
-                        <p className="text-sm font-medium text-gray-700">{cnpjMask(collaborator.cnpj)}</p>
-                      </div>
+        <TabsContent value="dados" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Profile Info - Left Column */}
+            <div className="space-y-6">
+              <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-gradient-to-b from-primary/5 to-white">
+                <CardContent className="pt-8 pb-6 text-center">
+                  <div className="mx-auto w-24 h-24 rounded-3xl bg-primary flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
+                    <User className="h-12 w-12 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-800">{collaborator.nome_completo}</h2>
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        "px-3 py-1 rounded-full font-bold border",
+                        getStatusColor(collaborator.status)
+                      )}
+                    >
+                      {collaborator.status}
+                    </Badge>
+                    {role?.nome && (
+                      <Badge variant="outline" className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border-blue-200 uppercase tracking-wider text-[10px]">
+                        {role.nome}
+                      </Badge>
                     )}
                   </div>
-                </div>
-              </div>
+                </CardContent>
+                <CardContent className="border-t border-gray-100 space-y-4 pt-6">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg shrink-0">
+                      <Mail className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">E-mail</p>
+                      <p className="text-sm font-medium text-gray-700 truncate">{collaborator.email}</p>
+                    </div>
+                  </div>
 
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-yellow-50 rounded-lg shrink-0">
-                  <Calendar className="h-4 w-4 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Nascimento</p>
-                  <p className="text-sm font-medium text-gray-700">{collaborator.data_nascimento ? dateMask(collaborator.data_nascimento) : '-'}</p>
-                </div>
-              </div>
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-purple-50 rounded-lg shrink-0">
+                      <CreditCard className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div className="w-full">
+                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Documentos</p>
+                      <div className="grid grid-cols-2 gap-2 mt-1">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground font-semibold">CPF</p>
+                          <p className="text-sm font-medium text-gray-700">{cpfMask(collaborator.cpf)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground font-semibold">RG</p>
+                          <p className="text-sm font-medium text-gray-700">{collaborator.rg || '-'}</p>
+                        </div>
+                        {collaborator.cnpj && (
+                          <div className="col-span-2">
+                            <p className="text-[10px] text-muted-foreground font-semibold">CNPJ (MEI)</p>
+                            <p className="text-sm font-medium text-gray-700">{cnpjMask(collaborator.cnpj)}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-green-50 rounded-lg shrink-0">
-                  <Phone className="h-4 w-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Telefone</p>
-                  <p className="text-sm font-medium text-gray-700">{collaborator.telefone ? phoneMask(collaborator.telefone) : 'Não informado'}</p>
-                </div>
-              </div>
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-yellow-50 rounded-lg shrink-0">
+                      <CalendarIcon className="h-4 w-4 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Nascimento</p>
+                      <p className="text-sm font-medium text-gray-700">{collaborator.data_nascimento ? dateMask(collaborator.data_nascimento) : '-'}</p>
+                    </div>
+                  </div>
 
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
-                  <div className="h-4 w-4 font-bold text-emerald-600 flex items-center justify-center text-[10px]">R$</div>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Chave PIX</p>
-                  <p className="text-sm font-medium text-gray-700 break-all">{collaborator.chave_pix || '-'}</p>
-                </div>
-              </div>
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-green-50 rounded-lg shrink-0">
+                      <Phone className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Telefone</p>
+                      <p className="text-sm font-medium text-gray-700">{collaborator.telefone ? phoneMask(collaborator.telefone) : 'Não informado'}</p>
+                    </div>
+                  </div>
 
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-orange-50 rounded-lg shrink-0">
-                  <MapPin className="h-4 w-4 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Endereço</p>
-                  <p className="text-sm font-medium text-gray-700 leading-tight">{collaborator.endereco_completo || 'Não informado'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
+                      <div className="h-4 w-4 font-bold text-emerald-600 flex items-center justify-center text-[10px]">R$</div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Chave PIX</p>
+                      <p className="text-sm font-medium text-gray-700 break-all">{collaborator.chave_pix || '-'}</p>
+                    </div>
+                  </div>
 
-          {role?.nome === ROLES.MOTOBOY && (
-            <Card className="border-0 shadow-sm rounded-3xl border-l-4 border-l-primary">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Bike className="h-4 w-4 text-primary" />
-                  Veículo & CNH
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4 pt-2">
-                <div>
-                  <p className="text-xs text-muted-foreground">Moto / Modelo</p>
-                  <p className="text-sm font-bold">{collaborator.moto_modelo || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Placa</p>
-                  <Badge variant="outline" className="font-mono bg-yellow-50">{collaborator.moto_placa || '-'}</Badge>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Cor / Ano</p>
-                  <p className="text-sm font-medium">{collaborator.moto_cor || '-'} / {collaborator.moto_ano || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">CNH</p>
-                  <p className="text-sm font-medium">{collaborator.cnh_registro || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Categoria</p>
-                  <p className="text-sm font-medium">{collaborator.cnh_categoria || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Vencimento CNH</p>
-                  <p className="text-sm font-medium">{collaborator.cnh_vencimento ? dateMask(collaborator.cnh_vencimento) : '-'}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-orange-50 rounded-lg shrink-0">
+                      <MapPin className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Endereço</p>
+                      <p className="text-sm font-medium text-gray-700 leading-tight">{collaborator.endereco_completo || 'Não informado'}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Turns Management - Right Column */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px] flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8">
+            <div className="lg:col-span-2 space-y-6">
+              {role?.nome === ROLES.MOTOBOY && (
+                <Card className="border-0 shadow-sm rounded-3xl border-l-4 border-l-primary bg-white">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Bike className="h-4 w-4 text-primary" />
+                      Veículo & CNH
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Moto / Modelo</p>
+                      <p className="text-sm font-bold">{collaborator.moto_modelo || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Placa</p>
+                      <Badge variant="outline" className="font-mono bg-yellow-50">{collaborator.moto_placa || '-'}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Cor / Ano</p>
+                      <p className="text-sm font-medium">{collaborator.moto_cor || '-'} / {collaborator.moto_ano || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">CNH</p>
+                      <p className="text-sm font-medium">{collaborator.cnh_registro || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Categoria</p>
+                      <p className="text-sm font-medium">{collaborator.cnh_categoria || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Vencimento CNH</p>
+                      <p className="text-sm font-medium">{collaborator.cnh_vencimento ? dateMask(collaborator.cnh_vencimento) : '-'}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card className="border-0 shadow-sm rounded-3xl bg-white p-8">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <FileText className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Documentação Completa</h3>
+                    <p className="text-sm text-muted-foreground">Todos os dados cadastrais foram verificados.</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="turnos" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px] flex flex-col pt-4">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 pb-6 px-8">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Turnos
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                  Turnos Ativos
                 </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">Configure onde e quando o colaborador trabalha.</p>
+                <p className="text-sm text-muted-foreground mt-1">Vínculos diretos com clientes e horários.</p>
               </div>
               <Can I={PERMISSIONS.USUARIOS.EDITAR}>
                 <Button onClick={handleAddTurn} size="sm" className="rounded-xl shadow-md shadow-primary/20">
@@ -437,8 +510,131 @@ export default function CollaboratorDetails() {
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="ocorrencias" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
+            <CardHeader className="pb-6 pt-8 px-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <History className="h-5 w-5 text-primary" />
+                  Histórico de Ocorrências
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">Registros de faltas, atrasos e outros eventos.</p>
+              </div>
+
+              <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                  <SelectTrigger className="h-9 w-[130px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {meses.map((label, index) => (
+                      <SelectItem key={index} value={String(index + 1)} className="text-xs">{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                  <SelectTrigger className="h-9 w-[90px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {[new Date().getFullYear(), new Date().getFullYear() - 1].map(ano => (
+                      <SelectItem key={ano} value={String(ano)} className="text-xs">{ano}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  onClick={() => openOccurrenceFormDialog({ collaboratorId: id, onSuccess: refetch })}
+                  className="rounded-xl h-9 px-4 gap-2 shadow-sm font-bold bg-primary hover:bg-primary/90 text-white border-none"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Lançar</span>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="px-8 pb-8">
+              {isLoadingOccurrences ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => <div key={i} className="h-32 bg-gray-50 animate-pulse rounded-2xl" />)}
+                </div>
+              ) : occurrences.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {occurrences.map((oc) => (
+                    <Card key={oc.id} className="border-gray-100 hover:border-primary/20 transition-all group rounded-2xl bg-gray-50/30 overflow-hidden">
+                      <CardContent className="p-5 flex flex-col h-full">
+                        <div className="flex justify-between items-start mb-4">
+                          <Badge variant="secondary" className="bg-white text-primary hover:bg-white border-gray-100 rounded-lg">
+                            {oc.tipo?.nome || 'Ocorrência'}
+                          </Badge>
+                          <span className="text-xs font-bold text-gray-400">
+                            {format(new Date(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-6 flex-grow">{oc.observacao || 'Nenhuma observação registrada.'}</p>
+                        <div className="flex items-center justify-between pt-4 border-t border-dashed border-gray-200">
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
+                            {oc.impacto_financeiro ? 'Financeiro: ' + (oc.tipo_lancamento === 'ENTRADA' ? 'Crédito' : 'Débito') : 'Sem Impacto'}
+                          </span>
+                          {oc.impacto_financeiro && (
+                            <span className={cn(
+                              "text-sm font-black",
+                              oc.tipo_lancamento === 'ENTRADA' ? "text-emerald-600" : "text-red-500"
+                            )}>
+                              {oc.tipo_lancamento === 'ENTRADA' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-20 flex flex-col items-center justify-center text-center">
+                  <div className="p-4 bg-primary/5 rounded-full mb-4">
+                    <History className="h-8 w-8 text-primary/40" />
+                  </div>
+                  <h3 className="font-bold text-gray-900">Nenhuma ocorrência</h3>
+                  <p className="text-sm text-gray-500 max-w-xs mx-auto mt-1">Este colaborador não possui ocorrências registradas para este período.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ponto" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
+            <CardHeader className="pb-6 pt-8 px-8">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                Espelho de Ponto
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Histórico detalhado de entradas, saídas e intervalos.</p>
+            </CardHeader>
+            <CardContent className="px-8 pb-8">
+              <TimeMirrorView usuarioId={id} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="financeiro" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
+            <CardHeader className="pb-6 pt-8 px-8">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Wallet className="h-5 w-5 text-primary" />
+                Fechamento Financeiro
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Relatórios de pagamentos e descontos mensais.</p>
+            </CardHeader>
+            <CardContent className="px-8 pb-8">
+              <FinancialReportView usuarioId={id} colaboradorNome={collaborator?.nome_completo} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
 
     </div>

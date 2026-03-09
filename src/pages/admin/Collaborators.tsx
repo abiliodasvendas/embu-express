@@ -9,9 +9,9 @@ import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useFilters } from "@/hooks";
 import {
-    useCreateCollaborator,
-    useDeleteCollaborator,
-    useUpdateCollaboratorStatus,
+  useCreateCollaborator,
+  useDeleteCollaborator,
+  useUpdateCollaboratorStatus,
 } from "@/hooks/api/useCollaboratorMutations";
 import { useCollaborators, useRoles } from "@/hooks/api/useCollaborators";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
@@ -28,7 +28,6 @@ export function Collaborators() {
     openCollaboratorFormDialog,
     openSuccessRegistrationDialog,
   } = useLayout();
-  // Filters Hook
   const {
     searchTerm,
     setSearchTerm,
@@ -40,6 +39,8 @@ export function Collaborators() {
     setSelectedCliente: setSelectedClient,
     selectedEmpresa: selectedEmpresa = "todos",
     setSelectedEmpresa: setSelectedEmpresa,
+    selectedSemPontoHoje,
+    setSelectedSemPontoHoje,
     hasActiveFilters,
     setFilters,
   } = useFilters({
@@ -47,6 +48,7 @@ export function Collaborators() {
     categoriaParam: "cargo",
     clienteParam: "cliente",
     empresaParam: "empresa",
+    semPontoHojeParam: "sem_ponto",
     syncWithUrl: true,
   });
 
@@ -67,6 +69,7 @@ export function Collaborators() {
     perfil_id: selectedRole === "todos" ? undefined : selectedRole,
     cliente_id: selectedClient === "todos" ? undefined : selectedClient,
     empresa_id: selectedEmpresa === "todos" ? undefined : selectedEmpresa,
+    sem_ponto_hoje: selectedSemPontoHoje,
   });
 
   // Mutations
@@ -150,12 +153,14 @@ export function Collaborators() {
     categoria?: string;
     cliente?: string;
     empresa?: string;
+    sem_ponto_hoje?: boolean;
   }) => {
     setFilters({
       status: newFilters.status,
       categoria: newFilters.categoria,
       cliente: newFilters.cliente,
       empresa: newFilters.empresa,
+      sem_ponto_hoje: newFilters.sem_ponto_hoje,
     });
   };
 
@@ -181,7 +186,9 @@ export function Collaborators() {
                   onClientChange={setSelectedClient}
                   empresas={empresas || []}
                   selectedEmpresa={selectedEmpresa}
-                  onEmpresaChange={setSelectedEmpresa}
+                  onEmpresaChange={setSelectedEmpresa!}
+                  selectedSemPontoHoje={selectedSemPontoHoje || false}
+                  onSemPontoHojeChange={setSelectedSemPontoHoje!}
                 />
               </div>
 
@@ -206,9 +213,9 @@ export function Collaborators() {
                   action={
                     !searchTerm
                       ? {
-                          label: "Cadastrar Colaborador",
-                          onClick: handleRegister,
-                        }
+                        label: "Cadastrar Colaborador",
+                        onClick: handleRegister,
+                      }
                       : undefined
                   }
                 />

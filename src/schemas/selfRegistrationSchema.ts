@@ -20,6 +20,7 @@ const commonSchema = z.object({
     return val.length === 15;
   }, "Telefone inválido"),
 
+  tipo_chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
   chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
   isMotoboy: z.boolean().optional().default(false),

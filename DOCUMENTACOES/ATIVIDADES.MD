@@ -47,23 +47,24 @@
 ## ETAPA 4: OPERACIONAL E MONITORAMENTO (FRONTEND)
 *Objetivo: Melhorar a visão de quem está trabalhando e a segurança.*
 
-- [ ] **4.1 RegistrarPonto**: Exibir split de KMs (Trabalho vs Pausa) e resumo de tempos totais na tela do motoboy.
-- [ ] **4.2 Tela de Colaboradores (Admin)**: Ajustar listagem para `Left Join`, permitindo ver quem NÃO registrou ponto no dia (Monitoramento completo).
-- [ ] **4.3 Segurança (Logout)**: Implementar logout forçado caso o usuário seja desativado (Status != ATIVO).
-- [ ] **4.4 Tela de Ocorrências**: Criar página de listagem geral de ocorrências com filtros de data e autor.
+- [x] **4.1 RegistrarPonto**: Exibir split de KMs (Trabalho vs Pausa) e resumo de tempos totais na tela do motoboy.
+- [x] **4.2 Tela de Colaboradores (Admin)**: Ajustar listagem para `Left Join`, permitindo ver quem NÃO registrou ponto no dia (Monitoramento completo).
+- [x] **4.3 Segurança (Logout)**: Implementar logout forçado caso o usuário seja desativado (Status != ATIVO).
+- [x] **4.4 Tela de Ocorrências**: Criar página de listagem geral de ocorrências com filtros de data e autor.
 
 ## ETAPA 5: FINANCEIRO E RELATÓRIOS (FRONTEND/LOGIC)
 *Objetivo: Consolidar os dados para fechamento mensal.*
 
-- [ ] **5.1 Ficha do Colaborador**: Refatorar para interface de abas/menus (Mobile First) e criar aba de Ocorrências.
-- [ ] **5.2 Espelho de Ponto**: Criar visualização mensal com saldo de horas `(Trabalhado - Esperado)`.
-- [ ] **5.3 Relatório Financeiro (Draft)**: Visualização dinâmica baseada em configurações atuais e ocorrências. Independente de logs de ponto.
+- [x] **5.1 Ficha do Colaborador**: Refatorar para interface de abas/menus (Mobile First) e criar aba de Ocorrências.
+- [x] **5.2 Espelho de Ponto**: Criar visualização mensal com saldo de horas `(Trabalhado - Esperado)`.
+- [x] **5.3 Relatório Financeiro (Draft)**: Visualização dinâmica baseada em configurações atuais e ocorrências. Independente de logs de ponto.
     - O sistema calcula o rascunho "on-the-fly" para qualquer mês futuro assim que houver um turno ativo.
-- [ ] **5.4 Fechamento e Snapshot**: 
+- [x] **5.4 Fechamento e Snapshot**: 
     - Implementar ação de "Fechar Mês" que congela o cálculo dinâmico em um registro estático (`fechamentos_financeiros`).
+    - Implementar ação de "Marcar como Pago" que registra a data de pagamento no snapshot.
     - **Imutabilidade**: Uma vez fechado, alterações em valores de turnos não afetam o passado.
     - Registro de pagamento e download de PDF/Comprovante.
 
 ## ETAPA 6: POLIMENTO E GESTÃO DE FERIADOS (UX)
 - [x] **6.1 Gestão de Feriados**: Implementado CRUD completo de feriados com filtro por ano no Admin.
-- [ ] **6.2 Tela de Configurações**: Melhorar textos descritivos e adicionar exemplos práticos para usuários leigos.
+- [x] **6.2 Tela de Configurações**: Melhorar textos descritivos e adicionar exemplos práticos para usuários leigos.

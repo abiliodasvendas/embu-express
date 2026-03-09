@@ -59,7 +59,7 @@ const commonSchema = z.object({
     valor_bonus: z.coerce.number().optional(),
     ajuda_custo: z.coerce.number().optional(),
   })).superRefine(checkLinkConflicts).optional().default([]),
-  tipo_chave_pix: z.string().optional(),
+  tipo_chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
   chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
 });
 

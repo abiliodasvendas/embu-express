@@ -14,6 +14,7 @@ export interface UseFiltersOptions {
   usuarioParam?: string;
   statusEntradaParam?: string;
   statusSaidaParam?: string;
+  semPontoHojeParam?: string;
   syncWithUrl?: boolean;
 }
 
@@ -40,6 +41,12 @@ export interface UseFiltersReturn {
   setSelectedStatusEntrada?: (value: string) => void;
   selectedStatusSaida?: string;
   setSelectedStatusSaida?: (value: string) => void;
+  onClear: () => void;
+  onApply?: () => void;
+  semPontoHojeValue: boolean;
+  onSemPontoHojeChange: (val: boolean) => void;
+  selectedSemPontoHoje?: boolean;
+  setSelectedSemPontoHoje?: (value: boolean) => void;
   clearFilters: () => void;
   setFilters: (newFilters: {
     searchTerm?: string;
@@ -53,6 +60,7 @@ export interface UseFiltersReturn {
     usuario?: string;
     statusEntrada?: string;
     statusSaida?: string;
+    sem_ponto_hoje?: boolean;
   }) => void;
   hasActiveFilters: boolean;
 }
@@ -70,6 +78,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     usuarioParam,
     statusEntradaParam,
     statusSaidaParam,
+    semPontoHojeParam,
     syncWithUrl = true,
   } = options;
 
@@ -88,6 +97,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     usuario: string;
     statusEntrada: string;
     statusSaida: string;
+    semPontoHoje: boolean;
   }>({
     searchTerm: "",
     status: STATUS_CADASTRO.TODOS,
@@ -100,6 +110,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     usuario: STATUS_CADASTRO.TODOS,
     statusEntrada: STATUS_CADASTRO.TODOS,
     statusSaida: STATUS_CADASTRO.TODOS,
+    semPontoHoje: false,
   });
 
   // Helper to get value from URL or Internal State
@@ -118,6 +129,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     return internalState[internalKey] as number;
   };
 
+  const getBooleanValue = (param: string | undefined, internalKey: keyof typeof internalState, defaultValue: boolean) => {
+    if (syncWithUrl && param) {
+      return searchParams.get(param) === "true";
+    }
+    return internalState[internalKey] as boolean;
+  };
+
   const searchTerm = getValue(searchParam, "searchTerm", "");
   const selectedStatus = getValue(statusParam, "status", STATUS_CADASTRO.TODOS);
   const selectedPeriodo = getValue(periodoParam, "periodo", STATUS_CADASTRO.TODOS);
@@ -129,12 +147,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const selectedUsuario = getValue(usuarioParam, "usuario", STATUS_CADASTRO.TODOS);
   const selectedStatusEntrada = getValue(statusEntradaParam, "statusEntrada", STATUS_CADASTRO.TODOS);
   const selectedStatusSaida = getValue(statusSaidaParam, "statusSaida", STATUS_CADASTRO.TODOS);
+  const selectedSemPontoHoje = getBooleanValue(semPontoHojeParam, "semPontoHoje", false);
 
   const updateState = useCallback((key: keyof typeof internalState, value: any, param?: string) => {
     if (syncWithUrl && param) {
       setSearchParams((prev) => {
         const newParams = new URLSearchParams(prev);
-        if (value && value !== STATUS_CADASTRO.TODOS && value !== "todas") {
+        if (value !== undefined && value !== null && value !== STATUS_CADASTRO.TODOS && value !== "todas" && value !== false) {
           newParams.set(param, String(value));
         } else {
           newParams.delete(param);
@@ -157,6 +176,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedUsuario = useCallback((v: string) => updateState("usuario", v, usuarioParam), [updateState, usuarioParam]);
   const setSelectedStatusEntrada = useCallback((v: string) => updateState("statusEntrada", v, statusEntradaParam), [updateState, statusEntradaParam]);
   const setSelectedStatusSaida = useCallback((v: string) => updateState("statusSaida", v, statusSaidaParam), [updateState, statusSaidaParam]);
+  const setSelectedSemPontoHoje = useCallback((v: boolean) => updateState("semPontoHoje", v, semPontoHojeParam), [updateState, semPontoHojeParam]);
 
   const clearFilters = useCallback(() => {
     if (syncWithUrl) {
@@ -173,6 +193,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         if (usuarioParam) newParams.delete(usuarioParam);
         if (statusEntradaParam) newParams.delete(statusEntradaParam);
         if (statusSaidaParam) newParams.delete(statusSaidaParam);
+        if (semPontoHojeParam) newParams.delete(semPontoHojeParam);
         return newParams;
       }, { replace: true });
     } else {
@@ -188,6 +209,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         usuario: STATUS_CADASTRO.TODOS,
         statusEntrada: STATUS_CADASTRO.TODOS,
         statusSaida: STATUS_CADASTRO.TODOS,
+        semPontoHoje: false,
       });
     }
   }, [
@@ -203,6 +225,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     usuarioParam,
     statusEntradaParam,
     statusSaidaParam,
+    semPontoHojeParam,
     setSearchParams,
   ]);
 
@@ -220,14 +243,15 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       usuario?: string;
       statusEntrada?: string;
       statusSaida?: string;
+      sem_ponto_hoje?: boolean;
     }) => {
       if (syncWithUrl) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
 
-          const updateParam = (key: string | undefined, val: string | number | undefined) => {
+          const updateParam = (key: string | undefined, val: string | number | boolean | undefined) => {
             if (!key || val === undefined) return;
-            if (String(val) !== STATUS_CADASTRO.TODOS && String(val) !== "") newParams.set(key, String(val));
+            if (String(val) !== STATUS_CADASTRO.TODOS && String(val) !== "" && val !== false) newParams.set(key, String(val));
             else newParams.delete(key);
           };
 
@@ -244,6 +268,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           updateParam(usuarioParam, newFilters.usuario);
           updateParam(statusEntradaParam, newFilters.statusEntrada);
           updateParam(statusSaidaParam, newFilters.statusSaida);
+          updateParam(semPontoHojeParam, newFilters.sem_ponto_hoje);
 
           return newParams;
         }, { replace: true });
@@ -261,6 +286,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           ...(newFilters.usuario !== undefined && { usuario: newFilters.usuario }),
           ...(newFilters.statusEntrada !== undefined && { statusEntrada: newFilters.statusEntrada }),
           ...(newFilters.statusSaida !== undefined && { statusSaida: newFilters.statusSaida }),
+          ...(newFilters.sem_ponto_hoje !== undefined && { semPontoHoje: newFilters.sem_ponto_hoje }),
         }));
       }
     },
@@ -277,6 +303,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       usuarioParam,
       statusEntradaParam,
       statusSaidaParam,
+      semPontoHojeParam,
       setSearchParams,
     ]
   );
@@ -290,7 +317,8 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     (selectedEmpresa !== undefined && selectedEmpresa !== STATUS_CADASTRO.TODOS) ||
     (selectedUsuario !== undefined && selectedUsuario !== STATUS_CADASTRO.TODOS) ||
     (selectedStatusEntrada !== undefined && selectedStatusEntrada !== STATUS_CADASTRO.TODOS) ||
-    (selectedStatusSaida !== undefined && selectedStatusSaida !== STATUS_CADASTRO.TODOS);
+    (selectedStatusSaida !== undefined && selectedStatusSaida !== STATUS_CADASTRO.TODOS) ||
+    !!selectedSemPontoHoje;
 
   return {
     searchTerm,
@@ -333,8 +361,17 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       selectedStatusSaida,
       setSelectedStatusSaida,
     }),
+    selectedSemPontoHoje: selectedSemPontoHoje || false,
+    setSelectedSemPontoHoje,
+    onClear: clearFilters,
+    semPontoHojeValue: selectedSemPontoHoje || false,
+    onSemPontoHojeChange: setSelectedSemPontoHoje,
     clearFilters,
     setFilters,
     hasActiveFilters,
+    selectedCliente,
+    setSelectedCliente,
+    selectedEmpresa,
+    setSelectedEmpresa,
   };
 }

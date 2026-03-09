@@ -8,6 +8,7 @@ import { MileageDialog } from "@/components/dialogs/MileageDialog";
 import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
 import { SuccessRegistrationDialog } from "@/components/dialogs/SuccessRegistrationDialog";
 import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
+import { OccurrenceFormDialog } from "@/components/dialogs/OccurrenceFormDialog";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
@@ -77,6 +78,11 @@ export interface OpenSuccessRegistrationProps {
   hideNewCollaboratorButton?: boolean;
 }
 
+export interface OpenOccurrenceFormProps {
+  collaboratorId?: string;
+  onSuccess?: () => void;
+}
+
 // --- Context Type ---
 
 interface LayoutContextType {
@@ -115,6 +121,9 @@ interface LayoutContextType {
 
   openSuccessRegistrationDialog: (props: OpenSuccessRegistrationProps) => void;
   closeSuccessRegistrationDialog: () => void;
+
+  openOccurrenceFormDialog: (props: OpenOccurrenceFormProps) => void;
+  closeOccurrenceFormDialog: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -204,6 +213,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [successRegistrationDialogState, setSuccessRegistrationDialogState] = useState<{
     open: boolean;
     props?: OpenSuccessRegistrationProps;
+  }>({
+    open: false,
+  });
+
+  const [occurrenceFormDialogState, setOccurrenceFormDialogState] = useState<{
+    open: boolean;
+    props?: OpenOccurrenceFormProps;
   }>({
     open: false,
   });
@@ -316,6 +332,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openOccurrenceFormDialog = (props: OpenOccurrenceFormProps) => {
+    setOccurrenceFormDialogState({ open: true, props });
+  };
+
+  const closeOccurrenceFormDialog = () => {
+    closeDialog(() => {
+      setOccurrenceFormDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
   return (
     <LayoutContext.Provider value={{
       pageTitle,
@@ -341,7 +367,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openEditTimeRecordDialog,
       closeEditTimeRecordDialog,
       openSuccessRegistrationDialog,
-      closeSuccessRegistrationDialog
+      closeSuccessRegistrationDialog,
+      openOccurrenceFormDialog,
+      closeOccurrenceFormDialog
     }}>
       {children}
 
@@ -464,6 +492,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           description={successRegistrationDialogState.props.description}
           hideNewCollaboratorButton={successRegistrationDialogState.props.hideNewCollaboratorButton}
           onOpenCollaboratorForm={() => openCollaboratorFormDialog({ mode: "create" })}
+        />
+      )}
+
+      {occurrenceFormDialogState.open && (
+        <OccurrenceFormDialog
+          open={true}
+          onOpenChange={(open) => !open && closeOccurrenceFormDialog()}
+          collaboratorId={occurrenceFormDialogState.props?.collaboratorId}
+          onSuccess={() => {
+            occurrenceFormDialogState.props?.onSuccess?.();
+            closeOccurrenceFormDialog();
+          }}
         />
       )}
 

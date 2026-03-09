@@ -503,6 +503,30 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                     />
                                     <FormField
                                         control={form.control}
+                                        name="tipo_chave_pix"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX <span className="text-red-500">*</span></FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
+                                                            <SelectValue placeholder="Selecione o tipo" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="CPF">CPF</SelectItem>
+                                                        <SelectItem value="CNPJ">CNPJ</SelectItem>
+                                                        <SelectItem value="EMAIL">E-mail</SelectItem>
+                                                        <SelectItem value="TELEFONE">Telefone</SelectItem>
+                                                        <SelectItem value="ALEATORIA">Chave Aleatória</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage className="ml-1" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
                                         name="chave_pix"
                                         render={({ field }) => (
                                             <FormItem>

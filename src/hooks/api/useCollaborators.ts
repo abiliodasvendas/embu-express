@@ -1,7 +1,7 @@
 import { colaboradorApi } from "@/services/api/colaborador.api";
 import { useQuery } from "@tanstack/react-query";
 
-export function useCollaborators(filters?: { searchTerm?: string; status?: string; perfil_id?: string; cliente_id?: string; empresa_id?: string }) {
+export function useCollaborators(filters?: { searchTerm?: string; status?: string; perfil_id?: string; cliente_id?: string; empresa_id?: string; sem_ponto_hoje?: boolean }) {
   return useQuery({
     queryKey: ["collaborators", filters],
     queryFn: () => colaboradorApi.listColaboradores(filters),

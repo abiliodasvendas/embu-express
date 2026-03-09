@@ -48,8 +48,13 @@ const CollaboratorMobileItem = ({
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-3 pr-20">
             {/* Added pr-20 to avoid overlap with absolute badge */}
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(collaborator.status)}`}>
-              {collaborator.nome_completo.charAt(0)}
+            <div className="relative">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(collaborator.status)} ${collaborator.ponto_hoje ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}>
+                {collaborator.nome_completo.charAt(0)}
+              </div>
+              {collaborator.ponto_hoje && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-sm" />
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
@@ -101,8 +106,13 @@ const CollaboratorTableRow = ({
     >
       <td className="py-4 pl-6 align-middle">
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${getAvatarStyles(collaborator.status)}`}>
-            {collaborator.nome_completo.charAt(0)}
+          <div className="relative">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${getAvatarStyles(collaborator.status)} ${collaborator.ponto_hoje ? 'ring-2 ring-green-500 ring-offset-1' : ''}`}>
+              {collaborator.nome_completo.charAt(0)}
+            </div>
+            {collaborator.ponto_hoje && (
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-sm" />
+            )}
           </div>
           <div>
             <p className="font-bold text-gray-900 text-sm">

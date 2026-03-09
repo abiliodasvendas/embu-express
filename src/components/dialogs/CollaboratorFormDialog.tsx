@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { messages } from "@/constants/messages";
 import { ROLES } from "@/constants/permissions.enum";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { cn } from "@/lib/utils";
 import { useCreateCollaborator, useEmpresas, useLayout, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
@@ -115,13 +116,15 @@ export function CollaboratorFormDialog({
     const moto = mockGenerator.moto();
     const cnh = mockGenerator.cnh();
 
-    // Personal
+    // Perfil e Status
     const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase().includes("motoboy"));
     if (motoboyRole) {
       form.setValue("perfil_id", motoboyRole.id.toString() as any);
       form.setValue("isMotoboy", true);
     }
+    form.setValue("status", STATUS_CADASTRO.ATIVO);
 
+    // Personal
     form.setValue("nome_completo", mockData.nome_completo);
     form.setValue("email", mockData.email);
     form.setValue("cpf", cpfMask(mockData.cpf));
@@ -153,8 +156,10 @@ export function CollaboratorFormDialog({
     form.setValue("cnh_vencimento", cnh.cnh_vencimento); // Already DD/MM/YYYY from mock
     form.setValue("cnh_categoria", cnh.cnh_categoria);
 
+    // Financial
     form.setValue("cnpj", cnpjMask(mockGenerator.cnpj()));
-    form.setValue("chave_pix", mockGenerator.cpf());
+    form.setValue("tipo_chave_pix", "CPF");
+    form.setValue("chave_pix", cpfMask(mockGenerator.cpf()));
   };
 
   const onSubmit = async (vals: CollaboratorFormData) => {

@@ -43,8 +43,13 @@ export default function CollaboratorDetails() {
     openCollaboratorFormDialog,
     openCollaboratorTurnDialog,
     openSuccessRegistrationDialog,
-    openOccurrenceFormDialog
+    openOccurrenceFormDialog,
+    setPageTitle
   } = useLayout();
+
+  useEffect(() => {
+    setPageTitle("Colaborador");
+  }, [setPageTitle]);
 
   const handleAddTurn = () => {
     openCollaboratorTurnDialog({
@@ -208,30 +213,41 @@ export default function CollaboratorDetails() {
   }
 
 
+  const activeTab = searchParams.get("tab") || "dados";
+
+  const handleTabChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("tab", value);
+    setSearchParams(newParams, { replace: true });
+  };
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/colaboradores")}
-          className="hover:bg-gray-100 rounded-xl px-2"
-        >
-          <ChevronLeft className="h-5 w-5 mr-1" />
-          Voltar
-        </Button>
-        <div className="flex gap-2 items-center">
-          <ActionsDropdown actions={actions}>
-            <Button variant="outline" className="rounded-xl border-gray-200 shadow-sm text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1 px-3">
-              <span className="hidden sm:inline font-semibold">Ações</span>
-              <MoreVertical className="h-4 w-4 sm:hidden -mx-1" />
-              <ChevronDown className="h-4 w-4 hidden sm:block opacity-50 text-gray-500" />
-            </Button>
-          </ActionsDropdown>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/colaboradores")}
+            className="hover:bg-gray-100 rounded-xl px-2"
+          >
+            <ChevronLeft className="h-5 w-5 mr-1" />
+            Voltar
+          </Button>
+          <div className="flex gap-2 items-center">
+            <ActionsDropdown actions={actions}>
+              <Button variant="outline" className="rounded-xl border-gray-200 shadow-sm text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1 px-3">
+                <span className="hidden sm:inline font-semibold">Ações</span>
+                <MoreVertical className="h-4 w-4 sm:hidden -mx-1" />
+                <ChevronDown className="h-4 w-4 hidden sm:block opacity-50 text-gray-500" />
+              </Button>
+            </ActionsDropdown>
+          </div>
         </div>
+        <h1 className="text-2xl font-black text-gray-900 px-1">Colaborador</h1>
       </div>
 
-      <Tabs defaultValue="dados" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-5 lg:w-max h-12 rounded-2xl bg-gray-100 p-1">
           <TabsTrigger value="dados" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
             <User className="h-4 w-4" />
@@ -255,7 +271,7 @@ export default function CollaboratorDetails() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dados" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <TabsContent value="dados" forceMount className={cn("space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "dados" && "hidden")}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Info - Left Column */}
             <div className="space-y-6">
@@ -414,7 +430,7 @@ export default function CollaboratorDetails() {
           </div>
         </TabsContent>
 
-        <TabsContent value="turnos" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <TabsContent value="turnos" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "turnos" && "hidden")}>
           <Card className="border-0 shadow-sm rounded-3xl min-h-[500px] flex flex-col pt-4">
             <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 pb-6 px-8">
               <div>
@@ -512,7 +528,7 @@ export default function CollaboratorDetails() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="ocorrencias" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <TabsContent value="ocorrencias" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "ocorrencias" && "hidden")}>
           <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
             <CardHeader className="pb-6 pt-8 px-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
@@ -605,7 +621,7 @@ export default function CollaboratorDetails() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="ponto" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <TabsContent value="ponto" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "ponto" && "hidden")}>
           <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
             <CardHeader className="pb-6 pt-8 px-8">
               <CardTitle className="text-xl flex items-center gap-2">
@@ -620,7 +636,7 @@ export default function CollaboratorDetails() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="financeiro" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <TabsContent value="financeiro" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "financeiro" && "hidden")}>
           <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
             <CardHeader className="pb-6 pt-8 px-8">
               <CardTitle className="text-xl flex items-center gap-2">

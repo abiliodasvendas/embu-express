@@ -57,11 +57,11 @@ const CollaboratorMobileItem = ({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
+              <h3 className="font-bold text-gray-900 text-sm break-words leading-tight">
                 {collaborator.nome_completo}
               </h3>
               {collaborator.cliente?.nome_fantasia && (
-                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{collaborator.cliente.nome_fantasia}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5 break-words">{collaborator.cliente.nome_fantasia}</p>
               )}
             </div>
           </div>

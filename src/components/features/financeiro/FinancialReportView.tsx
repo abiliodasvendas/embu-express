@@ -109,7 +109,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                                         onClick={() => {
                                             openConfirmationDialog({
                                                 title: "Fechar Mês",
-                                                description: `Deseja realmente congelar os valores deste mês para ${colaboradorNome || 'este colaborador'}? Uma vez fechado, os cálculos pro-rata não serão mais atualizados.`,
+                                                description: `Deseja realmente congelar os valores deste mês para ${colaboradorNome || 'este colaborador'}? Uma vez fechado, os cálculos não poderão ser alterados.`,
                                                 confirmText: "Fechar Agora",
                                                 onConfirm: async () => {
                                                     await closeMonthMutation.mutateAsync({ usuarioId, mes: selectedMonth, ano: selectedYear });

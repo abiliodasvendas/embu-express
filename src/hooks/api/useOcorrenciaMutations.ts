@@ -48,3 +48,49 @@ export function useDeleteOcorrencia() {
         },
     });
 }
+
+export function useCreateTipoOcorrencia() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: any) => ocorrenciaService.createTipoOcorrencia(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
+            toast.success("Tipo de ocorrência criado com sucesso!");
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.error || "Erro ao criar tipo de ocorrência");
+        },
+    });
+}
+
+export function useUpdateTipoOcorrencia() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, data }: { id: number; data: any }) =>
+            ocorrenciaService.updateTipoOcorrencia(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
+            toast.success("Tipo de ocorrência atualizado com sucesso!");
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.error || "Erro ao atualizar tipo de ocorrência");
+        },
+    });
+}
+
+export function useDeleteTipoOcorrencia() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: number) => ocorrenciaService.deleteTipoOcorrencia(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
+            toast.success("Tipo de ocorrência removido com sucesso!");
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.error || "Erro ao remover tipo de ocorrência");
+        },
+    });
+}

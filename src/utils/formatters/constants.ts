@@ -43,3 +43,12 @@ export const periodos = [
   { value: "noite", label: "Noite" },
 ];
 
+export const DIAS_SEMANA = [
+  { id: 1, label: "Seg" },
+  { id: 2, label: "Ter" },
+  { id: 3, label: "Qua" },
+  { id: 4, label: "Qui" },
+  { id: 5, label: "Sex" },
+  { id: 6, label: "Sáb" },
+  { id: 0, label: "Dom" },
+];

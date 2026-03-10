@@ -1,0 +1,320 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogClose,
+} from "@/components/ui/dialog";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/MoneyInput";
+import { Switch } from "@/components/ui/switch";
+import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
+import {
+    useCreateTipoOcorrencia,
+    useUpdateTipoOcorrencia,
+    useDeleteTipoOcorrencia
+} from "@/hooks/api/useOcorrenciaMutations";
+import { TipoOcorrencia } from "@/types/database";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Pencil, Trash2, X, Check, Settings, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { cn } from "@/lib/utils";
+import { useLayout } from "@/contexts/LayoutContext";
+
+const tipoOcorrenciaSchema = z.object({
+    descricao: z.string().min(1, "A descrição é obrigatória"),
+    valor_padrao: z.coerce.number().min(0, "O valor não pode ser negativo").default(0),
+    impacto_financeiro: z.boolean().default(false),
+});
+
+type TipoOcorrenciaFormData = z.infer<typeof tipoOcorrenciaSchema>;
+
+interface OccurrenceTypesDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}
+
+export function OccurrenceTypesDialog({
+    open,
+    onOpenChange,
+}: OccurrenceTypesDialogProps) {
+    const { data: tipos = [], isLoading, refetch } = useTiposOcorrencia();
+    const [editingTipo, setEditingTipo] = useState<TipoOcorrencia | null>(null);
+    const [isFormVisible, setIsFormVisible] = useState(false);
+    const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+
+    const createMutation = useCreateTipoOcorrencia();
+    const updateMutation = useUpdateTipoOcorrencia();
+    const deleteMutation = useDeleteTipoOcorrencia();
+
+    const form = useForm<TipoOcorrenciaFormData>({
+        resolver: zodResolver(tipoOcorrenciaSchema),
+        defaultValues: {
+            descricao: "",
+            valor_padrao: 0,
+            impacto_financeiro: false,
+        },
+    });
+
+    const handleEdit = (tipo: TipoOcorrencia) => {
+        setEditingTipo(tipo);
+        form.reset({
+            descricao: tipo.descricao,
+            valor_padrao: tipo.valor_padrao || 0,
+            impacto_financeiro: tipo.impacto_financeiro,
+        });
+        setIsFormVisible(true);
+    };
+
+    const handleCancel = () => {
+        setEditingTipo(null);
+        setIsFormVisible(false);
+        form.reset();
+    };
+
+    const onSubmit = async (data: TipoOcorrenciaFormData) => {
+        try {
+            if (editingTipo) {
+                await updateMutation.mutateAsync({ id: editingTipo.id, data });
+            } else {
+                await createMutation.mutateAsync(data);
+            }
+            handleCancel();
+            refetch();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleDelete = (tipo: TipoOcorrencia) => {
+        openConfirmationDialog({
+            title: "Excluir Tipo de Ocorrência",
+            description: `Deseja realmente excluir "${tipo.descricao}"? Isso pode afetar ocorrências já registradas.`,
+            confirmText: "Excluir",
+            variant: "destructive",
+            onConfirm: async () => {
+                await deleteMutation.mutateAsync(tipo.id);
+                closeConfirmationDialog();
+                refetch();
+            },
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent
+                className="w-full max-w-xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
+                hideCloseButton
+            >
+                {/* Header Padronizado */}
+                <div className="bg-blue-600 p-4 text-center relative shrink-0">
+                    <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+                        <X className="h-6 w-6" />
+                        <span className="sr-only">Fechar</span>
+                    </DialogClose>
+
+                    <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+                        <Settings className="w-5 h-5 text-white" />
+                    </div>
+                    <DialogTitle className="text-xl font-bold text-white">
+                        Gerenciar Tipos
+                    </DialogTitle>
+                    <p className="text-xs text-white/70 mt-1">Configure os tipos de ocorrência e seus valores padrão</p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-gray-700 uppercase tracking-widest">Tipos Cadastrados</h3>
+                        {!isFormVisible && (
+                            <Button
+                                onClick={() => setIsFormVisible(true)}
+                                className="rounded-xl gap-2 font-bold shadow-sm h-9 px-4"
+                                size="sm"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Novo Tipo
+                            </Button>
+                        )}
+                    </div>
+
+                    {isFormVisible && (
+                        <Card className="mb-6 border border-blue-100 shadow-sm rounded-2xl bg-white animate-in fade-in slide-in-from-top-4 duration-300">
+                            <CardContent className="p-5">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="bg-blue-600 p-1.5 rounded-lg">
+                                        <Plus className="w-3.5 h-3.5 text-white" />
+                                    </div>
+                                    <span className="text-sm font-bold text-gray-800">
+                                        {editingTipo ? "Editar Tipo" : "Cadastrar Novo Tipo"}
+                                    </span>
+                                </div>
+
+                                <Form {...form}>
+                                    <form id="type-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <FormField
+                                                control={form.control}
+                                                name="descricao"
+                                                render={({ field }) => (
+                                                    <FormItem className="space-y-1">
+                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Descrição</FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="Ex: Falta, Atraso..."
+                                                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage className="text-[10px]" />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="valor_padrao"
+                                                render={({ field }) => (
+                                                    <FormItem className="space-y-1">
+                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Valor Sugerido</FormLabel>
+                                                        <FormControl>
+                                                            <MoneyInput
+                                                                value={field.value}
+                                                                onChange={field.onChange}
+                                                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage className="text-[10px]" />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <FormField
+                                            control={form.control}
+                                            name="impacto_financeiro"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-xl border border-blue-50 bg-blue-50/20 p-3 shadow-sm">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="text-xs font-bold text-gray-700">Impacto Financeiro</FormLabel>
+                                                        <p className="text-[10px] text-gray-500 font-medium leading-tight">Gera lançamento automático no financeiro.</p>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <div className="flex justify-end gap-2 pt-1">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                onClick={handleCancel}
+                                                className="rounded-xl h-9 px-4 text-xs font-semibold"
+                                            >
+                                                Cancelar
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={createMutation.isPending || updateMutation.isPending}
+                                                className="rounded-xl h-9 px-6 text-xs font-bold shadow-md shadow-blue-500/20"
+                                            >
+                                                {createMutation.isPending || updateMutation.isPending ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    editingTipo ? "Atualizar" : "Salvar Tipo"
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </Form>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    <div className="space-y-3">
+                        {isLoading ? (
+                            <div className="space-y-2">
+                                {[1, 2, 3].map(i => <div key={i} className="h-16 bg-white animate-pulse rounded-2xl border border-gray-100" />)}
+                            </div>
+                        ) : tipos.length === 0 ? (
+                            <div className="bg-white border border-dashed border-gray-200 rounded-3xl py-12 text-center">
+                                <Settings className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                                <p className="text-gray-400 font-medium">Nenhum tipo cadastrado.</p>
+                            </div>
+                        ) : (
+                            tipos.map((tipo) => (
+                                <div
+                                    key={tipo.id}
+                                    className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md hover:shadow-blue-500/5 transition-all group"
+                                >
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-gray-800">{tipo.descricao}</span>
+                                            {tipo.impacto_financeiro && (
+                                                <Badge variant="secondary" className="bg-blue-50 text-blue-600 text-[9px] uppercase font-black px-1.5 py-0 border-blue-100">
+                                                    Financeiro
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <div className="text-[11px] text-gray-400 font-bold mt-0.5">
+                                            Sugestão de Valor: <span className="text-gray-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tipo.valor_padrao || 0)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleEdit(tipo)}
+                                            className="h-8 w-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleDelete(tipo)}
+                                            className="h-8 w-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0">
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
+                    >
+                        Fechar Gerenciador
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+// Internal Card Component for local use
+function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+    return <div className={cn("bg-white border rounded-xl overflow-hidden", className)}>{children}</div>;
+}
+
+function CardContent({ children, className }: { children: React.ReactNode; className?: string }) {
+    return <div className={cn("p-6", className)}>{children}</div>;
+}

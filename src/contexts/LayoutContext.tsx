@@ -9,6 +9,7 @@ import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
 import { SuccessRegistrationDialog } from "@/components/dialogs/SuccessRegistrationDialog";
 import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
 import { OccurrenceFormDialog } from "@/components/dialogs/OccurrenceFormDialog";
+import { OccurrenceTypesDialog } from "@/components/dialogs/OccurrenceTypesDialog";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
@@ -124,6 +125,9 @@ interface LayoutContextType {
 
   openOccurrenceFormDialog: (props: OpenOccurrenceFormProps) => void;
   closeOccurrenceFormDialog: () => void;
+
+  openOccurrenceTypesDialog: () => void;
+  closeOccurrenceTypesDialog: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -221,6 +225,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: boolean;
     props?: OpenOccurrenceFormProps;
   }>({
+    open: false,
+  });
+
+  const [occurrenceTypesDialogState, setOccurrenceTypesDialogState] = useState({
     open: false,
   });
 
@@ -342,6 +350,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openOccurrenceTypesDialog = () => {
+    setOccurrenceTypesDialogState({ open: true });
+  };
+
+  const closeOccurrenceTypesDialog = () => {
+    closeDialog(() => {
+      setOccurrenceTypesDialogState({ open: false });
+    });
+  };
+
   return (
     <LayoutContext.Provider value={{
       pageTitle,
@@ -369,7 +387,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openSuccessRegistrationDialog,
       closeSuccessRegistrationDialog,
       openOccurrenceFormDialog,
-      closeOccurrenceFormDialog
+      closeOccurrenceFormDialog,
+      openOccurrenceTypesDialog,
+      closeOccurrenceTypesDialog
     }}>
       {children}
 
@@ -506,6 +526,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }}
         />
       )}
+
+      <OccurrenceTypesDialog
+        open={occurrenceTypesDialogState.open}
+        onOpenChange={(open) => !open && closeOccurrenceTypesDialog()}
+      />
 
     </LayoutContext.Provider>
   );

@@ -11,6 +11,7 @@ import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCollaborator, useDeleteVinculo, useRoles } from "@/hooks";
 import { useDeleteCollaborator, useUpdateCollaboratorStatus } from "@/hooks/api/useCollaboratorMutations";
+import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
@@ -18,10 +19,12 @@ import { cnpjMask, cpfMask, dateMask, phoneMask } from "@/utils/masks";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
 import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
+import { OccurrenceFormDialog } from "@/components/dialogs/OccurrenceFormDialog";
+import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 import { useOcorrencias } from "@/hooks/api/useOcorrencias";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, Bike, Calendar as CalendarIcon, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, FileText, History, Mail, MapPin, MoreVertical, Phone, Plus, Trash2, User, Wallet, Link2 } from "lucide-react";
+import { AlertCircle, Bike, Calendar as CalendarIcon, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, FileText, History, Mail, MapPin, MoreVertical, Phone, Plus, Trash2, User, Wallet, Link2, ChevronRight } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -44,7 +47,7 @@ export default function CollaboratorDetails() {
     openCollaboratorTurnDialog,
     openSuccessRegistrationDialog,
     openOccurrenceFormDialog,
-    setPageTitle
+    setPageTitle,
   } = useLayout();
 
   useEffect(() => {
@@ -58,6 +61,8 @@ export default function CollaboratorDetails() {
   };
 
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
+  const [selectedOccurrence, setSelectedOccurrence] = useState<any>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (!hasAutoOpened && searchParams.get('openTurnDialog') === 'true' && collaborator && !isLoading) {
@@ -145,11 +150,30 @@ export default function CollaboratorDetails() {
     };
   }, [selectedMonth, selectedYear]);
 
-  const { data: occurrences = [], isLoading: isLoadingOccurrences } = useOcorrencias({
+  const { data: occurrences = [], isLoading: isLoadingOccurrences, refetch: refetchOccurrences } = useOcorrencias({
     usuario_id: id,
     data_inicio: dateRange.inicio,
-    data_fim: dateRange.fim
+    data_fim: dateRange.fim,
+    order: "data_ocorrencia",
+    ascending: false,
   });
+
+  const deleteOcorrencia = useDeleteOcorrencia();
+
+  const handleDeleteOccurrence = (occurrence: any) => {
+    openConfirmationDialog({
+      title: "Remover Ocorrência",
+      description: `Deseja realmente remover esta ocorrência? Esta ação não pode ser desfeita.`,
+      confirmText: "Remover",
+      variant: "destructive",
+      onConfirm: async () => {
+        await deleteOcorrencia.mutateAsync(occurrence.id);
+        setIsDetailsOpen(false);
+        closeConfirmationDialog();
+        refetchOccurrences();
+      },
+    });
+  };
 
   const monthOptions = useMemo(() =>
     meses.map((label, index) => ({ value: index + 1, label })),
@@ -244,138 +268,155 @@ export default function CollaboratorDetails() {
             </ActionsDropdown>
           </div>
         </div>
-        <h1 className="text-2xl font-black text-gray-900 px-1">Colaborador</h1>
       </div>
 
+      {/* Identity Header */}
+      <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white mb-2">
+        <CardContent className="p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+            <User className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+          </div>
+          <div className="flex-1 text-center sm:text-left space-y-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 justify-center sm:justify-start mb-1">
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
+                {collaborator.nome_completo}
+              </h2>
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "w-fit mx-auto sm:mx-0 px-3 py-1 rounded-full font-bold border text-[10px] uppercase tracking-wider",
+                  getStatusColor(collaborator.status)
+                )}
+              >
+                {collaborator.status}
+              </Badge>
+            </div>
+            {role?.nome && (
+              <p className="text-xs font-bold text-primary uppercase tracking-[0.2em] bg-primary/5 w-fit px-3 py-1 rounded-lg mx-auto sm:mx-0">
+                {role.nome}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-max h-12 rounded-2xl bg-gray-100 p-1">
-          <TabsTrigger value="dados" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+        <TabsList className="flex w-full justify-start overflow-x-auto lg:w-max h-12 rounded-2xl bg-gray-100 p-1 no-scrollbar scroll-smooth whitespace-nowrap">
+          <TabsTrigger value="dados" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">Dados</span>
+            <span>Dados</span>
           </TabsTrigger>
-          <TabsTrigger value="turnos" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+          <TabsTrigger value="turnos" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <Clock className="h-4 w-4" />
-            <span className="hidden sm:inline">Turnos</span>
+            <span>Turnos</span>
           </TabsTrigger>
-          <TabsTrigger value="ocorrencias" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+          <TabsTrigger value="ocorrencias" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <History className="h-4 w-4" />
-            <span className="hidden sm:inline">Ocorrências</span>
+            <span>Ocorrências</span>
           </TabsTrigger>
-          <TabsTrigger value="ponto" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+          <TabsTrigger value="ponto" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <Clock className="h-4 w-4" />
-            <span className="hidden sm:inline">Ponto</span>
+            <span>Ponto</span>
           </TabsTrigger>
-          <TabsTrigger value="financeiro" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2">
+          <TabsTrigger value="financeiro" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <Wallet className="h-4 w-4" />
-            <span className="hidden sm:inline">Financeiro</span>
+            <span>Financeiro</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dados" forceMount className={cn("space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "dados" && "hidden")}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Info - Left Column */}
-            <div className="space-y-6">
-              <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-gradient-to-b from-primary/5 to-white">
-                <CardContent className="pt-8 pb-6 text-center">
-                  <div className="mx-auto w-24 h-24 rounded-3xl bg-primary flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
-                    <User className="h-12 w-12 text-white" />
+            <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white">
+              <CardContent className="pt-6 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg shrink-0">
+                    <Mail className="h-4 w-4 text-blue-600" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-800">{collaborator.nome_completo}</h2>
-                  <div className="flex items-center justify-center gap-2 mt-3">
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        "px-3 py-1 rounded-full font-bold border",
-                        getStatusColor(collaborator.status)
-                      )}
-                    >
-                      {collaborator.status}
-                    </Badge>
-                    {role?.nome && (
-                      <Badge variant="outline" className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border-blue-200 uppercase tracking-wider text-[10px]">
-                        {role.nome}
-                      </Badge>
-                    )}
+                  <div className="overflow-hidden">
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">E-mail</p>
+                    <p className="text-sm font-medium text-gray-700 truncate">{collaborator.email}</p>
                   </div>
-                </CardContent>
-                <CardContent className="border-t border-gray-100 space-y-4 pt-6">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg shrink-0">
-                      <Mail className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">E-mail</p>
-                      <p className="text-sm font-medium text-gray-700 truncate">{collaborator.email}</p>
-                    </div>
-                  </div>
+                </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-purple-50 rounded-lg shrink-0">
-                      <CreditCard className="h-4 w-4 text-purple-600" />
-                    </div>
-                    <div className="w-full">
-                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Documentos</p>
-                      <div className="grid grid-cols-2 gap-2 mt-1">
-                        <div>
-                          <p className="text-[10px] text-muted-foreground font-semibold">CPF</p>
-                          <p className="text-sm font-medium text-gray-700">{cpfMask(collaborator.cpf)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-muted-foreground font-semibold">RG</p>
-                          <p className="text-sm font-medium text-gray-700">{collaborator.rg || '-'}</p>
-                        </div>
-                        {collaborator.cnpj && (
-                          <div className="col-span-2">
-                            <p className="text-[10px] text-muted-foreground font-semibold">CNPJ (MEI)</p>
-                            <p className="text-sm font-medium text-gray-700">{cnpjMask(collaborator.cnpj)}</p>
-                          </div>
-                        )}
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-purple-50 rounded-lg shrink-0">
+                    <CreditCard className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div className="w-full">
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Documentos</p>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground font-semibold">CPF</p>
+                        <p className="text-sm font-medium text-gray-700">{cpfMask(collaborator.cpf)}</p>
                       </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground font-semibold">RG</p>
+                        <p className="text-sm font-medium text-gray-700">{collaborator.rg || '-'}</p>
+                      </div>
+                      {collaborator.cnpj && (
+                        <div className="col-span-2">
+                          <p className="text-[10px] text-muted-foreground font-semibold">CNPJ (MEI)</p>
+                          <p className="text-sm font-medium text-gray-700">{cnpjMask(collaborator.cnpj)}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-yellow-50 rounded-lg shrink-0">
-                      <CalendarIcon className="h-4 w-4 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Nascimento</p>
-                      <p className="text-sm font-medium text-gray-700">{collaborator.data_nascimento ? dateMask(collaborator.data_nascimento) : '-'}</p>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-yellow-50 rounded-lg shrink-0">
+                    <CalendarIcon className="h-4 w-4 text-yellow-600" />
                   </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Nascimento</p>
+                    <p className="text-sm font-medium text-gray-700">
+                      {collaborator.data_nascimento ? format(parseISO(collaborator.data_nascimento), "dd/MM/yyyy") : '-'}
+                    </p>
+                  </div>
+                </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-green-50 rounded-lg shrink-0">
-                      <Phone className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Telefone</p>
-                      <p className="text-sm font-medium text-gray-700">{collaborator.telefone ? phoneMask(collaborator.telefone) : 'Não informado'}</p>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-green-50 rounded-lg shrink-0">
+                    <Phone className="h-4 w-4 text-green-600" />
                   </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Telefone</p>
+                    <p className="text-sm font-medium text-gray-700">{collaborator.telefone ? phoneMask(collaborator.telefone) : 'Não informado'}</p>
+                  </div>
+                </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
-                      <div className="h-4 w-4 font-bold text-emerald-600 flex items-center justify-center text-[10px]">R$</div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Chave PIX</p>
-                      <p className="text-sm font-medium text-gray-700 break-all">{collaborator.chave_pix || '-'}</p>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
+                    <div className="h-4 w-4 font-bold text-emerald-600 flex items-center justify-center text-[10px]">R$</div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Financeiro</p>
+                    <div className="space-y-1">
+                      {collaborator.tipo_chave_pix && (
+                        <p className="text-[10px] text-muted-foreground font-semibold leading-none mt-1">
+                          {collaborator.tipo_chave_pix}
+                        </p>
+                      )}
+                      <p className="text-sm font-medium text-gray-700 break-all leading-tight">
+                        {collaborator.chave_pix || '-'}
+                      </p>
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-orange-50 rounded-lg shrink-0">
-                      <MapPin className="h-4 w-4 text-orange-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Endereço</p>
-                      <p className="text-sm font-medium text-gray-700 leading-tight">{collaborator.endereco_completo || 'Não informado'}</p>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-orange-50 rounded-lg shrink-0">
+                    <MapPin className="h-4 w-4 text-orange-600" />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Endereço</p>
+                    <p className="text-sm font-medium text-gray-700 leading-tight">{collaborator.endereco_completo || 'Não informado'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
 
             <div className="lg:col-span-2 space-y-6">
               {role?.nome === ROLES.MOTOBOY && (
@@ -409,23 +450,14 @@ export default function CollaboratorDetails() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Vencimento CNH</p>
-                      <p className="text-sm font-medium">{collaborator.cnh_vencimento ? dateMask(collaborator.cnh_vencimento) : '-'}</p>
+                      <p className="text-sm font-medium">
+                        {collaborator.cnh_vencimento ? format(parseISO(collaborator.cnh_vencimento), "dd/MM/yyyy") : '-'}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
               )}
 
-              <Card className="border-0 shadow-sm rounded-3xl bg-white p-8">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
-                    <FileText className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Documentação Completa</h3>
-                    <p className="text-sm text-muted-foreground">Todos os dados cadastrais foram verificados.</p>
-                  </div>
-                </div>
-              </Card>
             </div>
           </div>
         </TabsContent>
@@ -563,7 +595,7 @@ export default function CollaboratorDetails() {
                 </Select>
 
                 <Button
-                  onClick={() => openOccurrenceFormDialog({ collaboratorId: id, onSuccess: refetch })}
+                  onClick={() => openOccurrenceFormDialog({ collaboratorId: id, onSuccess: refetchOccurrences })}
                   className="rounded-xl h-9 px-4 gap-2 shadow-sm font-bold bg-primary hover:bg-primary/90 text-white border-none"
                   size="sm"
                 >
@@ -578,34 +610,55 @@ export default function CollaboratorDetails() {
                   {[1, 2, 3].map(i => <div key={i} className="h-32 bg-gray-50 animate-pulse rounded-2xl" />)}
                 </div>
               ) : occurrences.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {occurrences.map((oc) => (
-                    <Card key={oc.id} className="border-gray-100 hover:border-primary/20 transition-all group rounded-2xl bg-gray-50/30 overflow-hidden">
-                      <CardContent className="p-5 flex flex-col h-full">
-                        <div className="flex justify-between items-start mb-4">
-                          <Badge variant="secondary" className="bg-white text-primary hover:bg-white border-gray-100 rounded-lg">
-                            {oc.tipo?.nome || 'Ocorrência'}
-                          </Badge>
-                          <span className="text-xs font-bold text-gray-400">
-                            {format(new Date(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-6 flex-grow">{oc.observacao || 'Nenhuma observação registrada.'}</p>
-                        <div className="flex items-center justify-between pt-4 border-t border-dashed border-gray-200">
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
-                            {oc.impacto_financeiro ? 'Financeiro: ' + (oc.tipo_lancamento === 'ENTRADA' ? 'Crédito' : 'Débito') : 'Sem Impacto'}
-                          </span>
-                          {oc.impacto_financeiro && (
-                            <span className={cn(
-                              "text-sm font-black",
-                              oc.tipo_lancamento === 'ENTRADA' ? "text-emerald-600" : "text-red-500"
-                            )}>
-                              {oc.tipo_lancamento === 'ENTRADA' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
+                <div className="relative space-y-0 pb-4">
+                  {/* Linha Vertical da TimeLine */}
+                  <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-gray-100" />
+
+                  {occurrences.map((oc, index) => (
+                    <div
+                      key={oc.id}
+                      onClick={() => {
+                        setSelectedOccurrence(oc);
+                        setIsDetailsOpen(true);
+                      }}
+                      className="relative pl-9 py-4 group cursor-pointer transition-all hover:bg-gray-50/50 rounded-2xl"
+                    >
+                      {/* Ponto da Timeline */}
+                      <div className={cn(
+                        "absolute left-0 top-[22px] w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-all group-hover:scale-110",
+                        oc.tipo_lancamento === "SAIDA" ? "bg-red-500" : "bg-green-500"
+                      )}>
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-black text-gray-400 uppercase tracking-wider">
+                              {format(new Date(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
                             </span>
-                          )}
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-gray-200 text-gray-500 font-bold bg-white">
+                              {oc.tipo?.descricao || 'Ocorrência'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm font-semibold text-gray-700 truncate pr-4 italic">
+                            {oc.observacao || 'Sem observação'}
+                          </p>
                         </div>
-                      </CardContent>
-                    </Card>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          {oc.impacto_financeiro && (
+                            <div className={cn(
+                              "text-xs font-black px-2 py-1 rounded-lg",
+                              oc.tipo_lancamento === "SAIDA" ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"
+                            )}>
+                              {oc.tipo_lancamento === "SAIDA" ? "-" : "+"} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
+                            </div>
+                          )}
+                          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -652,6 +705,13 @@ export default function CollaboratorDetails() {
         </TabsContent>
       </Tabs>
 
+
+      <OccurrenceDetailsDialog
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+        occurrence={selectedOccurrence}
+        onDelete={() => handleDeleteOccurrence(selectedOccurrence)}
+      />
 
     </div>
   );

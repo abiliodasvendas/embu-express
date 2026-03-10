@@ -31,6 +31,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { messages } from "@/constants/messages";
+import { DIAS_SEMANA } from "@/utils/formatters/constants";
 import { useCreateClient, useUpdateClient } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Client } from "@/types/database";
@@ -365,7 +366,7 @@ export function ClientFormDialog({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              KM Contratados (Diário)
+                              KM Contratados (por motoboy/mês)
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
@@ -415,7 +416,7 @@ export function ClientFormDialog({
                         <FormItem className="space-y-3 p-4 border rounded-xl bg-gray-50/30">
                           <div className="flex flex-col gap-1">
                             <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              Escala Semanal (Dias Pagos)
+                              Escala Semanal
                             </FormLabel>
                             <span className="text-xs text-muted-foreground ml-1">
                               Selecione os dias da semana que compõem a escala base deste cliente.

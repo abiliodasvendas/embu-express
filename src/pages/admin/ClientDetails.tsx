@@ -14,7 +14,8 @@ import { useClientActions } from "@/hooks/business/useClientActions";
 import { cn } from "@/lib/utils";
 import { Client, ColaboradorCliente } from "@/types/database";
 import { cnpjMask } from "@/utils/masks";
-import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users } from "lucide-react";
+import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users, Zap, CalendarDays } from "lucide-react";
+import { WeeklyScale } from "@/components/common/WeeklyScale";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function ClientDetails() {
@@ -176,6 +177,26 @@ export default function ClientDetails() {
                                             </>
                                         ) : 'Não informado'}
                                     </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
+                                    <Zap className="h-4 w-4 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">KM Contratados (Mês)</p>
+                                    <p className="text-sm font-medium text-gray-700">{client.km_contratados || '0'} KM / Motoboy</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-purple-50 rounded-lg shrink-0">
+                                    <CalendarDays className="h-4 w-4 text-purple-600" />
+                                </div>
+                                <div className="w-full">
+                                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-2">Escala Semanal</p>
+                                    <WeeklyScale escala={client.escala_semanal || []} />
                                 </div>
                             </div>
 

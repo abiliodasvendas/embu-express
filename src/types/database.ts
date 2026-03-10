@@ -174,8 +174,7 @@ export interface Pausa {
 
 export interface TipoOcorrencia {
   id: number;
-  nome: string;
-  descricao?: string;
+  descricao: string;
   valor_padrao?: number;
   impacto_financeiro: boolean;
   created_at?: string;
@@ -189,7 +188,7 @@ export interface Ocorrencia {
   data_ocorrencia: string;
   valor?: number;
   impacto_financeiro: boolean;
-  observacao?: string;
+  observacao: string;
   tipo_lancamento: 'ENTRADA' | 'SAIDA';
   criado_por: string;
   created_at?: string;

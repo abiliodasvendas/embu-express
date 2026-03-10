@@ -6,6 +6,8 @@ export function useOcorrencias(filtros?: {
     colaborador_cliente_id?: number;
     data_inicio?: string;
     data_fim?: string;
+    order?: string;
+    ascending?: boolean;
 }) {
     return useQuery({
         queryKey: ["ocorrencias", filtros],

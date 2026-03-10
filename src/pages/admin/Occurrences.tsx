@@ -8,7 +8,7 @@ import { useOcorrencias } from "@/hooks/api/useOcorrencias";
 import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import { Ocorrencia } from "@/types/database";
-import { AlertCircle, Filter, User, X, Calendar as CalendarIcon, Search, Plus } from "lucide-react";
+import { AlertCircle, Filter, User, X, Calendar as CalendarIcon, Search, Plus, Settings } from "lucide-react";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -17,19 +17,24 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { meses, anos } from "@/utils/formatters/constants";
+import { ChevronRight } from "lucide-react";
+import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 
 export function Occurrences() {
     const {
         setPageTitle,
         openConfirmationDialog,
         closeConfirmationDialog,
-        openOccurrenceFormDialog
+        openOccurrenceFormDialog,
+        openOccurrenceTypesDialog
     } = useLayout();
 
     // States for filtering
     const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [selectedCollaborator, setSelectedCollaborator] = useState<string>("TODOS");
+    const [selectedOccurrence, setSelectedOccurrence] = useState<any>(null);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     // Calculated range for API
     const dateRange = useMemo(() => {
@@ -44,6 +49,8 @@ export function Occurrences() {
         data_inicio: dateRange.inicio,
         data_fim: dateRange.fim,
         usuario_id: selectedCollaborator !== "TODOS" ? selectedCollaborator : undefined,
+        order: "data_ocorrencia",
+        ascending: false,
     });
 
     const { data: collaborators = [] } = useCollaborators({});
@@ -64,11 +71,12 @@ export function Occurrences() {
     const handleDelete = (occurrence: Ocorrencia) => {
         openConfirmationDialog({
             title: "Remover Ocorrência",
-            description: `Deseja realmente remover esta ocorrência de ${occurrence.tipo?.nome}?`,
+            description: `Deseja realmente remover esta ocorrência de ${occurrence.tipo?.descricao}?`,
             confirmText: "Remover",
             variant: "destructive",
             onConfirm: async () => {
                 await deleteMutation.mutateAsync(occurrence.id);
+                setIsDetailsOpen(false);
                 closeConfirmationDialog();
             },
         });
@@ -147,9 +155,18 @@ export function Occurrences() {
                                 Histórico
                             </h2>
                             <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="rounded-full bg-white border-gray-100 text-gray-500 font-medium">
+                                <Badge variant="outline" className="rounded-full bg-white border-gray-100 text-gray-500 font-medium font-bold">
                                     {occurrences.length} {occurrences.length === 1 ? 'registro' : 'registros'}
                                 </Badge>
+                                <Button
+                                    onClick={() => openOccurrenceTypesDialog()}
+                                    variant="outline"
+                                    className="rounded-xl h-9 px-4 gap-2 shadow-sm font-semibold border-gray-200 bg-white"
+                                    size="sm"
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Gerenciar Tipos</span>
+                                </Button>
                                 <Button
                                     onClick={() => openOccurrenceFormDialog({ onSuccess: refetch })}
                                     className="rounded-xl h-9 px-4 gap-2 shadow-sm font-bold"
@@ -162,90 +179,87 @@ export function Occurrences() {
                         </div>
                     </div>
 
-                    {isLoading ? (
-                        <ListSkeleton />
-                    ) : occurrences.length > 0 ? (
-                        <div className="grid gap-4">
-                            {occurrences.map((occ) => (
-                                <Card key={occ.id} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group">
-                                    <CardContent className="p-4">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1 space-y-2">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <Badge className={cn(
-                                                        "rounded-full px-2.5 py-0.5 font-bold text-[10px] uppercase tracking-wider",
-                                                        occ.impacto_financeiro ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-600 border-blue-100"
-                                                    )}>
-                                                        {occ.tipo?.nome}
-                                                    </Badge>
-                                                    <div className="flex items-center gap-1 text-xs text-gray-400 font-medium">
-                                                        <CalendarIcon className="h-3 w-3" />
-                                                        {format(new Date(occ.data_ocorrencia), "dd 'de' MMMM, yyyy", { locale: ptBR })}
-                                                    </div>
-                                                </div>
+                    {/* Timeline View */}
+                    <Card className="border-0 shadow-sm rounded-3xl overflow-hidden">
+                        <CardContent className="p-8">
+                            {isLoading ? (
+                                <div className="space-y-4">
+                                    {[1, 2, 3].map(i => <div key={i} className="h-20 bg-gray-50 animate-pulse rounded-2xl" />)}
+                                </div>
+                            ) : occurrences.length > 0 ? (
+                                <div className="relative space-y-0">
+                                    {/* Linha Vertical da TimeLine */}
+                                    <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-gray-100" />
 
-                                                <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">
-                                                    {occ.colaborador?.nome_completo}
-                                                </h3>
-
-                                                {occ.observacao && (
-                                                    <div className="relative pl-3 border-l-2 border-primary/10 py-1">
-                                                        <p className="text-sm text-gray-600 line-clamp-2 italic leading-relaxed">
-                                                            "{occ.observacao}"
-                                                        </p>
-                                                    </div>
-                                                )}
-
-                                                <div className="flex items-center gap-4 pt-1 text-[11px] text-gray-500 font-medium">
-                                                    <div className="flex items-center gap-1">
-                                                        <div className="h-5 w-5 rounded-full bg-gray-100 flex items-center justify-center">
-                                                            <User className="h-3 w-3 text-gray-400" />
-                                                        </div>
-                                                        <span>Por: {occ.criado_por_usuario?.nome_completo?.split(' ')[0]}</span>
-                                                    </div>
-                                                    {occ.vinculo?.cliente?.nome_fantasia && (
-                                                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-gray-50 rounded-lg">
-                                                            <Filter className="h-3 w-3 text-gray-400" />
-                                                            <span>{occ.vinculo.cliente.nome_fantasia}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                    {occurrences.map((oc, index) => (
+                                        <div
+                                            key={oc.id}
+                                            onClick={() => {
+                                                setSelectedOccurrence(oc);
+                                                setIsDetailsOpen(true);
+                                            }}
+                                            className="relative pl-9 py-4 group cursor-pointer transition-all hover:bg-gray-50/50 rounded-2xl"
+                                        >
+                                            {/* Ponto da Timeline */}
+                                            <div className={cn(
+                                                "absolute left-0 top-[22px] w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-all group-hover:scale-110",
+                                                oc.tipo_lancamento === "SAIDA" ? "bg-red-500" : "bg-green-500"
+                                            )}>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-white" />
                                             </div>
 
-                                            <div className="flex flex-col items-end justify-between self-stretch">
-                                                <div className="text-right">
-                                                    <p className={cn(
-                                                        "text-lg font-black tracking-tight",
-                                                        occ.impacto_financeiro ? "text-red-600" : "text-gray-900"
-                                                    )}>
-                                                        {occ.valor ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(occ.valor) : '—'}
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-xs font-black text-gray-400 uppercase tracking-wider">
+                                                            {format(new Date(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
+                                                        </span>
+                                                        <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-gray-200 text-gray-500 font-bold bg-white">
+                                                            {oc.tipo?.descricao || 'Ocorrência'}
+                                                        </Badge>
+                                                        <span className="text-[11px] font-bold text-gray-900 truncate max-w-[150px]">
+                                                            {oc.colaborador?.nome_completo}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm font-semibold text-gray-700 truncate pr-4 italic">
+                                                        {oc.observacao || 'Sem observação'}
                                                     </p>
                                                 </div>
 
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                                    onClick={() => handleDelete(occ)}
-                                                >
-                                                    <X className="h-5 w-5" />
-                                                </Button>
+                                                <div className="flex items-center gap-3 shrink-0">
+                                                    {oc.impacto_financeiro && (
+                                                        <div className={cn(
+                                                            "text-xs font-black px-2 py-1 rounded-lg",
+                                                            oc.tipo_lancamento === "SAIDA" ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"
+                                                        )}>
+                                                            {oc.tipo_lancamento === "SAIDA" ? "-" : "+"} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
+                                                        </div>
+                                                    )}
+                                                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
+                                                </div>
                                             </div>
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    ) : (
-                        <UnifiedEmptyState
-                            icon={AlertCircle}
-                            title="Nenhuma ocorrência encontrada"
-                            description="Tente ajustar o período ou o colaborador nos filtros acima."
-                        />
-                    )}
+                                    ))}
+                                </div>
+                            ) : (
+                                <UnifiedEmptyState
+                                    icon={AlertCircle}
+                                    title="Nenhuma ocorrência"
+                                    description="Não há registros para os filtros selecionados."
+                                />
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             </PullToRefreshWrapper>
             <LoadingOverlay active={deleteMutation.isPending} text="Removendo..." />
+
+            <OccurrenceDetailsDialog
+                open={isDetailsOpen}
+                onOpenChange={setIsDetailsOpen}
+                occurrence={selectedOccurrence}
+                onDelete={() => handleDelete(selectedOccurrence)}
+            />
         </>
     );
 }

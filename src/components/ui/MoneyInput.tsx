@@ -14,28 +14,28 @@ export const MoneyInput = React.forwardRef<HTMLInputElement, MoneyInputProps>(
 
     // Format number to currency string (R$ 0,00)
     const formatCurrency = (val: number) => {
-        return new Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-        }).format(val);
+      return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(val);
     };
 
     useEffect(() => {
-        // Update display value when external value changes
-        // Only if not currently focused or if drastically different (to avoid cursor jumping)
-        // For simplicity, we always format on external change for now
-        setDisplayValue(formatCurrency(value));
+      // Update display value when external value changes
+      // Only if not currently focused or if drastically different (to avoid cursor jumping)
+      // For simplicity, we always format on external change for now
+      setDisplayValue(formatCurrency(value));
     }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value.replace(/\D/g, ""); // Keep only numbers
-        const numericValue = Number(rawValue) / 100; // Divide by 100 to get decimals
+      const rawValue = e.target.value.replace(/\D/g, ""); // Keep only numbers
+      const numericValue = Number(rawValue) / 100; // Divide by 100 to get decimals
 
-        setDisplayValue(formatCurrency(numericValue));
-        
-        if (onChange) {
-            onChange(numericValue);
-        }
+      setDisplayValue(formatCurrency(numericValue));
+
+      if (onChange) {
+        onChange(numericValue);
+      }
     };
 
     return (
@@ -45,7 +45,7 @@ export const MoneyInput = React.forwardRef<HTMLInputElement, MoneyInputProps>(
         inputMode="numeric"
         value={displayValue}
         onChange={handleChange}
-        className={cn("font-mono text-right", className)}
+        className={cn(className)}
         {...props}
       />
     );

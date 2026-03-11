@@ -1,37 +1,36 @@
 import { CepInput } from "@/components/forms";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
 import { messages } from "@/constants/messages";
-import { DIAS_SEMANA } from "@/utils/formatters/constants";
 import { useCreateClient, useUpdateClient } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Client } from "@/types/database";
@@ -41,14 +40,14 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Building2,
-  FileText,
-  Hash,
-  Loader2,
-  MapPin,
-  Wand2,
-  X,
-  Zap,
+    Building2,
+    FileText,
+    Hash,
+    Loader2,
+    MapPin,
+    Wand2,
+    X,
+    Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -95,8 +94,8 @@ export function ClientFormDialog({
       cidade: "",
       estado: "",
       ativo: true,
-      km_contratados: 0,
-      escala_semanal: [1, 2, 3, 4, 5, 6],
+      km_contratados: undefined as any,
+      escala_semanal: [],
     },
   });
 
@@ -116,7 +115,7 @@ export function ClientFormDialog({
           estado: editingClient.estado || "",
           ativo: editingClient.ativo,
           km_contratados: editingClient.km_contratados || 0,
-          escala_semanal: editingClient.escala_semanal || [1, 2, 3, 4, 5, 6],
+          escala_semanal: editingClient.escala_semanal || [],
         });
         setOpenAccordionItems(["dados-cliente", "endereco"]);
       } else {
@@ -132,8 +131,8 @@ export function ClientFormDialog({
           cidade: "",
           estado: "",
           ativo: true,
-          km_contratados: 0,
-          escala_semanal: [1, 2, 3, 4, 5, 6],
+          km_contratados: undefined as any,
+          escala_semanal: [],
         });
         setOpenAccordionItems(["dados-cliente", "endereco"]);
       }
@@ -366,7 +365,7 @@ export function ClientFormDialog({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              KM Contratados (por motoboy/mês)
+                              KM Contratados (por motoboy/mês) <span className="text-red-500">*</span>
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
@@ -416,7 +415,7 @@ export function ClientFormDialog({
                         <FormItem className="space-y-3 p-4 border rounded-xl bg-gray-50/30">
                           <div className="flex flex-col gap-1">
                             <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              Escala Semanal
+                              Escala Semanal <span className="text-red-500">*</span>
                             </FormLabel>
                             <span className="text-xs text-muted-foreground ml-1">
                               Selecione os dias da semana que compõem a escala base deste cliente.

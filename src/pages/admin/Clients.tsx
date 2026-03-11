@@ -5,19 +5,19 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useClients,
-  useCreateClient,
-  useDeleteClient,
-  useToggleClientStatus,
+    useClients,
+    useCreateClient,
+    useDeleteClient,
+    useToggleClientStatus,
 } from "@/hooks";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { Client } from "@/types/client";
 import { Users } from "lucide-react";
 import { useCallback, useEffect } from "react";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export default function Clients() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openClientFormDialog } =
@@ -68,7 +68,21 @@ export default function Clients() {
   };
 
   const handleToggleStatus = (client: Client) => {
-    toggleStatus.mutate({ id: client.id, ativo: !client.ativo });
+    const action = client.ativo ? "desativar" : "ativar";
+    openConfirmationDialog({
+      title: `${client.ativo ? "Desativar" : "Ativar"} Cliente`,
+      description: `Tem certeza que deseja ${action} o cliente "${client.nome_fantasia}"?`,
+      confirmText: client.ativo ? "Desativar" : "Ativar",
+      variant: client.ativo ? "destructive" : "default",
+      onConfirm: async () => {
+        try {
+          await toggleStatus.mutateAsync({ id: client.id, ativo: !client.ativo });
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
   };
 
   const handleDelete = (client: Client) => {

@@ -115,6 +115,7 @@ export function useCreateVinculo() {
     mutationFn: (data: any) => colaboradorApi.createVinculo(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["collaborator", variables.colaborador_id] });
+      queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.colaborador_id] });
       toast.success("Turno criado com sucesso!");
     },
     onError: (error: any) => {
@@ -130,8 +131,14 @@ export function useUpdateVinculo() {
   return useMutation({
     mutationFn: ({ id, silent, ...data }: any) => colaboradorApi.updateVinculo(id, data),
     onSuccess: (_, variables) => {
-      // We might not have colaborador_id here if it's not passed, but usually it is
-      queryClient.invalidateQueries({ queryKey: ["collaborator"] });
+      // Invalida o colaborador específico se o ID estiver disponível nas variáveis
+      if (variables.colaborador_id) {
+        queryClient.invalidateQueries({ queryKey: ["collaborator", variables.colaborador_id] });
+        queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.colaborador_id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["collaborator"] });
+        queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
+      }
       toast.success("Turno atualizado!");
     },
     onError: (error: any) => {
@@ -148,6 +155,7 @@ export function useDeleteVinculo() {
     mutationFn: (id: number) => colaboradorApi.deleteVinculo(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collaborator"] });
+      queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
       toast.success("Turno removido!");
     },
     onError: (error: any) => {

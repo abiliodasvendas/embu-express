@@ -9,9 +9,9 @@ import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useFilters } from "@/hooks";
 import {
-  useCreateCollaborator,
-  useDeleteCollaborator,
-  useUpdateCollaboratorStatus,
+    useCreateCollaborator,
+    useDeleteCollaborator,
+    useUpdateCollaboratorStatus,
 } from "@/hooks/api/useCollaboratorMutations";
 import { useCollaborators, useRoles } from "@/hooks/api/useCollaborators";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
@@ -116,29 +116,44 @@ export function Collaborators() {
     });
   };
 
-  const handleStatusChange = async (
+  const handleStatusChange = (
     collaborator: Collaborator,
     newStatus: string,
   ) => {
-    await updateStatus.mutateAsync({
-      id: collaborator.id,
-      status: newStatus,
-    });
+    const isActivating = newStatus === "ATIVO";
+    openConfirmationDialog({
+      title: isActivating ? "Ativar Colaborador" : "Desativar Colaborador",
+      description: `Tem certeza que deseja ${isActivating ? "ativar" : "desativar"} o colaborador "${collaborator.nome_completo}"?`,
+      confirmText: isActivating ? "Ativar" : "Desativar",
+      variant: isActivating ? "default" : "destructive",
+      onConfirm: async () => {
+        try {
+          await updateStatus.mutateAsync({
+            id: collaborator.id,
+            status: newStatus,
+          });
 
-    if (newStatus === "ATIVO") {
-      setTimeout(() => {
-        openSuccessRegistrationDialog({
-          collaborator: collaborator,
-          title: "Aprovação Realizada!",
-          hideNewCollaboratorButton: true,
-          description: (
-            <>
-              O colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi aprovado com sucesso.
-            </>
-          )
-        });
-      }, 300);
-    }
+          closeConfirmationDialog();
+
+          if (newStatus === "ATIVO") {
+            setTimeout(() => {
+              openSuccessRegistrationDialog({
+                collaborator: collaborator,
+                title: "Aprovação Realizada!",
+                hideNewCollaboratorButton: true,
+                description: (
+                  <>
+                    O colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi aprovado com sucesso.
+                  </>
+                )
+              });
+            }, 300);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
   };
 
   const isCreatingCollaborator = createCollaborator.isPending;

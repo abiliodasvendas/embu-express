@@ -4,16 +4,17 @@ import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDia
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import { EditTimeRecordDialog } from "@/components/dialogs/EditTimeRecordDialog";
 import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
+import { FeriadoFormDialog } from "@/components/dialogs/FeriadoFormDialog";
 import { MileageDialog } from "@/components/dialogs/MileageDialog";
+import { OccurrenceFormDialog } from "@/components/dialogs/OccurrenceFormDialog";
+import { OccurrenceTypesDialog } from "@/components/dialogs/OccurrenceTypesDialog";
 import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
 import { SuccessRegistrationDialog } from "@/components/dialogs/SuccessRegistrationDialog";
 import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
-import { OccurrenceFormDialog } from "@/components/dialogs/OccurrenceFormDialog";
-import { OccurrenceTypesDialog } from "@/components/dialogs/OccurrenceTypesDialog";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
-import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Perfil, RegistroPonto } from '@/types/database';
+import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Perfil, RegistroPonto } from '@/types/database';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 // --- Interfaces ---
@@ -31,7 +32,7 @@ interface OpenConfirmationDialogProps {
 export interface OpenCollaboratorFormProps {
   mode: "create" | "edit";
   editingCollaborator?: Collaborator | null;
-  onSuccess?: (collaborator: any) => void;
+  onSuccess?: (collaborator: Collaborator) => void;
 }
 
 export interface OpenClientFormProps {
@@ -84,6 +85,11 @@ export interface OpenOccurrenceFormProps {
   onSuccess?: () => void;
 }
 
+export interface OpenFeriadoFormProps {
+  feriadoToEdit?: Feriado;
+  onSuccess?: () => void;
+}
+
 // --- Context Type ---
 
 interface LayoutContextType {
@@ -128,6 +134,9 @@ interface LayoutContextType {
 
   openOccurrenceTypesDialog: () => void;
   closeOccurrenceTypesDialog: () => void;
+
+  openFeriadoFormDialog: (props: OpenFeriadoFormProps) => void;
+  closeFeriadoFormDialog: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -229,6 +238,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const [occurrenceTypesDialogState, setOccurrenceTypesDialogState] = useState({
+    open: false,
+  });
+
+  const [feriadoFormDialogState, setFeriadoFormDialogState] = useState<{
+    open: boolean;
+    props?: OpenFeriadoFormProps;
+  }>({
     open: false,
   });
 
@@ -360,6 +376,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openFeriadoFormDialog = (props: OpenFeriadoFormProps) => {
+    setFeriadoFormDialogState({ open: true, props });
+  };
+
+  const closeFeriadoFormDialog = () => {
+    closeDialog(() => {
+      setFeriadoFormDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
   return (
     <LayoutContext.Provider value={{
       pageTitle,
@@ -389,7 +415,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openOccurrenceFormDialog,
       closeOccurrenceFormDialog,
       openOccurrenceTypesDialog,
-      closeOccurrenceTypesDialog
+      closeOccurrenceTypesDialog,
+      openFeriadoFormDialog,
+      closeFeriadoFormDialog
     }}>
       {children}
 
@@ -531,6 +559,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         open={occurrenceTypesDialogState.open}
         onOpenChange={(open) => !open && closeOccurrenceTypesDialog()}
       />
+
+      {feriadoFormDialogState.open && (
+        <FeriadoFormDialog
+          open={true}
+          onOpenChange={(open) => !open && closeFeriadoFormDialog()}
+          feriadoToEdit={feriadoFormDialogState.props?.feriadoToEdit}
+        />
+      )}
 
     </LayoutContext.Provider>
   );

@@ -1,17 +1,16 @@
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogClose,
-} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { Ocorrencia } from "@/types/database";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, Calendar, MessageSquare, DollarSign, ArrowDownCircle, ArrowUpCircle, X, Clock, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AlertCircle, ArrowDownCircle, ArrowUpCircle, Calendar, Clock, User, X } from "lucide-react";
 
 interface OccurrenceDetailsDialogProps {
     occurrence: Ocorrencia | null;
@@ -46,7 +45,6 @@ export function OccurrenceDetailsDialog({
                     <DialogTitle className="text-2xl font-bold text-white">
                         Detalhes da Ocorrência
                     </DialogTitle>
-                    <p className="text-sm text-white/70 mt-1">Informações completas do registro</p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-200">

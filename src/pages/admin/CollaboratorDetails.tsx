@@ -1,10 +1,15 @@
 import { Can } from "@/components/auth/Can";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
+import { EndTurnDialog } from "@/components/dialogs/EndTurnDialog";
+import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
+import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
+import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ListSkeleton } from "@/components/skeletons";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { messages } from "@/constants/messages";
 import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
@@ -12,30 +17,24 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useCollaborator, useDeleteVinculo, useRoles } from "@/hooks";
 import { useDeleteCollaborator, useUpdateCollaboratorStatus } from "@/hooks/api/useCollaboratorMutations";
 import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
+import { useOcorrencias } from "@/hooks/api/useOcorrencias";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
-import { cnpjMask, cpfMask, dateMask, phoneMask } from "@/utils/masks";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
-import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
-import { OccurrenceFormDialog } from "@/components/dialogs/OccurrenceFormDialog";
-import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
-import { useOcorrencias } from "@/hooks/api/useOcorrencias";
-import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
+import { meses } from "@/utils/formatters/constants";
+import { cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
+import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, Bike, Calendar as CalendarIcon, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, FileText, History, Mail, MapPin, MoreVertical, Phone, Plus, Trash2, User, Wallet, Link2, ChevronRight } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, ChevronRight, Clock, CreditCard, Edit2, History, Mail, MapPin, MoreVertical, Phone, Plus, Trash2, User, Wallet } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { meses, anos } from "@/utils/formatters/constants";
 
 
 export default function CollaboratorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data: collaborator, isLoading, refetch } = useCollaborator(id);
+  const { data: collaborator, isLoading } = useCollaborator(id);
   const { data: roles } = useRoles();
   const deleteVinculo = useDeleteVinculo();
   const updateStatus = useUpdateCollaboratorStatus();
@@ -63,6 +62,7 @@ export default function CollaboratorDetails() {
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const [selectedOccurrence, setSelectedOccurrence] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [endTurnState, setEndTurnState] = useState<{ open: boolean; turnId: number; clientName: string }>({ open: false, turnId: 0, clientName: "" });
 
   useEffect(() => {
     if (!hasAutoOpened && searchParams.get('openTurnDialog') === 'true' && collaborator && !isLoading) {
@@ -224,6 +224,14 @@ export default function CollaboratorDetails() {
           console.error(error);
         }
       },
+    });
+  };
+
+  const handleEndTurn = (link: ColaboradorCliente) => {
+    setEndTurnState({
+      open: true,
+      turnId: link.id,
+      clientName: (link as any).cliente?.nome_fantasia || "Cliente",
     });
   };
 
@@ -506,6 +514,11 @@ export default function CollaboratorDetails() {
                             <Button onClick={() => handleEditTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-primary rounded-lg">
                               <Edit2 className="h-3.5 w-3.5" />
                             </Button>
+                            {!link.data_fim && (
+                              <Button onClick={() => handleEndTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-amber-500 rounded-lg" title="Encerrar Vínculo">
+                                <CalendarOff className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
                             <Button onClick={() => handleDeleteTurn(link.id)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500 rounded-lg">
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -514,11 +527,18 @@ export default function CollaboratorDetails() {
                       </div>
 
                       <div className="space-y-3">
-                        <div>
-                          <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Cliente</p>
-                          <h4 className="font-bold text-gray-800 leading-tight">
-                            {link.cliente?.nome_fantasia}
-                          </h4>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Cliente</p>
+                            <h4 className="font-bold text-gray-800 leading-tight">
+                              {link.cliente?.nome_fantasia}
+                            </h4>
+                          </div>
+                          {link.data_fim && new Date(link.data_fim + 'T00:00:00') < new Date() && (
+                            <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-700 font-bold text-[10px] shrink-0">
+                              Encerrado
+                            </Badge>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-6">
@@ -711,6 +731,14 @@ export default function CollaboratorDetails() {
         onOpenChange={setIsDetailsOpen}
         occurrence={selectedOccurrence}
         onDelete={() => handleDeleteOccurrence(selectedOccurrence)}
+      />
+
+      <EndTurnDialog
+        open={endTurnState.open}
+        onOpenChange={(open) => setEndTurnState(prev => ({ ...prev, open }))}
+        turnId={endTurnState.turnId}
+        collaboratorId={id!}
+        clientName={endTurnState.clientName}
       />
 
     </div>

@@ -1,7 +1,13 @@
 export const FINANCEIRO_STATUS = {
-    DRAFT: 'DRAFT',
-    FECHADO: 'FECHADO',
+    RASCUNHO: 'RASCUNHO',
     PAGO: 'PAGO',
 } as const;
 
 export type FinanceiroStatus = keyof typeof FINANCEIRO_STATUS;
+
+export const LANCAMENTO_TIPO = {
+    ENTRADA: 'ENTRADA',
+    SAIDA: 'SAIDA',
+} as const;
+
+export type LancamentoTipo = keyof typeof LANCAMENTO_TIPO;

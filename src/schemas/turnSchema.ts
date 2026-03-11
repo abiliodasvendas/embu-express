@@ -1,6 +1,6 @@
 import { messages } from "@/constants/messages";
-import { z } from "zod";
 import { moneyToNumber } from "@/utils/masks";
+import { z } from "zod";
 
 const moneySchema = z.string()
   .min(1, messages.validacao.campoObrigatorio)
@@ -12,8 +12,7 @@ const optionalMoneySchema = z.string()
   .refine(val => !val || moneyToNumber(val) > 0, "O valor deve ser maior que zero ou vazio")
   .transform((val) => val ? moneyToNumber(val) : 0);
 
-export const turnSchema = z.object({
-  cliente_id: z.string().optional(),
+const baseSchema = {
   empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
   hora_inicio: z.string()
     .min(1, messages.validacao.campoObrigatorio)
@@ -28,16 +27,20 @@ export const turnSchema = z.object({
   valor_mei: optionalMoneySchema,
   valor_adiantamento: optionalMoneySchema,
   data_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
-  isMotoboy: z.any().optional(),
-}).refine((data) => {
-  const isM = data.isMotoboy === true || data.isMotoboy === "true";
-  if (isM && (!data.cliente_id || data.cliente_id === "")) {
-    return false;
-  }
-  return true;
-}, {
-  message: messages.validacao.campoObrigatorio,
-  path: ["cliente_id"],
-});
+};
+
+export const turnSchema = z.discriminatedUnion("isMotoboy", [
+  z.object({
+    ...baseSchema,
+    isMotoboy: z.literal(true),
+    cliente_id: z.string({ required_error: messages.validacao.campoObrigatorio })
+      .min(1, messages.validacao.campoObrigatorio),
+  }),
+  z.object({
+    ...baseSchema,
+    isMotoboy: z.literal(false),
+    cliente_id: z.string().optional().nullable(),
+  }),
+]);
 
 export type TurnFormData = z.infer<typeof turnSchema>;

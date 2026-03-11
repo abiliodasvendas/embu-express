@@ -2,9 +2,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogTitle,
-    DialogClose,
 } from "@/components/ui/dialog";
 import {
     Form,
@@ -17,20 +17,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Switch } from "@/components/ui/switch";
-import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
+import { useLayout } from "@/contexts/LayoutContext";
 import {
     useCreateTipoOcorrencia,
-    useUpdateTipoOcorrencia,
-    useDeleteTipoOcorrencia
+    useDeleteTipoOcorrencia,
+    useUpdateTipoOcorrencia
 } from "@/hooks/api/useOcorrenciaMutations";
+import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
+import { cn } from "@/lib/utils";
 import { TipoOcorrencia } from "@/types/database";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Pencil, Trash2, X, Check, Settings, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { Loader2, Pencil, Plus, Settings, Trash2, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
-import { useLayout } from "@/contexts/LayoutContext";
 
 const tipoOcorrenciaSchema = z.object({
     descricao: z.string().min(1, "A descrição é obrigatória"),
@@ -52,6 +52,8 @@ export function OccurrenceTypesDialog({
     const { data: tipos = [], isLoading, refetch } = useTiposOcorrencia();
     const [editingTipo, setEditingTipo] = useState<TipoOcorrencia | null>(null);
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const formContainerRef = useRef<HTMLDivElement>(null);
+
     const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
     const createMutation = useCreateTipoOcorrencia();
@@ -75,12 +77,19 @@ export function OccurrenceTypesDialog({
             impacto_financeiro: tipo.impacto_financeiro,
         });
         setIsFormVisible(true);
+        setTimeout(() => {
+            formContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const handleCancel = () => {
         setEditingTipo(null);
         setIsFormVisible(false);
-        form.reset();
+        form.reset({
+            descricao: "",
+            valor_padrao: 0,
+            impacto_financeiro: false,
+        });
     };
 
     const onSubmit = async (data: TipoOcorrenciaFormData) => {
@@ -91,7 +100,6 @@ export function OccurrenceTypesDialog({
                 await createMutation.mutateAsync(data);
             }
             handleCancel();
-            refetch();
         } catch (error) {
             console.error(error);
         }
@@ -106,7 +114,6 @@ export function OccurrenceTypesDialog({
             onConfirm: async () => {
                 await deleteMutation.mutateAsync(tipo.id);
                 closeConfirmationDialog();
-                refetch();
             },
         });
     };
@@ -138,7 +145,13 @@ export function OccurrenceTypesDialog({
                         <h3 className="text-sm font-bold text-gray-700 uppercase tracking-widest">Tipos Cadastrados</h3>
                         {!isFormVisible && (
                             <Button
-                                onClick={() => setIsFormVisible(true)}
+                                onClick={() => {
+                                    handleCancel();
+                                    setIsFormVisible(true);
+                                    setTimeout(() => {
+                                        formContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }, 100);
+                                }}
                                 className="rounded-xl gap-2 font-bold shadow-sm h-9 px-4"
                                 size="sm"
                             >
@@ -149,8 +162,9 @@ export function OccurrenceTypesDialog({
                     </div>
 
                     {isFormVisible && (
-                        <Card className="mb-6 border border-blue-100 shadow-sm rounded-2xl bg-white animate-in fade-in slide-in-from-top-4 duration-300">
-                            <CardContent className="p-5">
+                        <div ref={formContainerRef}>
+                            <Card className="mb-6 border border-blue-100 shadow-sm rounded-2xl bg-white animate-in fade-in slide-in-from-top-4 duration-300">
+                                <CardContent className="p-5">
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="bg-blue-600 p-1.5 rounded-lg">
                                         <Plus className="w-3.5 h-3.5 text-white" />
@@ -240,7 +254,8 @@ export function OccurrenceTypesDialog({
                                     </form>
                                 </Form>
                             </CardContent>
-                        </Card>
+                            </Card>
+                        </div>
                     )}
 
                     <div className="space-y-3">
@@ -268,9 +283,11 @@ export function OccurrenceTypesDialog({
                                                 </Badge>
                                             )}
                                         </div>
-                                        <div className="text-[11px] text-gray-400 font-bold mt-0.5">
-                                            Sugestão de Valor: <span className="text-gray-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tipo.valor_padrao || 0)}</span>
-                                        </div>
+                                        {tipo.impacto_financeiro && (
+                                            <div className="text-[11px] text-gray-400 font-bold mt-0.5">
+                                                Sugestão de Valor: <span className="text-gray-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tipo.valor_padrao || 0)}</span>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Button
@@ -294,16 +311,6 @@ export function OccurrenceTypesDialog({
                             ))
                         )}
                     </div>
-                </div>
-
-                <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0">
-                    <Button
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                        className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
-                    >
-                        Fechar Gerenciador
-                    </Button>
                 </div>
             </DialogContent>
         </Dialog>

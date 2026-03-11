@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Feriado } from "@/types/database";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export function useFeriados(ano?: number) {
@@ -19,7 +20,7 @@ export function useFeriados(ano?: number) {
 
             const { data, error } = await query;
             if (error) throw error;
-            return data;
+            return data as Feriado[];
         },
     });
 }
@@ -65,6 +66,30 @@ export function useDeleteFeriado() {
         },
         onError: (error: any) => {
             toast.error(error.message || "Erro ao remover feriado");
+        },
+    });
+}
+
+export function useUpdateFeriado() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, data, descricao }: { id: number; data: string; descricao: string }) => {
+            const { data: updated, error } = await supabase
+                .from("feriados")
+                .update({ data, descricao })
+                .eq("id", id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return updated;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["feriados"] });
+            toast.success("Feriado atualizado com sucesso!");
+        },
+        onError: (error: any) => {
+            toast.error(error.message || "Erro ao atualizar feriado");
         },
     });
 }

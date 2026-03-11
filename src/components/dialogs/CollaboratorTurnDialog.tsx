@@ -15,11 +15,11 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -88,10 +88,12 @@ export function CollaboratorTurnDialog({
       ajuda_custo: "",
       valor_mei: "",
       valor_adiantamento: "",
-      data_inicio: new Date().toISOString().split('T')[0],
+      data_inicio: "",
       isMotoboy: false,
     },
   });
+
+  const isMotoboy = form.watch("isMotoboy");
 
   useEffect(() => {
     if (open) {
@@ -111,7 +113,7 @@ export function CollaboratorTurnDialog({
           isMotoboy: collaborator?.perfil?.nome === ROLES.MOTOBOY,
         });
       } else {
-        const isM = collaborator?.perfil?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase();
+        const isM = !!(collaborator?.perfil?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase());
         form.reset({
           cliente_id: "",
           empresa_id: "",
@@ -123,7 +125,7 @@ export function CollaboratorTurnDialog({
           ajuda_custo: "",
           valor_mei: "",
           valor_adiantamento: "",
-          data_inicio: new Date().toISOString().split('T')[0],
+          data_inicio: "",
           isMotoboy: isM,
         });
       }
@@ -135,17 +137,16 @@ export function CollaboratorTurnDialog({
 
   const onSubmit = async (values: TurnFormData) => {
     try {
-      const isMotoboy = collaborator?.perfil?.nome === ROLES.MOTOBOY;
       const data = {
         ...values,
         colaborador_id: collaboratorId,
-        cliente_id: (isMotoboy && values.cliente_id) ? parseInt(values.cliente_id) : null,
+        cliente_id: (values.isMotoboy && values.cliente_id) ? parseInt(values.cliente_id) : null,
         empresa_id: parseInt(values.empresa_id),
         valor_contrato: values.valor_contrato,
-        valor_aluguel: isMotoboy ? values.valor_aluguel : 0,
-        valor_bonus: isMotoboy ? values.valor_bonus : 0,
-        ajuda_custo: isMotoboy ? values.ajuda_custo : 0,
-        valor_mei: isMotoboy ? values.valor_mei : 0,
+        valor_aluguel: values.valor_aluguel,
+        valor_bonus: values.valor_bonus,
+        ajuda_custo: values.ajuda_custo,
+        valor_mei: values.valor_mei,
         valor_adiantamento: values.valor_adiantamento,
         data_inicio: values.data_inicio,
       };
@@ -188,7 +189,6 @@ export function CollaboratorTurnDialog({
         <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
           <Form {...form}>
             <form id="collaborator-turn-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <input type="hidden" {...form.register("isMotoboy")} />
               <Accordion
                 type="multiple"
                 value={openSections}
@@ -203,33 +203,37 @@ export function CollaboratorTurnDialog({
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 pt-2 space-y-4">
-                    <div className={cn("grid gap-4", collaborator?.perfil?.nome === ROLES.MOTOBOY ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
-                      {collaborator?.perfil?.nome === ROLES.MOTOBOY && (
-                        <FormField
-                          control={form.control}
-                          name="cliente_id"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Cliente <span className="text-red-500">*</span></FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
-                                    <SelectValue placeholder="Selecione" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {clients?.map((client) => (
-                                    <SelectItem key={client.id} value={client.id.toString()}>
-                                      {client.nome_fantasia}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="cliente_id"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-1">
+                              Cliente 
+                              {isMotoboy && <span className="text-red-500">*</span>}
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className={cn(
+                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                  fieldState.error && "border-red-500 focus:ring-red-500"
+                                )}>
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {clients?.map((client) => (
+                                  <SelectItem key={client.id} value={client.id.toString()}>
+                                    {client.nome_fantasia}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
                       <FormField
                         control={form.control}
@@ -320,14 +324,13 @@ export function CollaboratorTurnDialog({
                   <AccordionContent className="pb-6 pt-2 space-y-6">
                     {/* 1. PERÍODO */}
                     <div className="space-y-3">
-                      <h4 className="text-sm font-bold text-gray-800 ml-1">Início da Vigência</h4>
                       <div className="grid grid-cols-1 gap-4">
                         <FormField
                           control={form.control}
                           name="data_inicio"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-xs opacity-70">Data de Início do Período <span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Data de Início do Período <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input type="date" {...field} className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
                               </FormControl>

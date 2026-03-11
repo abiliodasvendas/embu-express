@@ -1,9 +1,11 @@
+import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogTitle,
-    DialogClose,
 } from "@/components/ui/dialog";
 import {
     Form,
@@ -21,20 +23,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { MoneyInput } from "@/components/ui/MoneyInput";
-import { Combobox } from "@/components/ui/combobox";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { useCollaborator, useCollaborators } from "@/hooks/api/useCollaborators";
 import { useCreateOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
-import { useCollaborators } from "@/hooks/api/useCollaborators";
-import { occurrenceSchema, OccurrenceFormData } from "@/schemas/occurrenceSchema";
+import { cn } from "@/lib/utils";
+import { OccurrenceFormData, occurrenceSchema } from "@/schemas/occurrenceSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { AlertCircle, Loader2, X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { format } from "date-fns";
-import { AlertCircle, X, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface OccurrenceFormDialogProps {
     open: boolean;
@@ -64,6 +64,9 @@ export function OccurrenceFormDialog({
             observacao: "",
         },
     });
+
+    const selectedCollaboratorId = form.watch("colaborador_id");
+    const { data: selectedDetailedCollaborator } = useCollaborator(selectedCollaboratorId);
 
     // Update collaborator_id if it changes via props
     useEffect(() => {
@@ -98,9 +101,18 @@ export function OccurrenceFormDialog({
         if (selectedTipoId) {
             const tipo = tipos.find((t) => String(t.id) === selectedTipoId);
             if (tipo) {
-                form.setValue("impacto_financeiro", tipo.impacto_financeiro);
-                if (tipo.valor_padrao) {
-                    form.setValue("valor", tipo.valor_padrao);
+                const hasImpact = !!tipo.impacto_financeiro;
+                form.setValue("impacto_financeiro", hasImpact);
+                
+                if (hasImpact) {
+                    if (tipo.valor_padrao) {
+                        form.setValue("valor", tipo.valor_padrao);
+                    }
+                } else {
+                    // Limpa os campos financeiros se o tipo não tiver impacto por padrão
+                    form.setValue("valor", 0);
+                    form.setValue("tipo_lancamento", undefined as any);
+                    form.setValue("colaborador_cliente_id", undefined as any);
                 }
             }
         }
@@ -270,58 +282,114 @@ export function OccurrenceFormDialog({
                                 />
 
                                 {form.watch("impacto_financeiro") && (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        {/* Vínculo (Turno) selection */}
                                         <FormField
                                             control={form.control}
-                                            name="tipo_lancamento"
-                                            render={({ field }) => (
-                                                <FormItem className="space-y-1.5">
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                        Lançamento <span className="text-red-500">*</span>
-                                                    </FormLabel>
-                                                    <Select onValueChange={field.onChange} value={field.value}>
-                                                        <FormControl>
-                                                            <SelectTrigger
-                                                                className={cn(
-                                                                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                                    form.formState.errors.tipo_lancamento && "border-red-500 focus:ring-red-200"
+                                            name="colaborador_cliente_id"
+                                            render={({ field }) => {
+                                                const links = selectedDetailedCollaborator?.links || [];
+
+                                                return (
+                                                    <FormItem className="space-y-1.5">
+                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                                                            Vínculo (Turno) <span className="text-red-500">*</span>
+                                                        </FormLabel>
+                                                        <Select 
+                                                            onValueChange={(val) => {
+                                                                field.onChange(val);
+                                                                // Se o vínculo mudar, podemos sugerir o tipo de lançamento se houver padrão? 
+                                                                // Por enquanto apenas seta o valor.
+                                                            }} 
+                                                            value={field.value || ""}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger
+                                                                    className={cn(
+                                                                        "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
+                                                                        form.formState.errors.colaborador_cliente_id && "border-red-500 focus:ring-red-200"
+                                                                    )}
+                                                                >
+                                                                    <SelectValue placeholder="Selecione o turno vinculado" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent className="rounded-xl shadow-xl">
+                                                                {links.map((link: any) => (
+                                                                    <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
+                                                                        {link.cliente?.nome_fantasia} ({link.hora_inicio} - {link.hora_fim})
+                                                                    </SelectItem>
+                                                                ))}
+                                                                {links.length === 0 && (
+                                                                    <SelectItem value="none" disabled>
+                                                                        Nenhum turno vinculado encontrado
+                                                                    </SelectItem>
                                                                 )}
-                                                            >
-                                                                <SelectValue placeholder="Selecione..." />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent className="rounded-xl shadow-xl">
-                                                            <SelectItem value="SAIDA" className="cursor-pointer">Saída (Débito)</SelectItem>
-                                                            <SelectItem value="ENTRADA" className="cursor-pointer">Entrada (Crédito)</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage className="text-[10px]" />
-                                                </FormItem>
-                                            )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage className="text-[10px]" />
+                                                        {links.length === 0 && (
+                                                            <p className="text-[10px] text-amber-600 font-medium px-1">
+                                                                Aviso: Este colaborador não possui turnos vinculados. Não será possível gerar impacto financeiro.
+                                                            </p>
+                                                        )}
+                                                    </FormItem>
+                                                );
+                                            }}
                                         />
 
-                                        <FormField
-                                            control={form.control}
-                                            name="valor"
-                                            render={({ field }) => (
-                                                <FormItem className="space-y-1.5">
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                        Valor <span className="text-red-500">*</span>
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <MoneyInput
-                                                            value={field.value}
-                                                            onChange={field.onChange}
-                                                            className={cn(
-                                                                "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                                form.formState.errors.valor && "border-red-500 focus:ring-red-200"
-                                                            )}
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage className="text-[10px]" />
-                                                </FormItem>
-                                            )}
-                                        />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <FormField
+                                                control={form.control}
+                                                name="tipo_lancamento"
+                                                render={({ field }) => (
+                                                    <FormItem className="space-y-1.5">
+                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                                                            Lançamento <span className="text-red-500">*</span>
+                                                        </FormLabel>
+                                                        <Select onValueChange={field.onChange} value={field.value}>
+                                                            <FormControl>
+                                                                <SelectTrigger
+                                                                    className={cn(
+                                                                        "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
+                                                                        form.formState.errors.tipo_lancamento && "border-red-500 focus:ring-red-200"
+                                                                    )}
+                                                                >
+                                                                    <SelectValue placeholder="Selecione..." />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent className="rounded-xl shadow-xl">
+                                                                <SelectItem value="SAIDA" className="cursor-pointer">Saída (Débito)</SelectItem>
+                                                                <SelectItem value="ENTRADA" className="cursor-pointer">Entrada (Crédito)</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage className="text-[10px]" />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="valor"
+                                                render={({ field }) => (
+                                                    <FormItem className="space-y-1.5">
+                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                                                            Valor <span className="text-red-500">*</span>
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <MoneyInput
+                                                                value={field.value}
+                                                                onChange={field.onChange}
+                                                                className={cn(
+                                                                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
+                                                                    form.formState.errors.valor && "border-red-500 focus:ring-red-200"
+                                                                )}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage className="text-[10px]" />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </div>

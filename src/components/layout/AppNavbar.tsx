@@ -76,10 +76,10 @@ export function AppNavbar() {
                 </SheetTrigger>
                 <SheetContent
                   side="left"
-                  className="w-80 border-r border-gray-100 bg-white p-0"
+                  className="w-80 border-r border-gray-100 bg-white p-0 flex flex-col h-full"
                   onOpenAutoFocus={(e) => e.preventDefault()}
                 >
-                  <SheetHeader className="flex flex-col items-center justify-center py-6 border-b border-gray-100">
+                  <SheetHeader className="flex flex-col items-center justify-center py-6 border-b border-gray-100 shrink-0">
                     <SheetTitle className="text-lg font-semibold tracking-wide">
                       <img
                         src="/assets/logo-embuexpress.png"
@@ -93,7 +93,7 @@ export function AppNavbar() {
                       />
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="p-5">
+                  <div className="flex-1 overflow-hidden p-5">
                     <AppSidebar
                       onLinkClick={() => setIsSheetOpen(false)}
                     />

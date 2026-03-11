@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ocorrenciaService } from "@/services/api/ocorrencia.service";
 import { Ocorrencia } from "@/types/database";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export function useCreateOcorrencia() {
@@ -10,6 +10,7 @@ export function useCreateOcorrencia() {
         mutationFn: (data: Partial<Ocorrencia>) => ocorrenciaService.createOcorrencia(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["ocorrencias"] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
             toast.success("Ocorrência registrada com sucesso!");
         },
         onError: (error: any) => {
@@ -26,6 +27,7 @@ export function useUpdateOcorrencia() {
             ocorrenciaService.updateOcorrencia(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["ocorrencias"] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
             toast.success("Ocorrência atualizada com sucesso!");
         },
         onError: (error: any) => {
@@ -41,6 +43,7 @@ export function useDeleteOcorrencia() {
         mutationFn: (id: number) => ocorrenciaService.deleteOcorrencia(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["ocorrencias"] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
             toast.success("Ocorrência removida com sucesso!");
         },
         onError: (error: any) => {

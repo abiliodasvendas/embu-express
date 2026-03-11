@@ -48,7 +48,12 @@ export default function RegistrarPonto() {
     const [pausasMetric, setPausasMetric] = useState<{ count: number; totalMs: number; kmTrabalho: number; kmPausa: number }>({ count: 0, totalMs: 0, kmTrabalho: 0, kmPausa: 0 });
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    const hasShifts = !!userProfile?.links?.length;
+    const activeLinks = userProfile?.links?.filter((l: any) => {
+        if (!l.data_fim) return true;
+        const today = new Date().toISOString().split('T')[0];
+        return l.data_fim >= today;
+    }) || [];
+    const hasShifts = activeLinks.length > 0;
 
     useEffect(() => {
         setPageTitle("Registrar Ponto");
@@ -514,7 +519,7 @@ export default function RegistrarPonto() {
                                                         <SelectValue placeholder="Escolha a empresa e horário..." />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-xl border-slate-200 shadow-xl">
-                                                        {userProfile?.links?.map((link: any) => (
+                                                        {activeLinks.map((link: any) => (
                                                             <SelectItem
                                                                 key={link.id}
                                                                 value={link.id.toString()}

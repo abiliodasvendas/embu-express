@@ -15,17 +15,10 @@ export const meses = [
 
 const currentYear = new Date().getFullYear();
 
-export const anos = [
-  {
-    value: (currentYear - 1).toString(),
-    label: (currentYear - 1).toString(),
-  },
-  { value: currentYear.toString(), label: currentYear.toString() },
-  {
-    value: (currentYear + 1).toString(),
-    label: (currentYear + 1).toString(),
-  },
-];
+export const anos = Array.from({ length: 5 }, (_, i) => {
+  const year = (currentYear - 2 + i).toString();
+  return { value: year, label: year };
+});
 
 export const tiposPagamento = [
   { value: "PIX", label: "PIX" },

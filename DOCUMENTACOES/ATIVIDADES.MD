@@ -57,7 +57,7 @@
 
 - [x] **5.1 Ficha do Colaborador**: Refatorar para interface de abas/menus (Mobile First) e criar aba de Ocorrências.
 - [x] **5.2 Espelho de Ponto**: Criar visualização mensal com saldo de horas `(Trabalhado - Esperado)`.
-- [x] **5.3 Relatório Financeiro (Draft)**: Visualização dinâmica baseada em configurações atuais e ocorrências. Independente de logs de ponto.
+- [x] **5.3 Relatório Financeiro (Rascunho)**: Visualização dinâmica baseada em configurações atuais e ocorrências. Independente de logs de ponto.
     - O sistema calcula o rascunho "on-the-fly" para qualquer mês futuro assim que houver um turno ativo.
 - [x] **5.4 Fechamento e Snapshot**: 
     - Implementar ação de "Fechar Mês" que congela o cálculo dinâmico em um registro estático (`fechamentos_financeiros`).

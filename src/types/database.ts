@@ -190,7 +190,7 @@ export interface Ocorrencia {
   impacto_financeiro: boolean;
   observacao: string;
   tipo_lancamento: 'ENTRADA' | 'SAIDA';
-  criado_por: string;
+  criado_por?: string;
   created_at?: string;
   updated_at?: string;
 
@@ -199,6 +199,14 @@ export interface Ocorrencia {
   colaborador?: Partial<Usuario>;
   criado_por_usuario?: Partial<Usuario>;
   vinculo?: ColaboradorCliente & { cliente?: Client };
+}
+
+
+export interface Feriado {
+  id: number;
+  data: string;
+  descricao: string;
+  created_at?: string;
 }
 
 export type RegistroPonto = Ponto;

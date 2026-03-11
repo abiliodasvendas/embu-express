@@ -4,20 +4,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FINANCEIRO_STATUS, LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
+import { getMessage } from "@/constants/messages";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useFinanceiro } from "@/hooks/api/useFinanceiro";
 import { useFinanceiroMutations } from "@/hooks/api/useFinanceiroMutations";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
-import { AlertCircle, ArrowDownCircle, ArrowUpCircle, Banknote, Calendar, CheckCircle2, CreditCard, Info, Lock, User, Wallet } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { FINANCEIRO_STATUS } from "@/constants/financeiro.constants";
+import { anos, meses } from "@/utils/formatters/constants";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateTimeToBR } from "@/utils/formatters/date";
-import { meses, anos } from "@/utils/formatters/constants";
-import { usePermissions } from "@/hooks/business/usePermissions";
-import { PERMISSIONS } from "@/constants/permissions.enum";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { AlertCircle, ArrowDownCircle, ArrowUpCircle, Banknote, Calendar, CheckCircle2, CreditCard, Info, User, Wallet } from "lucide-react";
+import { useMemo, useState } from "react";
 
 interface FinancialReportViewProps {
     usuarioId?: string;
@@ -36,7 +37,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
         selectedYear
     );
 
-    const { closeMonthMutation, markAsPaidMutation } = useFinanceiroMutations();
+    const { handlePaymentMutation } = useFinanceiroMutations();
 
     const monthOptions = useMemo(() =>
         meses.map((label, index) => ({ value: index + 1, label })),
@@ -87,9 +88,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                             <div className="flex items-center gap-2">
                                 <Badge className={cn(
                                     "rounded-full px-4 py-1.5 font-bold text-xs uppercase tracking-widest",
-                                    extrato.status === FINANCEIRO_STATUS.PAGO ? "bg-emerald-500 text-white" :
-                                        extrato.status === FINANCEIRO_STATUS.FECHADO ? "bg-amber-500 text-white" :
-                                            "bg-gray-400 text-white"
+                                    extrato.status === FINANCEIRO_STATUS.PAGO ? "bg-emerald-500 text-white" : "bg-gray-400 text-white"
                                 )}>
                                     {extrato.status}
                                 </Badge>
@@ -101,38 +100,17 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                             </div>
 
                             <div className="flex gap-2">
-                                {extrato.status === FINANCEIRO_STATUS.DRAFT && can(PERMISSIONS.FINANCEIRO.FECHAR) && (
-                                    <Button
-                                        variant="outline"
-                                        className="rounded-xl border-primary text-primary hover:bg-primary/5 font-bold h-10 px-6 shadow-sm"
-                                        disabled={closeMonthMutation.isPending}
-                                        onClick={() => {
-                                            openConfirmationDialog({
-                                                title: "Fechar Mês",
-                                                description: `Deseja realmente congelar os valores deste mês para ${colaboradorNome || 'este colaborador'}? Uma vez fechado, os cálculos não poderão ser alterados.`,
-                                                confirmText: "Fechar Agora",
-                                                onConfirm: async () => {
-                                                    await closeMonthMutation.mutateAsync({ usuarioId, mes: selectedMonth, ano: selectedYear });
-                                                    closeConfirmationDialog();
-                                                }
-                                            });
-                                        }}
-                                    >
-                                        <Lock className="h-4 w-4 mr-2" />
-                                        Fechar Mês
-                                    </Button>
-                                )}
-                                {extrato.status === FINANCEIRO_STATUS.FECHADO && can(PERMISSIONS.FINANCEIRO.PAGAR) && (
+                                {extrato.status === FINANCEIRO_STATUS.RASCUNHO && can(PERMISSIONS.FINANCEIRO.PAGAR) && (
                                     <Button
                                         className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-10 px-6 shadow-md"
-                                        disabled={markAsPaidMutation.isPending}
+                                        disabled={handlePaymentMutation.isPending}
                                         onClick={() => {
                                             openConfirmationDialog({
-                                                title: "Confirmar Pagamento",
-                                                description: `Você está marcando este extrato de ${formatCurrency(extrato.totais?.saldo_final || 0)} como pago. Esta ação é irreversível.`,
-                                                confirmText: "Confirmar Pagamento",
+                                                title: getMessage("financeiro.confirmacao.titulo"),
+                                                description: `${getMessage("financeiro.confirmacao.descricao")} (${formatCurrency(extrato.totais?.saldo_final || 0)})`,
+                                                confirmText: getMessage("financeiro.confirmacao.botao"),
                                                 onConfirm: async () => {
-                                                    await markAsPaidMutation.mutateAsync(extrato.id_fechamento);
+                                                    await handlePaymentMutation.mutateAsync({ usuarioId, mes: selectedMonth, ano: selectedYear });
                                                     closeConfirmationDialog();
                                                 }
                                             });
@@ -151,11 +129,17 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                             </div>
                             <CardContent className="p-10 relative z-10 text-center sm:text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
                                 <div>
-                                    <p className="text-primary-foreground/70 uppercase font-bold tracking-[0.2em] text-xs mb-2">Saldo Líquido Estimado</p>
+                                    <p className="text-primary-foreground/70 uppercase font-bold tracking-[0.2em] text-xs mb-2">
+                                        {getMessage("financeiro.labels.saldoLiquido")}
+                                    </p>
                                     <h2 className="text-5xl font-black">{formatCurrency(extrato.totais?.saldo_final || 0)}</h2>
                                     <div className="flex items-center gap-2 mt-4 text-primary-foreground/80 bg-white/10 w-max px-4 py-1.5 rounded-full text-sm mx-auto sm:mx-0">
                                         <Info className="h-4 w-4" />
-                                        <span>{extrato.status === FINANCEIRO_STATUS.DRAFT ? 'Este é um rascunho baseado em vínculos ativos.' : 'Este é um registro estático de fechamento.'}</span>
+                                        <span>
+                                            {extrato.status === FINANCEIRO_STATUS.RASCUNHO 
+                                                ? getMessage("financeiro.labels.infoRascunho") 
+                                                : getMessage("financeiro.labels.infoPago")}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -173,7 +157,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
 
                     {/* Breakdown by Turn */}
                     <div className="grid grid-cols-1 gap-6">
-                        <h3 className="text-xl font-bold text-gray-800 ml-2">Detalhamento por Cliente</h3>
+                        <h3 className="text-xl font-bold text-gray-800 ml-2">{getMessage("financeiro.labels.detalhamentoCliente")}</h3>
 
                         {extrato.resumo_por_cliente?.map((resumo: any, idx: number) => (
                             <Card key={idx} className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-white">
@@ -184,7 +168,14 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                                         </div>
                                         <div>
                                             <h4 className="font-black text-gray-900 text-lg uppercase tracking-tight">{resumo.nome_fantasia}</h4>
-                                            <span className="text-xs text-muted-foreground font-medium">Cálculo Pro-rata Aplicado</span>
+                                            <span className="text-xs text-muted-foreground font-medium">{getMessage("financeiro.labels.criterioProRata")}</span>
+                                            {(resumo.data_inicio || resumo.data_fim) && (
+                                                <p className="text-[11px] text-gray-500 font-semibold mt-1">
+                                                    {resumo.data_inicio ? `Início: ${resumo.data_inicio.split('-').reverse().join('/')}` : ''}
+                                                    {resumo.data_inicio && resumo.data_fim ? ' · ' : ''}
+                                                    {resumo.data_fim ? `Término: ${resumo.data_fim.split('-').reverse().join('/')}` : ''}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -201,9 +192,24 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                                                 <span className="text-gray-500 font-medium">Dias base no mês</span>
                                                 <span className="font-bold text-gray-900">{resumo.dias_base_mes} dias</span>
                                             </div>
-                                            <div className="flex items-center justify-between text-sm pb-4 border-b border-dashed border-gray-100">
-                                                <span className="text-gray-500 font-medium">Dias ativos no período</span>
-                                                <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-100 font-bold px-3">{resumo.dias_ativos_no_mes} dias</Badge>
+                                            <div className="flex flex-col gap-3 pb-4 border-b border-dashed border-gray-100">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <span className="text-gray-500 font-medium">Dias ativos no período</span>
+                                                    <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-100 font-bold px-3">{resumo.dias_ativos_no_mes} dias</Badge>
+                                                </div>
+                                                {resumo.datas_ativas && resumo.datas_ativas.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1.5 mt-1 bg-white/50 p-2 rounded-xl border border-gray-100/50">
+                                                        {resumo.datas_ativas.map((dateString: string) => {
+                                                            // Força a interpretação da data mantendo o timezone local para evitar shifts (-1 dia)
+                                                            const [year, month, day] = dateString.split('-');
+                                                            return (
+                                                                <Badge key={dateString} variant="outline" className="text-[10px] text-gray-500 bg-white shadow-sm font-semibold border-gray-200 pointer-events-none">
+                                                                    {`${day}/${month}`}
+                                                                </Badge>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="flex items-center justify-between text-sm pb-4 border-b border-dashed border-gray-100">
                                                 <span className="text-gray-500 font-medium">Valor fixo original</span>
@@ -230,7 +236,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                                         </div>
 
                                         {/* Right: Specific Occurrences */}
-                                        <div className="space-y-4">
+                                        <div className="space-y-4 pb-4">
                                             <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Lançamentos Variáveis</h5>
                                             {(extrato.ocorrencias as any[]).filter(o => o.colaborador_cliente_id === resumo.id_vinculo && o.impacto_financeiro).length > 0 ? (
                                                 <div className="space-y-3">
@@ -241,9 +247,9 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                                                                 <div className="flex items-center gap-3">
                                                                     <div className={cn(
                                                                         "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
-                                                                        occ.tipo_lancamento === 'ENTRADA' ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"
+                                                                        occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"
                                                                     )}>
-                                                                        {occ.tipo_lancamento === 'ENTRADA' ? <ArrowUpCircle className="h-4 w-4" /> : <ArrowDownCircle className="h-4 w-4" />}
+                                                                        {occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? <ArrowUpCircle className="h-4 w-4" /> : <ArrowDownCircle className="h-4 w-4" />}
                                                                     </div>
                                                                     <div>
                                                                         <p className="text-sm font-bold text-gray-800">{occ.tipo?.nome}</p>
@@ -252,9 +258,9 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                                                                 </div>
                                                                 <span className={cn(
                                                                     "text-sm font-black",
-                                                                    occ.tipo_lancamento === 'ENTRADA' ? "text-emerald-600" : "text-red-400"
+                                                                    occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "text-emerald-600" : "text-red-400"
                                                                 )}>
-                                                                    {occ.tipo_lancamento === 'ENTRADA' ? "+" : "-"} {formatCurrency(occ.valor)}
+                                                                    {occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "+" : "-"} {formatCurrency(occ.valor)}
                                                                 </span>
                                                             </div>
                                                         ))}
@@ -274,7 +280,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                         {/* General Occurrences */}
                         {extrato.ocorrencias?.filter((o: any) => !o.colaborador_cliente_id && o.impacto_financeiro).length > 0 && (
                             <div className="mt-4 space-y-4">
-                                <h3 className="text-xl font-bold text-gray-800 ml-2">Lançamentos Gerais</h3>
+                                <h3 className="text-xl font-bold text-gray-800 ml-2">{getMessage("financeiro.labels.lancamentosGerais")}</h3>
                                 <Card className="border-none shadow-sm rounded-[2rem] bg-indigo-50/30 overflow-hidden">
                                     <CardContent className="p-8">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -283,7 +289,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                                                     <div className="flex items-start justify-between mb-4">
                                                         <div className={cn(
                                                             "h-10 w-10 rounded-xl flex items-center justify-center",
-                                                            occ.tipo_lancamento === 'ENTRADA' ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"
+                                                            occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"
                                                         )}>
                                                             <CreditCard className="h-5 w-5" />
                                                         </div>
@@ -294,9 +300,9 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
                                                         <p className="text-xs text-gray-400 font-medium mb-4">{format(new Date(occ.data_ocorrencia), "PPP", { locale: ptBR })}</p>
                                                         <p className={cn(
                                                             "text-xl font-black",
-                                                            occ.tipo_lancamento === 'ENTRADA' ? "text-emerald-600" : "text-red-500"
+                                                            occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "text-emerald-600" : "text-red-500"
                                                         )}>
-                                                            {occ.tipo_lancamento === 'ENTRADA' ? "+" : "-"} {formatCurrency(occ.valor)}
+                                                            {occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "+" : "-"} {formatCurrency(occ.valor)}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -311,7 +317,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
             ) : (
                 <UnifiedEmptyState
                     icon={AlertCircle}
-                    title="Erro ao calcular extrato"
+                    title={getMessage("financeiro.erro.carregar")}
                     description="Não foi possível processar o rascunho financeiro."
                 />
             )}

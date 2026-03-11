@@ -5,19 +5,19 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEmpresa,
-  useDeleteEmpresa,
-  useToggleEmpresaStatus,
+    useCreateEmpresa,
+    useDeleteEmpresa,
+    useToggleEmpresaStatus,
 } from "@/hooks/api/useEmpresaMutations";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useFilters } from "@/hooks/ui/useFilters";
 import { Empresa } from "@/types/database";
 import { Building2 } from "lucide-react"; // Using Building2 for Empresas icon
 import { useCallback, useEffect, useState } from "react";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export function Empresas() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEmpresaFormDialog } = useLayout();
@@ -78,10 +78,24 @@ export function Empresas() {
     });
   };
 
-  const handleToggleStatus = async (empresa: Empresa) => {
-    await toggleStatus.mutateAsync({
-      id: empresa.id,
-      ativo: !empresa.ativo,
+  const handleToggleStatus = (empresa: Empresa) => {
+    const action = empresa.ativo ? "desativar" : "ativar";
+    openConfirmationDialog({
+      title: `${empresa.ativo ? "Desativar" : "Ativar"} Empresa`,
+      description: `Tem certeza que deseja ${action} a empresa "${empresa.nome_fantasia}"?`,
+      confirmText: empresa.ativo ? "Desativar" : "Ativar",
+      variant: empresa.ativo ? "destructive" : "default",
+      onConfirm: async () => {
+        try {
+          await toggleStatus.mutateAsync({
+            id: empresa.id,
+            ativo: !empresa.ativo,
+          });
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error(error);
+        }
+      },
     });
   };
 

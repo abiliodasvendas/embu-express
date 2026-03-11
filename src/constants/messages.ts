@@ -15,6 +15,7 @@ export const messages = {
     conexao: "Erro de conexão. Verifique sua internet.",
     permissao: "Você não tem permissão para realizar esta ação.",
     validacao: "Corrija os erros no formulário.",
+    integridade: "Não é possível excluir este registro pois ele já possui histórico (ex: pontos ou ocorrências) associado. Utilize a edição para encerrá-lo/inativá-lo.",
   },
 
   // ========== SUCESSO GENÉRICO ==========
@@ -257,12 +258,38 @@ export const messages = {
   financeiro: {
     erro: {
       carregar: "Erro ao carregar relatório financeiro.",
-      fecharMes: "Erro ao fechar mês.",
       registrarPagamento: "Erro ao registrar pagamento.",
     },
     sucesso: {
-      fechado: "Mês fechado com sucesso!",
       pago: "Pagamento registrado com sucesso!",
+    },
+    labels: {
+      detalhamentoCliente: "Detalhamento por Cliente",
+      lancamentosGerais: "Lançamentos Gerais",
+      saldoLiquido: "Saldo Líquido Estimado",
+      criterioProRata: "Cálculo Pro-rata Aplicado",
+      infoRascunho: "Este é um cálculo em tempo real (Rascunho). Pode ser ajustado até o pagamento.",
+      infoPago: "Este é um registro estático de pagamento.",
+    },
+    confirmacao: {
+      titulo: "Confirmar Pagamento",
+      descricao: "Você está marcando o extrato como pago. Esta ação criará um registro histórico e não poderá ser desfeita. Deseja continuar?",
+      botao: "Confirmar Pagamento",
+    },
+  },
+
+  // ========== FERIADOS ==========
+  feriado: {
+    erro: {
+      carregar: "Erro ao carregar feriados.",
+      criar: "Erro ao cadastrar feriado.",
+      atualizar: "Erro ao atualizar feriado.",
+      excluir: "Erro ao excluir feriado.",
+    },
+    sucesso: {
+      criado: "Feriado cadastrado com sucesso.",
+      atualizado: "Feriado atualizado com sucesso.",
+      excluido: "Feriado removido com sucesso.",
     },
   },
 } as const;
@@ -294,7 +321,11 @@ export type MessageKey =
   | `dialogo.desativar.${keyof typeof messages.dialogo.desativar}`
   | `dialogo.ativar.${keyof typeof messages.dialogo.ativar}`
   | `financeiro.erro.${keyof typeof messages.financeiro.erro}`
-  | `financeiro.sucesso.${keyof typeof messages.financeiro.sucesso}`;
+  | `financeiro.sucesso.${keyof typeof messages.financeiro.sucesso}`
+  | `financeiro.labels.${keyof typeof messages.financeiro.labels}`
+  | `financeiro.confirmacao.${keyof typeof messages.financeiro.confirmacao}`
+  | `feriado.erro.${keyof typeof messages.feriado.erro}`
+  | `feriado.sucesso.${keyof typeof messages.feriado.sucesso}`;
 
 /**
  * Função helper para obter mensagem por chave

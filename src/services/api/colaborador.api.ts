@@ -39,6 +39,10 @@ export const colaboradorApi = {
     valor_aluguel?: number;
     valor_bonus?: number;
     ajuda_custo?: number;
+    valor_mei?: number;
+    valor_adiantamento?: number;
+    data_inicio?: string;
+    data_fim?: string;
   }): Promise<any> =>
     apiClient.post(`/usuarios/vinculos`, data).then(res => res.data),
 

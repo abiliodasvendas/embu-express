@@ -189,12 +189,19 @@ export const generateClientData = () => {
   const nomeFantasia = `${nomeBase} ${complemento}`;
   const razaoSocial = `${nomeFantasia} ${sufixo}`;
 
+  const randomEscala = [0, 1, 2, 3, 4, 5, 6]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, randomNumber(1, 7))
+    .sort((a, b) => a - b);
+
   return {
     nome_fantasia: nomeFantasia,
     razao_social: razaoSocial,
     cnpj: generateCNPJ(),
     ...generateAddress(),
     ativo: true,
+    km_contratados: randomNumber(100, 2000),
+    escala_semanal: randomEscala,
   };
 };
 

@@ -66,26 +66,36 @@ api.interceptors.response.use(
         originalRequest._retry = true;
 
         try {
+          console.log('[ApiClient] 401 detectado, tentando refresh de token...', originalRequest.url);
+          
           // Attempt to refresh
-          const { success } = await sessionManager.refreshToken();
+          const { success, data: sessionData } = await sessionManager.refreshToken();
 
           if (success) {
-            const { data } = await sessionManager.getSession();
-            const newToken = data.session?.access_token;
+            const newToken = sessionData?.access_token;
 
             if (newToken) {
+              console.log('[ApiClient] Refresh realizado com sucesso, re-tentando requisição original.');
               originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
               return api(originalRequest);
             }
+          } else {
+            console.warn('[ApiClient] Refresh falhou, verificando se ainda há sessão local...');
+            const { data } = await sessionManager.getSession();
+            if (data.session?.access_token) {
+               console.log('[ApiClient] Uma nova sessão foi encontrada (provavelmente de outra aba), re-tentando...');
+               originalRequest.headers["Authorization"] = `Bearer ${data.session.access_token}`;
+               return api(originalRequest);
+            }
           }
-        } catch (refreshErr) {
-          // Refresh failed
+        } catch (refreshErr: any) {
+          console.error('[ApiClient] Erro crítico durante o refresh:', refreshErr?.message);
         }
       }
 
-      // Logout se falhar o refresh
+      // Logout se falhar o refresh e não houver sessão válida
+      console.warn('[ApiClient] 401 Interceptor: Sessão revogada ou não recuperável. Usuário deslogado.', originalRequest.url);
       sessionManager.signOut().catch(() => { });
-      console.warn('[ApiClient] 401 Interceptor: Sessão revogada ou não recuperável. Usuário deslogado.');
     }
 
     return Promise.reject(error);

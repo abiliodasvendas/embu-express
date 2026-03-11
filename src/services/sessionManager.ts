@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import { queryClient } from "./queryClient";
 import { Session as SupabaseSession } from "@supabase/supabase-js";
+import { queryClient } from "./queryClient";
 
 export type AuthChangeEvent = "SIGNED_IN" | "SIGNED_OUT" | "INITIAL_SESSION" | "TOKEN_REFRESHED" | "password_recovery";
 
@@ -86,14 +86,35 @@ class SessionManager {
                 // with our backend and ensuring local storage is updated natively.
                 const { data, error } = await supabase.auth.refreshSession();
 
-                if (error || !data.session) {
-                    throw new Error(error?.message || "Failed to refresh via Supabase Client");
+                if (error) {
+                    // Check for specific "Already Used" error which happens in multi-tab scenarios
+                    const isAlreadyUsed = 
+                        error.message?.toLowerCase().includes("already used") || 
+                        (error as any).code === "refresh_token_already_used";
+
+                    if (isAlreadyUsed) {
+                        console.warn("[SessionManager] Refresh token already used. Attempting to recover current session...");
+                        // Wait a bit for the other tab/request to finish writing new session to storage
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        const { data: sessionData } = await supabase.auth.getSession();
+                        if (sessionData.session) {
+                            console.log("[SessionManager] Successfully recovered session from storage after race condition.");
+                            return { success: true, data: this.mapSupabaseSession(sessionData.session) };
+                        }
+                    }
+                    
+                    throw new Error(error.message || "Failed to refresh via Supabase Client");
+                }
+
+                if (!data.session) {
+                    throw new Error("No session returned after refresh");
                 }
 
                 const mapped = this.mapSupabaseSession(data.session);
                 return { success: true, data: mapped };
-            } catch (error) {
-                console.error("Refresh failed", error);
+            } catch (error: any) {
+                console.error("[SessionManager] Refresh failed:", error?.message);
                 return { success: false };
             } finally {
                 // Clear the promise so future calls can start a new refresh if needed

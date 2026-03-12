@@ -89,7 +89,7 @@ export default function RegistrarPonto() {
 
     useEffect(() => {
         const calculateActiveShift = (pontoId?: number, clienteIdFromPonto?: number) => {
-            // Se já tem ponto batido hoje, fixa o turno do ponto (Type-safe match)
+            // Priority 1: If there's an active point, use its registered shift
             if (clienteIdFromPonto) {
                 const matchedLink = userProfile?.links?.find((l: any) => String(l.cliente_id) === String(clienteIdFromPonto));
                 if (matchedLink) {
@@ -102,7 +102,6 @@ export default function RegistrarPonto() {
                     };
                 }
 
-                // Fallback robusto caso linkSumuma mas clienteId exista no ponto
                 if (pontoHoje?.cliente) {
                     return {
                         id: pontoId?.toString() || "0",
@@ -113,7 +112,7 @@ export default function RegistrarPonto() {
                 }
             }
 
-            // Se for IDLE e já tiver link selecionado pelo usuario, não sobrescreve
+            // Priority 2: Use user selection if manually changed
             if (!pontoId && selectedLinkId) {
                 const currentSelection = userProfile?.links?.find((l: any) => l.id.toString() === selectedLinkId);
                 if (currentSelection) {
@@ -127,16 +126,45 @@ export default function RegistrarPonto() {
                 }
             }
 
-            // Priority 2: Use first available link if idle and nothing selected
-            const firstLink = userProfile?.links?.[0];
-            if (firstLink) {
-                return {
-                    id: firstLink.id.toString(),
-                    nome: firstLink.cliente?.nome_fantasia || "Próximo Turno",
-                    horario: firstLink.hora_inicio && firstLink.hora_fim ?
-                        `${firstLink.hora_inicio.slice(0, 5)} - ${firstLink.hora_fim.slice(0, 5)}` : undefined,
-                    empresa: firstLink.empresa?.nome_fantasia
-                };
+            // Priority 3: Smart Selection based on time proximity
+            if (userProfile?.links && userProfile.links.length > 0) {
+                const now = new Date();
+                // Força timezone de Brasília para comparação justa com o banco
+                const formatter = new Intl.DateTimeFormat('pt-BR', {
+                    timeZone: 'America/Sao_Paulo',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: false
+                });
+                const parts = formatter.format(now).split(':');
+                const nowMinutes = Number(parts[0]) * 60 + Number(parts[1]);
+
+                let bestShift = userProfile.links[0];
+                let minDiff = Infinity;
+
+                userProfile.links.forEach((link: any) => {
+                    if (link.hora_inicio) {
+                        const [h, m] = link.hora_inicio.split(':').map(Number);
+                        const shiftStartMinutes = h * 60 + m;
+                        // Calcula a diferença absoluta em minutos
+                        const diff = Math.abs(nowMinutes - shiftStartMinutes);
+
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            bestShift = link;
+                        }
+                    }
+                });
+
+                if (bestShift) {
+                    return {
+                        id: bestShift.id.toString(),
+                        nome: bestShift.cliente?.nome_fantasia || "Turno Sugerido",
+                        horario: bestShift.hora_inicio && bestShift.hora_fim ?
+                            `${bestShift.hora_inicio.slice(0, 5)} - ${bestShift.hora_fim.slice(0, 5)}` : undefined,
+                        empresa: bestShift.empresa?.nome_fantasia
+                    };
+                }
             }
 
             return null;
@@ -258,24 +286,36 @@ export default function RegistrarPonto() {
     const handleToggle = async () => {
         if (isProcessing) return;
         setIsProcessing(true);
-        const loc = await requestLocation();
-        if (!loc) { setIsProcessing(false); return; }
 
-        if (isMotoboyOrFiscal) {
-            const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
-            const lastKm = data?.km || 0;
+        try {
+            const [loc, lastKmData] = await Promise.all([
+                requestLocation(),
+                isMotoboyOrFiscal ? apiClient.get(`/pontos/ultimo-km/${user?.id}`) : Promise.resolve({ data: { km: 0 } })
+            ]);
 
-            openMileageDialog({
-                title: status === 'idle' ? "Início de Turno" : "Fim de Turno",
-                description: status === 'idle' ? "Informe o KM inicial da moto para começar." : "Informe o KM final da moto para encerrar.",
-                lastKm,
-                onConfirm: (km) => executeToggle(loc, km)
-            });
+            if (!loc) {
+                setIsProcessing(false);
+                return;
+            }
+
+            if (isMotoboyOrFiscal) {
+                const lastKm = lastKmData.data?.km || 0;
+
+                openMileageDialog({
+                    title: status === 'idle' ? "Início de Turno" : "Fim de Turno",
+                    description: status === 'idle' ? "Informe o KM inicial da moto para começar." : "Informe o KM final da moto para encerrar.",
+                    lastKm,
+                    onConfirm: (km) => executeToggle(loc, km)
+                });
+                setIsProcessing(false);
+                return;
+            }
+
+            await executeToggle(loc);
+        } catch (error) {
+            console.error("Erro ao preparar registro de ponto:", error);
             setIsProcessing(false);
-            return;
         }
-
-        await executeToggle(loc);
     };
 
     const executePauseStart = async (loc: any, km?: number) => {
@@ -297,24 +337,36 @@ export default function RegistrarPonto() {
     const handlePauseStart = async () => {
         if (!pontoHoje || isProcessing) return;
         setIsProcessing(true);
-        const loc = await requestLocation();
-        if (!loc) { setIsProcessing(false); return; }
 
-        if (isMotoboyOrFiscal) {
-            const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
-            const lastKm = data?.km || 0;
+        try {
+            const [loc, lastKmData] = await Promise.all([
+                requestLocation(),
+                isMotoboyOrFiscal ? apiClient.get(`/pontos/ultimo-km/${user?.id}`) : Promise.resolve({ data: { km: 0 } })
+            ]);
 
-            openMileageDialog({
-                title: "Início de Pausa",
-                description: "Informe o KM da moto ao iniciar a pausa.",
-                lastKm,
-                onConfirm: (km) => executePauseStart(loc, km)
-            });
+            if (!loc) {
+                setIsProcessing(false);
+                return;
+            }
+
+            if (isMotoboyOrFiscal) {
+                const lastKm = lastKmData.data?.km || 0;
+
+                openMileageDialog({
+                    title: "Início de Pausa",
+                    description: "Informe o KM da moto ao iniciar a pausa.",
+                    lastKm,
+                    onConfirm: (km) => executePauseStart(loc, km)
+                });
+                setIsProcessing(false);
+                return;
+            }
+
+            await executePauseStart(loc);
+        } catch (error) {
+            console.error("Erro ao preparar início de pausa:", error);
             setIsProcessing(false);
-            return;
         }
-
-        await executePauseStart(loc);
     };
 
     const executePauseEnd = async (loc: any, km?: number) => {
@@ -339,24 +391,36 @@ export default function RegistrarPonto() {
         const openPause = pontoHoje.pausas?.find((p: any) => !p.fim_hora);
         if (!openPause) { setIsProcessing(false); return; }
         setIsProcessing(true);
-        const loc = await requestLocation();
-        if (!loc) { setIsProcessing(false); return; }
 
-        if (isMotoboyOrFiscal) {
-            const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
-            const lastKm = data?.km || 0;
+        try {
+            const [loc, lastKmData] = await Promise.all([
+                requestLocation(),
+                isMotoboyOrFiscal ? apiClient.get(`/pontos/ultimo-km/${user?.id}`) : Promise.resolve({ data: { km: 0 } })
+            ]);
 
-            openMileageDialog({
-                title: "Retorno de Pausa",
-                description: "Informe o KM da moto ao retomar o trabalho.",
-                lastKm,
-                onConfirm: (km) => executePauseEnd(loc, km)
-            });
+            if (!loc) {
+                setIsProcessing(false);
+                return;
+            }
+
+            if (isMotoboyOrFiscal) {
+                const lastKm = lastKmData.data?.km || 0;
+
+                openMileageDialog({
+                    title: "Retorno de Pausa",
+                    description: "Informe o KM da moto ao retomar o trabalho.",
+                    lastKm,
+                    onConfirm: (km) => executePauseEnd(loc, km)
+                });
+                setIsProcessing(false);
+                return;
+            }
+
+            await executePauseEnd(loc);
+        } catch (error) {
+            console.error("Erro ao preparar retorno de pausa:", error);
             setIsProcessing(false);
-            return;
         }
-
-        await executePauseEnd(loc);
     };
 
 

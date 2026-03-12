@@ -11,6 +11,11 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { meses, anos } from "@/utils/formatters/constants";
 import { useFilters } from "@/hooks/ui/useFilters";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useTimeRecord } from "@/hooks/api/useTimeRecord";
+import { useState, useEffect } from "react";
+import { useDeletePonto } from "@/hooks/api/usePontoMutations";
+import { RegistroPonto } from "@/types/database";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -33,6 +38,39 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
         selectedMonth,
         selectedYear
     );
+
+    const { openTimeRecordDetailsDialog, openEditTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+    const { mutateAsync: deletePonto } = useDeletePonto();
+    const [selectedPontoId, setSelectedPontoId] = useState<number | null>(null);
+    const { data: fullRecord, isFetching: isFetchingRecord } = useTimeRecord(selectedPontoId);
+
+    const handleDelete = (record: RegistroPonto) => {
+        openConfirmationDialog({
+            title: "Excluir Registro",
+            description: "Tem certeza que deseja excluir permanentemente este registro de ponto? Esta ação não pode ser desfeita.",
+            confirmText: "Sim, excluir",
+            variant: "destructive",
+            onConfirm: async () => {
+                await deletePonto(record.id);
+                closeConfirmationDialog();
+            }
+        });
+    };
+
+    const handleEditFromDetails = (record: RegistroPonto) => {
+        openEditTimeRecordDialog({ record });
+    };
+
+    useEffect(() => {
+        if (fullRecord && selectedPontoId) {
+            openTimeRecordDetailsDialog({
+                record: fullRecord,
+                onEdit: handleEditFromDetails,
+                onDelete: handleDelete
+            });
+            setSelectedPontoId(null);
+        }
+    }, [fullRecord, selectedPontoId]);
 
     const monthOptions = useMemo(() =>
         meses.map((label, index) => ({ value: index + 1, label })),
@@ -181,7 +219,14 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                             const balance = day.saldo_minutos || 0;
                             const esperadoForDay = (day.tempo_trabalhado_minutos || 0) - (day.saldo_minutos || 0);
                             return (
-                                <Card key={idx} className="border-none shadow-sm rounded-[1.5rem] overflow-hidden group hover:shadow-md transition-all duration-300">
+                                <Card
+                                    key={idx}
+                                    className={cn(
+                                        "border-none shadow-sm rounded-[1.5rem] overflow-hidden group hover:shadow-md transition-all duration-300 cursor-pointer active:scale-[0.99]",
+                                        isFetchingRecord && selectedPontoId === day.id && "opacity-60 cursor-wait"
+                                    )}
+                                    onClick={() => !isFetchingRecord && setSelectedPontoId(day.id)}
+                                >
                                     <CardContent className="p-4 md:py-3 md:px-6">
                                         <div className="grid grid-cols-1 md:grid-cols-7 items-center gap-4">
                                             {/* Date */}

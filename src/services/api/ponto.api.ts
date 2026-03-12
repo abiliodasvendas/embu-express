@@ -25,4 +25,7 @@ export const pontoApi = {
 
   getRelatorioMensal: (usuarioId: string, mes: number, ano: number): Promise<any[]> =>
     apiClient.get(`/pontos/relatorio-mensal/${usuarioId}`, { params: { mes, ano } }).then(res => res.data),
+
+  getById: (id: number): Promise<RegistroPonto> =>
+    apiClient.get(`/pontos/${id}`).then(res => res.data),
 };

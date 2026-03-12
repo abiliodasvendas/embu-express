@@ -4,7 +4,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 
 export default defineConfig(({ mode }) => ({
-  base: './',
+  base: '/',
   server: {
     host: "::",
     port: 8080,

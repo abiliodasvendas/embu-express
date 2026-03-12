@@ -29,16 +29,16 @@ const baseSchema = {
   data_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
 };
 
-export const turnSchema = z.discriminatedUnion("isMotoboy", [
+export const turnSchema = z.discriminatedUnion("isMotoboyOrFiscal", [
   z.object({
     ...baseSchema,
-    isMotoboy: z.literal(true),
+    isMotoboyOrFiscal: z.literal(true),
     cliente_id: z.string({ required_error: messages.validacao.campoObrigatorio })
       .min(1, messages.validacao.campoObrigatorio),
   }),
   z.object({
     ...baseSchema,
-    isMotoboy: z.literal(false),
+    isMotoboyOrFiscal: z.literal(false),
     cliente_id: z.string().optional().nullable(),
   }),
 ]);

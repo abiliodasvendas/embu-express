@@ -301,7 +301,7 @@ const App = () => {
 
 // Componente auxiliar para redirecionamento inteligente
 const RedirectByRole = () => {
-  const { isAdmin, isSuperAdmin, isMotoboy, isLoading } = usePermissions();
+  const { isAdmin, isSuperAdmin, isMotoboyOrFiscal, isLoading } = usePermissions();
 
   if (isLoading) {
     return (
@@ -314,7 +314,7 @@ const RedirectByRole = () => {
   if (isAdmin || isSuperAdmin) {
     return <Navigate to={ROUTES.PRIVATE.INICIO} replace />;
   }
-  if (isMotoboy) {
+  if (isMotoboyOrFiscal) {
     return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
   }
 

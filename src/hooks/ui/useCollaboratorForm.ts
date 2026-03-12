@@ -21,7 +21,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
       email: "",
       cpf: "",
       perfil_id: "",
-      isMotoboy: false,
+      isMotoboyOrFiscal: false,
       status: STATUS_CADASTRO.PENDENTE,
       senha_padrao: true,
       rg: "",
@@ -53,7 +53,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           email: collaboratorToEdit.email,
           cpf: cpfMask(collaboratorToEdit.cpf),
           perfil_id: collaboratorToEdit.perfil_id.toString(),
-          isMotoboy: false, // Updated later by useEffect in Dialog
+          isMotoboyOrFiscal: false, // Updated later by useEffect in Dialog
           status: collaboratorToEdit.status || "ATIVO",
           senha_padrao: !!collaboratorToEdit.senha_padrao,
           rg: collaboratorToEdit.rg ? rgMask(collaboratorToEdit.rg) : "",
@@ -82,7 +82,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           email: "",
           cpf: "",
           perfil_id: "",
-          isMotoboy: false,
+          isMotoboyOrFiscal: false,
           status: STATUS_CADASTRO.PENDENTE,
           rg: "",
           data_nascimento: "",

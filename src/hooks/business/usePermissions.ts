@@ -35,6 +35,8 @@ export function usePermissions() {
   const isAdmin = roleName === ROLES.ADMIN;
   const isAnyAdmin = isSuperAdmin || isAdmin;
   const isMotoboy = roleName === ROLES.MOTOBOY;
+  const isFiscal = roleName === ROLES.FISCAL;
+  const isMotoboyOrFiscal = isMotoboy || isFiscal;
   const isFinanceiro = roleName?.startsWith('financeiro');
 
   // Acesso Operacional (Bypass Global): Todos exceto o CLIENTE podem acessar o ponto e as funções operacionais.
@@ -59,6 +61,8 @@ export function usePermissions() {
     isAdmin,
     isAnyAdmin,
     isMotoboy,
+    isFiscal,
+    isMotoboyOrFiscal,
     isFinanceiro,
     roleName,
 

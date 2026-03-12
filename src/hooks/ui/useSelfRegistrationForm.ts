@@ -37,7 +37,7 @@ export function useSelfRegistrationForm() {
       cnh_categoria: "",
       chave_pix: "",
       perfil_id: "",
-      isMotoboy: false,
+      isMotoboyOrFiscal: false,
     },
     mode: "onChange",
   });

@@ -9,7 +9,7 @@ export function useCreateCollaborator() {
   return useMutation({
     mutationFn: (data: any & { silent?: boolean }) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { silent, isMotoboy, ...collaboratorData } = data;
+      const { silent, isMotoboyOrFiscal, ...collaboratorData } = data;
 
       const payload = {
         ...collaboratorData,
@@ -41,7 +41,7 @@ export function useCreateCollaborator() {
 export function useUpdateCollaborator() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, isMotoboy, silent, ...data }: any) => {
+    mutationFn: ({ id, isMotoboyOrFiscal, silent, ...data }: any) => {
       const payload = {
         ...data,
         data_nascimento: formatDateToISO(data.data_nascimento),

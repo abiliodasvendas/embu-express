@@ -29,7 +29,7 @@ export default function RegistrarPonto() {
     const { setPageTitle, openMileageDialog } = useLayout();
     const { user } = useSession();
     const { profile: userProfile } = useProfile(user?.id);
-    const { isMotoboy } = usePermissions();
+    const { isMotoboyOrFiscal } = usePermissions();
     const { location, requestLocation, loading: loadingGeo, error: geoError, permissionDenied, isWeb } = useGeolocation();
 
     const { mutateAsync: togglePonto } = useTogglePonto();
@@ -261,7 +261,7 @@ export default function RegistrarPonto() {
         const loc = await requestLocation();
         if (!loc) { setIsProcessing(false); return; }
 
-        if (isMotoboy) {
+        if (isMotoboyOrFiscal) {
             const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
             const lastKm = data?.km || 0;
 
@@ -300,7 +300,7 @@ export default function RegistrarPonto() {
         const loc = await requestLocation();
         if (!loc) { setIsProcessing(false); return; }
 
-        if (isMotoboy) {
+        if (isMotoboyOrFiscal) {
             const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
             const lastKm = data?.km || 0;
 
@@ -342,7 +342,7 @@ export default function RegistrarPonto() {
         const loc = await requestLocation();
         if (!loc) { setIsProcessing(false); return; }
 
-        if (isMotoboy) {
+        if (isMotoboyOrFiscal) {
             const { data } = await apiClient.get(`/pontos/ultimo-km/${user?.id}`);
             const lastKm = data?.km || 0;
 
@@ -481,7 +481,7 @@ export default function RegistrarPonto() {
                                                         </div>
                                                     </div>
 
-                                                    {isMotoboy && (
+                                                    {isMotoboyOrFiscal && (
                                                         <div className="grid grid-cols-2 gap-4 pb-2">
                                                             <div className="bg-blue-50/50 rounded-2xl p-3 border border-blue-100/50">
                                                                 <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest block mb-1">KM em Serviço</span>

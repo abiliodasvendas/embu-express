@@ -75,7 +75,7 @@ export function CollaboratorFormDialog({
   });
 
   const perfilIdWatch = form.watch("perfil_id");
-  const isMotoboy = form.watch("isMotoboy");
+  const isMotoboyOrFiscal = form.watch("isMotoboyOrFiscal");
 
   useEffect(() => {
     if (roles && open && perfilIdWatch) {
@@ -84,7 +84,7 @@ export function CollaboratorFormDialog({
         selectedRole?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase() ||
         selectedRole?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase();
 
-      form.setValue("isMotoboy", isProfissional, { shouldValidate: true });
+      form.setValue("isMotoboyOrFiscal", isProfissional, { shouldValidate: true });
 
       // Só limpamos se estivermos trocando manualmente de um profissional para não-profissional
       // e não quando o formulário está apenas inicializando
@@ -122,7 +122,7 @@ export function CollaboratorFormDialog({
     const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase().includes("motoboy"));
     if (motoboyRole) {
       form.setValue("perfil_id", motoboyRole.id.toString() as any);
-      form.setValue("isMotoboy", true);
+      form.setValue("isMotoboyOrFiscal", true);
     }
     form.setValue("status", STATUS_CADASTRO.ATIVO);
 

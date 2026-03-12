@@ -21,14 +21,14 @@ const commonSchema = z.object({
   senha_padrao: z.boolean().optional(),
   data_inicio: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
-  isMotoboy: z.boolean().optional().default(false),
+  isMotoboyOrFiscal: z.boolean().optional().default(false),
   tipo_chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
   chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
 });
 
 // 2. Schema Profissional: Condicional baseada no flag isMotoboy (que indica se é perfil profissional como Motoboy ou Fiscal)
 const professionalSchema = z.object({
-  isMotoboy: z.boolean().optional(),
+  isMotoboyOrFiscal: z.boolean().optional(),
   cnh_registro: z.string().optional(),
   cnh_vencimento: z.string().optional(),
   cnh_categoria: z.string().optional(),
@@ -40,7 +40,7 @@ const professionalSchema = z.object({
   tipo_chave_pix: z.string().optional(),
   chave_pix: z.string().optional(),
 }).superRefine((data, ctx) => {
-  if (data.isMotoboy) {
+  if (data.isMotoboyOrFiscal) {
     if (!data.cnh_registro) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_registro"] });
     }

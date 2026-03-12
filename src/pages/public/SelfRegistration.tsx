@@ -68,7 +68,7 @@ export default function SelfRegistration() {
 
               if (motoboyRole) {
                 form.setValue("perfil_id", motoboyRole.id.toString());
-                form.setValue("isMotoboy", true);
+                form.setValue("isMotoboyOrFiscal", true);
               }
             }}
             className="absolute top-6 right-6 w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"

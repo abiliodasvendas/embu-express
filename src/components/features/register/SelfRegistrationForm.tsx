@@ -50,7 +50,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                 selectedRole.nome === ROLES.MOTOBOY ||
                 selectedRole.nome === ROLES.FISCAL;
 
-            form.setValue("isMotoboy", isProfissional);
+            form.setValue("isMotoboyOrFiscal", isProfissional);
 
             if (isProfissional) {
                 setExpandedItems(["dados-pessoais", "cnh", "moto", "dados-financeiros"]);
@@ -67,7 +67,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
         }
     }, [perfilId, roles, form]);
 
-    const isMotoboy = form.watch("isMotoboy");
+    const isMotoboyOrFiscal = form.watch("isMotoboyOrFiscal");
 
     return (
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -349,7 +349,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="cnh_registro"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")} placeholder="Nº Registro" {...field} />
                                                     </FormControl>
@@ -362,7 +362,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="cnh_vencimento"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                             placeholder="DD/MM/AAAA"
@@ -380,7 +380,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="cnh_categoria"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", form.formState.errors.cnh_categoria && "border-red-500 focus-visible:ring-red-200")} placeholder="Ex: A, AB" {...field} />
                                                     </FormControl>
@@ -407,7 +407,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_modelo"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo da Moto {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo da Moto {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="Ex: CG 160" {...field} />
                                                     </FormControl>
@@ -420,7 +420,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_placa"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", form.formState.errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}
@@ -441,7 +441,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_cor"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} placeholder="Ex: Preta" {...field} />
                                                     </FormControl>
@@ -454,7 +454,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_ano"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.moto_ano && "border-red-500 focus-visible:ring-red-200")}
                                                             placeholder="Ex: 2024"

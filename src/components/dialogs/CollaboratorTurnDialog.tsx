@@ -89,11 +89,11 @@ export function CollaboratorTurnDialog({
       valor_mei: "",
       valor_adiantamento: "",
       data_inicio: "",
-      isMotoboy: false,
+      isMotoboyOrFiscal: false,
     },
   });
 
-  const isMotoboy = form.watch("isMotoboy");
+  const isMotoboyOrFiscal = form.watch("isMotoboyOrFiscal");
 
   useEffect(() => {
     if (open) {
@@ -110,10 +110,13 @@ export function CollaboratorTurnDialog({
           valor_mei: formatCurrency(turnToEdit.valor_mei || 0),
           valor_adiantamento: formatCurrency(turnToEdit.valor_adiantamento || 0),
           data_inicio: turnToEdit.data_inicio || new Date().toISOString().split('T')[0],
-          isMotoboy: collaborator?.perfil?.nome === ROLES.MOTOBOY,
+          isMotoboyOrFiscal: collaborator?.perfil?.nome === ROLES.MOTOBOY || collaborator?.perfil?.nome === ROLES.FISCAL,
         });
       } else {
-        const isM = !!(collaborator?.perfil?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase());
+        const isMOrF = !!(
+          collaborator?.perfil?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase() ||
+          collaborator?.perfil?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase()
+        );
         form.reset({
           cliente_id: "",
           empresa_id: "",
@@ -126,7 +129,7 @@ export function CollaboratorTurnDialog({
           valor_mei: "",
           valor_adiantamento: "",
           data_inicio: "",
-          isMotoboy: isM,
+          isMotoboyOrFiscal: isMOrF,
         });
       }
       setOpenSections(["vinculo", "financeiro"]);
@@ -140,7 +143,7 @@ export function CollaboratorTurnDialog({
       const data = {
         ...values,
         colaborador_id: collaboratorId,
-        cliente_id: (values.isMotoboy && values.cliente_id) ? parseInt(values.cliente_id) : null,
+        cliente_id: (values.isMotoboyOrFiscal && values.cliente_id) ? parseInt(values.cliente_id) : null,
         empresa_id: parseInt(values.empresa_id),
         valor_contrato: values.valor_contrato,
         valor_aluguel: values.valor_aluguel,
@@ -211,7 +214,7 @@ export function CollaboratorTurnDialog({
                           <FormItem>
                             <FormLabel className="flex items-center gap-1">
                               Cliente
-                              {isMotoboy && <span className="text-red-500">*</span>}
+                              {isMotoboyOrFiscal && <span className="text-red-500">*</span>}
                             </FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>

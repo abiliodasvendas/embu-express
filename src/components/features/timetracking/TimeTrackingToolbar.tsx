@@ -185,9 +185,10 @@ export function TimeTrackingToolbar({
             </SelectTrigger>
             <SelectContent className="z-[10001]">
               <SelectItem value="todos">Todos os Status</SelectItem>
-              <SelectItem value={STATUS_PONTO.ENTRADA.NO_HORARIO}>{getStatusLabel(STATUS_PONTO.ENTRADA.NO_HORARIO, 'entrada')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.ENTRADA.ATRASO}>{getStatusLabel(STATUS_PONTO.ENTRADA.ATRASO, 'entrada')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.ENTRADA.MUITO_ATRASO}>{getStatusLabel(STATUS_PONTO.ENTRADA.MUITO_ATRASO, 'entrada')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.VERDE}>{getStatusLabel(STATUS_PONTO.VERDE, 'entrada')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.AMARELO}>{getStatusLabel(STATUS_PONTO.AMARELO, 'entrada')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.VERMELHO}>{getStatusLabel(STATUS_PONTO.VERMELHO, 'entrada')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'entrada')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -205,10 +206,11 @@ export function TimeTrackingToolbar({
             </SelectTrigger>
             <SelectContent className="z-[10001]">
               <SelectItem value="todos">Todos os Status</SelectItem>
-              <SelectItem value="trabalhando">{getStatusLabel(STATUS_PONTO.SAIDA.TRABALHANDO, 'saida')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.SAIDA.NO_HORARIO}>{getStatusLabel(STATUS_PONTO.SAIDA.NO_HORARIO, 'saida')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.SAIDA.HORA_EXTRA}>{getStatusLabel(STATUS_PONTO.SAIDA.HORA_EXTRA, 'saida')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.SAIDA.HORA_EXTRA_EXCESSIVA}>{getStatusLabel(STATUS_PONTO.SAIDA.HORA_EXTRA_EXCESSIVA, 'saida')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.EM_ANDAMENTO}>{getStatusLabel(STATUS_PONTO.EM_ANDAMENTO, 'saida')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.VERDE}>{getStatusLabel(STATUS_PONTO.VERDE, 'saida')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.AMARELO}>{getStatusLabel(STATUS_PONTO.AMARELO, 'saida')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.VERMELHO}>{getStatusLabel(STATUS_PONTO.VERMELHO, 'saida')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'saida')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -252,6 +254,7 @@ export function TimeTrackingToolbar({
                 side="bottom"
                 className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 pb-0 bg-gray-50 border-t-0 shadow-2xl"
                 onOpenAutoFocus={(e) => e.preventDefault()}
+                aria-describedby={undefined}
               >
                 <SheetHeader className="text-left mb-4 px-6">
                   <SheetTitle className="text-xl font-bold">Filtrar</SheetTitle>

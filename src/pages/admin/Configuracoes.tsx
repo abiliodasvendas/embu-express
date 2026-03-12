@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Settings, Save, Clock, AlertTriangle, CheckCircle2, Shield } from "lucide-react";
+import { Settings, Save, Clock, AlertTriangle, CheckCircle2, Shield, CircleDollarSign } from "lucide-react";
 import { apiClient } from "@/services/api/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,13 @@ const CONFIG_METADATA: Record<string, { label: string; icon: any; unit?: string;
         unit: "min",
         description: "Define o tempo de jornada excedente que dispara um alerta de segurança/fadiga para a gerência.",
         example: "Ex: Se definido como 120 min, o sistema avisa quando o colaborador trabalhar 2h além do seu horário."
+    },
+    valor_adicional_feriado: {
+        label: "Valor Fixo para Feriado",
+        icon: CircleDollarSign,
+        unit: "R$",
+        description: "Valor adicional pago automaticamente como ocorrência extra quando um ponto é aberto em dia de feriado.",
+        example: "Ex: Se definido como 50, o colaborador ganhará R$ 50,00 adicionais no extrato se abrir turno num feriado."
     },
 };
 
@@ -160,7 +167,7 @@ function ConfigCard({ config, onSave, onChangeDraft, isSaving }: {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <Label className="text-gray-700 font-bold ml-1 text-sm opacity-70">Valor em Minutos</Label>
+                    <Label className="text-gray-700 font-bold ml-1 text-sm opacity-70">Valor em {metadata.unit === 'R$' ? 'Reais' : 'Minutos'}</Label>
                     <div className="relative">
                         <Input
                             type="number"

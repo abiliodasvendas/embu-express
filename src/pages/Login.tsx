@@ -129,7 +129,7 @@ export default function Login() {
                     form.setValue("cpfcnpj", "030.755.445-74");
                     form.setValue("senha", "Ogaiht+1");
                   }}
-                  className="absolute -top-2 -right-2 w-8 h-8 rounded-full text-blue-600 hover:bg-blue-50"
+                  className="hidden absolute -top-2 -right-2 w-8 h-8 rounded-full text-blue-600 hover:bg-blue-50"
                   title="Acesso Rápido"
                 >
                   <Wand2 className="h-4 w-4" />

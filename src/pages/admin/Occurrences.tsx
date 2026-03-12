@@ -8,17 +8,18 @@ import { useOcorrencias } from "@/hooks/api/useOcorrencias";
 import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import { Ocorrencia } from "@/types/database";
-import { AlertCircle, Filter, User, X, Calendar as CalendarIcon, Search, Plus, Settings } from "lucide-react";
+import { AlertCircle, Filter, User, X, Calendar as CalendarIcon, Plus, Settings } from "lucide-react";
 import { useCallback, useEffect, useState, useMemo } from "react";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { meses, anos } from "@/utils/formatters/constants";
+import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
 import { ChevronRight } from "lucide-react";
 import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
+import { DateNavigation } from "@/components/common/DateNavigation";
+
 
 export function Occurrences() {
     const {
@@ -30,20 +31,21 @@ export function Occurrences() {
     } = useLayout();
 
     // States for filtering
-    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [selectedCollaborator, setSelectedCollaborator] = useState<string>("TODOS");
+
     const [selectedOccurrence, setSelectedOccurrence] = useState<any>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     // Calculated range for API
     const dateRange = useMemo(() => {
-        const date = new Date(selectedYear, selectedMonth - 1, 1);
+        const formattedDate = format(selectedDate, "yyyy-MM-dd");
         return {
-            inicio: format(startOfMonth(date), "yyyy-MM-dd"),
-            fim: format(endOfMonth(date), "yyyy-MM-dd")
+            inicio: formattedDate,
+            fim: formattedDate
         };
-    }, [selectedMonth, selectedYear]);
+    }, [selectedDate]);
+
 
     const { data: occurrences = [], isLoading, refetch } = useOcorrencias({
         data_inicio: dateRange.inicio,
@@ -56,9 +58,7 @@ export function Occurrences() {
     const { data: collaborators = [] } = useCollaborators({});
     const deleteMutation = useDeleteOcorrencia();
 
-    const monthOptions = useMemo(() =>
-        meses.map((label, index) => ({ value: index + 1, label })),
-        []);
+
 
     useEffect(() => {
         setPageTitle("Ocorrências");
@@ -89,7 +89,7 @@ export function Occurrences() {
                     {/* Filter Card */}
                     <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
                         <CardContent className="p-5">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                                 <div className="md:col-span-2 space-y-2">
                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Colaborador</label>
                                     <Select value={selectedCollaborator} onValueChange={setSelectedCollaborator}>
@@ -107,44 +107,15 @@ export function Occurrences() {
                                     </Select>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Período</label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                                            <SelectTrigger className="rounded-xl border-gray-100 h-11 bg-gray-50/50">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {monthOptions.map(m => (
-                                                    <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-
-                                        <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                                            <SelectTrigger className="rounded-xl border-gray-100 h-11 bg-gray-50/50">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {anos.map(a => (
-                                                    <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-end">
-                                    <Button
-                                        onClick={() => refetch()}
-                                        className="w-full h-11 rounded-xl shadow-lg shadow-primary/20 gap-2"
-                                        disabled={isLoading}
-                                    >
-                                        <Search className="h-4 w-4" />
-                                        Filtrar
-                                    </Button>
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Data da Ocorrência</label>
+                                    <DateNavigation 
+                                        date={selectedDate} 
+                                        onNavigate={setSelectedDate} 
+                                    />
                                 </div>
                             </div>
+
                         </CardContent>
                     </Card>
 

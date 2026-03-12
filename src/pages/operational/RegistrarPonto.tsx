@@ -20,7 +20,7 @@ import { apiClient } from "@/services/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { AndroidSettings, IOSSettings, NativeSettings } from 'capacitor-native-settings';
 import { AnimatePresence, motion } from "framer-motion";
-import { Briefcase, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
+import { Briefcase, CalendarX, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type PontoAction = 'idle' | 'working' | 'paused';
@@ -43,6 +43,7 @@ export default function RegistrarPonto() {
         nome: string;
         horario?: string;
         empresa?: string;
+        escala_semanal?: number[];
     } | null>(null);
     const [timer, setTimer] = useState<string>("00:00:00");
     const [pausasMetric, setPausasMetric] = useState<{ count: number; totalMs: number; kmTrabalho: number; kmPausa: number }>({ count: 0, totalMs: 0, kmTrabalho: 0, kmPausa: 0 });
@@ -98,7 +99,8 @@ export default function RegistrarPonto() {
                         nome: matchedLink.cliente?.nome_fantasia || "Turno Atual",
                         horario: matchedLink.hora_inicio && matchedLink.hora_fim ?
                             `${matchedLink.hora_inicio.slice(0, 5)} - ${matchedLink.hora_fim.slice(0, 5)}` : undefined,
-                        empresa: matchedLink.empresa?.nome_fantasia
+                        empresa: matchedLink.empresa?.nome_fantasia,
+                        escala_semanal: matchedLink.cliente?.escala_semanal
                     };
                 }
 
@@ -107,7 +109,8 @@ export default function RegistrarPonto() {
                         id: pontoId?.toString() || "0",
                         nome: pontoHoje.cliente.nome_fantasia || "Turno Atual",
                         horario: "Horário Indefinido",
-                        empresa: "Desconhecida"
+                        empresa: "Desconhecida",
+                        escala_semanal: pontoHoje.cliente.escala_semanal
                     };
                 }
             }
@@ -121,7 +124,8 @@ export default function RegistrarPonto() {
                         nome: currentSelection.cliente?.nome_fantasia || "Turno Selecionado",
                         horario: currentSelection.hora_inicio && currentSelection.hora_fim ?
                             `${currentSelection.hora_inicio.slice(0, 5)} - ${currentSelection.hora_fim.slice(0, 5)}` : undefined,
-                        empresa: currentSelection.empresa?.nome_fantasia
+                        empresa: currentSelection.empresa?.nome_fantasia,
+                        escala_semanal: currentSelection.cliente?.escala_semanal
                     };
                 }
             }
@@ -162,7 +166,8 @@ export default function RegistrarPonto() {
                         nome: bestShift.cliente?.nome_fantasia || "Turno Sugerido",
                         horario: bestShift.hora_inicio && bestShift.hora_fim ?
                             `${bestShift.hora_inicio.slice(0, 5)} - ${bestShift.hora_fim.slice(0, 5)}` : undefined,
-                        empresa: bestShift.empresa?.nome_fantasia
+                        empresa: bestShift.empresa?.nome_fantasia,
+                        escala_semanal: bestShift.cliente?.escala_semanal
                     };
                 }
             }
@@ -253,6 +258,16 @@ export default function RegistrarPonto() {
             }
         }
     }, [pontoHoje, userProfile, selectedLinkId]);
+
+    // Lógica de Escala (1=Seg, ..., 7=Dom)
+    const currentDay = new Date().getDay();
+    const scaleDay = currentDay === 0 ? 7 : currentDay;
+    
+    // Se estiver em serviço, pegamos a escala do turno que está rodando. 
+    // Se estiver idle, pegamos a escala do turno selecionado no select.
+    const selectedLink = userProfile?.links?.find((l: any) => l.id.toString() === selectedLinkId);
+    const currentScale = status === 'idle' ? selectedLink?.cliente?.escala_semanal : activeShift?.escala_semanal;
+    const isOutOffScale = currentScale && !currentScale.includes(scaleDay);
 
     const executeToggle = async (loc: any, km?: number) => {
         setIsProcessing(true);
@@ -475,6 +490,31 @@ export default function RegistrarPonto() {
                     )}
                 </AnimatePresence>
 
+                {/* Escala / Fora de Dia de Trabalho Alert */}
+                <AnimatePresence>
+                    {isOutOffScale && status === 'idle' && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="mb-6"
+                        >
+                            <Alert className="rounded-3xl border-2 border-amber-100 bg-amber-50/50 backdrop-blur-sm text-amber-900 p-6 shadow-lg shadow-amber-500/5">
+                                <div className="flex items-start gap-4">
+                                    <div className="bg-amber-100 p-3 rounded-2xl">
+                                        <CalendarX className="h-6 w-6 text-amber-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <AlertTitle className="font-bold text-lg mb-1">Dia fora da escala</AlertTitle>
+                                        <AlertDescription className="text-amber-800 font-medium leading-relaxed">
+                                            Hoje não é um dia de trabalho previsto para este cliente. O registro de ponto está desabilitado para este turno.
+                                        </AlertDescription>
+                                    </div>
+                                </div>
+                            </Alert>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 {location && (
                     <>
                         {!hasShifts ? (
@@ -633,11 +673,11 @@ export default function RegistrarPonto() {
                                             {status === 'idle' && (
                                                 <Button
                                                     onClick={handleToggle}
-                                                    disabled={loadingGeo || !location || !selectedLinkId || isProcessing}
+                                                    disabled={loadingGeo || !location || !selectedLinkId || isProcessing || isOutOffScale}
                                                     className="h-20 text-xl font-bold rounded-2xl shadow-md bg-blue-600 text-white hover:bg-blue-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100"
                                                 >
                                                     {isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (loadingGeo ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
-                                                    {isProcessing ? "PROCESSANDO..." : (loadingGeo ? "LOCALIZANDO..." : "INICIAR TURNO")}
+                                                    {isProcessing ? "PROCESSANDO..." : (loadingGeo ? "LOCALIZANDO..." : (isOutOffScale ? "FORA DE ESCALA" : "INICIAR TURNO"))}
                                                 </Button>
                                             )}
 

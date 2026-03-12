@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToleranceTimeline } from "@/components/admin/ToleranceTimeline";
+import { MoneyInput } from "@/components/ui/MoneyInput";
 
 interface ConfigItem {
     chave: string;
@@ -169,15 +170,26 @@ function ConfigCard({ config, onSave, onChangeDraft, isSaving }: {
                 <div className="space-y-2">
                     <Label className="text-gray-700 font-bold ml-1 text-sm opacity-70">Valor em {metadata.unit === 'R$' ? 'Reais' : 'Minutos'}</Label>
                     <div className="relative">
-                        <Input
-                            type="number"
-                            value={value}
-                            onChange={(e) => {
-                                setValue(e.target.value);
-                                onChangeDraft(e.target.value);
-                            }}
-                            className="bg-gray-50 border-gray-200 focus:bg-white transition-colors rounded-xl pr-12 h-12 text-lg font-medium"
-                        />
+                        {metadata.unit === 'R$' ? (
+                            <MoneyInput
+                                value={Number(value || 0)}
+                                onChange={(val) => {
+                                    setValue(val.toString());
+                                    onChangeDraft(val.toString());
+                                }}
+                                className="bg-gray-50 border-gray-200 focus:bg-white transition-colors rounded-xl pr-12 h-12 text-lg font-medium"
+                            />
+                        ) : (
+                            <Input
+                                type="number"
+                                value={value}
+                                onChange={(e) => {
+                                    setValue(e.target.value);
+                                    onChangeDraft(e.target.value);
+                                }}
+                                className="bg-gray-50 border-gray-200 focus:bg-white transition-colors rounded-xl pr-12 h-12 text-lg font-medium"
+                            />
+                        )}
                         {metadata.unit && (
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm uppercase tracking-wider select-none">
                                 {metadata.unit}

@@ -42,7 +42,7 @@ export function TimeMirror() {
                 </CardContent>
             </Card>
 
-            <TimeMirrorView usuarioId={selectedCollaborator} />
+            <TimeMirrorView usuarioId={selectedCollaborator === 'todos' ? undefined : selectedCollaborator} />
         </div>
     );
 }

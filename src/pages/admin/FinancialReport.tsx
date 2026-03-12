@@ -43,7 +43,7 @@ export function FinancialReport() {
             </Card>
 
             <FinancialReportView
-                usuarioId={selectedCollaborator}
+                usuarioId={selectedCollaborator === 'todos' ? undefined : selectedCollaborator}
                 colaboradorNome={collaborators.find(c => c.id === selectedCollaborator)?.nome_completo}
             />
         </div>

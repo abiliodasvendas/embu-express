@@ -29,8 +29,8 @@ export const PERMISSIONS = {
     PONTO: {
         ADMIN_VER: 'ponto:admin_ver', // Painel: Ver lista de todos
         ADMIN_CRIAR: 'ponto:admin_criar', // Painel: Inserir ponto manualmente
-        ADMIN_EDITAR: 'ponto:admin:editar', // Painel: Corrigir linha
-        ADMIN_DELETAR: 'ponto:admin:deletar', // Painel: Excluir linha
+        ADMIN_EDITAR: 'ponto:admin_editar', // Painel: Corrigir linha
+        ADMIN_DELETAR: 'ponto:admin_deletar', // Painel: Excluir linha
         VER_MEU: 'ponto:ver_meu', // App: Ver o próprio espelho de ponto
     },
     CONFIGURACAO: {

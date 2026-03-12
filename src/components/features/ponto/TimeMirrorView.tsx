@@ -6,10 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTimeMirror } from "@/hooks/api/useTimeMirror";
 import { cn } from "@/lib/utils";
 import { Calendar, Clock, TrendingDown, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { meses, anos } from "@/utils/formatters/constants";
+import { useFilters } from "@/hooks/ui/useFilters";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -17,8 +18,15 @@ interface TimeMirrorViewProps {
 }
 
 export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: TimeMirrorViewProps) {
-    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const {
+        selectedMes: selectedMonth = new Date().getMonth() + 1,
+        setSelectedMes: setSelectedMonth = () => {},
+        selectedAno: selectedYear = new Date().getFullYear(),
+        setSelectedAno: setSelectedYear = () => {},
+    } = useFilters({
+        mesParam: "mes",
+        anoParam: "ano",
+    });
 
     const { data: report = [], isLoading } = useTimeMirror(
         usuarioId || undefined,
@@ -49,10 +57,11 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
     }, [report]);
 
     const formatMinutes = (minutes: number) => {
-        const absMin = Math.abs(minutes);
+        const roundedMin = Math.round(minutes);
+        const absMin = Math.abs(roundedMin);
         const h = Math.floor(absMin / 60);
         const m = absMin % 60;
-        const sign = minutes < 0 ? "-" : "";
+        const sign = roundedMin < 0 ? "-" : "";
         return `${sign}${h}h ${String(m).padStart(2, "0")}m`;
     };
 
@@ -213,7 +222,7 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                             <div className="text-center">
                                                 <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Intervalo</p>
                                                 <p className="text-sm font-medium text-gray-400 italic">
-                                                    {day.total_pausas_minutos ? `${day.total_pausas_minutos}m` : '0m'}
+                                                    {day.total_pausas_minutos ? `${Math.round(day.total_pausas_minutos)}m` : '0m'}
                                                 </p>
                                             </div>
 

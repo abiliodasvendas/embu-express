@@ -27,9 +27,8 @@ export function useTimeRecords({ date, searchTerm, usuarioId, statusEntrada, sta
       const response = await apiClient.get<RegistroPonto[]>(`/pontos?${params.toString()}`);
       return response.data;
     },
-    // Refresh every minute to keep statuses updated securely
-    // Refresh every minute to keep statuses updated securely
-    refetchInterval: 60000,
+    // Refresh every 30 seconds to keep statuses updated securely
+    refetchInterval: 30000,
     // FORCE FRESH DATA (User Request)
     // "Quase como se não houvesse react query"
     staleTime: 0,

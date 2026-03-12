@@ -2,12 +2,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
+import { useFilters } from "@/hooks/ui/useFilters";
 
 export function FinancialReport() {
     const { setPageTitle } = useLayout();
-    const [selectedCollaborator, setSelectedCollaborator] = useState<string>("");
+    const { 
+        selectedUsuario: selectedCollaborator = "", 
+        setSelectedUsuario: setSelectedCollaborator = () => {}
+    } = useFilters({ usuarioParam: "usuario" });
 
     useEffect(() => {
         setPageTitle("Relatório Financeiro");

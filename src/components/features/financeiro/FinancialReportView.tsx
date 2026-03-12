@@ -11,6 +11,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useFinanceiro } from "@/hooks/api/useFinanceiro";
 import { useFinanceiroMutations } from "@/hooks/api/useFinanceiroMutations";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useFilters } from "@/hooks/ui/useFilters";
 import { cn } from "@/lib/utils";
 import { anos, meses } from "@/utils/formatters/constants";
 import { formatCurrency } from "@/utils/formatters/currency";
@@ -28,8 +29,15 @@ interface FinancialReportViewProps {
 export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialReportViewProps) {
     const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
     const { can } = usePermissions();
-    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const {
+        selectedMes: selectedMonth = new Date().getMonth() + 1,
+        setSelectedMes: setSelectedMonth = () => {},
+        selectedAno: selectedYear = new Date().getFullYear(),
+        setSelectedAno: setSelectedYear = () => {},
+    } = useFilters({
+        mesParam: "mes",
+        anoParam: "ano",
+    });
 
     const { data: extrato, isLoading } = useFinanceiro(
         usuarioId || undefined,

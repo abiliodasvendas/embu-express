@@ -6,6 +6,8 @@ export function useTimeMirror(usuarioId: string | undefined, mes: number, ano: n
         queryKey: ["time-mirror", usuarioId, mes, ano],
         queryFn: () => pontoApi.getRelatorioMensal(usuarioId!, mes, ano),
         enabled: !!usuarioId && !!mes && !!ano,
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 5000, // 5 seconds
+        refetchInterval: 30000, // 30 seconds
+        refetchOnWindowFocus: true,
     });
 }

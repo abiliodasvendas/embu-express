@@ -1,10 +1,14 @@
 import { colaboradorApi } from "@/services/api/colaborador.api";
 import { useQuery } from "@tanstack/react-query";
 
-export function useCollaborators(filters?: { searchTerm?: string; status?: string; perfil_id?: string; cliente_id?: string; empresa_id?: string; sem_ponto_hoje?: boolean }) {
+export function useCollaborators(
+  filters?: { searchTerm?: string; status?: string; perfil_id?: string; cliente_id?: string; empresa_id?: string; sem_ponto_hoje?: boolean },
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: ["collaborators", filters],
     queryFn: () => colaboradorApi.listColaboradores(filters),
+    enabled: options?.enabled ?? true,
     // placeholderData: keepPreviousData, // Removed to show skeleton on filter change
     refetchOnMount: true, // Ensure we fetch fresh data on navigation if invalidated
   });

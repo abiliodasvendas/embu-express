@@ -27,7 +27,7 @@ export function FinancialReport() {
         setPageTitle(isOnlyPersonal ? "Meu Extrato Financeiro" : "Relatório Financeiro");
     }, [setPageTitle, isOnlyPersonal]);
 
-    const { data: collaborators = [] } = useCollaborators({ status: "ATIVO" });
+    const { data: collaborators = [] } = useCollaborators({ status: "ATIVO" }, { enabled: canViewAll });
 
     // Se for apenas pessoal, forçamos o valor do perfil
     const finalUsuarioId = isOnlyPersonal ? profile?.id : (selectedCollaborator === 'todos' ? undefined : selectedCollaborator);

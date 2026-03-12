@@ -29,7 +29,7 @@ export function TimeMirror() {
 
     const { data: collaborators = [] } = useCollaborators({ 
         status: "ATIVO"
-    });
+    }, { enabled: canViewAll });
 
     // Se for apenas pessoal, forçamos o ID do usuário logado
     const finalUsuarioId = isOnlyPersonal ? profile?.id : (selectedCollaborator === 'todos' ? undefined : selectedCollaborator);

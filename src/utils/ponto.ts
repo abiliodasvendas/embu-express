@@ -11,6 +11,7 @@ export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida')
         case STATUS_PONTO.CINZA: return "Aguardando";
         case STATUS_PONTO.EM_ANDAMENTO: return "Em Andamento";
         case STATUS_PONTO.PENDENTE: return "Pendente";
+        case 'AUSENTE': return "Ausente";
         default: return status;
     }
 };
@@ -24,6 +25,7 @@ export const getStatusColorClass = (status: string | null, type?: 'entrada' | 's
                 ? "bg-blue-100 text-blue-700 border-blue-200" // Entrada cedo é bom/neutro
                 : "bg-orange-100 text-orange-700 border-orange-200"; // Saída cedo é alerta
         case STATUS_PONTO.VERMELHO: return "bg-red-100 text-red-700 border-red-200";
+        case 'AUSENTE': return "bg-slate-100 text-slate-500 border-slate-200 opacity-60";
         default: return "bg-gray-100 text-gray-700 border-gray-200";
     }
 };

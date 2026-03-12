@@ -6,6 +6,7 @@ export const STATUS_PONTO = {
   CINZA: "CINZA",
   EM_ANDAMENTO: "EM_ANDAMENTO",
   PENDENTE: "PENDENTE",
+  AUSENTE: "AUSENTE",
 } as const;
 
 export const FILTER_OPTIONS = {

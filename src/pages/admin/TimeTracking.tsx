@@ -55,7 +55,8 @@ export default function TimeTracking() {
       usuarioId: selectedUsuario === "todos" ? undefined : selectedUsuario,
       statusEntrada: selectedStatusEntrada === "todos" ? undefined : selectedStatusEntrada,
       statusSaida: selectedStatusSaida === "todos" ? undefined : selectedStatusSaida,
-      clienteId: selectedCliente === "todos" ? undefined : selectedCliente
+      clienteId: selectedCliente === "todos" ? undefined : selectedCliente,
+      incluirTodos: true
   });
 
   // Mutations for Loading State

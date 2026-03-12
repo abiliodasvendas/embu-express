@@ -10,11 +10,12 @@ interface UseTimeRecordsParams {
   statusEntrada?: string;
   statusSaida?: string;
   clienteId?: string;
+  incluirTodos?: boolean;
 }
 
-export function useTimeRecords({ date, searchTerm, usuarioId, statusEntrada, statusSaida, clienteId }: UseTimeRecordsParams) {
+export function useTimeRecords({ date, searchTerm, usuarioId, statusEntrada, statusSaida, clienteId, incluirTodos }: UseTimeRecordsParams) {
   return useQuery({
-    queryKey: ["time-records", date, searchTerm, usuarioId, statusEntrada, statusSaida, clienteId],
+    queryKey: ["time-records", date, searchTerm, usuarioId, statusEntrada, statusSaida, clienteId, incluirTodos],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (date) params.append("data_referencia", date);
@@ -23,6 +24,7 @@ export function useTimeRecords({ date, searchTerm, usuarioId, statusEntrada, sta
       if (statusEntrada && statusEntrada !== FILTER_OPTIONS.TODOS) params.append("status_entrada", statusEntrada);
       if (statusSaida && statusSaida !== FILTER_OPTIONS.TODOS) params.append("status_saida", statusSaida);
       if (clienteId && clienteId !== FILTER_OPTIONS.TODOS) params.append("cliente_id", clienteId);
+      if (incluirTodos) params.append("incluir_todos", "true");
 
       const response = await apiClient.get<RegistroPonto[]>(`/pontos?${params.toString()}`);
       return response.data;

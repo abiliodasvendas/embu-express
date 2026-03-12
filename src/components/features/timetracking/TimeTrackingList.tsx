@@ -169,7 +169,7 @@ const TimeRecordMobileItem = ({
                 )}
               </div>
             ) : (
-              <span>Em andamento</span>
+              <span>{(record as any).ausente ? "Ausente" : "Em andamento"}</span>
             )}
           </div>
         </div>
@@ -193,7 +193,10 @@ const TimeRecordTableRow = ({
 
   return (
     <tr
-      className="hover:bg-gray-50/80 transition-colors cursor-pointer group"
+      className={cn(
+        "hover:bg-gray-50/80 transition-colors cursor-pointer group",
+        (record as any).ausente && "opacity-60 grayscale-[0.5]"
+      )}
       onClick={() => onDetails(record)}
     >
       <td className="py-4 pl-6 align-middle relative">
@@ -248,7 +251,7 @@ const TimeRecordTableRow = ({
                 if (!p.fim_hora) return acc;
                 return acc + Math.round((new Date(p.fim_hora).getTime() - new Date(p.inicio_hora).getTime()) / 60000);
               }, 0)
-            ) : "Em andamento"}
+            ) : (record as any).ausente ? "Ausente" : "Em andamento"}
           </span>
         </div>
       </td>

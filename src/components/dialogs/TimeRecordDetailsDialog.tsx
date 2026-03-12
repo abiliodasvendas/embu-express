@@ -148,12 +148,6 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                             </span>
                                         )}
                                     </div>
-                                    {record.entrada_loc && (
-                                        <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5">
-                                            <MapPin className="w-3 h-3" />
-                                            <span className="truncate max-w-[200px]">Localização protegida</span>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
@@ -214,35 +208,43 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                                 </span>
                                             )}
                                         </div>
-                                        {record.saida_loc && (
-                                            <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5">
-                                                <MapPin className="w-3 h-3" />
-                                                <span className="truncate max-w-[200px]">Localização de saída salva</span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-28 transition-all hover:bg-gray-50">
-                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-2">Saldo Diário</span>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50 col-span-2">
+                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Saldo Diário</span>
                             <span className={`text-xl font-black ${record.saldo_minutos !== undefined && record.saldo_minutos !== null ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-300"}`}>
                                 {record.saldo_minutos !== undefined && record.saldo_minutos !== null ? formatMinutes(record.saldo_minutos) : "--"}
                             </span>
                         </div>
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-28 transition-all hover:bg-gray-50">
-                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-2">Trabalhadas</span>
-                            <span className="text-xl font-black text-gray-700 font-mono">
+
+                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
+                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Trabalhadas</span>
+                            <span className="text-lg font-black text-gray-700 font-mono">
                                 {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
                             </span>
                         </div>
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-28 transition-all hover:bg-gray-50 col-span-2 sm:col-span-1">
-                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-2">KM Rodados</span>
-                            <span className="text-xl font-black text-blue-600 font-mono">
-                                {record.detalhes_calculo?.resumo?.diff_km !== undefined ? formatKm(record.detalhes_calculo.resumo.diff_km) : "--"}
+                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
+                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Em Pausa</span>
+                            <span className="text-lg font-black text-amber-600 font-mono">
+                                {record.detalhes_calculo?.resumo?.horas_pausa || "--:--"}
+                            </span>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
+                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">KM Trabalhado</span>
+                            <span className="text-lg font-black text-blue-600 font-mono">
+                                {record.detalhes_calculo?.resumo?.km_trabalhado !== undefined ? formatKm(record.detalhes_calculo.resumo.km_trabalhado) : "--"}
+                            </span>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
+                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">KM em Pausa</span>
+                            <span className="text-lg font-black text-amber-600 font-mono">
+                                {record.detalhes_calculo?.resumo?.km_pausa !== undefined ? formatKm(record.detalhes_calculo.resumo.km_pausa) : "--"}
                             </span>
                         </div>
                     </div>
@@ -279,10 +281,15 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                                                 </div>
                                             </div>
                                             {duration !== null && (
-                                                <div className="text-right">
+                                                <div className="flex flex-col items-end gap-1">
                                                     <span className="font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg text-[10px] uppercase">
                                                         {duration} min
                                                     </span>
+                                                    {p.distancia_trabalho !== undefined && p.distancia_trabalho > 0 && (
+                                                        <span className="text-[9px] text-blue-500 font-bold">
+                                                            +{formatKm(p.distancia_trabalho)} trab.
+                                                        </span>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

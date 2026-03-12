@@ -52,11 +52,11 @@ tipo de lançamento (entrada/saída)?
 
 
 
-DIALOG DE PONTO
-- remover linha "localização protegida" e "localização de saída salva"
+DIALOG DE detalhes do PONTO
+- remover textos "localização protegida" e "localização de saída salva"
 - separar KM Rodados em 2: KMs Trabalhados e KMs em Pausa
 - no histórico de pausas, exibir ao lado da duração da pausa o km rodado naquela pausa (em relação ao ultimo km registrado (seja inicioPonto ou pausa)
-- exibir qtd de tempo em trabalho e tempo em pausa
+- exibir quanto de tempo em trabalho e quanto tempo em pausa
 
 
 DIALOG DE TURNOS

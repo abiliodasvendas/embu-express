@@ -210,7 +210,7 @@ export function CollaboratorTurnDialog({
                         render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel className="flex items-center gap-1">
-                              Cliente 
+                              Cliente
                               {isMotoboy && <span className="text-red-500">*</span>}
                             </FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
@@ -374,50 +374,46 @@ export function CollaboratorTurnDialog({
                         />
                       </div>
 
-                      {collaborator?.perfil?.nome === ROLES.MOTOBOY && (
-                        <>
-                          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-green-100">
-                            <FormField
-                              control={form.control}
-                              name="valor_aluguel"
-                              render={({ field }) => (
-                                <MoneyInput
-                                  field={field}
-                                  label="Aluguel Moto"
-                                  required={false}
-                                  inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
-                                />
-                              )}
+                      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-green-100">
+                        <FormField
+                          control={form.control}
+                          name="valor_aluguel"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Aluguel Moto"
+                              required={false}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
                             />
-                            <FormField
-                              control={form.control}
-                              name="ajuda_custo"
-                              render={({ field }) => (
-                                <MoneyInput
-                                  field={field}
-                                  label="Ajuda Custo"
-                                  required={false}
-                                  inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
-                                />
-                              )}
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="ajuda_custo"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Ajuda Custo"
+                              required={false}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
                             />
-                          </div>
-                          <div className="grid grid-cols-1 pt-2">
-                            <FormField
-                              control={form.control}
-                              name="valor_bonus"
-                              render={({ field }) => (
-                                <MoneyInput
-                                  field={field}
-                                  label="Bônus Zero Falta"
-                                  required={false}
-                                  inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
-                                />
-                              )}
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 pt-2">
+                        <FormField
+                          control={form.control}
+                          name="valor_bonus"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Bônus Zero Falta"
+                              required={false}
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
                             />
-                          </div>
-                        </>
-                      )}
+                          )}
+                        />
+                      </div>
                     </div>
 
                     {/* 3. DÉBITOS */}

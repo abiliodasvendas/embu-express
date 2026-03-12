@@ -37,8 +37,8 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
         let expectedMin = 0;
 
         report.forEach(day => {
-            workedMin += (day.total_trabalhado_min || 0);
-            expectedMin += (day.total_esperado_min || 0);
+            workedMin += (day.tempo_trabalhado_minutos || 0);
+            expectedMin += ((day.tempo_trabalhado_minutos || 0) - (day.saldo_minutos || 0));
         });
 
         return {
@@ -169,7 +169,8 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                         </div>
 
                         {report.map((day, idx) => {
-                            const balance = (day.total_trabalhado_min || 0) - (day.total_esperado_min || 0);
+                            const balance = day.saldo_minutos || 0;
+                            const esperadoForDay = (day.tempo_trabalhado_minutos || 0) - (day.saldo_minutos || 0);
                             return (
                                 <Card key={idx} className="border-none shadow-sm rounded-[1.5rem] overflow-hidden group hover:shadow-md transition-all duration-300">
                                     <CardContent className="p-4 md:py-3 md:px-6">
@@ -212,7 +213,7 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                             <div className="text-center">
                                                 <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Intervalo</p>
                                                 <p className="text-sm font-medium text-gray-400 italic">
-                                                    {day.total_pausa_min ? `${day.total_pausa_min}m` : '0m'}
+                                                    {day.total_pausas_minutos ? `${day.total_pausas_minutos}m` : '0m'}
                                                 </p>
                                             </div>
 
@@ -220,7 +221,7 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                             <div className="text-center bg-gray-50/50 md:bg-transparent rounded-2xl p-2 md:p-0">
                                                 <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Trabalhado</p>
                                                 <p className="text-sm font-black text-gray-900">
-                                                    {formatMinutes(day.total_trabalhado_min || 0)}
+                                                    {formatMinutes(day.tempo_trabalhado_minutos || 0)}
                                                 </p>
                                             </div>
 
@@ -228,7 +229,7 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                             <div className="text-center">
                                                 <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Esperado</p>
                                                 <p className="text-xs font-bold text-gray-300">
-                                                    {formatMinutes(day.total_esperado_min || 0)}
+                                                    {formatMinutes(esperadoForDay || 0)}
                                                 </p>
                                             </div>
 

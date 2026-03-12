@@ -16,6 +16,8 @@ import { useTimeRecord } from "@/hooks/api/useTimeRecord";
 import { useState, useEffect } from "react";
 import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { RegistroPonto } from "@/types/database";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -103,6 +105,9 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
         return `${sign}${h}h ${String(m).padStart(2, "0")}m`;
     };
 
+    const { can } = usePermissions();
+    const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
+
     return (
         <div className="space-y-6">
             {/* Context Filters */}
@@ -147,34 +152,41 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
             ) : report.length > 0 ? (
                 <>
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Card className="border-none shadow-sm rounded-3xl bg-blue-50/50">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-blue-100 rounded-2xl">
-                                        <Clock className="h-6 w-6 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Total Trabalhado</p>
-                                        <h3 className="text-2xl font-black text-blue-900">{formatMinutes(totals.worked)}</h3>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                    <div className={cn(
+                        "grid gap-4",
+                        canViewAll ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"
+                    )}>
+                        {canViewAll && (
+                            <>
+                                <Card className="border-none shadow-sm rounded-3xl bg-blue-50/50">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-blue-100 rounded-2xl">
+                                                <Clock className="h-6 w-6 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Total Trabalhado</p>
+                                                <h3 className="text-2xl font-black text-blue-900">{formatMinutes(totals.worked)}</h3>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
 
-                        <Card className="border-none shadow-sm rounded-3xl bg-amber-50/50">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-amber-100 rounded-2xl">
-                                        <Calendar className="h-6 w-6 text-amber-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-amber-600 font-bold uppercase tracking-wider mb-1">Total Esperado</p>
-                                        <h3 className="text-2xl font-black text-amber-900">{formatMinutes(totals.expected)}</h3>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                <Card className="border-none shadow-sm rounded-3xl bg-amber-50/50">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-amber-100 rounded-2xl">
+                                                <Calendar className="h-6 w-6 text-amber-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-amber-600 font-bold uppercase tracking-wider mb-1">Total Esperado</p>
+                                                <h3 className="text-2xl font-black text-amber-900">{formatMinutes(totals.expected)}</h3>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </>
+                        )}
 
                         <Card className={cn(
                             "border-none shadow-sm rounded-3xl",
@@ -205,13 +217,20 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
 
                     {/* Daily Logs */}
                     <div className="grid gap-3">
-                        <div className="hidden md:grid grid-cols-7 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2">
+                        <div className={cn(
+                            "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",
+                            canViewAll ? "grid-cols-7" : "grid-cols-4"
+                        )}>
                             <div className="col-span-1">Data</div>
                             <div className="col-span-1">Entrada</div>
                             <div className="col-span-1">Saída</div>
-                            <div className="col-span-1 text-center">Intervalo</div>
-                            <div className="col-span-1 text-center">Trabalhado</div>
-                            <div className="col-span-1 text-center">Esperado</div>
+                            {canViewAll && (
+                                <>
+                                    <div className="col-span-1 text-center">Intervalo</div>
+                                    <div className="col-span-1 text-center">Trabalhado</div>
+                                    <div className="col-span-1 text-center">Esperado</div>
+                                </>
+                            )}
                             <div className="col-span-1 text-right">Saldo</div>
                         </div>
 
@@ -228,7 +247,10 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                     onClick={() => !isFetchingRecord && setSelectedPontoId(day.id)}
                                 >
                                     <CardContent className="p-4 md:py-3 md:px-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-7 items-center gap-4">
+                                        <div className={cn(
+                                            "grid items-center gap-4",
+                                            canViewAll ? "grid-cols-1 md:grid-cols-7" : "grid-cols-1 md:grid-cols-4"
+                                        )}>
                                             {/* Date */}
                                             <div className="flex items-center gap-3">
                                                 <div className="h-10 w-10 rounded-xl bg-gray-50 group-hover:bg-primary/5 transition-colors flex flex-col items-center justify-center shrink-0">
@@ -263,29 +285,34 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                                 </div>
                                             </div>
 
-                                            {/* Intervalo */}
-                                            <div className="text-center">
-                                                <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Intervalo</p>
-                                                <p className="text-sm font-medium text-gray-400 italic">
-                                                    {day.total_pausas_minutos ? `${Math.round(day.total_pausas_minutos)}m` : '0m'}
-                                                </p>
-                                            </div>
+                                            {/* Informações detalhadas - Só visíveis para Admin */}
+                                            {canViewAll && (
+                                                <>
+                                                    {/* Intervalo */}
+                                                    <div className="text-center">
+                                                        <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Intervalo</p>
+                                                        <p className="text-sm font-medium text-gray-400 italic">
+                                                            {day.total_pausas_minutos ? `${Math.round(day.total_pausas_minutos)}m` : '0m'}
+                                                        </p>
+                                                    </div>
 
-                                            {/* Trabalhado */}
-                                            <div className="text-center bg-gray-50/50 md:bg-transparent rounded-2xl p-2 md:p-0">
-                                                <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Trabalhado</p>
-                                                <p className="text-sm font-black text-gray-900">
-                                                    {formatMinutes(day.tempo_trabalhado_minutos || 0)}
-                                                </p>
-                                            </div>
+                                                    {/* Trabalhado */}
+                                                    <div className="text-center bg-gray-50/50 md:bg-transparent rounded-2xl p-2 md:p-0">
+                                                        <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Trabalhado</p>
+                                                        <p className="text-sm font-black text-gray-900">
+                                                            {formatMinutes(day.tempo_trabalhado_minutos || 0)}
+                                                        </p>
+                                                    </div>
 
-                                            {/* Esperado */}
-                                            <div className="text-center">
-                                                <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Esperado</p>
-                                                <p className="text-xs font-bold text-gray-300">
-                                                    {formatMinutes(esperadoForDay || 0)}
-                                                </p>
-                                            </div>
+                                                    {/* Esperado */}
+                                                    <div className="text-center">
+                                                        <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Esperado</p>
+                                                        <p className="text-xs font-bold text-gray-300">
+                                                            {formatMinutes(esperadoForDay || 0)}
+                                                        </p>
+                                                    </div>
+                                                </>
+                                            )}
 
                                             {/* Saldo Dia */}
                                             <div className="text-right">

@@ -42,6 +42,7 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { Briefcase, CreditCard, DollarSign, Loader2, User, UserPlus, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getLocalDate } from "@/utils/date";
 import { CollaboratorFormFinancial } from "../features/collaborator/form/CollaboratorFormFinancial";
 import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
 import { CollaboratorFormCNH, CollaboratorFormMoto } from "../features/collaborator/form/CollaboratorFormProfessional";
@@ -140,7 +141,7 @@ export function CollaboratorFormDialog({
     const year = birthDate.getFullYear();
     form.setValue("data_nascimento", `${day}/${month}/${year}`);
 
-    form.setValue("data_inicio", new Date().toISOString().split('T')[0]);
+    form.setValue("data_inicio", getLocalDate());
     form.setValue("nome_mae", mockGenerator.name());
     form.setValue("telefone", phoneMask(mockGenerator.phone()));
     form.setValue("telefone_recado", phoneMask(mockGenerator.phone()));

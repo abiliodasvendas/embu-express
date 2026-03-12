@@ -39,6 +39,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Briefcase, Clock, DollarSign, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { getLocalDate } from "@/utils/date";
 
 import { ROLES } from "@/constants/permissions.enum";
 import { TurnFormData, turnSchema } from "@/schemas/turnSchema";
@@ -109,7 +110,7 @@ export function CollaboratorTurnDialog({
           ajuda_custo: formatCurrency(turnToEdit.ajuda_custo || 0),
           valor_mei: formatCurrency(turnToEdit.valor_mei || 0),
           valor_adiantamento: formatCurrency(turnToEdit.valor_adiantamento || 0),
-          data_inicio: turnToEdit.data_inicio || new Date().toISOString().split('T')[0],
+          data_inicio: turnToEdit.data_inicio || getLocalDate(),
           isMotoboyOrFiscal: collaborator?.perfil?.nome === ROLES.MOTOBOY || collaborator?.perfil?.nome === ROLES.FISCAL,
         });
       } else {

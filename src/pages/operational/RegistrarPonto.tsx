@@ -22,6 +22,7 @@ import { AndroidSettings, IOSSettings, NativeSettings } from 'capacitor-native-s
 import { AnimatePresence, motion } from "framer-motion";
 import { Briefcase, CalendarX, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getLocalDate } from "@/utils/date";
 
 type PontoAction = 'idle' | 'working' | 'paused';
 
@@ -51,7 +52,7 @@ export default function RegistrarPonto() {
 
     const activeLinks = userProfile?.links?.filter((l: any) => {
         if (!l.data_fim) return true;
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDate();
         return l.data_fim >= today;
     }) || [];
     const hasShifts = activeLinks.length > 0;

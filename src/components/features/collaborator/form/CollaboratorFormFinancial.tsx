@@ -31,7 +31,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField name="cnpj" control={form.control} render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">CNPJ (MEI) {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">CNPJ (MEI)</FormLabel>
                         <FormControl>
                             <Input
                                 className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200")}

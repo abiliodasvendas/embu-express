@@ -6,7 +6,10 @@ export const cpfSchema = z.string().min(1, messages.validacao.campoObrigatorio).
   message: "CPF inválido",
 });
 
-export const cnpjSchema = z.string().min(1, messages.validacao.campoObrigatorio).refine((val) => isValidCNPJ(val), {
+export const cnpjSchema = z.string().optional().refine((val) => {
+  if (!val) return true;
+  return isValidCNPJ(val);
+}, {
   message: "CNPJ inválido",
 });
 

@@ -38,7 +38,7 @@ const professionalSchema = z.union([
     moto_cor: z.string().min(1, messages.validacao.campoObrigatorio),
     moto_ano: z.string().min(1, messages.validacao.campoObrigatorio),
     moto_placa: placaSchema.refine((val) => val.length > 0, messages.validacao.campoObrigatorio),
-    cnpj: z.string().min(14, messages.validacao.campoObrigatorio).refine((v) => v.replace(/\D/g, "").length >= 14, "CNPJ inválido"),
+    cnpj: z.string().optional().refine((v) => !v || v.replace(/\D/g, "").length >= 14, "CNPJ inválido"),
   }),
   // Outros perfis: Campos opcionais
   z.object({

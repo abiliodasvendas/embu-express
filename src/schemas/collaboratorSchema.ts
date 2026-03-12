@@ -1,35 +1,7 @@
-import { messages } from "@/constants/messages";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { messages } from "@/constants/messages";
 import { z } from "zod";
 import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
-
-// Auxiliar para a validação de conflitos de horários
-const checkLinkConflicts = (links: any[], ctx: any) => {
-  if (!links) return;
-
-  const toMinutes = (time: string) => {
-    const [h, m] = time?.split(":").map(Number) || [0, 0];
-    return h * 60 + m;
-  };
-
-  for (let i = 0; i < links.length; i++) {
-    const l = links[i];
-    const start = toMinutes(l.hora_inicio);
-    const end = toMinutes(l.hora_fim);
-
-    let duration = 0;
-    if (start < end) duration = end - start;
-    else duration = (1440 - start) + end;
-
-    if (duration < 60) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Turno min 1h",
-        path: ["links", i, "hora_fim"],
-      });
-    }
-  }
-};
 
 // 1. Schema Base: Campos comuns a todos os perfis
 // Garante que o perfil_id tenha a mensagem "Campo obrigatório" padrão
@@ -49,16 +21,6 @@ const commonSchema = z.object({
   data_inicio: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
   isMotoboy: z.boolean().optional().default(false),
-  links: z.array(z.object({
-    cliente_id: z.string().min(1, messages.validacao.campoObrigatorio),
-    empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
-    hora_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
-    hora_fim: z.string().min(1, messages.validacao.campoObrigatorio),
-    valor_contrato: z.coerce.number().optional(),
-    valor_aluguel: z.coerce.number().optional(),
-    valor_bonus: z.coerce.number().optional(),
-    ajuda_custo: z.coerce.number().optional(),
-  })).superRefine(checkLinkConflicts).optional().default([]),
   tipo_chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
   chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
 });

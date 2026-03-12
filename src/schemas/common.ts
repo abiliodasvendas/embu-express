@@ -17,7 +17,7 @@ export const cpfCnpjSchema = z.string().min(1, messages.validacao.campoObrigator
 export const phoneSchema = z
   .string()
   .min(1, messages.validacao.campoObrigatorio)
-  .min(15, "Telefone inválido")
+  .min(14, "Telefone inválido")
   .max(15, "Telefone inválido")
   .transform((val) => val.replace(/\D/g, ""));
 

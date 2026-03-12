@@ -24,7 +24,6 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
       isMotoboy: false,
       status: STATUS_CADASTRO.PENDENTE,
       senha_padrao: true,
-      links: [],
       rg: "",
       data_nascimento: "",
       nome_mae: "",
@@ -57,8 +56,6 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           isMotoboy: false, // Updated later by useEffect in Dialog
           status: collaboratorToEdit.status || "ATIVO",
           senha_padrao: !!collaboratorToEdit.senha_padrao,
-          links: (collaboratorToEdit as any).links || [],
-
           rg: collaboratorToEdit.rg ? rgMask(collaboratorToEdit.rg) : "",
           data_nascimento: collaboratorToEdit.data_nascimento ? formatDateToBR(collaboratorToEdit.data_nascimento) : "",
           nome_mae: collaboratorToEdit.nome_mae || "",
@@ -87,7 +84,6 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           perfil_id: "",
           isMotoboy: false,
           status: STATUS_CADASTRO.PENDENTE,
-          links: [],
           rg: "",
           data_nascimento: "",
           nome_mae: "",

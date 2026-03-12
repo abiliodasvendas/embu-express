@@ -173,9 +173,7 @@ export function CollaboratorFormDialog({
         ...values,
         data_nascimento: formattedBirthDate || values.data_nascimento, // Fallback if parse fails or already ISO (unlikely with mask)
         cnh_vencimento: formattedCnhDate || values.cnh_vencimento,
-        perfil_id: parseInt(values.perfil_id),
-        // Links are no longer managed here
-        links: collaboratorToEdit ? [] : undefined
+        perfil_id: parseInt(values.perfil_id)
       };
 
       if (collaboratorToEdit) {

@@ -33,6 +33,7 @@ export function useProfile(uid?: string) {
     staleTime: 5000,
     refetchOnWindowFocus: true,
     retry: false,
+    refetchInterval: 120000, // Heartbeat: check user status every 2 minutes
   });
 
   useEffect(() => {

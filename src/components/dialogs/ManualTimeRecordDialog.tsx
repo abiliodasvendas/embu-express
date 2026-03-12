@@ -39,6 +39,9 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
             data_referencia: format(new Date(), "yyyy-MM-dd"),
             entrada_hora: "",
             saida_hora: "",
+            entrada_loc: undefined,
+            saida_loc: undefined,
+            colaborador_cliente_id: "",
         },
     });
 
@@ -57,6 +60,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 data_referencia: format(new Date(), "yyyy-MM-dd"),
                 entrada_hora: "",
                 saida_hora: "",
+                colaborador_cliente_id: "",
             });
             setOpenCombobox(false);
         }
@@ -81,6 +85,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 entrada_km: null,
                 saida_hora: saida ? saida.toISOString() : null,
                 saida_km: null,
+                colaborador_cliente_id: values.colaborador_cliente_id ? parseInt(values.colaborador_cliente_id) : undefined
             });
 
             handleClose();
@@ -200,6 +205,41 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                         </FormItem>
                                     )}
                                 />
+
+                                {selectedCollaboratorId && hasTurnos && (
+                                    <FormField
+                                        control={form.control}
+                                        name="colaborador_cliente_id"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold">Turno/Vínculo <span className="text-red-500">*</span></FormLabel>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {selectedCollaborator.links.map((link: any) => (
+                                                        <div
+                                                            key={link.id}
+                                                            onClick={() => field.onChange(link.id.toString())}
+                                                            className={cn(
+                                                                "flex items-center justify-between p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                                field.value === link.id.toString()
+                                                                    ? "border-blue-500 bg-blue-50/50 shadow-sm"
+                                                                    : "border-gray-100 hover:border-gray-200 bg-white"
+                                                            )}
+                                                        >
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-bold text-gray-800">{link.cliente?.nome_fantasia}</span>
+                                                                <span className="text-xs text-gray-500">{link.hora_inicio.slice(0, 5)} - {link.hora_fim.slice(0, 5)}</span>
+                                                            </div>
+                                                            {field.value === link.id.toString() && (
+                                                                <Check className="w-5 h-5 text-blue-600" />
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
 
                                 <FormField
                                     control={form.control}

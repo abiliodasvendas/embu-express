@@ -128,6 +128,7 @@ export interface Ponto {
   saldo_minutos?: number;
   cliente_id?: number;
   empresa_id?: number;
+  colaborador_cliente_id?: number;
 
   // Novas colunas de localização
   entrada_lat?: number;

@@ -274,12 +274,14 @@ export default function RegistrarPonto() {
         setIsProcessing(true);
         let cliente_id = undefined;
         let empresa_id = undefined;
+        let colaborador_cliente_id = undefined;
 
         if (selectedLinkId && userProfile?.links) {
             const link = userProfile.links.find((l: any) => l.id.toString() === selectedLinkId);
             if (link) {
                 cliente_id = link.cliente_id;
                 empresa_id = link.empresa_id;
+                colaborador_cliente_id = link.id;
             }
         }
 
@@ -289,7 +291,8 @@ export default function RegistrarPonto() {
                 location: loc,
                 km,
                 cliente_id,
-                empresa_id
+                empresa_id,
+                colaborador_cliente_id
             });
             await refetch();
         } catch (error) {

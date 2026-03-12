@@ -12,6 +12,7 @@ export const manualTimeRecordSchema = z.object({
     .refine(val => !val || /^([01]\d|2[0-3]):([0-5]\d)$/.test(val), "Hora inválida (00:00 - 23:59)"),
   entrada_loc: z.any().optional(),
   saida_loc: z.any().optional(),
+  colaborador_cliente_id: z.string().optional(),
 });
 
 export type ManualTimeRecordFormValues = z.infer<typeof manualTimeRecordSchema>;

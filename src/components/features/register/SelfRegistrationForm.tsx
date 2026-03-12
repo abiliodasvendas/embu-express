@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { SelfRegistrationFormData } from "@/schemas/selfRegistrationSchema";
 import { Perfil } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
-import { aplicarMascaraPlaca, cnpjMask, cpfMask, dateMask, phoneMask, rgMask } from "@/utils/masks";
+import { aplicarMascaraPlaca, cnpjMask, cpfMask, dateMask, evpMask, phoneMask, rgMask } from "@/utils/masks";
 import { Briefcase, CreditCard, DollarSign, Eye, EyeOff, Mail, MapPin, User, UserPlus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
@@ -46,13 +46,16 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
         if (!roles || !perfilId) return;
         const selectedRole = roles.find(r => r.id.toString() === perfilId);
         if (selectedRole) {
-            const becomingMotoboy = selectedRole.nome === ROLES.MOTOBOY;
-            form.setValue("isMotoboy", becomingMotoboy);
+            const isProfissional = 
+                selectedRole.nome === ROLES.MOTOBOY ||
+                selectedRole.nome === ROLES.FISCAL;
 
-            if (becomingMotoboy) {
+            form.setValue("isMotoboy", isProfissional);
+
+            if (isProfissional) {
                 setExpandedItems(["dados-pessoais", "cnh", "moto", "dados-financeiros"]);
             } else {
-                // Limpar campos profissionais ao trocar para perfil que não seja Motoboy
+                // Limpar campos profissionais ao trocar para perfil que não seja profissional
                 form.setValue("cnh_registro", "");
                 form.setValue("cnh_vencimento", "");
                 form.setValue("cnh_categoria", "");
@@ -332,8 +335,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                         </AccordionItem>
 
                         {/* 2. SEÇÃO DE DADOS DA CNH */}
-                        {isMotoboy && (
-                            <AccordionItem value="cnh" className="border rounded-2xl bg-white shadow-sm px-4 overflow-hidden border-gray-100">
+                        <AccordionItem value="cnh" className="border rounded-2xl bg-white shadow-sm px-4 overflow-hidden border-gray-100">
                                 <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                                     <div className="flex items-center gap-2">
                                         <CreditCard className="w-4 h-4 text-blue-600" />
@@ -347,7 +349,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="cnh_registro"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH <span className="text-red-500">*</span></FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")} placeholder="Nº Registro" {...field} />
                                                     </FormControl>
@@ -360,7 +362,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="cnh_vencimento"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento <span className="text-red-500">*</span></FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                                             placeholder="DD/MM/AAAA"
@@ -378,7 +380,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="cnh_categoria"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria <span className="text-red-500">*</span></FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", form.formState.errors.cnh_categoria && "border-red-500 focus-visible:ring-red-200")} placeholder="Ex: A, AB" {...field} />
                                                     </FormControl>
@@ -389,11 +391,9 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
-                        )}
 
                         {/* 3. SEÇÃO DE DADOS DA MOTO */}
-                        {isMotoboy && (
-                            <AccordionItem value="moto" className="border rounded-2xl bg-white shadow-sm px-4 overflow-hidden border-gray-100">
+                        <AccordionItem value="moto" className="border rounded-2xl bg-white shadow-sm px-4 overflow-hidden border-gray-100">
                                 <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                                     <div className="flex items-center gap-2">
                                         <Briefcase className="w-4 h-4 text-blue-600" />
@@ -407,7 +407,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_modelo"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo da Moto <span className="text-red-500">*</span></FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo da Moto {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="Ex: CG 160" {...field} />
                                                     </FormControl>
@@ -420,7 +420,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_placa"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa <span className="text-red-500">*</span></FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", form.formState.errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}
@@ -441,7 +441,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_cor"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor <span className="text-red-500">*</span></FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} placeholder="Ex: Preta" {...field} />
                                                     </FormControl>
@@ -454,7 +454,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_ano"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano <span className="text-red-500">*</span></FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.moto_ano && "border-red-500 focus-visible:ring-red-200")}
                                                             placeholder="Ex: 2024"
@@ -470,7 +470,6 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
-                        )}
 
 
                         {/* 4. SEÇÃO DE DADOS FINANCEIROS */}
@@ -507,7 +506,14 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX <span className="text-red-500">*</span></FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                <Select 
+                                                    onValueChange={(val) => {
+                                                        field.onChange(val);
+                                                        form.setValue("chave_pix", "");
+                                                        form.clearErrors("chave_pix");
+                                                    }} 
+                                                    value={field.value}
+                                                >
                                                     <FormControl>
                                                         <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
                                                             <SelectValue placeholder="Selecione o tipo" />
@@ -528,15 +534,37 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                     <FormField
                                         control={form.control}
                                         name="chave_pix"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Chave Pix <span className="text-red-500">*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.chave_pix && "border-red-500 focus-visible:ring-red-200")} placeholder="CPF, Email, ou Aleatória" {...field} />
-                                                </FormControl>
-                                                <FormMessage className="ml-1" />
-                                            </FormItem>
-                                        )}
+                                        render={({ field }) => {
+                                            const tipoChavePix = form.watch("tipo_chave_pix");
+                                            return (
+                                                <FormItem>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Chave Pix <span className="text-red-500">*</span></FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            disabled={!tipoChavePix}
+                                                            className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.chave_pix && "border-red-500 focus-visible:ring-red-200", !tipoChavePix && "opacity-50 cursor-not-allowed")}
+                                                            placeholder={tipoChavePix ? "CPF, Email, ou Aleatória" : "Selecione o tipo primeiro"}
+                                                            {...field}
+                                                            onChange={(e) => {
+                                                                let val = e.target.value;
+                                                                if (tipoChavePix === 'CPF') val = cpfMask(val);
+                                                                else if (tipoChavePix === 'TELEFONE') val = phoneMask(val);
+                                                                else if (tipoChavePix === 'CNPJ') val = cnpjMask(val);
+                                                                else if (tipoChavePix === 'ALEATORIA') val = evpMask(val);
+                                                                field.onChange(val);
+                                                            }}
+                                                            maxLength={
+                                                                tipoChavePix === "CPF" ? 14 : 
+                                                                tipoChavePix === "CNPJ" ? 18 : 
+                                                                tipoChavePix === "TELEFONE" ? 15 :
+                                                                tipoChavePix === "ALEATORIA" ? 36 : 100
+                                                            }
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage className="ml-1" />
+                                                </FormItem>
+                                            );
+                                        }}
                                     />
                                 </div>
                             </AccordionContent>

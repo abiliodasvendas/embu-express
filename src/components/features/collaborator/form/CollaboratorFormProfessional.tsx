@@ -14,8 +14,6 @@ export function CollaboratorFormCNH() {
     const { formState: { errors }, watch, control } = useFormContext();
     const isMotoboy = watch("isMotoboy");
 
-    if (!isMotoboy) return null;
-
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField
@@ -23,7 +21,7 @@ export function CollaboratorFormCNH() {
                 name="cnh_registro"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                             <Input
                                 className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")}
@@ -39,7 +37,7 @@ export function CollaboratorFormCNH() {
                 name="cnh_vencimento"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento CNH <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento CNH {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                             <Input
                                 placeholder="DD/MM/AAAA"
@@ -58,7 +56,7 @@ export function CollaboratorFormCNH() {
                 name="cnh_categoria"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                         <FormControl>
                             <Input
                                 placeholder="A / AB"
@@ -78,13 +76,12 @@ export function CollaboratorFormMoto() {
     const { formState: { errors }, watch, control } = useFormContext();
     const isMotoboy = watch("isMotoboy");
 
-    if (!isMotoboy) return null;
 
     return (
         <div className="grid grid-cols-2 gap-4">
             <FormField name="moto_modelo" control={control} render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                     <FormControl>
                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_modelo && "border-red-500 focus-visible:ring-red-200")} {...field} />
                     </FormControl>
@@ -93,7 +90,7 @@ export function CollaboratorFormMoto() {
             )} />
             <FormField name="moto_cor" control={control} render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                     <FormControl>
                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} {...field} />
                     </FormControl>
@@ -102,7 +99,7 @@ export function CollaboratorFormMoto() {
             )} />
             <FormField name="moto_ano" control={control} render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                     <FormControl>
                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_ano && "border-red-500 focus-visible:ring-red-200")} {...field} maxLength={4} onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 4))} />
                     </FormControl>
@@ -111,7 +108,7 @@ export function CollaboratorFormMoto() {
             )} />
             <FormField name="moto_placa" control={control} render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa {isMotoboy && <span className="text-red-500">*</span>}</FormLabel>
                     <FormControl>
                         <Input
                             className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}

@@ -2,6 +2,7 @@ import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { messages } from "@/constants/messages";
 import { z } from "zod";
 import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
+import { pixKeyRefinement } from "./pixSchema";
 
 // 1. Schema Base: Campos comuns a todos os perfis
 // Garante que o perfil_id tenha a mensagem "Campo obrigatório" padrão
@@ -25,33 +26,47 @@ const commonSchema = z.object({
   chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
 });
 
-// 2. Schema Profissional: Condicional baseada no perfil
-const professionalSchema = z.union([
-  // Motoboy: Campos obrigatórios
-  z.object({
-    isMotoboy: z.literal(true),
-    cnh_registro: z.string().min(1, messages.validacao.campoObrigatorio),
-    cnh_vencimento: dateSchema(true, true),
-    cnh_categoria: z.string().min(1, messages.validacao.campoObrigatorio),
-    moto_modelo: z.string().min(1, messages.validacao.campoObrigatorio),
-    moto_cor: z.string().min(1, messages.validacao.campoObrigatorio),
-    moto_ano: z.string().min(1, messages.validacao.campoObrigatorio),
-    moto_placa: z.string().min(1, messages.validacao.campoObrigatorio).pipe(placaSchema),
-    cnpj: z.string().optional().refine(v => !v || v.replace(/\D/g, "").length >= 14, "CNPJ inválido"),
-  }),
-  // Outros perfis: Campos opcionais
-  z.object({
-    isMotoboy: z.literal(false),
-    cnh_registro: z.string().optional(),
-    cnh_vencimento: z.string().optional(),
-    cnh_categoria: z.string().optional(),
-    moto_modelo: z.string().optional(),
-    moto_cor: z.string().optional(),
-    moto_ano: z.string().optional(),
-    moto_placa: z.string().optional(),
-    cnpj: z.string().optional(),
-  })
-]);
+// 2. Schema Profissional: Condicional baseada no flag isMotoboy (que indica se é perfil profissional como Motoboy ou Fiscal)
+const professionalSchema = z.object({
+  isMotoboy: z.boolean().optional(),
+  cnh_registro: z.string().optional(),
+  cnh_vencimento: z.string().optional(),
+  cnh_categoria: z.string().optional(),
+  moto_modelo: z.string().optional(),
+  moto_cor: z.string().optional(),
+  moto_ano: z.string().optional(),
+  moto_placa: z.string().optional(),
+  cnpj: z.string().optional(),
+  tipo_chave_pix: z.string().optional(),
+  chave_pix: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.isMotoboy) {
+    if (!data.cnh_registro) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_registro"] });
+    }
+    if (!data.cnh_vencimento) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_vencimento"] });
+    }
+    if (!data.cnh_categoria) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_categoria"] });
+    }
+    if (!data.moto_modelo) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_modelo"] });
+    }
+    if (!data.moto_cor) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_cor"] });
+    }
+    if (!data.moto_ano) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_ano"] });
+    }
+    if (!data.moto_placa) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_placa"] });
+    }
+  }
+
+  // Validação da Chave PIX centralizada
+  pixKeyRefinement(data, ctx);
+});
 
 // 3. Schema Final: Interseção Híbrida
 // Isso garante validação paralela e mensagens de erro amigáveis

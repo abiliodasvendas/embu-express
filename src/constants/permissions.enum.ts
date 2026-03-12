@@ -53,6 +53,7 @@ export const ROLES = {
     SUPER_ADMIN: 'super_admin',
     ADMIN: 'admin',
     MOTOBOY: 'motoboy',
+    FISCAL: 'fiscal',
     CLIENTE: 'cliente',
 } as const;
 
@@ -60,7 +61,8 @@ export const PROTECTED_ROLES_NAMES = [
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.CLIENTE,
-    ROLES.MOTOBOY
+    ROLES.MOTOBOY,
+    ROLES.FISCAL
 ];
 
 type ObjectValues<T> = T[keyof T];

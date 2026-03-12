@@ -1,15 +1,21 @@
 export const phoneMask = (value: string): string => {
-  if (!value) return value;
+  if (!value) return "";
 
-  const numericValue = value.replace(/\D/g, '');
+  const numericValue = value.replace(/\D/g, "").slice(0, 11);
 
-  if (numericValue.length <= 11) {
-    return numericValue
-      .replace(/(\d{2})(\d)/, '($1) $2')
-      .replace(/(\d{5})(\d{1,4})/, '$1-$2');
+  if (numericValue.length <= 2) {
+    return numericValue;
   }
 
-  return value;
+  if (numericValue.length <= 6) {
+    return numericValue.replace(/(\d{2})(\d{1,4})/, "($1) $2");
+  }
+
+  if (numericValue.length <= 10) {
+    return numericValue.replace(/(\d{2})(\d{4})(\d{1,4})/, "($1) $2-$3");
+  }
+
+  return numericValue.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
 };
 
 export const moneyMask = (value: string): string => {
@@ -198,4 +204,26 @@ export const timeMask = (value: string): string => {
 
   // Adiciona os dois pontos após os primeiros dois dígitos
   return numericValue.replace(/(\d{2})(\d)/, "$1:$2");
+};
+export const evpMask = (value: string): string => {
+  if (!value) return value;
+
+  // Remove non-alphanumeric
+  const cleanValue = value.replace(/[^a-zA-Z0-9]/g, "");
+
+  // Limit to 32 chars
+  const limitedValue = cleanValue.slice(0, 32);
+
+  // 8-4-4-4-12 format
+  return limitedValue
+    .replace(/^([a-zA-Z0-9]{8})([a-zA-Z0-9])/, "$1-$2")
+    .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, "$1-$2-$3")
+    .replace(
+      /^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/,
+      "$1-$2-$3-$4"
+    )
+    .replace(
+      /^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/,
+      "$1-$2-$3-$4-$5"
+    );
 };

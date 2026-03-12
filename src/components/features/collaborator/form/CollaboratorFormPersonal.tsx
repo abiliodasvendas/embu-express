@@ -50,7 +50,7 @@ export function CollaboratorFormPersonal({
         )}
       />
       {/* Basic Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <FormField
           control={control}
           name="nome_completo"
@@ -80,9 +80,37 @@ export function CollaboratorFormPersonal({
 
         <FormField
           control={control}
+          name="status"
+          render={({ field }) => (
+            <FormItem className="md:col-span-1">
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Status <span className="text-red-500">*</span></FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger
+                    className={cn(
+                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                      errors.status && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2",
+                    )}
+                  >
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativo</SelectItem>
+                  <SelectItem value={STATUS_CADASTRO.PENDENTE}>Pendente</SelectItem>
+                  <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
           name="nome_mae"
           render={({ field }) => (
-            <FormItem className="md:col-span-2">
+            <FormItem className="md:col-span-3">
               <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 Nome da Mãe
               </FormLabel>
@@ -138,7 +166,7 @@ export function CollaboratorFormPersonal({
           control={control}
           name="email"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="md:col-span-2">
               <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 E-mail <span className="text-red-500">*</span>
               </FormLabel>
@@ -161,7 +189,7 @@ export function CollaboratorFormPersonal({
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-3">
           <FormField
             control={control}
             name="cpf"
@@ -216,7 +244,7 @@ export function CollaboratorFormPersonal({
           control={control}
           name="endereco_completo"
           render={({ field }) => (
-            <FormItem className="md:col-span-2">
+            <FormItem className="md:col-span-3">
               <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 Endereço Completo
               </FormLabel>
@@ -239,7 +267,7 @@ export function CollaboratorFormPersonal({
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-3">
           <FormField
             control={control}
             name="telefone"
@@ -290,36 +318,9 @@ export function CollaboratorFormPersonal({
           />
         </div>
 
-        <FormField
-          control={control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Status <span className="text-red-500">*</span></FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger
-                    className={cn(
-                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.status && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2",
-                    )}
-                  >
-                    <SelectValue placeholder="Selecione o status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativo</SelectItem>
-                  <SelectItem value={STATUS_CADASTRO.PENDENTE}>Pendente</SelectItem>
-                  <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         {(isNewCollaborator || watch("senha_padrao")) && (
-          <div className="md:col-span-2 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-center gap-4">
+          <div className="md:col-span-3 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-center gap-4">
             <div className="bg-blue-100 p-2 rounded-xl">
               <Eye className="w-5 h-5 text-blue-600" />
             </div>

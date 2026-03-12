@@ -12,6 +12,8 @@ import { AlertCircle, Filter, User, X, Calendar as CalendarIcon, Plus, Settings 
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { PERMISSIONS } from "@/constants/permissions.enum";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,6 +31,7 @@ export function Occurrences() {
         openOccurrenceFormDialog,
         openOccurrenceTypesDialog
     } = useLayout();
+    const { can } = usePermissions();
 
     // States for filtering
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -129,23 +132,27 @@ export function Occurrences() {
                                 <Badge variant="outline" className="rounded-full bg-white border-gray-100 text-gray-500 font-medium font-bold">
                                     {occurrences.length} {occurrences.length === 1 ? 'registro' : 'registros'}
                                 </Badge>
-                                <Button
-                                    onClick={() => openOccurrenceTypesDialog()}
-                                    variant="outline"
-                                    className="rounded-xl h-9 px-4 gap-2 shadow-sm font-semibold border-gray-200 bg-white"
-                                    size="sm"
-                                >
-                                    <Settings className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Gerenciar Tipos</span>
-                                </Button>
-                                <Button
-                                    onClick={() => openOccurrenceFormDialog({ onSuccess: refetch })}
-                                    className="rounded-xl h-9 px-4 gap-2 shadow-sm font-bold"
-                                    size="sm"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Nova Ocorrência</span>
-                                </Button>
+                                {can(PERMISSIONS.OCORRENCIAS.TIPOS) && (
+                                    <Button
+                                        onClick={() => openOccurrenceTypesDialog()}
+                                        variant="outline"
+                                        className="rounded-xl h-9 px-4 gap-2 shadow-sm font-semibold border-gray-200 bg-white"
+                                        size="sm"
+                                    >
+                                        <Settings className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Gerenciar Tipos</span>
+                                    </Button>
+                                )}
+                                {can(PERMISSIONS.OCORRENCIAS.CRIAR) && (
+                                    <Button
+                                        onClick={() => openOccurrenceFormDialog({ onSuccess: refetch })}
+                                        className="rounded-xl h-9 px-4 gap-2 shadow-sm font-bold"
+                                        size="sm"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Nova Ocorrência</span>
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>

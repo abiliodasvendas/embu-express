@@ -31,6 +31,7 @@ export const PERMISSIONS = {
         ADMIN_CRIAR: 'ponto:admin_criar', // Painel: Inserir ponto manualmente
         ADMIN_EDITAR: 'ponto:admin:editar', // Painel: Corrigir linha
         ADMIN_DELETAR: 'ponto:admin:deletar', // Painel: Excluir linha
+        VER_MEU: 'ponto:ver_meu', // App: Ver o próprio espelho de ponto
     },
     CONFIGURACAO: {
         VER: "configuracoes:ver",
@@ -41,11 +42,13 @@ export const PERMISSIONS = {
         CRIAR: "ocorrencias:criar",
         EDITAR: "ocorrencias:editar",
         DELETAR: "ocorrencias:deletar",
+        TIPOS: "ocorrencias:tipos",
     } as const,
     FINANCEIRO: {
         EXTRATO: "financeiro:extrato",
         FECHAR: "financeiro:fechar",
         PAGAR: "financeiro:pagar",
+        VER_MEU: 'financeiro:ver_meu', // App: Ver o próprio financeiro
     } as const,
 } as const;
 

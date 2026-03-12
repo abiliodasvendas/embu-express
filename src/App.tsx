@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ROUTES } from "@/constants/routes";
+import { PERMISSIONS } from "./constants/permissions.enum";
+import { ROUTES } from "./constants/routes";
 import AppLayout from "@/layouts/AppLayout";
 import { apiClient } from "@/services/api/client";
 import { Capacitor } from "@capacitor/core";
@@ -200,26 +201,57 @@ const App = () => {
                 >
                   <Route index element={<RedirectByRole />} />
 
-                  {/* Rotas Operacionais (Motoboy) */}
+                  {/* Rotas Operacionais (Motoboy/Fiscal) */}
                   <Route element={<RequirePermission requireOperational={true} />}>
                     <Route path={ROUTES.PRIVATE.REGISTRAR_PONTO.replace("/", "")} element={<RegistrarPonto />} />
                   </Route>
 
-                  {/* Rotas Administrativas (Admin/SuperAdmin) */}
-                  <Route element={<RequirePermission requireAdminPanel={true} />}>
+                  {/* Rotas Administrativas Puras */}
+                  <Route element={<RequirePermission permissions={[PERMISSIONS.PONTO.ADMIN_VER]} />}>
                     <Route path={ROUTES.PRIVATE.INICIO.replace("/", "")} element={<Inicio />} />
                     <Route path={ROUTES.PRIVATE.CONTROLE_PONTO.replace("/", "")} element={<TimeTracking />} />
+                  </Route>
+
+                  {/* Rotas Pessoais/Administrativas (Híbridas) */}
+                  <Route element={<RequirePermission 
+                    permissions={[PERMISSIONS.PONTO.ADMIN_VER, PERMISSIONS.PONTO.VER_MEU]} 
+                    useOrCondition={true} 
+                  />}>
+                    <Route path={ROUTES.PRIVATE.ESPELHO_PONTO.replace("/", "")} element={<TimeMirror />} />
+                  </Route>
+
+                  <Route element={<RequirePermission permissions={[PERMISSIONS.USUARIOS.VER]} />}>
                     <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />
                     <Route path={ROUTES.PRIVATE.COLABORADOR_DETAILS.replace(/^\//, "")} element={<CollaboratorDetails />} />
+                  </Route>
+
+                  <Route element={<RequirePermission permissions={[PERMISSIONS.CLIENTES.VER]} />}>
                     <Route path={ROUTES.PRIVATE.CLIENTES.replace("/", "")} element={<Clients />} />
                     <Route path={ROUTES.PRIVATE.CLIENTE_DETAILS.replace(/^\//, "")} element={<ClientDetails />} />
+                  </Route>
+
+                  <Route element={<RequirePermission permissions={[PERMISSIONS.EMPRESAS.VER]} />}>
                     <Route path={ROUTES.PRIVATE.EMPRESAS.replace("/", "")} element={<Empresas />} />
+                  </Route>
+
+                  <Route element={<RequirePermission permissions={[PERMISSIONS.PERFIS.VER]} />}>
                     <Route path={ROUTES.PRIVATE.PERFIS.replace("/", "")} element={<Perfis />} />
+                  </Route>
+
+                  <Route element={<RequirePermission permissions={[PERMISSIONS.OCORRENCIAS.VER]} />}>
+                    <Route path={ROUTES.PRIVATE.OCORRENCIAS.replace("/", "")} element={<Ocorrencias />} />
+                  </Route>
+
+                  <Route element={<RequirePermission 
+                    permissions={[PERMISSIONS.FINANCEIRO.EXTRATO, PERMISSIONS.FINANCEIRO.VER_MEU]} 
+                    useOrCondition={true}
+                  />}>
+                    <Route path={ROUTES.PRIVATE.RELATORIO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
+                  </Route>
+
+                  <Route element={<RequirePermission permissions={[PERMISSIONS.CONFIGURACAO.VER]} />}>
                     <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />
                     <Route path={ROUTES.PRIVATE.FERIADOS.replace("/", "")} element={<Feriados />} />
-                    <Route path={ROUTES.PRIVATE.OCORRENCIAS.replace("/", "")} element={<Ocorrencias />} />
-                    <Route path={ROUTES.PRIVATE.ESPELHO_PONTO.replace("/", "")} element={<TimeMirror />} />
-                    <Route path={ROUTES.PRIVATE.RELATORIO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
                   </Route>
                 </Route>
 
@@ -301,7 +333,7 @@ const App = () => {
 
 // Componente auxiliar para redirecionamento inteligente
 const RedirectByRole = () => {
-  const { isAdmin, isSuperAdmin, isMotoboyOrFiscal, isLoading } = usePermissions();
+  const { canViewAdminPanel, canOperate, isLoading } = usePermissions();
 
   if (isLoading) {
     return (
@@ -311,15 +343,18 @@ const RedirectByRole = () => {
     );
   }
 
-  if (isAdmin || isSuperAdmin) {
+  // Prioridade 1: Painel Admin (se tiver permissão de ver início ou qualquer admin)
+  if (canViewAdminPanel) {
     return <Navigate to={ROUTES.PRIVATE.INICIO} replace />;
   }
-  if (isMotoboyOrFiscal) {
+
+  // Prioridade 2: Registrar Ponto (se for um colaborador operacional)
+  if (canOperate) {
     return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
   }
 
-  // Default fallback
-  return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
+  // Fallback
+  return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
 };
 
 export default App;

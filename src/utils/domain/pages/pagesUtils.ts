@@ -31,13 +31,13 @@ export const pagesItems: PageItem[] = [
         title: "Espelho de Ponto",
         href: ROUTES.PRIVATE.ESPELHO_PONTO,
         icon: FileText,
-        permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
+        permissionKey: [PERMISSIONS.PONTO.ADMIN_VER, PERMISSIONS.PONTO.VER_MEU] as any,
     },
     {
         title: "Relatório Financeiro",
         href: ROUTES.PRIVATE.RELATORIO_FINANCEIRO,
         icon: Banknote,
-        permissionKey: PERMISSIONS.FINANCEIRO.EXTRATO,
+        permissionKey: [PERMISSIONS.FINANCEIRO.EXTRATO, PERMISSIONS.FINANCEIRO.VER_MEU] as any,
     },
     {
         title: "Colaboradores",

@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { messages } from "@/constants/messages";
-import { useDeleteFeriado, useFeriados, useLayout } from "@/hooks";
+import { PERMISSIONS } from "@/constants/permissions.enum";
+import { useDeleteFeriado, useFeriados, useLayout, usePermissions } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Feriado } from "@/types/database";
 import { anos } from "@/utils/formatters/constants";
@@ -24,17 +25,20 @@ const FeriadoMobileItem = ({
     index,
     onEdit,
     onDelete,
+    canEdit,
 }: {
     feriado: Feriado;
     index: number;
     onEdit: (f: Feriado) => void;
     onDelete: (id: number, desc: string) => void;
+    canEdit: boolean;
 }) => {
     const actions: ActionItem[] = [
         {
             label: "Editar",
             icon: <Edit2 className="w-4 h-4" />,
             onClick: () => onEdit(feriado),
+            hidden: !canEdit,
         },
         {
             label: "Excluir",
@@ -42,6 +46,7 @@ const FeriadoMobileItem = ({
             onClick: () => onDelete(feriado.id, feriado.descricao),
             isDestructive: true,
             variant: "destructive",
+            hidden: !canEdit,
         },
     ];
 
@@ -70,16 +75,19 @@ const FeriadoTableRow = ({
     feriado,
     onEdit,
     onDelete,
+    canEdit,
 }: {
     feriado: Feriado;
     onEdit: (f: Feriado) => void;
     onDelete: (id: number, desc: string) => void;
+    canEdit: boolean;
 }) => {
     const actions: ActionItem[] = [
         {
             label: "Editar",
             icon: <Edit2 className="w-4 h-4" />,
             onClick: () => onEdit(feriado),
+            hidden: !canEdit,
         },
         {
             label: "Excluir",
@@ -87,6 +95,7 @@ const FeriadoTableRow = ({
             onClick: () => onDelete(feriado.id, feriado.descricao),
             isDestructive: true,
             variant: "destructive",
+            hidden: !canEdit,
         },
     ];
 
@@ -112,6 +121,9 @@ const FeriadoTableRow = ({
 
 export default function Feriados() {
     const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openFeriadoFormDialog } = useLayout();
+    const { can } = usePermissions();
+    const canEdit = can(PERMISSIONS.CONFIGURACAO.EDITAR);
+
     const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -197,13 +209,15 @@ export default function Feriados() {
                                         </SelectContent>
                                     </Select>
 
-                                    <Button
-                                        onClick={handleAdd}
-                                        className="bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap flex-1 md:flex-initial"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        <span>Novo Feriado</span>
-                                    </Button>
+                                    {canEdit && (
+                                        <Button
+                                            onClick={handleAdd}
+                                            className="bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap flex-1 md:flex-initial"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            <span>Novo Feriado</span>
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
 
@@ -220,6 +234,7 @@ export default function Feriados() {
                                             index={index}
                                             onEdit={handleEdit}
                                             onDelete={handleDelete}
+                                            canEdit={canEdit}
                                         />
                                     )}
                                 >
@@ -245,6 +260,7 @@ export default function Feriados() {
                                                         feriado={feriado}
                                                         onEdit={handleEdit}
                                                         onDelete={handleDelete}
+                                                        canEdit={canEdit}
                                                     />
                                                 ))}
                                             </tbody>

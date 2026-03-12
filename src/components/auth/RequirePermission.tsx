@@ -8,9 +8,10 @@ interface RequirePermissionProps {
     permissions?: PermissionKey[];
     requireAdminPanel?: boolean;
     requireOperational?: boolean;
+    useOrCondition?: boolean;
 }
 
-export function RequirePermission({ permissions, requireAdminPanel, requireOperational }: RequirePermissionProps) {
+export function RequirePermission({ permissions, requireAdminPanel, requireOperational, useOrCondition = false }: RequirePermissionProps) {
     const { roleName, isLoading, canViewAdminPanel, canOperate, can } = usePermissions();
 
     if (isLoading) {
@@ -34,8 +35,13 @@ export function RequirePermission({ permissions, requireAdminPanel, requireOpera
     if (requireOperational && !canOperate) hasAccess = false;
 
     if (permissions && permissions.length > 0) {
-        const hasAll = permissions.every(p => can(p));
-        if (!hasAll) hasAccess = false;
+        if (useOrCondition) {
+            const hasAny = permissions.some(p => can(p));
+            if (!hasAny) hasAccess = false;
+        } else {
+            const hasAll = permissions.every(p => can(p));
+            if (!hasAll) hasAccess = false;
+        }
     }
 
     if (!hasAccess) {

@@ -14,7 +14,13 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
 
   const userItems = pagesItems.filter(item => {
     if (isSuperAdmin) return true;
-    return item.permissionKey ? can(item.permissionKey) : true;
+    if (!item.permissionKey) return true;
+    
+    if (Array.isArray(item.permissionKey)) {
+      return item.permissionKey.some(pk => can(pk as any));
+    }
+    
+    return can(item.permissionKey as any);
   });
 
   return (

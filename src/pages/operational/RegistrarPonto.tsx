@@ -464,7 +464,7 @@ export default function RegistrarPonto() {
                                 <AlertDescription className="text-red-700 font-medium leading-relaxed">
                                     {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível ou fraco demais.") : "Aguardando sinal de GPS para liberar o registro seguramente."}
 
-                                    {permissionDenied ? (
+                                    {permissionDenied && (
                                         isWeb ? (
                                             <p className="mt-4 text-sm font-semibold text-red-800 text-balance bg-red-50 p-4 rounded-2xl border border-red-100">
                                                 Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1 text-red-900 font-black">Cadeado</strong> ou <strong className="mx-1 text-red-900 font-black">Ajustes</strong> ao lado da barra de endereço e reative a localização.
@@ -480,14 +480,14 @@ export default function RegistrarPonto() {
                                                 <Settings className="w-5 h-5 mr-3" /> Abrir Configurações
                                             </button>
                                         )
-                                    ) : (
-                                        <button
-                                            onClick={() => requestLocation()}
-                                            className="mt-4 bg-white border border-red-200 px-6 py-3 rounded-2xl text-red-900 font-black hover:bg-red-50 transition-all flex items-center w-full justify-center shadow-sm"
-                                        >
-                                            <RefreshCw className="w-4 h-4 mr-2" /> Tentar Novamente
-                                        </button>
                                     )}
+                                    
+                                    <button
+                                        onClick={() => requestLocation()}
+                                        className="mt-4 bg-white border border-red-200 px-6 py-3 rounded-2xl text-red-900 font-black hover:bg-red-50 transition-all flex items-center w-full justify-center shadow-sm"
+                                    >
+                                        <RefreshCw className="w-4 h-4 mr-2" /> Tentar Novamente
+                                    </button>
                                 </AlertDescription>
                             </Alert>
                         </motion.div>

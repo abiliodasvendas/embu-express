@@ -49,7 +49,7 @@ export function OccurrenceTypesDialog({
     open,
     onOpenChange,
 }: OccurrenceTypesDialogProps) {
-    const { data: tipos = [], isLoading, refetch } = useTiposOcorrencia();
+    const { data: tipos = [], isLoading, refetch } = useTiposOcorrencia({ enabled: open });
     const [editingTipo, setEditingTipo] = useState<TipoOcorrencia | null>(null);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const formContainerRef = useRef<HTMLDivElement>(null);

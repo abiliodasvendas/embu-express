@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Ocorrencia } from "@/types/database";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, ArrowDownCircle, ArrowUpCircle, Calendar, Clock, User, X } from "lucide-react";
+import { AlertCircle, ArrowDownCircle, ArrowUpCircle, Briefcase, Calendar, Clock, User, X } from "lucide-react";
 
 interface OccurrenceDetailsDialogProps {
     occurrence: Ocorrencia | null;
@@ -28,6 +28,11 @@ export function OccurrenceDetailsDialog({
     if (!occurrence) return null;
 
     const isNegative = occurrence.tipo_lancamento === "SAIDA";
+
+    const formatTime = (time?: string) => {
+        if (!time) return "";
+        return time.slice(0, 5); // From HH:mm:ss to HH:mm
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -69,6 +74,30 @@ export function OccurrenceDetailsDialog({
                                 <p className="text-sm font-bold text-gray-700 mt-0.5">
                                     {format(new Date(occurrence.data_ocorrencia), "PPPP", { locale: ptBR })}
                                 </p>
+                            </div>
+                        </div>
+
+                        {/* Vínculo (Turno) */}
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                            <div className="bg-gray-50 p-2.5 rounded-xl">
+                                <Briefcase className="w-5 h-5 text-gray-400" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Vínculo (Turno)</p>
+                                {occurrence.colaborador_cliente_id ? (
+                                    <p className="text-sm font-bold text-gray-700 mt-0.5">
+                                        {occurrence.vinculo?.cliente?.nome_fantasia || 'Turno Vinculado'} 
+                                        {occurrence.vinculo && (
+                                            <span className="text-xs font-medium text-gray-500 ml-1">
+                                                ({formatTime(occurrence.vinculo.hora_inicio)} - {formatTime(occurrence.vinculo.hora_fim)})
+                                            </span>
+                                        )}
+                                    </p>
+                                ) : (
+                                    <p className="text-sm font-bold text-primary italic mt-0.5">
+                                        Geral (Avulsa)
+                                    </p>
+                                )}
                             </div>
                         </div>
 

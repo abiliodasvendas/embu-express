@@ -10,6 +10,10 @@ const baseSchema = {
         .min(1, messages.validacao.campoObrigatorio),
     observacao: z.string({ required_error: messages.validacao.campoObrigatorio })
         .min(1, messages.validacao.campoObrigatorio),
+    colaborador_cliente_id: z.string({
+        required_error: messages.validacao.campoObrigatorio,
+        invalid_type_error: messages.validacao.campoObrigatorio
+    }).nullable(),
 };
 
 export const occurrenceSchema = z.discriminatedUnion("impacto_financeiro", [
@@ -22,15 +26,12 @@ export const occurrenceSchema = z.discriminatedUnion("impacto_financeiro", [
             required_error: messages.validacao.campoObrigatorio,
             invalid_type_error: messages.validacao.campoObrigatorio 
         }),
-        colaborador_cliente_id: z.string({ required_error: messages.validacao.campoObrigatorio })
-            .min(1, messages.validacao.campoObrigatorio),
     }),
     z.object({
         ...baseSchema,
         impacto_financeiro: z.literal(false),
         valor: z.coerce.number().optional().default(0),
         tipo_lancamento: z.enum(['ENTRADA', 'SAIDA']).optional().nullable(),
-        colaborador_cliente_id: z.string().optional().nullable(),
     })
 ]);
 

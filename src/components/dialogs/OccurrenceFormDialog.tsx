@@ -57,10 +57,11 @@ export function OccurrenceFormDialog({
         resolver: zodResolver(occurrenceSchema),
         defaultValues: {
             colaborador_id: collaboratorId || "",
-            data_ocorrencia: format(new Date(), "yyyy-MM-dd"),
+            data_ocorrencia: "",
             valor: 0,
             impacto_financeiro: false,
             tipo_lancamento: undefined as any,
+            colaborador_cliente_id: undefined as any,
             observacao: "",
         },
     });
@@ -237,6 +238,50 @@ export function OccurrenceFormDialog({
 
                                 <FormField
                                     control={form.control}
+                                    name="colaborador_cliente_id"
+                                    render={({ field }) => {
+                                        const links = selectedDetailedCollaborator?.links || [];
+
+                                        return (
+                                            <FormItem className="space-y-1.5 w-full">
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                                                    Vínculo (Turno) <span className="text-red-500">*</span>
+                                                </FormLabel>
+                                                <Select 
+                                                    onValueChange={(val) => {
+                                                        field.onChange(val === "none" ? null : val);
+                                                    }} 
+                                                    value={field.value === null ? "none" : (field.value || "")}
+                                                >
+                                                    <FormControl>
+                                                        <SelectTrigger
+                                                            className={cn(
+                                                                "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
+                                                                form.formState.errors.colaborador_cliente_id && "border-red-500 focus:ring-red-200"
+                                                            )}
+                                                        >
+                                                            <SelectValue placeholder="Selecione o vínculo ou 'Geral'" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent className="rounded-xl shadow-xl">
+                                                        <SelectItem value="none" className="cursor-pointer font-semibold text-primary italic">
+                                                            Geral (Avulsa)
+                                                        </SelectItem>
+                                                        {links.map((link: any) => (
+                                                            <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
+                                                                {link.cliente?.nome_fantasia} ({link.hora_inicio} - {link.hora_fim})
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage className="text-[10px]" />
+                                            </FormItem>
+                                        );
+                                    }}
+                                />
+
+                                <FormField
+                                    control={form.control}
                                     name="observacao"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
@@ -283,60 +328,6 @@ export function OccurrenceFormDialog({
 
                                 {form.watch("impacto_financeiro") && (
                                     <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        {/* Vínculo (Turno) selection */}
-                                        <FormField
-                                            control={form.control}
-                                            name="colaborador_cliente_id"
-                                            render={({ field }) => {
-                                                const links = selectedDetailedCollaborator?.links || [];
-
-                                                return (
-                                                    <FormItem className="space-y-1.5">
-                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                            Vínculo (Turno) <span className="text-red-500">*</span>
-                                                        </FormLabel>
-                                                        <Select 
-                                                            onValueChange={(val) => {
-                                                                field.onChange(val);
-                                                                // Se o vínculo mudar, podemos sugerir o tipo de lançamento se houver padrão? 
-                                                                // Por enquanto apenas seta o valor.
-                                                            }} 
-                                                            value={field.value || ""}
-                                                        >
-                                                            <FormControl>
-                                                                <SelectTrigger
-                                                                    className={cn(
-                                                                        "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                                        form.formState.errors.colaborador_cliente_id && "border-red-500 focus:ring-red-200"
-                                                                    )}
-                                                                >
-                                                                    <SelectValue placeholder="Selecione o turno vinculado" />
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent className="rounded-xl shadow-xl">
-                                                                {links.map((link: any) => (
-                                                                    <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
-                                                                        {link.cliente?.nome_fantasia} ({link.hora_inicio} - {link.hora_fim})
-                                                                    </SelectItem>
-                                                                ))}
-                                                                {links.length === 0 && (
-                                                                    <SelectItem value="none" disabled>
-                                                                        Nenhum turno vinculado encontrado
-                                                                    </SelectItem>
-                                                                )}
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage className="text-[10px]" />
-                                                        {links.length === 0 && (
-                                                            <p className="text-[10px] text-amber-600 font-medium px-1">
-                                                                Aviso: Este colaborador não possui turnos vinculados. Não será possível gerar impacto financeiro.
-                                                            </p>
-                                                        )}
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <FormField
                                                 control={form.control}

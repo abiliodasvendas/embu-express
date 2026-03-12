@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToleranceTimeline } from "@/components/admin/ToleranceTimeline";
 
 interface ConfigItem {
     chave: string;
@@ -47,6 +48,8 @@ const CONFIG_METADATA: Record<string, { label: string; icon: any; unit?: string;
 };
 
 export default function Configuracoes() {
+    const [draftValues, setDraftValues] = useState<Record<string, string>>({});
+
     const { data: configs, isLoading, refetch } = useQuery<ConfigItem[]>({
         queryKey: ["configuracoes"],
         queryFn: async () => {
@@ -102,11 +105,14 @@ export default function Configuracoes() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ToleranceTimeline draftValues={draftValues} />
+                
                 {configs?.map((config) => (
                     <ConfigCard
                         key={config.chave}
                         config={config}
                         onSave={(valor) => mutation.mutate({ chave: config.chave, valor })}
+                        onChangeDraft={(valor) => setDraftValues(prev => ({ ...prev, [config.chave]: valor }))}
                         isSaving={mutation.isPending && mutation.variables?.chave === config.chave}
                     />
                 ))}
@@ -115,9 +121,10 @@ export default function Configuracoes() {
     );
 }
 
-function ConfigCard({ config, onSave, isSaving }: {
+function ConfigCard({ config, onSave, onChangeDraft, isSaving }: {
     config: ConfigItem;
     onSave: (valor: string) => void;
+    onChangeDraft: (valor: string) => void;
     isSaving: boolean;
 }) {
     const [value, setValue] = useState(config.valor);
@@ -126,6 +133,7 @@ function ConfigCard({ config, onSave, isSaving }: {
 
     useEffect(() => {
         setValue(config.valor);
+        onChangeDraft(config.valor);
     }, [config.valor]);
 
     const hasChanged = value !== config.valor;
@@ -157,7 +165,10 @@ function ConfigCard({ config, onSave, isSaving }: {
                         <Input
                             type="number"
                             value={value}
-                            onChange={(e) => setValue(e.target.value)}
+                            onChange={(e) => {
+                                setValue(e.target.value);
+                                onChangeDraft(e.target.value);
+                            }}
                             className="bg-gray-50 border-gray-200 focus:bg-white transition-colors rounded-xl pr-12 h-12 text-lg font-medium"
                         />
                         {metadata.unit && (

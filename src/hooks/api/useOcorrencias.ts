@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { ocorrenciaService } from "@/services/api/ocorrencia.service";
+import { TipoOcorrencia } from "@/types/database";
 
 export function useOcorrencias(filtros?: {
     usuario_id?: string;
@@ -15,9 +16,10 @@ export function useOcorrencias(filtros?: {
     });
 }
 
-export function useTiposOcorrencia() {
+export function useTiposOcorrencia(options?: Omit<UseQueryOptions<TipoOcorrencia[]>, 'queryKey' | 'queryFn'>) {
     return useQuery({
         queryKey: ["tipos-ocorrencia"],
         queryFn: () => ocorrenciaService.listTiposOcorrencia(),
+        ...options
     });
 }

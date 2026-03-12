@@ -555,10 +555,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-      <OccurrenceTypesDialog
-        open={occurrenceTypesDialogState.open}
-        onOpenChange={(open) => !open && closeOccurrenceTypesDialog()}
-      />
+      {occurrenceTypesDialogState.open && (
+        <OccurrenceTypesDialog
+          open={true}
+          onOpenChange={(open) => !open && closeOccurrenceTypesDialog()}
+        />
+      )}
 
       {feriadoFormDialogState.open && (
         <FeriadoFormDialog

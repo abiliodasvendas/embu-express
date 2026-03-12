@@ -4,6 +4,7 @@ import { EndTurnDialog } from "@/components/dialogs/EndTurnDialog";
 import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
 import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCollaborator, useDeleteVinculo, useRoles } from "@/hooks";
-import { useDeleteCollaborator, useUpdateCollaboratorStatus } from "@/hooks/api/useCollaboratorMutations";
+import { useDeleteCollaborator, useUpdateCollaboratorStatus, useUpdateVinculo } from "@/hooks/api/useCollaboratorMutations";
 import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useOcorrencias } from "@/hooks/api/useOcorrencias";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
@@ -25,7 +26,7 @@ import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, ChevronRight, Clock, CreditCard, Edit2, History, Mail, MapPin, MoreVertical, Phone, Plus, Trash2, User, Wallet } from "lucide-react";
+import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, ChevronRight, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
@@ -37,6 +38,7 @@ export default function CollaboratorDetails() {
   const { data: collaborator, isLoading } = useCollaborator(id);
   const { data: roles } = useRoles();
   const deleteVinculo = useDeleteVinculo();
+  const updateVinculo = useUpdateVinculo();
   const updateStatus = useUpdateCollaboratorStatus();
   const deleteCollaborator = useDeleteCollaborator();
   const {
@@ -235,6 +237,28 @@ export default function CollaboratorDetails() {
     });
   };
 
+  const handleReactivateTurn = (link: ColaboradorCliente) => {
+    openConfirmationDialog({
+      title: "Reativar Vínculo",
+      description: `Deseja realmente reativar o vínculo com o cliente "${link.cliente?.nome_fantasia}"? O colaborador voltará a poder registrar ponto.`,
+      confirmText: "Reativar",
+      variant: "success",
+      onConfirm: async () => {
+        try {
+          await updateVinculo.mutateAsync({
+            id: link.id,
+            colaborador_id: id!,
+            data_fim: null,
+            silent: true,
+          });
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ATIVO': return "bg-green-100 text-green-700 border-green-200";
@@ -427,6 +451,28 @@ export default function CollaboratorDetails() {
 
 
             <div className="lg:col-span-2 space-y-6">
+              {collaborator.senha_padrao && (
+                <Alert className="bg-blue-50 border-blue-200 text-blue-800 rounded-3xl shadow-sm border-l-4 border-l-blue-600 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-blue-600 p-2.5 rounded-2xl shadow-md shadow-blue-200">
+                      <Lock className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <AlertTitle className="text-xs font-black uppercase tracking-[0.15em] mb-1">
+                        Senha Provisória Ativa
+                      </AlertTitle>
+                      <AlertDescription className="text-sm font-medium opacity-90 leading-relaxed">
+                        Este colaborador ainda utiliza a senha padrão. A senha para o primeiro acesso são os <strong>6 primeiros dígitos do CPF</strong>.
+                        <div className="mt-2 pt-2 border-t border-blue-200/50 flex flex-col gap-0.5">
+                          <p className="text-[11px] font-bold">Login: <span className="font-mono text-xs">{cpfMask(collaborator.cpf)}</span></p>
+                          <p className="text-[11px] font-bold">Senha: <span className="font-mono text-xs text-blue-600">{collaborator.cpf?.replace(/\D/g, "").slice(0, 6)}</span></p>
+                        </div>
+                      </AlertDescription>
+                    </div>
+                  </div>
+                </Alert>
+              )}
+
               {role?.nome === ROLES.MOTOBOY && (
                 <Card className="border-0 shadow-sm rounded-3xl border-l-4 border-l-primary bg-white">
                   <CardHeader className="pb-2">
@@ -514,9 +560,13 @@ export default function CollaboratorDetails() {
                             <Button onClick={() => handleEditTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-primary rounded-lg">
                               <Edit2 className="h-3.5 w-3.5" />
                             </Button>
-                            {!link.data_fim && (
+                            {!link.data_fim ? (
                               <Button onClick={() => handleEndTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-amber-500 rounded-lg" title="Encerrar Vínculo">
                                 <CalendarOff className="h-3.5 w-3.5" />
+                              </Button>
+                            ) : (
+                              <Button onClick={() => handleReactivateTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-green-500 rounded-lg" title="Reativar Vínculo">
+                                <RotateCcw className="h-3.5 w-3.5" />
                               </Button>
                             )}
                             <Button onClick={() => handleDeleteTurn(link.id)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500 rounded-lg">

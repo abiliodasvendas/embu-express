@@ -23,25 +23,44 @@ import { PERMISSIONS } from "@/constants/permissions.enum";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
+    selectedMonth?: number;
+    selectedYear?: number;
+    selectedShift?: string;
     hideCollaboratorSelect?: boolean;
 }
 
-export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: TimeMirrorViewProps) {
+export function TimeMirrorView({ 
+    usuarioId, 
+    selectedMonth: propMonth,
+    selectedYear: propYear,
+    selectedShift = "todos",
+    hideCollaboratorSelect = false 
+}: TimeMirrorViewProps) {
     const {
-        selectedMes: selectedMonth = new Date().getMonth() + 1,
+        selectedMes: internalMonth = new Date().getMonth() + 1,
         setSelectedMes: setSelectedMonth = () => {},
-        selectedAno: selectedYear = new Date().getFullYear(),
+        selectedAno: internalYear = new Date().getFullYear(),
         setSelectedAno: setSelectedYear = () => {},
     } = useFilters({
         mesParam: "mes",
         anoParam: "ano",
     });
 
-    const { data: report = [], isLoading, refetch } = useTimeMirror(
+    const month = propMonth ?? internalMonth;
+    const year = propYear ?? internalYear;
+
+    const { data: rawReport = [], isLoading, refetch } = useTimeMirror(
         usuarioId || undefined,
-        selectedMonth,
-        selectedYear
+        month,
+        year
     );
+
+    // Apply Shift Filter
+    const report = useMemo(() => {
+        if (!rawReport) return [];
+        if (selectedShift === "todos") return rawReport;
+        return rawReport.filter(r => String(r.colaborador_cliente_id) === selectedShift);
+    }, [rawReport, selectedShift]);
 
     const { openTimeRecordDetailsDialog, openEditTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
     const { mutateAsync: deletePonto } = useDeletePonto();
@@ -105,32 +124,34 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
     return (
         <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
             <div className="space-y-6">
-                {/* Context Filters */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
-                        <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                            <SelectTrigger className="h-9 w-[130px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                {monthOptions.map(m => (
-                                    <SelectItem key={m.value} value={String(m.value)} className="text-xs">{m.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                {/* Context Filters - Only show if not provided via props */}
+                {!propMonth && (
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+                            <Select value={String(month)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                                <SelectTrigger className="h-9 w-[130px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    {monthOptions.map(m => (
+                                        <SelectItem key={m.value} value={String(m.value)} className="text-xs">{m.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
 
-                        <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                            <SelectTrigger className="h-9 w-[90px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                {anos.map(a => (
-                                    <SelectItem key={a.value} value={a.value} className="text-xs">{a.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            <Select value={String(year)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                                <SelectTrigger className="h-9 w-[90px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    {anos.map(a => (
+                                        <SelectItem key={a.value} value={a.value} className="text-xs">{a.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {!usuarioId ? (
                     <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">

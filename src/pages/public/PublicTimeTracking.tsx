@@ -105,7 +105,10 @@ export default function PublicTimeTracking() {
             ) : (
                 <div className="grid gap-4">
                     {filteredRecords.map((record) => (
-                        <Card key={record.id} className="border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300">
+                        <Card key={record.id} className={cn(
+                            "border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300",
+                            record.ausente && "opacity-60 grayscale-[0.5] hover:shadow-sm"
+                        )}>
                             <CardContent className="p-5 sm:p-6">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                                     {/* Collab Info */}
@@ -118,7 +121,7 @@ export default function PublicTimeTracking() {
                                             <div className="flex items-center gap-2 mt-1">
                                                 <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-[10px] uppercase font-bold px-2 py-0 border-none h-5">
                                                     {record.detalhes_calculo?.entrada?.turno_base 
-                                                        ? `${record.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(record.detalhes_calculo.saida?.turno_base || record.turno_hora_fim || collaborators?.find((c: any) => c.links?.some((l: any) => l.id === record.colaborador_cliente_id))?.links?.find((l: any) => l.id === record.colaborador_cliente_id)?.hora_fim || '...').substring(0, 5)}` 
+                                                        ? `${record.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${record.detalhes_calculo.saida?.turno_base?.substring(0, 5) || '...'}` 
                                                         : 'Turno não identificado'}
                                                 </Badge>
                                             </div>
@@ -131,8 +134,14 @@ export default function PublicTimeTracking() {
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Entrada</p>
                                             <div className="flex flex-col gap-1.5">
                                                 <span className="text-xl font-black text-gray-800">{formatTime(record.entrada_hora)}</span>
-                                                <Badge variant="outline" className={cn("text-[9px] w-fit", getStatusColorClass(record.status_entrada))}>
-                                                    {getStatusLabel(record.status_entrada, 'entrada')}
+                                                <Badge 
+                                                    variant="outline" 
+                                                    className={cn(
+                                                        "text-[9px] w-fit", 
+                                                        record.ausente ? "bg-gray-100 text-gray-400 border-gray-200" : getStatusColorClass(record.status_entrada)
+                                                    )}
+                                                >
+                                                    {record.ausente ? "AUSENTE" : getStatusLabel(record.status_entrada, 'entrada')}
                                                 </Badge>
                                             </div>
                                         </div>
@@ -141,11 +150,15 @@ export default function PublicTimeTracking() {
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saída</p>
                                             <div className="flex flex-col gap-1.5">
                                                 <span className="text-xl font-black text-gray-800">{formatTime(record.saida_hora)}</span>
-                                                {record.saida_hora && (
-                                                    <Badge variant="outline" className={cn("text-[9px] w-fit", getStatusColorClass(record.status_saida))}>
-                                                        {getStatusLabel(record.status_saida, 'saida')}
-                                                    </Badge>
-                                                )}
+                                                <Badge 
+                                                    variant="outline" 
+                                                    className={cn(
+                                                        "text-[9px] w-fit", 
+                                                        record.ausente ? "bg-gray-100 text-gray-400 border-gray-200" : (record.saida_hora ? getStatusColorClass(record.status_saida) : "bg-blue-50 text-blue-400 border-blue-100")
+                                                    )}
+                                                >
+                                                    {record.ausente ? "AUSENTE" : (record.saida_hora ? getStatusLabel(record.status_saida, 'saida') : "TRABALHANDO")}
+                                                </Badge>
                                             </div>
                                         </div>
                                     </div>
@@ -164,9 +177,9 @@ export default function PublicTimeTracking() {
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Saldo</p>
                                             <Badge variant="outline" className={cn(
                                                 "font-black text-xs px-3",
-                                                (record.saldo_minutos || 0) >= 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-600 border-red-100"
+                                                (record.ausente || !record.saida_hora) ? "bg-gray-100 text-gray-400 border-gray-200" : ((record.saldo_minutos || 0) >= 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-600 border-red-100")
                                             )}>
-                                                {formatMinutes(record.saldo_minutos || 0)}
+                                                {(record.ausente || !record.saida_hora) ? "--:--" : formatMinutes(record.saldo_minutos || 0)}
                                             </Badge>
                                         </div>
                                     </div>

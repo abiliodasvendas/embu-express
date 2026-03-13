@@ -18,6 +18,7 @@ import { useState, useEffect } from "react";
 import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { RegistroPonto } from "@/types/database";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { formatMinutes } from "@/utils/ponto";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 
 interface TimeMirrorViewProps {
@@ -97,14 +98,6 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
         };
     }, [report]);
 
-    const formatMinutes = (minutes: number) => {
-        const roundedMin = Math.round(minutes);
-        const absMin = Math.abs(roundedMin);
-        const h = Math.floor(absMin / 60);
-        const m = absMin % 60;
-        const sign = roundedMin < 0 ? "-" : "";
-        return `${sign}${h}h ${String(m).padStart(2, "0")}m`;
-    };
 
     const { can } = usePermissions();
     const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
@@ -168,7 +161,7 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                                 </div>
                                                 <div>
                                                     <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Total Trabalhado</p>
-                                                    <h3 className="text-2xl font-black text-blue-900">{formatMinutes(totals.worked)}</h3>
+                                                    <h3 className="text-xl font-black text-blue-900">{formatMinutes(totals.worked)}</h3>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -182,7 +175,7 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                                 </div>
                                                 <div>
                                                     <p className="text-xs text-amber-600 font-bold uppercase tracking-wider mb-1">Total Esperado</p>
-                                                    <h3 className="text-2xl font-black text-amber-900">{formatMinutes(totals.expected)}</h3>
+                                                    <h3 className="text-xl font-black text-amber-900">{formatMinutes(totals.expected)}</h3>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -221,9 +214,10 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                         <div className="grid gap-3">
                             <div className={cn(
                                 "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",
-                                canViewAll ? "grid-cols-7" : "grid-cols-3"
+                                canViewAll ? "grid-cols-8" : "grid-cols-4"
                             )}>
                                 <div className="col-span-1">Data</div>
+                                <div className="col-span-1">Turno</div>
                                 <div className="col-span-1">Entrada</div>
                                 <div className="col-span-1 text-right md:text-left">Saída</div>
                                 {canViewAll && (
@@ -251,7 +245,7 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                         <CardContent className="p-4 md:py-3 md:px-6">
                                             <div className={cn(
                                                 "grid items-center gap-4",
-                                                canViewAll ? "grid-cols-1 md:grid-cols-7" : "grid-cols-1 md:grid-cols-3"
+                                                canViewAll ? "grid-cols-1 md:grid-cols-8" : "grid-cols-1 md:grid-cols-4"
                                             )}>
                                                 {/* Date */}
                                                 <div className="flex items-center gap-3">
@@ -269,6 +263,18 @@ export function TimeMirrorView({ usuarioId, hideCollaboratorSelect = false }: Ti
                                                         </h4>
                                                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-0.5">{day.cliente_nome || 'Sem Cliente'}</p>
                                                     </div>
+                                                </div>
+
+                                                {/* Turno */}
+                                                <div>
+                                                    <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Turno</p>
+                                                    <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-[10px] uppercase font-bold px-2 py-0 border-none h-5">
+                                                        {day.turno_hora_inicio 
+                                                            ? `${day.turno_hora_inicio.substring(0, 5)} - ${day.turno_hora_fim.substring(0, 5)}` 
+                                                            : (day.detalhes_calculo?.entrada?.turno_base 
+                                                                ? `${day.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(day.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
+                                                                : 'Sem Turno')}
+                                                    </Badge>
                                                 </div>
 
                                                 {/* Entrada / Saída */}

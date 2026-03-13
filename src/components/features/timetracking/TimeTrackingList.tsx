@@ -210,6 +210,13 @@ const TimeRecordTableRow = ({
         </div>
       </td>
       <td className="px-6 py-4 align-middle">
+        <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-[10px] uppercase font-bold px-2 py-0 border-none h-5">
+           {record.detalhes_calculo?.entrada?.turno_base 
+              ? `${record.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(record.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
+              : 'Turno NI'}
+        </Badge>
+      </td>
+      <td className="px-6 py-4 align-middle">
         <div className="flex flex-col items-start gap-1">
           <span className="text-base font-bold text-gray-700">{formatTime(record.entrada_hora)}</span>
           <StatusBadgeWithTooltip
@@ -318,7 +325,8 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
           <table className="w-full">
             <thead className="bg-gray-50/50">
               <tr className="border-b border-gray-100 text-left">
-                <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider w-[40%]">Colaborador</th>
+                <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider w-[30%]">Colaborador</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Turno</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Entrada</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Saída</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Saldo / Total</th>

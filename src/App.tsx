@@ -33,6 +33,9 @@ import { usePermissions } from "./hooks/business/usePermissions";
 const Login = lazyLoad(() => import("./pages/Login"));
 const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
 const SelfRegistration = lazyLoad(() => import("./pages/public/SelfRegistration"));
+const PublicClientLayout = lazyLoad(() => import("./layouts/PublicClientLayout"));
+const PublicTimeTracking = lazyLoad(() => import("./pages/public/PublicTimeTracking"));
+const PublicTimeMirror = lazyLoad(() => import("./pages/public/PublicTimeMirror"));
 
 // Admin - Embu Express
 const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
@@ -169,6 +172,12 @@ const App = () => {
                   path="/cadastro"
                   element={<SelfRegistration />}
                 />
+
+                <Route path="/public/c/:uuid" element={<PublicClientLayout />}>
+                  <Route index element={<Navigate to="controle" replace />} />
+                  <Route path="controle" element={<PublicTimeTracking />} />
+                  <Route path="espelho" element={<PublicTimeMirror />} />
+                </Route>
 
                 <Route
                   path="/login"

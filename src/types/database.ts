@@ -30,6 +30,7 @@ export interface Client {
   updated_at?: string;
   km_contratados?: number;
   escala_semanal?: number[];
+  public_id?: string;
 }
 
 export interface Empresa {

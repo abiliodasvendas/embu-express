@@ -3,6 +3,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { messages } from "@/constants/messages";
 import { STATUS } from "@/constants/roles";
@@ -14,9 +15,11 @@ import { useClientActions } from "@/hooks/business/useClientActions";
 import { cn } from "@/lib/utils";
 import { Client, ColaboradorCliente } from "@/types/database";
 import { cnpjMask } from "@/utils/masks";
-import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users, Zap, CalendarDays } from "lucide-react";
+import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users, Zap, CalendarDays, ExternalLink, Copy, Check } from "lucide-react";
 import { WeeklyScale } from "@/components/common/WeeklyScale";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ClientDetails() {
     const { id } = useParams();
@@ -211,6 +214,48 @@ export default function ClientDetails() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* Public Visualization Link */}
+                    {client.public_id && (
+                        <Card className="border-0 shadow-sm rounded-3xl bg-primary/5 overflow-hidden">
+                            <CardHeader className="pb-2 pt-6 px-6">
+                                <CardTitle className="text-sm font-bold flex items-center gap-2 text-primary">
+                                    <ExternalLink className="h-4 w-4" />
+                                    Link de Visualização Externa
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="px-6 pb-6">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-3 leading-tight">
+                                    Este link permite que o cliente visualize o ponto sem necessidade de login.
+                                </p>
+                                <div className="flex gap-2">
+                                    <Input 
+                                        readOnly 
+                                        value={`${window.location.origin}/public/c/${client.public_id}`}
+                                        className="h-9 text-[10px] font-medium bg-white rounded-xl border-gray-100"
+                                    />
+                                    <Button 
+                                        size="icon" 
+                                        variant="outline" 
+                                        className="h-9 w-9 rounded-xl shrink-0 bg-white border-gray-100 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(`${window.location.origin}/public/c/${client.public_id}`);
+                                            toast.success("Link copiado para a área de transferência!");
+                                        }}
+                                    >
+                                        <Copy className="h-4 w-4 text-primary" />
+                                    </Button>
+                                </div>
+                                <Button 
+                                    className="w-full mt-4 h-9 rounded-xl text-xs font-bold gap-2"
+                                    onClick={() => window.open(`/public/c/${client.public_id}`, '_blank')}
+                                >
+                                    <ExternalLink className="h-4 w-4" />
+                                    Abrir Página Pública
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
                 {/* Linked Collaborators - Right Column */}

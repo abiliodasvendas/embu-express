@@ -47,14 +47,12 @@ export const calculateTotalTime = (entrada?: string | null, saida?: string | nul
     return `${hours}h ${minutes}min`;
 };
 
-export const formatMinutes = (totalMinutes: number) => {
-    const absMinutes = Math.abs(totalMinutes);
-    const sign = totalMinutes < 0 ? "-" : "+";
-
-    if (absMinutes < 60) return `${sign}${absMinutes} min`;
-
-    const hours = Math.floor(absMinutes / 60);
-    const minutes = absMinutes % 60;
-
-    return `${sign}${hours}h ${minutes}min`;
+export const formatMinutes = (minutes: number, showSign: boolean = false) => {
+    const roundedMin = Math.round(minutes);
+    const absMin = Math.abs(roundedMin);
+    const h = Math.floor(absMin / 60);
+    const m = absMin % 60;
+    const sign = roundedMin < 0 ? "-" : (showSign && roundedMin > 0 ? "+" : "");
+    
+    return `${sign}${h}h ${String(m).padStart(2, "0")}m`;
 };

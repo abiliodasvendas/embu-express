@@ -13,13 +13,14 @@ import { formatMinutes, getStatusColorClass, getStatusLabel } from "@/utils/pont
 import { meses, anos } from "@/utils/formatters/constants";
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export default function PublicTimeMirror() {
     const { uuid } = useParams();
     const [selectedCollab, setSelectedCollab] = useState<string>("");
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [selectedShift, setSelectedShift] = useState("todos");
+    const [selectedShift, setSelectedShift] = useState<string>(STATUS_CADASTRO.TODOS);
 
     const { data: collaborators, isLoading: isLoadingCollabs, refetch: refetchCollabs } = usePublicCollaborators(uuid);
     const { data: rawReport, isLoading: isLoadingMirror, refetch: refetchMirror } = usePublicTimeMirror(uuid, selectedCollab, selectedMonth, selectedYear);
@@ -35,7 +36,7 @@ export default function PublicTimeMirror() {
     // Filter Logic for Shifts
     const report = useMemo(() => {
         if (!rawReport) return [];
-        if (selectedShift === "todos") return rawReport;
+        if (selectedShift === STATUS_CADASTRO.TODOS) return rawReport;
         return rawReport.filter(r => String(r.colaborador_cliente_id) === selectedShift);
     }, [rawReport, selectedShift]);
 
@@ -87,7 +88,7 @@ export default function PublicTimeMirror() {
                                     <SelectValue placeholder="Todos" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="todos">Todos os turnos</SelectItem>
+                                    <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os turnos</SelectItem>
                                     {collabShifts.map((s: any) => (
                                         <SelectItem key={s.id} value={String(s.id)}>
                                             {s.hora_inicio.substring(0, 5)} - {s.hora_fim.substring(0, 5)}

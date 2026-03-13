@@ -1,3 +1,5 @@
+import { PIX_TYPES } from "@/constants/financeiro.constants";
+
 export const phoneMask = (value: string): string => {
   if (!value) return "";
 
@@ -226,4 +228,21 @@ export const evpMask = (value: string): string => {
       /^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/,
       "$1-$2-$3-$4-$5"
     );
+};
+
+export const pixMask = (value: string, type: string): string => {
+  if (!value) return value;
+
+  switch (type?.toUpperCase()) {
+    case PIX_TYPES.CPF:
+      return cpfMask(value);
+    case PIX_TYPES.CNPJ:
+      return cnpjMask(value);
+    case PIX_TYPES.TELEFONE:
+      return phoneMask(value);
+    case PIX_TYPES.ALEATORIA:
+      return evpMask(value);
+    default:
+      return value;
+  }
 };

@@ -23,7 +23,7 @@ import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions"
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
 import { meses } from "@/utils/formatters/constants";
-import { cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
+import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, ChevronRight, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
@@ -261,9 +261,9 @@ export default function CollaboratorDetails() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ATIVO': return "bg-green-100 text-green-700 border-green-200";
-      case 'INATIVO': return "bg-red-100 text-red-700 border-red-200";
-      case 'PENDENTE': return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case STATUS.ATIVO: return "bg-green-100 text-green-700 border-green-200";
+      case STATUS.INATIVO: return "bg-red-100 text-red-700 border-red-200";
+      case STATUS.PENDENTE: return "bg-yellow-100 text-yellow-700 border-yellow-200";
       default: return "bg-gray-100 text-gray-600 border-gray-200";
     }
   }
@@ -367,7 +367,7 @@ export default function CollaboratorDetails() {
                   </div>
                   <div className="overflow-hidden">
                     <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">E-mail</p>
-                    <p className="text-sm font-medium text-gray-700 truncate">{collaborator.email}</p>
+                    <p className="text-sm font-medium text-gray-700 break-all">{collaborator.email}</p>
                   </div>
                 </div>
 
@@ -377,7 +377,7 @@ export default function CollaboratorDetails() {
                   </div>
                   <div className="w-full">
                     <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Documentos</p>
-                    <div className="grid grid-cols-2 gap-2 mt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
                       <div>
                         <p className="text-[10px] text-muted-foreground font-semibold">CPF</p>
                         <p className="text-sm font-medium text-gray-700">{cpfMask(collaborator.cpf)}</p>
@@ -422,17 +422,19 @@ export default function CollaboratorDetails() {
                   <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
                     <div className="h-4 w-4 font-bold text-emerald-600 flex items-center justify-center text-[10px]">R$</div>
                   </div>
-                  <div>
+                  <div className="w-full">
                     <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Financeiro</p>
-                    <div className="space-y-1">
-                      {collaborator.tipo_chave_pix && (
-                        <p className="text-[10px] text-muted-foreground font-semibold leading-none mt-1">
-                          {collaborator.tipo_chave_pix}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground font-semibold">TIPO CHAVE PIX</p>
+                        <p className="text-sm font-medium text-gray-700">{collaborator.tipo_chave_pix || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground font-semibold">CHAVE PIX</p>
+                        <p className="text-sm font-medium text-gray-700 break-all">
+                          {pixMask(collaborator.chave_pix, collaborator.tipo_chave_pix) || '-'}
                         </p>
-                      )}
-                      <p className="text-sm font-medium text-gray-700 break-all leading-tight">
-                        {collaborator.chave_pix || '-'}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>

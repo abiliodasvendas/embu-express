@@ -15,6 +15,8 @@ export const getPerfilLabel = (perfilNome?: string | null) => {
       return "Administrador";
     case ROLES.MOTOBOY:
       return "Motoboy";
+    case ROLES.FISCAL:
+      return "Fiscal";
     default:
       // Capitaliza a primeira letra caso não esteja no mapeamento
       return nome.charAt(0).toUpperCase() + nome.slice(1);

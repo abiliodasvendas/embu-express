@@ -6,6 +6,7 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useRoles } from "@/hooks";
 import { useSelfRegistrationForm } from "@/hooks/ui/useSelfRegistrationForm";
 import { mockGenerator } from "@/utils/mocks/generator";
+import { ROLES } from "@/constants/permissions.enum";
 import { ArrowLeft, CheckCircle2, UserPlus, Wand2 } from "lucide-react";
 
 export default function SelfRegistration() {
@@ -59,7 +60,7 @@ export default function SelfRegistration() {
             size="icon"
             onClick={() => {
               const mockData = mockGenerator.selfRegistration();
-              const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase().includes("motoboy"));
+              const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
 
               Object.keys(mockData).forEach((key) => {
                 // @ts-ignore

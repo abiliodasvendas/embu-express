@@ -10,6 +10,8 @@ import { PERMISSIONS } from "@/constants/permissions.enum";
 import { meses, anos } from "@/utils/formatters/constants";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { queryClient } from "@/services/queryClient";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { ROLES } from "@/constants/permissions.enum";
 
 export function TimeMirror() {
     const { setPageTitle } = useLayout();
@@ -31,18 +33,21 @@ export function TimeMirror() {
     }, [setPageTitle, isOnlyPersonal]);
 
     const { data: rawCollaborators = [] } = useCollaborators({ 
-        status: "ATIVO"
+        status: STATUS_CADASTRO.ATIVO
     }, { enabled: canViewAll });
 
     // Filter by relevant profiles for point tracking
     const collaborators = useMemo(() => {
-        return rawCollaborators.filter(c => c.perfil?.nome === 'motoboy' || c.perfil?.nome === 'fiscal');
+        return rawCollaborators.filter(c => 
+            c.perfil?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase() || 
+            c.perfil?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase()
+        );
     }, [rawCollaborators]);
 
     // Se for apenas pessoal, forçamos o ID do usuário logado
-    const finalUsuarioId = isOnlyPersonal ? profile?.id : (selectedCollaborator === 'todos' ? undefined : selectedCollaborator);
+    const finalUsuarioId = isOnlyPersonal ? profile?.id : (selectedCollaborator === STATUS_CADASTRO.TODOS ? undefined : selectedCollaborator);
 
-    const [selectedShift, setSelectedShift] = useState("todos");
+    const [selectedShift, setSelectedShift] = useState<string>(STATUS_CADASTRO.TODOS);
     const {
         selectedMes: selectedMonth = new Date().getMonth() + 1,
         setSelectedMes: setSelectedMonth = () => {},
@@ -62,11 +67,11 @@ export function TimeMirror() {
 
     useEffect(() => {
         if (!finalUsuarioId) {
-            setSelectedShift("todos");
+            setSelectedShift(STATUS_CADASTRO.TODOS);
         } else if (collabShifts.length === 1) {
             setSelectedShift(String(collabShifts[0].id));
         } else {
-            setSelectedShift("todos");
+            setSelectedShift(STATUS_CADASTRO.TODOS);
         }
     }, [finalUsuarioId, collabShifts.length]);
 
@@ -91,7 +96,7 @@ export function TimeMirror() {
                                             <SelectValue placeholder="Selecione..." />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="todos">Todos os colaboradores</SelectItem>
+                                            <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os colaboradores</SelectItem>
                                             {collaborators.map(c => (
                                                 <SelectItem key={c.id} value={c.id}>{c.nome_completo}</SelectItem>
                                             ))}

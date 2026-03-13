@@ -25,7 +25,8 @@ import { cn } from "@/lib/utils";
 import { SelfRegistrationFormData } from "@/schemas/selfRegistrationSchema";
 import { Perfil } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
-import { aplicarMascaraPlaca, cnpjMask, cpfMask, dateMask, evpMask, phoneMask, rgMask } from "@/utils/masks";
+import { aplicarMascaraPlaca, cnpjMask, cpfMask, dateMask, pixMask, phoneMask, rgMask } from "@/utils/masks";
+import { PIX_TYPES } from "@/constants/financeiro.constants";
 import { Briefcase, CreditCard, DollarSign, Eye, EyeOff, Mail, MapPin, User, UserPlus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
@@ -520,11 +521,11 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        <SelectItem value="CPF">CPF</SelectItem>
-                                                        <SelectItem value="CNPJ">CNPJ</SelectItem>
-                                                        <SelectItem value="EMAIL">E-mail</SelectItem>
-                                                        <SelectItem value="TELEFONE">Telefone</SelectItem>
-                                                        <SelectItem value="ALEATORIA">Chave Aleatória</SelectItem>
+                                                        <SelectItem value={PIX_TYPES.CPF}>CPF</SelectItem>
+                                                        <SelectItem value={PIX_TYPES.CNPJ}>CNPJ</SelectItem>
+                                                        <SelectItem value={PIX_TYPES.EMAIL}>E-mail</SelectItem>
+                                                        <SelectItem value={PIX_TYPES.TELEFONE}>Telefone</SelectItem>
+                                                        <SelectItem value={PIX_TYPES.ALEATORIA}>Chave Aleatória</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                                 <FormMessage className="ml-1" />
@@ -546,18 +547,13 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                                             placeholder={tipoChavePix ? "CPF, Email, ou Aleatória" : "Selecione o tipo primeiro"}
                                                             {...field}
                                                             onChange={(e) => {
-                                                                let val = e.target.value;
-                                                                if (tipoChavePix === 'CPF') val = cpfMask(val);
-                                                                else if (tipoChavePix === 'TELEFONE') val = phoneMask(val);
-                                                                else if (tipoChavePix === 'CNPJ') val = cnpjMask(val);
-                                                                else if (tipoChavePix === 'ALEATORIA') val = evpMask(val);
-                                                                field.onChange(val);
+                                                                field.onChange(pixMask(e.target.value, tipoChavePix));
                                                             }}
                                                             maxLength={
-                                                                tipoChavePix === "CPF" ? 14 : 
-                                                                tipoChavePix === "CNPJ" ? 18 : 
-                                                                tipoChavePix === "TELEFONE" ? 15 :
-                                                                tipoChavePix === "ALEATORIA" ? 36 : 100
+                                                                tipoChavePix === PIX_TYPES.CPF ? 14 : 
+                                                                tipoChavePix === PIX_TYPES.CNPJ ? 18 : 
+                                                                tipoChavePix === PIX_TYPES.TELEFONE ? 15 :
+                                                                tipoChavePix === PIX_TYPES.ALEATORIA ? 36 : 100
                                                             }
                                                         />
                                                     </FormControl>

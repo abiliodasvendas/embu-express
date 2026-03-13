@@ -30,6 +30,7 @@ import {
 import { messages } from "@/constants/messages";
 import { ROLES } from "@/constants/permissions.enum";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { PIX_TYPES } from "@/constants/financeiro.constants";
 import { cn } from "@/lib/utils";
 import { useCreateCollaborator, useEmpresas, useLayout, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
@@ -161,7 +162,7 @@ export function CollaboratorFormDialog({
 
     // Financial
     form.setValue("cnpj", cnpjMask(mockGenerator.cnpj()));
-    form.setValue("tipo_chave_pix", "CPF");
+    form.setValue("tipo_chave_pix", PIX_TYPES.CPF);
     form.setValue("chave_pix", cpfMask(mockGenerator.cpf()));
   };
 

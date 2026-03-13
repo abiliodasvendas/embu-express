@@ -14,12 +14,13 @@ import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { formatTime, getStatusColorClass, getStatusLabel, formatMinutes } from "@/utils/ponto";
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export default function PublicTimeTracking() {
     const { uuid } = useParams();
     const [date, setDate] = useState(new Date());
-    const [selectedCollabId, setSelectedCollabId] = useState("todos");
-    const [selectedShift, setSelectedShift] = useState("todos");
+    const [selectedCollabId, setSelectedCollabId] = useState<string>(STATUS_CADASTRO.TODOS);
+    const [selectedShift, setSelectedShift] = useState<string>(STATUS_CADASTRO.TODOS);
 
     const { data: records, isLoading, refetch: refetchTracking } = usePublicTimeTracking(uuid, format(date, "yyyy-MM-dd"));
     const { data: collaborators, refetch: refetchCollabs } = usePublicCollaborators(uuid);
@@ -30,8 +31,8 @@ export default function PublicTimeTracking() {
 
     // Filter Logic
     const filteredRecords = records?.filter(r => {
-        const matchesCollab = selectedCollabId === "todos" || r.usuario_id === selectedCollabId;
-        const matchesShift = selectedShift === "todos" || String(r.colaborador_cliente_id) === selectedShift;
+        const matchesCollab = selectedCollabId === STATUS_CADASTRO.TODOS || r.usuario_id === selectedCollabId;
+        const matchesShift = selectedShift === STATUS_CADASTRO.TODOS || String(r.colaborador_cliente_id) === selectedShift;
         return matchesCollab && matchesShift;
     });
 
@@ -72,7 +73,7 @@ export default function PublicTimeTracking() {
                                     <SelectValue placeholder="Todos os colaboradores" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="todos">Todos os colaboradores</SelectItem>
+                                    <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os colaboradores</SelectItem>
                                     {collaborators?.map((c: any) => (
                                         <SelectItem key={c.id} value={c.id}>{c.nome_completo}</SelectItem>
                                     ))}
@@ -88,7 +89,7 @@ export default function PublicTimeTracking() {
                                     <SelectValue placeholder="Todos os turnos" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="todos">Todos os turnos</SelectItem>
+                                    <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os turnos</SelectItem>
                                     {uniqueShifts.map((s: any) => (
                                         <SelectItem key={s.id} value={String(s.id)}>{s.label}</SelectItem>
                                     ))}

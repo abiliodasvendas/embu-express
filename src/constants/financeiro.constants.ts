@@ -11,3 +11,13 @@ export const LANCAMENTO_TIPO = {
 } as const;
 
 export type LancamentoTipo = keyof typeof LANCAMENTO_TIPO;
+
+export const PIX_TYPES = {
+    CPF: 'CPF',
+    CNPJ: 'CNPJ',
+    EMAIL: 'EMAIL',
+    TELEFONE: 'TELEFONE',
+    ALEATORIA: 'ALEATORIA',
+} as const;
+
+export type PixType = keyof typeof PIX_TYPES;

@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/select";
 import { Empresa } from "@/types/database";
 import { useFormContext } from "react-hook-form";
-import { cnpjMask, cpfMask, evpMask, phoneMask } from "@/utils/masks";
 import { cn } from "@/lib/utils";
+import { PIX_TYPES } from "@/constants/financeiro.constants";
+import { cnpjMask, pixMask } from "@/utils/masks";
 
 interface CollaboratorFormFinancialProps {
     empresas: Empresa[] | undefined;
@@ -61,11 +62,11 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="CPF">CPF</SelectItem>
-                                <SelectItem value="CNPJ">CNPJ</SelectItem>
-                                <SelectItem value="EMAIL">E-mail</SelectItem>
-                                <SelectItem value="TELEFONE">Telefone</SelectItem>
-                                <SelectItem value="ALEATORIA">Chave Aleatória</SelectItem>
+                                <SelectItem value={PIX_TYPES.CPF}>CPF</SelectItem>
+                                <SelectItem value={PIX_TYPES.CNPJ}>CNPJ</SelectItem>
+                                <SelectItem value={PIX_TYPES.EMAIL}>E-mail</SelectItem>
+                                <SelectItem value={PIX_TYPES.TELEFONE}>Telefone</SelectItem>
+                                <SelectItem value={PIX_TYPES.ALEATORIA}>Chave Aleatória</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -82,18 +83,13 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                                     className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.chave_pix && "border-red-500 focus-visible:ring-red-200", !tipoChavePix && "opacity-50 cursor-not-allowed")}
                                     {...field}
                                     onChange={(e) => {
-                                        let val = e.target.value;
-                                        if (tipoChavePix === "CPF") val = cpfMask(val);
-                                        else if (tipoChavePix === "CNPJ") val = cnpjMask(val);
-                                        else if (tipoChavePix === "TELEFONE") val = phoneMask(val);
-                                        else if (tipoChavePix === "ALEATORIA") val = evpMask(val);
-                                        field.onChange(val);
+                                        field.onChange(pixMask(e.target.value, tipoChavePix));
                                     }}
                                     maxLength={
-                                        tipoChavePix === "CPF" ? 14 : 
-                                        tipoChavePix === "CNPJ" ? 18 : 
-                                        tipoChavePix === "TELEFONE" ? 15 :
-                                        tipoChavePix === "ALEATORIA" ? 36 : 100
+                                        tipoChavePix === PIX_TYPES.CPF ? 14 : 
+                                        tipoChavePix === PIX_TYPES.CNPJ ? 18 : 
+                                        tipoChavePix === PIX_TYPES.TELEFONE ? 15 :
+                                        tipoChavePix === PIX_TYPES.ALEATORIA ? 36 : 100
                                     }
                                     placeholder={tipoChavePix ? "Insira a chave" : "Selecione o tipo primeiro"}
                                 />

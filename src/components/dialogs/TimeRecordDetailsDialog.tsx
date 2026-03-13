@@ -11,6 +11,7 @@ import { formatMinutes, getStatusColorClass, getStatusLabel } from "@/utils/pont
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Building2, CalendarClock, Clock, Edit2, MapPin, Pause, User, X } from "lucide-react";
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface TimeRecordDetailsDialogProps {
     isOpen: boolean;
@@ -21,6 +22,7 @@ interface TimeRecordDetailsDialogProps {
 }
 
 export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: TimeRecordDetailsDialogProps) {
+    const { can } = usePermissions();
     if (!record) return null;
 
     const formatDate = (dateStr: string) => {
@@ -329,7 +331,10 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                     )}
                 </div>
 
-                <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
+                <div className={cn(
+                    "p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid gap-3",
+                    can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? "grid-cols-2" : "grid-cols-1"
+                )}>
                     <Button
                         variant="outline"
                         onClick={handleClose}

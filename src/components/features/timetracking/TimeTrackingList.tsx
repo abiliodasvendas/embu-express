@@ -92,11 +92,18 @@ const TimeRecordMobileItem = ({
   onEdit: (r: RegistroPonto) => void;
   onDelete: (r: RegistroPonto) => void;
 }) => {
+  const isAusente = (record as any).ausente;
   const actions = useTimeRecordActions({ record, onDetails, onEdit, onDelete });
 
-  return (
-    <MobileActionItem actions={actions}>
-      <div onClick={() => onDetails(record)} className="cursor-pointer bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all active:scale-[0.98]">
+  const content = (
+    <div 
+      onClick={isAusente ? undefined : () => onDetails(record)} 
+      className={cn(
+        "bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all",
+        !isAusente && "cursor-pointer active:scale-[0.98]",
+        isAusente && "opacity-60 grayscale-[0.5]"
+      )}
+    >
         <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-50">
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold text-gray-900">{record.usuario?.nome_completo}</span>
@@ -174,6 +181,13 @@ const TimeRecordMobileItem = ({
           </div>
         </div>
       </div>
+  );
+
+  if (isAusente) return content;
+
+  return (
+    <MobileActionItem actions={actions}>
+      {content}
     </MobileActionItem>
   );
 };
@@ -189,15 +203,16 @@ const TimeRecordTableRow = ({
   onEdit: (r: RegistroPonto) => void;
   onDelete: (r: RegistroPonto) => void;
 }) => {
+  const isAusente = (record as any).ausente;
   const actions = useTimeRecordActions({ record, onDetails, onEdit, onDelete });
 
   return (
     <tr
       className={cn(
-        "hover:bg-gray-50/80 transition-colors cursor-pointer group",
-        (record as any).ausente && "opacity-60 grayscale-[0.5]"
+        "transition-colors group",
+        isAusente ? "opacity-60 grayscale-[0.5] cursor-default" : "hover:bg-gray-50/80 cursor-pointer"
       )}
-      onClick={() => onDetails(record)}
+      onClick={isAusente ? undefined : () => onDetails(record)}
     >
       <td className="py-4 pl-6 align-middle relative">
         <div className="flex flex-col gap-0.5">
@@ -263,7 +278,7 @@ const TimeRecordTableRow = ({
         </div>
       </td>
       <td className="px-6 py-4 align-middle text-right" onClick={(e) => e.stopPropagation()}>
-        <ActionsDropdown actions={actions} />
+        {!isAusente && <ActionsDropdown actions={actions} />}
       </td>
     </tr>
   );

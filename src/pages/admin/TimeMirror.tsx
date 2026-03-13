@@ -8,6 +8,8 @@ import { useFilters } from "@/hooks/ui/useFilters";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { meses, anos } from "@/utils/formatters/constants";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { queryClient } from "@/services/queryClient";
 
 export function TimeMirror() {
     const { setPageTitle } = useLayout();
@@ -71,92 +73,97 @@ export function TimeMirror() {
     const monthOptions = meses.map((label, index) => ({ value: index + 1, label }));
 
     return (
-        <div className="space-y-6 pb-24">
-            {/* Global Filters */}
-            <Card className="border-none shadow-sm rounded-3xl">
-                <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* Colaborador */}
-                        {!isOnlyPersonal && (
+        <PullToRefreshWrapper onRefresh={async () => {
+             await queryClient.invalidateQueries({ queryKey: ['collaborators'] });
+             await queryClient.invalidateQueries({ queryKey: ['time-mirror'] });
+        }}>
+            <div className="space-y-6 pb-24">
+                {/* Global Filters */}
+                <Card className="border-none shadow-sm rounded-3xl">
+                    <CardContent className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Colaborador */}
+                            {!isOnlyPersonal && (
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Colaborador</label>
+                                    <Select value={selectedCollaborator} onValueChange={setSelectedCollaborator}>
+                                        <SelectTrigger className="rounded-xl border-gray-100 h-11">
+                                            <SelectValue placeholder="Selecione..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="todos">Todos os colaboradores</SelectItem>
+                                            {collaborators.map(c => (
+                                                <SelectItem key={c.id} value={c.id}>{c.nome_completo}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+
+                            {/* Turno */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Colaborador</label>
-                                <Select value={selectedCollaborator} onValueChange={setSelectedCollaborator}>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Turno</label>
+                                <Select 
+                                    value={selectedShift} 
+                                    onValueChange={setSelectedShift}
+                                    disabled={!finalUsuarioId}
+                                >
                                     <SelectTrigger className="rounded-xl border-gray-100 h-11">
-                                        <SelectValue placeholder="Selecione..." />
+                                        <SelectValue placeholder="Todos" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="todos">Todos os colaboradores</SelectItem>
-                                        {collaborators.map(c => (
-                                            <SelectItem key={c.id} value={c.id}>{c.nome_completo}</SelectItem>
+                                        <SelectItem value="todos">Todos os turnos</SelectItem>
+                                        {collabShifts.map(s => (
+                                            <SelectItem key={s.id} value={String(s.id)}>
+                                                {s.hora_inicio.substring(0, 5)} - {s.hora_fim.substring(0, 5)}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
-                        )}
 
-                        {/* Turno */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Turno</label>
-                            <Select 
-                                value={selectedShift} 
-                                onValueChange={setSelectedShift}
-                                disabled={!finalUsuarioId}
-                            >
-                                <SelectTrigger className="rounded-xl border-gray-100 h-11">
-                                    <SelectValue placeholder="Todos" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="todos">Todos os turnos</SelectItem>
-                                    {collabShifts.map(s => (
-                                        <SelectItem key={s.id} value={String(s.id)}>
-                                            {s.hora_inicio.substring(0, 5)} - {s.hora_fim.substring(0, 5)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            {/* Mês */}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Mês</label>
+                                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                                    <SelectTrigger className="rounded-xl border-gray-100 h-11 text-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {monthOptions.map(m => (
+                                            <SelectItem key={m.value} value={String(m.value)} className="text-xs">{m.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Ano */}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Ano</label>
+                                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                                    <SelectTrigger className="rounded-xl border-gray-100 h-11 text-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {anos.map(a => (
+                                            <SelectItem key={a.value} value={String(a.value)} className="text-xs">{a.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
+                    </CardContent>
+                </Card>
 
-                        {/* Mês */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Mês</label>
-                            <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                                <SelectTrigger className="rounded-xl border-gray-100 h-11 text-xs">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {monthOptions.map(m => (
-                                        <SelectItem key={m.value} value={String(m.value)} className="text-xs">{m.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Ano */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Ano</label>
-                            <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                                <SelectTrigger className="rounded-xl border-gray-100 h-11 text-xs">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {anos.map(a => (
-                                        <SelectItem key={a.value} value={String(a.value)} className="text-xs">{a.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <TimeMirrorView 
-                usuarioId={finalUsuarioId} 
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                selectedShift={selectedShift}
-                hideCollaboratorSelect={isOnlyPersonal}
-            />
-        </div>
+                <TimeMirrorView 
+                    usuarioId={finalUsuarioId} 
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    selectedShift={selectedShift}
+                    hideCollaboratorSelect={isOnlyPersonal}
+                />
+            </div>
+        </PullToRefreshWrapper>
     );
 }
 

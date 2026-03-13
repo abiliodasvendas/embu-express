@@ -15,15 +15,16 @@ import { useClientActions } from "@/hooks/business/useClientActions";
 import { cn } from "@/lib/utils";
 import { Client, ColaboradorCliente } from "@/types/database";
 import { cnpjMask } from "@/utils/masks";
-import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users, Zap, CalendarDays, ExternalLink, Copy, Check } from "lucide-react";
+import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users, Zap, CalendarDays, ExternalLink, Copy, Check, CopyCheck } from "lucide-react";
 import { WeeklyScale } from "@/components/common/WeeklyScale";
 import { useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 export default function ClientDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [isCopied, setIsCopied] = useState(false);
 
     // Usamos includeId para garantir que o cliente virá mesmo se estiver inativo, caso a query default oculte inativos sem esse parametro.
     const { data: clients, isLoading: isClientLoading } = useClients({ includeId: id });
@@ -34,7 +35,17 @@ export default function ClientDetails() {
 
     const toggleStatus = useToggleClientStatus();
     const deleteClient = useDeleteClient();
-    const { openConfirmationDialog, closeConfirmationDialog, openClientFormDialog } = useLayout();
+    const { openConfirmationDialog, closeConfirmationDialog, openClientFormDialog, setPageTitle } = useLayout();
+
+    useEffect(() => {
+        if (client) {
+            setPageTitle(client.nome_fantasia);
+        } else if (!isClientLoading) {
+            setPageTitle("Cliente não encontrado");
+        } else {
+            setPageTitle("Carregando Cliente...");
+        }
+    }, [client, isClientLoading, setPageTitle]);
 
 
     const handleToggleStatus = async () => {
@@ -221,37 +232,40 @@ export default function ClientDetails() {
                             <CardHeader className="pb-2 pt-6 px-6">
                                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-primary">
                                     <ExternalLink className="h-4 w-4" />
-                                    Link de Visualização Externa
+                                    Link para o Cliente Acessar
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="px-6 pb-6">
-                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-3 leading-tight">
-                                    Este link permite que o cliente visualize o ponto sem necessidade de login.
-                                </p>
                                 <div className="flex gap-2">
-                                    <Input 
-                                        readOnly 
+                                    <Input
+                                        readOnly
                                         value={`${window.location.origin}/public/c/${client.public_id}`}
                                         className="h-9 text-[10px] font-medium bg-white rounded-xl border-gray-100"
                                     />
-                                    <Button 
-                                        size="icon" 
-                                        variant="outline" 
-                                        className="h-9 w-9 rounded-xl shrink-0 bg-white border-gray-100 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                                    <Button
+                                        size="icon"
+                                        variant="outline"
+                                        className={cn(
+                                            "h-9 w-9 rounded-xl shrink-0 transition-all duration-300",
+                                            isCopied 
+                                                ? "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-300" 
+                                                : "bg-white border-gray-100 hover:bg-primary/10 hover:border-primary/30 text-primary"
+                                        )}
                                         onClick={() => {
                                             navigator.clipboard.writeText(`${window.location.origin}/public/c/${client.public_id}`);
-                                            toast.success("Link copiado para a área de transferência!");
+                                            setIsCopied(true);
+                                            setTimeout(() => setIsCopied(false), 2000);
                                         }}
                                     >
-                                        <Copy className="h-4 w-4 text-primary" />
+                                        {isCopied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                                     </Button>
                                 </div>
-                                <Button 
+                                <Button
                                     className="w-full mt-4 h-9 rounded-xl text-xs font-bold gap-2"
                                     onClick={() => window.open(`/public/c/${client.public_id}`, '_blank')}
                                 >
                                     <ExternalLink className="h-4 w-4" />
-                                    Abrir Página Pública
+                                    Acessar Link
                                 </Button>
                             </CardContent>
                         </Card>

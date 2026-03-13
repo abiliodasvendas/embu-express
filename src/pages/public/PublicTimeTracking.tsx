@@ -13,6 +13,7 @@ import { ListSkeleton } from "@/components/skeletons";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { formatTime, getStatusColorClass, getStatusLabel, formatMinutes } from "@/utils/ponto";
 import { cn } from "@/lib/utils";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
 export default function PublicTimeTracking() {
     const { uuid } = useParams();
@@ -20,8 +21,12 @@ export default function PublicTimeTracking() {
     const [selectedCollabId, setSelectedCollabId] = useState("todos");
     const [selectedShift, setSelectedShift] = useState("todos");
 
-    const { data: records, isLoading } = usePublicTimeTracking(uuid, format(date, "yyyy-MM-dd"));
-    const { data: collaborators } = usePublicCollaborators(uuid);
+    const { data: records, isLoading, refetch: refetchTracking } = usePublicTimeTracking(uuid, format(date, "yyyy-MM-dd"));
+    const { data: collaborators, refetch: refetchCollabs } = usePublicCollaborators(uuid);
+
+    const handleRefresh = async () => {
+        await Promise.all([refetchTracking(), refetchCollabs()]);
+    };
 
     // Filter Logic
     const filteredRecords = records?.filter(r => {
@@ -39,7 +44,8 @@ export default function PublicTimeTracking() {
     const uniqueShifts = Array.from(new Map(shifts.map(s => [s.id, s])).values());
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <PullToRefreshWrapper onRefresh={handleRefresh}>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Toolbar */}
             <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
                 <CardContent className="p-4 sm:p-6">
@@ -190,5 +196,6 @@ export default function PublicTimeTracking() {
                 </div>
             )}
         </div>
+        </PullToRefreshWrapper>
     );
 }

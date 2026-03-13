@@ -1,6 +1,5 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
-import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -122,8 +121,7 @@ export function TimeMirrorView({
     const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
 
     return (
-        <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
-            <div className="space-y-6">
+        <div className="space-y-6">
                 {/* Context Filters - Only show if not provided via props */}
                 {!propMonth && (
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -374,6 +372,5 @@ export function TimeMirrorView({
                     />
                 )}
             </div>
-        </PullToRefreshWrapper>
     );
 }

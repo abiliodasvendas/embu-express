@@ -12,6 +12,7 @@ import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { formatMinutes, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { meses, anos } from "@/utils/formatters/constants";
 import { cn } from "@/lib/utils";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
 export default function PublicTimeMirror() {
     const { uuid } = useParams();
@@ -20,8 +21,12 @@ export default function PublicTimeMirror() {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [selectedShift, setSelectedShift] = useState("todos");
 
-    const { data: collaborators, isLoading: isLoadingCollabs } = usePublicCollaborators(uuid);
-    const { data: rawReport, isLoading: isLoadingMirror } = usePublicTimeMirror(uuid, selectedCollab, selectedMonth, selectedYear);
+    const { data: collaborators, isLoading: isLoadingCollabs, refetch: refetchCollabs } = usePublicCollaborators(uuid);
+    const { data: rawReport, isLoading: isLoadingMirror, refetch: refetchMirror } = usePublicTimeMirror(uuid, selectedCollab, selectedMonth, selectedYear);
+
+    const handleRefresh = async () => {
+        await Promise.all([refetchCollabs(), refetchMirror()]);
+    };
 
     // Current Collab Links
     const currentCollab = collaborators?.find(c => c.id === selectedCollab);
@@ -49,7 +54,8 @@ export default function PublicTimeMirror() {
     const monthOptions = meses.map((label, index) => ({ value: index + 1, label }));
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <PullToRefreshWrapper onRefresh={handleRefresh}>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Filters */}
             <Card className="border-none shadow-sm rounded-3xl">
                 <CardContent className="p-4 sm:p-6">
@@ -282,5 +288,6 @@ export default function PublicTimeMirror() {
                 />
             )}
         </div>
+        </PullToRefreshWrapper>
     );
 }

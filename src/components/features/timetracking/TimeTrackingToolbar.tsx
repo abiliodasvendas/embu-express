@@ -23,12 +23,12 @@ import {
   SheetTitle,
   SheetTrigger
 } from "@/components/ui/sheet";
-import { STATUS_PONTO } from "@/constants/ponto";
+import { STATUS_PONTO, FILTER_OPTIONS } from "@/constants/ponto";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { cn } from "@/lib/utils";
 import { getStatusLabel } from "@/utils/ponto";
 import { Plus, Search, X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 
@@ -42,6 +42,7 @@ interface TimeTrackingToolbarProps {
     statusSaida: string;
     usuarioId: string;
     clienteId: string;
+    turno: string;
   };
   onFiltersChange: (key: string, value: string) => void;
   onRegister: () => void;
@@ -67,6 +68,19 @@ export function TimeTrackingToolbar({
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
+  const uniqueShifts = useMemo(() => {
+    const shiftsSet = new Set<string>();
+    collaborators.forEach(collab => {
+      collab.links?.forEach((link: any) => {
+        if (link.hora_inicio && link.hora_fim) {
+          const label = `${link.hora_inicio.substring(0, 5)} - ${link.hora_fim.substring(0, 5)}`;
+          shiftsSet.add(label);
+        }
+      });
+    });
+    return Array.from(shiftsSet).sort();
+  }, [collaborators]);
+
   // Local state for Mobile Filter Sheet
   const [sheetFilters, setSheetFilters] = useState(filters);
   const [sheetSearch, setSheetSearch] = useState(searchTerm);
@@ -87,7 +101,8 @@ export function TimeTrackingToolbar({
       statusEntrada: sheetFilters.statusEntrada,
       statusSaida: sheetFilters.statusSaida,
       usuarioId: sheetFilters.usuarioId,
-      clienteId: sheetFilters.clienteId
+      clienteId: sheetFilters.clienteId,
+      turno: sheetFilters.turno
     });
     setIsSheetOpen(false);
   };
@@ -99,13 +114,15 @@ export function TimeTrackingToolbar({
       statusSaida: "todos",
       usuarioId: "todos",
       clienteId: "todos",
+      turno: "todos",
     });
     // Also clear local sheet state to keep it in sync
     setSheetFilters({
       statusEntrada: "todos",
       statusSaida: "todos",
       usuarioId: "todos",
-      clienteId: "todos"
+      clienteId: "todos",
+      turno: "todos"
     });
     setSheetSearch("");
   };
@@ -115,7 +132,8 @@ export function TimeTrackingToolbar({
       ...prev,
       statusEntrada: "todos",
       statusSaida: "todos",
-      clienteId: "todos"
+      clienteId: "todos",
+      turno: "todos"
       // usuarioId is preserved
     }));
   };
@@ -132,6 +150,7 @@ export function TimeTrackingToolbar({
     filters.statusSaida,
     filters.usuarioId,
     filters.clienteId,
+    filters.turno,
   ].filter((v) => v && v !== "todos").length;
 
   const FilterContent = ({ isSheet = false }) => {
@@ -165,11 +184,31 @@ export function TimeTrackingToolbar({
             searchPlaceholder="Buscar cliente..."
             emptyText="Nenhum cliente encontrado."
             className={cn(
-              "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none",
+              "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-700 transition-none",
               isSheet && "h-12 bg-white hover:bg-white"
             )}
             modal={isSheet}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Turno</Label>
+          <Select value={currentFilters.turno} onValueChange={(v) => updateFilter("turno", v)}>
+            <SelectTrigger className={cn(
+              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-700",
+              isSheet && "h-12 bg-white"
+            )}>
+              <div className="flex items-center">
+                <SelectValue placeholder="Todos os Turnos" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="z-[10001]">
+              <SelectItem value="todos">Todos os Turnos</SelectItem>
+              {uniqueShifts.map(shift => (
+                <SelectItem key={shift} value={shift}>{shift}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
@@ -189,6 +228,7 @@ export function TimeTrackingToolbar({
               <SelectItem value={STATUS_PONTO.AMARELO}>{getStatusLabel(STATUS_PONTO.AMARELO, 'entrada')}</SelectItem>
               <SelectItem value={STATUS_PONTO.VERMELHO}>{getStatusLabel(STATUS_PONTO.VERMELHO, 'entrada')}</SelectItem>
               <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'entrada')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.AUSENTE}>{getStatusLabel(STATUS_PONTO.AUSENTE, 'entrada')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -206,11 +246,12 @@ export function TimeTrackingToolbar({
             </SelectTrigger>
             <SelectContent className="z-[10001]">
               <SelectItem value="todos">Todos os Status</SelectItem>
-              <SelectItem value={STATUS_PONTO.EM_ANDAMENTO}>{getStatusLabel(STATUS_PONTO.EM_ANDAMENTO, 'saida')}</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.TRABALHANDO}>Trabalhando</SelectItem>
               <SelectItem value={STATUS_PONTO.VERDE}>{getStatusLabel(STATUS_PONTO.VERDE, 'saida')}</SelectItem>
               <SelectItem value={STATUS_PONTO.AMARELO}>{getStatusLabel(STATUS_PONTO.AMARELO, 'saida')}</SelectItem>
               <SelectItem value={STATUS_PONTO.VERMELHO}>{getStatusLabel(STATUS_PONTO.VERMELHO, 'saida')}</SelectItem>
               <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'saida')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.AUSENTE}>{getStatusLabel(STATUS_PONTO.AUSENTE, 'saida')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -236,7 +277,7 @@ export function TimeTrackingToolbar({
             searchPlaceholder="Digite o nome..."
             emptyText="Nenhum colaborador encontrado."
             startIcon={<Search className="h-4 w-4 text-gray-400" />}
-            className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium shadow-none text-sm sm:text-base hover:bg-white transition-none pl-9"
+            className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium shadow-none text-sm sm:text-base text-gray-700 hover:bg-white hover:text-gray-700 transition-none pl-9"
           />
         </div>
 

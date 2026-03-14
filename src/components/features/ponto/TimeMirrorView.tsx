@@ -19,6 +19,7 @@ import { RegistroPonto } from "@/types/database";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { formatMinutes } from "@/utils/ponto";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -32,7 +33,7 @@ export function TimeMirrorView({
     usuarioId, 
     selectedMonth: propMonth,
     selectedYear: propYear,
-    selectedShift = "todos",
+    selectedShift = STATUS_CADASTRO.TODOS,
     hideCollaboratorSelect = false 
 }: TimeMirrorViewProps) {
     const {
@@ -57,8 +58,16 @@ export function TimeMirrorView({
     // Apply Shift Filter
     const report = useMemo(() => {
         if (!rawReport) return [];
-        if (selectedShift === "todos") return rawReport;
-        return rawReport.filter(r => String(r.colaborador_cliente_id) === selectedShift);
+        if (selectedShift === STATUS_CADASTRO.TODOS) return rawReport;
+        
+        return rawReport.filter(r => {
+            const label = r.turno_hora_inicio && r.turno_hora_fim
+                ? `${r.turno_hora_inicio.substring(0, 5)} - ${r.turno_hora_fim.substring(0, 5)}`
+                : (r.detalhes_calculo?.entrada?.turno_base 
+                    ? `${r.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(r.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
+                    : null);
+            return label === selectedShift;
+        });
     }, [rawReport, selectedShift]);
 
     const { openTimeRecordDetailsDialog, openEditTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();

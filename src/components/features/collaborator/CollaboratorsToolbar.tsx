@@ -96,7 +96,7 @@ const FilterControls = ({
         searchPlaceholder="Buscar cliente..."
         emptyText="Nenhum cliente encontrado."
         className={cn(
-          "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none",
+          "h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-white hover:text-gray-700 transition-none shadow-none",
           isSheet && "h-12 bg-white hover:bg-white"
         )}
         modal={isSheet}
@@ -115,7 +115,7 @@ const FilterControls = ({
         searchPlaceholder="Buscar empresa..."
         emptyText="Nenhuma empresa encontrada."
         className={cn(
-          "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-foreground hover:bg-gray-50 hover:text-foreground transition-none",
+          "h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-white hover:text-gray-700 transition-none shadow-none",
           isSheet && "h-12 bg-white hover:bg-white"
         )}
         modal={isSheet}
@@ -129,7 +129,7 @@ const FilterControls = ({
       <Select value={statusValue} onValueChange={onStatusChange}>
         <SelectTrigger
           className={cn(
-            "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium",
+            "h-11 rounded-xl bg-white border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-700",
             isSheet && "h-12 bg-white"
           )}
         >
@@ -151,7 +151,7 @@ const FilterControls = ({
       <Select value={roleValue} onValueChange={onRoleChange}>
         <SelectTrigger
           className={cn(
-            "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium",
+            "h-11 rounded-xl bg-white border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-700",
             isSheet && "h-12 bg-white"
           )}
         >

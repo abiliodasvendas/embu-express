@@ -55,32 +55,7 @@ export function FinancialReportView({ usuarioId, colaboradorNome }: FinancialRep
     return (
         <PullToRefreshWrapper onRefresh={async () => { await refetch(); }}>
             <div className="space-y-6">
-                {/* Context Filters */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
-                        <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                            <SelectTrigger className="h-9 w-[130px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                {monthOptions.map(m => (
-                                    <SelectItem key={m.value} value={String(m.value)} className="text-xs">{m.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
 
-                        <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                            <SelectTrigger className="h-9 w-[90px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                {anos.map(a => (
-                                    <SelectItem key={a.value} value={a.value} className="text-xs">{a.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
 
                 {!usuarioId ? (
                     <UnifiedEmptyState

@@ -12,6 +12,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { queryClient } from "@/services/queryClient";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { ROLES } from "@/constants/permissions.enum";
+import { Combobox } from "@/components/ui/combobox";
 
 export function TimeMirror() {
     const { setPageTitle } = useLayout();
@@ -60,8 +61,8 @@ export function TimeMirror() {
 
     // Auto-select shift logic
     const currentCollab = useMemo(() => 
-        collaborators.find(c => c.id === finalUsuarioId),
-    [collaborators, finalUsuarioId]);
+        isOnlyPersonal ? profile : collaborators.find(c => c.id === finalUsuarioId),
+    [isOnlyPersonal, profile, collaborators, finalUsuarioId]);
 
     const collabShifts = currentCollab?.links || [];
 
@@ -69,7 +70,8 @@ export function TimeMirror() {
         if (!finalUsuarioId) {
             setSelectedShift(STATUS_CADASTRO.TODOS);
         } else if (collabShifts.length === 1) {
-            setSelectedShift(String(collabShifts[0].id));
+            const label = `${collabShifts[0].hora_inicio.substring(0, 5)} - ${collabShifts[0].hora_fim.substring(0, 5)}`;
+            setSelectedShift(label);
         } else {
             setSelectedShift(STATUS_CADASTRO.TODOS);
         }
@@ -90,53 +92,59 @@ export function TimeMirror() {
                             {/* Colaborador */}
                             {!isOnlyPersonal && (
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Colaborador</label>
-                                    <Select value={selectedCollaborator} onValueChange={setSelectedCollaborator}>
-                                        <SelectTrigger className="rounded-xl border-gray-100 h-11">
-                                            <SelectValue placeholder="Selecione..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os colaboradores</SelectItem>
-                                            {collaborators.map(c => (
-                                                <SelectItem key={c.id} value={c.id}>{c.nome_completo}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Colaborador</label>
+                                    <Combobox
+                                        options={[
+                                            { value: STATUS_CADASTRO.TODOS, label: "Todos os colaboradores" },
+                                            ...collaborators.map(c => ({ value: c.id, label: c.nome_completo }))
+                                        ]}
+                                        value={selectedCollaborator}
+                                        onSelect={(val) => setSelectedCollaborator(val || STATUS_CADASTRO.TODOS)}
+                                        placeholder="Selecione um colaborador..."
+                                        searchPlaceholder="Buscar colaborador..."
+                                        emptyText="Nenhum colaborador encontrado."
+                                        className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-white hover:text-gray-700 transition-none shadow-none"
+                                    />
                                 </div>
                             )}
 
                             {/* Turno */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Turno</label>
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Turno</label>
                                 <Select 
                                     value={selectedShift} 
                                     onValueChange={setSelectedShift}
                                     disabled={!finalUsuarioId}
                                 >
-                                    <SelectTrigger className="rounded-xl border-gray-100 h-11">
+                                    <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
                                         <SelectValue placeholder="Todos" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="todos">Todos os turnos</SelectItem>
-                                        {collabShifts.map(s => (
-                                            <SelectItem key={s.id} value={String(s.id)}>
-                                                {s.hora_inicio.substring(0, 5)} - {s.hora_fim.substring(0, 5)}
-                                            </SelectItem>
-                                        ))}
+                                    <SelectContent className="rounded-xl">
+                                        {collabShifts.length > 1 && (
+                                            <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os turnos</SelectItem>
+                                        )}
+                                        {collabShifts.map(s => {
+                                            const label = `${s.hora_inicio.substring(0, 5)} - ${s.hora_fim.substring(0, 5)}`;
+                                            return (
+                                                <SelectItem key={s.id} value={label}>
+                                                    {label}
+                                                </SelectItem>
+                                            );
+                                        })}
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             {/* Mês */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Mês</label>
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Mês</label>
                                 <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                                    <SelectTrigger className="rounded-xl border-gray-100 h-11 text-xs">
+                                    <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
                                         {monthOptions.map(m => (
-                                            <SelectItem key={m.value} value={String(m.value)} className="text-xs">{m.label}</SelectItem>
+                                            <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -144,14 +152,14 @@ export function TimeMirror() {
 
                             {/* Ano */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Ano</label>
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Ano</label>
                                 <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                                    <SelectTrigger className="rounded-xl border-gray-100 h-11 text-xs">
+                                    <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
                                         {anos.map(a => (
-                                            <SelectItem key={a.value} value={String(a.value)} className="text-xs">{a.label}</SelectItem>
+                                            <SelectItem key={a.value} value={String(a.value)}>{a.label}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>

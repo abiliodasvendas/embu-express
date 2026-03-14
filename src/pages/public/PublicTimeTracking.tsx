@@ -15,6 +15,8 @@ import { formatTime, getStatusColorClass, getStatusLabel, formatMinutes } from "
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { Combobox } from "@/components/ui/combobox";
+import { DateNavigation } from "@/components/common/DateNavigation";
 
 export default function PublicTimeTracking() {
     const { uuid } = useParams();
@@ -32,17 +34,23 @@ export default function PublicTimeTracking() {
     // Filter Logic
     const filteredRecords = records?.filter(r => {
         const matchesCollab = selectedCollabId === STATUS_CADASTRO.TODOS || r.usuario_id === selectedCollabId;
-        const matchesShift = selectedShift === STATUS_CADASTRO.TODOS || String(r.colaborador_cliente_id) === selectedShift;
+        
+        let matchesShift = selectedShift === STATUS_CADASTRO.TODOS;
+        if (!matchesShift) {
+            const recordShift = r.detalhes_calculo?.entrada?.turno_base && r.detalhes_calculo?.saida?.turno_base
+                ? `${r.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${r.detalhes_calculo.saida.turno_base.substring(0, 5)}`
+                : null;
+            matchesShift = recordShift === selectedShift;
+        }
+        
         return matchesCollab && matchesShift;
     });
 
-    const shifts = Array.from(new Set(collaborators?.flatMap(c => c.links?.map((l: any) => ({
-        id: l.id,
-        label: `${l.hora_inicio.substring(0, 5)} - ${l.hora_fim.substring(0, 5)}`
-    }))) || []));
-
-    // Remove duplicate shifts by ID
-    const uniqueShifts = Array.from(new Map(shifts.map(s => [s.id, s])).values());
+    const uniqueShifts = Array.from(new Set(
+        collaborators?.flatMap(c => c.links?.map((l: any) => 
+            (l.hora_inicio && l.hora_fim) ? `${l.hora_inicio.substring(0, 5)} - ${l.hora_fim.substring(0, 5)}` : null
+        ).filter(Boolean)) || []
+    )).sort();
 
     return (
         <PullToRefreshWrapper onRefresh={handleRefresh}>
@@ -51,47 +59,40 @@ export default function PublicTimeTracking() {
             <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
                 <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col lg:flex-row gap-4">
-                        {/* Date Picker (Simplified) */}
-                        <div className="flex-1 max-w-sm">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1.5 block">Data do Controle</label>
-                            <div className="relative">
-                                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input 
-                                    type="date" 
-                                    value={format(date, "yyyy-MM-dd")} 
-                                    onChange={(e) => setDate(new Date(e.target.value + 'T12:00:00'))}
-                                    className="pl-10 rounded-xl border-gray-100 bg-gray-50/50 focus:bg-white transition-all h-11"
-                                />
-                            </div>
+                        {/* Date Navigation */}
+                        <div className="flex-1 w-full lg:w-auto">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 mb-1.5 block">Data</label>
+                            <DateNavigation date={date} onNavigate={setDate} />
                         </div>
 
                         {/* Collaborator Select */}
                         <div className="flex-[2]">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1.5 block">Colaborador</label>
-                            <Select value={selectedCollabId} onValueChange={setSelectedCollabId}>
-                                <SelectTrigger className="rounded-xl border-gray-100 bg-gray-50/50 h-11">
-                                    <SelectValue placeholder="Todos os colaboradores" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os colaboradores</SelectItem>
-                                    {collaborators?.map((c: any) => (
-                                        <SelectItem key={c.id} value={c.id}>{c.nome_completo}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 mb-1.5 block">Colaborador</label>
+                            <Combobox
+                                options={[
+                                    { value: STATUS_CADASTRO.TODOS, label: "Todos os colaboradores" },
+                                    ...collaborators?.map((c: any) => ({ value: c.id, label: c.nome_completo })) || []
+                                ]}
+                                value={selectedCollabId}
+                                onSelect={(val) => setSelectedCollabId(val || STATUS_CADASTRO.TODOS)}
+                                placeholder="Selecione um colaborador..."
+                                searchPlaceholder="Buscar colaborador..."
+                                emptyText="Nenhum colaborador encontrado."
+                                className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-white hover:text-gray-700 transition-none shadow-none"
+                            />
                         </div>
 
                         {/* Shift Filter */}
                         <div className="flex-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1.5 block">Turno</label>
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 mb-1.5 block">Turno</label>
                             <Select value={selectedShift} onValueChange={setSelectedShift}>
-                                <SelectTrigger className="rounded-xl border-gray-100 bg-gray-50/50 h-11">
+                                <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
                                     <SelectValue placeholder="Todos os turnos" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os turnos</SelectItem>
-                                    {uniqueShifts.map((s: any) => (
-                                        <SelectItem key={s.id} value={String(s.id)}>{s.label}</SelectItem>
+                                <SelectContent className="rounded-xl">
+                                    <SelectItem value={STATUS_CADASTRO.TODOS} className="font-medium">Todos os turnos</SelectItem>
+                                    {uniqueShifts.map((label: string) => (
+                                        <SelectItem key={label} value={label} className="font-medium">{label}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>

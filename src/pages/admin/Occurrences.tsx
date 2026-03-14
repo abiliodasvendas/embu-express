@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@
 import { ChevronRight } from "lucide-react";
 import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 import { DateNavigation } from "@/components/common/DateNavigation";
+import { Combobox } from "@/components/ui/combobox";
 
 
 export function Occurrences() {
@@ -94,24 +95,23 @@ export function Occurrences() {
                         <CardContent className="p-5">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                                 <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Colaborador</label>
-                                    <Select value={selectedCollaborator} onValueChange={setSelectedCollaborator}>
-                                        <SelectTrigger className="rounded-xl border-gray-100 h-11 bg-gray-50/50">
-                                            <SelectValue placeholder="Todos os colaboradores" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="TODOS">Todos os colaboradores</SelectItem>
-                                            {collaborators.map(c => (
-                                                <SelectItem key={c.id} value={c.id}>
-                                                    {c.nome_completo}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Colaborador</label>
+                                    <Combobox
+                                        options={[
+                                            { value: "TODOS", label: "Todos os colaboradores" },
+                                            ...collaborators.map(c => ({ value: c.id, label: c.nome_completo }))
+                                        ]}
+                                        value={selectedCollaborator}
+                                        onSelect={(val) => setSelectedCollaborator(val || "TODOS")}
+                                        placeholder="Selecione um colaborador..."
+                                        searchPlaceholder="Buscar colaborador..."
+                                        emptyText="Nenhum colaborador encontrado."
+                                        className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-white hover:text-gray-700 transition-none shadow-none"
+                                    />
                                 </div>
 
                                 <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Data da Ocorrência</label>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Data da Ocorrência</label>
                                     <DateNavigation 
                                         date={selectedDate} 
                                         onNavigate={setSelectedDate} 

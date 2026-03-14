@@ -28,6 +28,8 @@ export default function TimeTracking() {
       setSelectedUsuario,
       selectedCliente = "todos",
       setSelectedCliente,
+      selectedTurno = "todos",
+      setSelectedTurno,
       hasActiveFilters,
       setFilters
   } = useFilters({
@@ -35,6 +37,7 @@ export default function TimeTracking() {
       statusSaidaParam: "status_saida",
       usuarioParam: "usuario",
       clienteParam: "cliente",
+      turnoParam: "turno",
       syncWithUrl: true
   });
 
@@ -59,6 +62,19 @@ export default function TimeTracking() {
       incluirTodos: true
   });
 
+  // Local filtering for Turno (if not handled by API)
+  const filteredRecords = records?.filter(record => {
+    if (selectedTurno === "todos") return true;
+    
+    // Check if any of collab's links match the selected shift label
+    // OR if the current record's shift label matches
+    const recordShift = record.detalhes_calculo?.entrada?.turno_base && record.detalhes_calculo?.saida?.turno_base
+      ? `${record.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${record.detalhes_calculo.saida.turno_base.substring(0, 5)}`
+      : null;
+      
+    return recordShift === selectedTurno;
+  });
+
   // Mutations for Loading State
   const createRecord = useCreateTimeRecord();
   const updateRecord = useUpdateTimeRecord();
@@ -76,6 +92,7 @@ export default function TimeTracking() {
       if (key === "statusSaida" && setSelectedStatusSaida) setSelectedStatusSaida(value);
       if (key === "usuarioId" && setSelectedUsuario) setSelectedUsuario(value);
       if (key === "clienteId" && setSelectedCliente) setSelectedCliente(value);
+      if (key === "turno" && setSelectedTurno) setSelectedTurno(value);
   };
 
   return (
@@ -90,7 +107,8 @@ export default function TimeTracking() {
                 statusEntrada: selectedStatusEntrada,
                 statusSaida: selectedStatusSaida,
                 usuarioId: selectedUsuario,
-                clienteId: selectedCliente
+                clienteId: selectedCliente,
+                turno: selectedTurno
             }}
             onFiltersChange={handleFiltersChange}
             onRegister={() => setIsManualEntryOpen(true)}
@@ -102,6 +120,7 @@ export default function TimeTracking() {
                      statusSaida: newFilters.statusSaida,
                      usuario: newFilters.usuarioId, // Map usuarioId to usuario
                      cliente: newFilters.clienteId,
+                     turno: newFilters.turno,
                      searchTerm: newFilters.searchTerm
                  });
             }}
@@ -110,14 +129,14 @@ export default function TimeTracking() {
 
         {isLoading ? (
             <ListSkeleton />
-        ) : !records || records.length === 0 ? (
+        ) : !filteredRecords || filteredRecords.length === 0 ? (
             <UnifiedEmptyState 
                 icon={CalendarX}
                 title="Nenhum registro encontrado"
                 description="Nenhum ponto registrado para esta data ou filtros."
             />
         ) : (
-            <TimeTrackingList records={records} />
+            <TimeTrackingList records={filteredRecords} />
         )}
 
         {isManualEntryOpen && (

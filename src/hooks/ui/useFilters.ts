@@ -14,6 +14,7 @@ export interface UseFiltersOptions {
   usuarioParam?: string;
   statusEntradaParam?: string;
   statusSaidaParam?: string;
+  turnoParam?: string;
   semPontoHojeParam?: string;
   syncWithUrl?: boolean;
 }
@@ -41,6 +42,8 @@ export interface UseFiltersReturn {
   setSelectedStatusEntrada?: (value: string) => void;
   selectedStatusSaida?: string;
   setSelectedStatusSaida?: (value: string) => void;
+  selectedTurno?: string;
+  setSelectedTurno?: (value: string) => void;
   onClear: () => void;
   onApply?: () => void;
   semPontoHojeValue: boolean;
@@ -60,6 +63,7 @@ export interface UseFiltersReturn {
     usuario?: string;
     statusEntrada?: string;
     statusSaida?: string;
+    turno?: string;
     sem_ponto_hoje?: boolean;
   }) => void;
   hasActiveFilters: boolean;
@@ -78,6 +82,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     usuarioParam,
     statusEntradaParam,
     statusSaidaParam,
+    turnoParam,
     semPontoHojeParam,
     syncWithUrl = true,
   } = options;
@@ -97,6 +102,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     usuario: string;
     statusEntrada: string;
     statusSaida: string;
+    turno: string;
     semPontoHoje: boolean;
   }>({
     searchTerm: "",
@@ -110,6 +116,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     usuario: STATUS_CADASTRO.TODOS,
     statusEntrada: STATUS_CADASTRO.TODOS,
     statusSaida: STATUS_CADASTRO.TODOS,
+    turno: STATUS_CADASTRO.TODOS,
     semPontoHoje: false,
   });
 
@@ -147,6 +154,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const selectedUsuario = getValue(usuarioParam, "usuario", STATUS_CADASTRO.TODOS);
   const selectedStatusEntrada = getValue(statusEntradaParam, "statusEntrada", STATUS_CADASTRO.TODOS);
   const selectedStatusSaida = getValue(statusSaidaParam, "statusSaida", STATUS_CADASTRO.TODOS);
+  const selectedTurno = getValue(turnoParam, "turno", STATUS_CADASTRO.TODOS);
   const selectedSemPontoHoje = getBooleanValue(semPontoHojeParam, "semPontoHoje", false);
 
   const updateState = useCallback((key: keyof typeof internalState, value: any, param?: string) => {
@@ -176,6 +184,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedUsuario = useCallback((v: string) => updateState("usuario", v, usuarioParam), [updateState, usuarioParam]);
   const setSelectedStatusEntrada = useCallback((v: string) => updateState("statusEntrada", v, statusEntradaParam), [updateState, statusEntradaParam]);
   const setSelectedStatusSaida = useCallback((v: string) => updateState("statusSaida", v, statusSaidaParam), [updateState, statusSaidaParam]);
+  const setSelectedTurno = useCallback((v: string) => updateState("turno", v, turnoParam), [updateState, turnoParam]);
   const setSelectedSemPontoHoje = useCallback((v: boolean) => updateState("semPontoHoje", v, semPontoHojeParam), [updateState, semPontoHojeParam]);
 
   const clearFilters = useCallback(() => {
@@ -193,6 +202,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         if (usuarioParam) newParams.delete(usuarioParam);
         if (statusEntradaParam) newParams.delete(statusEntradaParam);
         if (statusSaidaParam) newParams.delete(statusSaidaParam);
+        if (turnoParam) newParams.delete(turnoParam);
         if (semPontoHojeParam) newParams.delete(semPontoHojeParam);
         return newParams;
       }, { replace: true });
@@ -209,6 +219,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         usuario: STATUS_CADASTRO.TODOS,
         statusEntrada: STATUS_CADASTRO.TODOS,
         statusSaida: STATUS_CADASTRO.TODOS,
+        turno: STATUS_CADASTRO.TODOS,
         semPontoHoje: false,
       });
     }
@@ -225,6 +236,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     usuarioParam,
     statusEntradaParam,
     statusSaidaParam,
+    turnoParam,
     semPontoHojeParam,
     setSearchParams,
   ]);
@@ -243,6 +255,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       usuario?: string;
       statusEntrada?: string;
       statusSaida?: string;
+      turno?: string;
       sem_ponto_hoje?: boolean;
     }) => {
       if (syncWithUrl) {
@@ -268,6 +281,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           updateParam(usuarioParam, newFilters.usuario);
           updateParam(statusEntradaParam, newFilters.statusEntrada);
           updateParam(statusSaidaParam, newFilters.statusSaida);
+          updateParam(turnoParam, newFilters.turno);
           updateParam(semPontoHojeParam, newFilters.sem_ponto_hoje);
 
           return newParams;
@@ -286,6 +300,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           ...(newFilters.usuario !== undefined && { usuario: newFilters.usuario }),
           ...(newFilters.statusEntrada !== undefined && { statusEntrada: newFilters.statusEntrada }),
           ...(newFilters.statusSaida !== undefined && { statusSaida: newFilters.statusSaida }),
+          ...(newFilters.turno !== undefined && { turno: newFilters.turno }),
           ...(newFilters.sem_ponto_hoje !== undefined && { semPontoHoje: newFilters.sem_ponto_hoje }),
         }));
       }
@@ -303,6 +318,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       usuarioParam,
       statusEntradaParam,
       statusSaidaParam,
+      turnoParam,
       semPontoHojeParam,
       setSearchParams,
     ]
@@ -318,6 +334,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     (selectedUsuario !== undefined && selectedUsuario !== STATUS_CADASTRO.TODOS) ||
     (selectedStatusEntrada !== undefined && selectedStatusEntrada !== STATUS_CADASTRO.TODOS) ||
     (selectedStatusSaida !== undefined && selectedStatusSaida !== STATUS_CADASTRO.TODOS) ||
+    (selectedTurno !== undefined && selectedTurno !== STATUS_CADASTRO.TODOS) ||
     !!selectedSemPontoHoje;
 
   return {
@@ -360,6 +377,10 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     ...(selectedStatusSaida !== undefined && {
       selectedStatusSaida,
       setSelectedStatusSaida,
+    }),
+    ...(selectedTurno !== undefined && {
+      selectedTurno,
+      setSelectedTurno,
     }),
     selectedSemPontoHoje: selectedSemPontoHoje || false,
     setSelectedSemPontoHoje,

@@ -166,14 +166,7 @@ const TimeRecordMobileItem = ({
             {record.saida_hora ? (
               <div className="flex items-center gap-1">
                 <Timer className="w-3 h-3" />
-                {calculateTotalTime(
-                  record.entrada_hora,
-                  record.saida_hora,
-                  (record as any).pausas?.reduce((acc: number, p: any) => {
-                    if (!p.fim_hora) return acc;
-                    return acc + Math.round((new Date(p.fim_hora).getTime() - new Date(p.inicio_hora).getTime()) / 60000);
-                  }, 0)
-                )}
+                {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
               </div>
             ) : (
               <span>{(record as any).ausente ? "Ausente" : "Em andamento"}</span>
@@ -266,14 +259,7 @@ const TimeRecordTableRow = ({
 
           {/* Total Secondary */}
           <span className="text-[10px] text-gray-400">
-            Total: {record.saida_hora ? calculateTotalTime(
-              record.entrada_hora,
-              record.saida_hora,
-              (record as any).pausas?.reduce((acc: number, p: any) => {
-                if (!p.fim_hora) return acc;
-                return acc + Math.round((new Date(p.fim_hora).getTime() - new Date(p.inicio_hora).getTime()) / 60000);
-              }, 0)
-            ) : (record as any).ausente ? "Ausente" : "Em andamento"}
+            Total: {record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : (record as any).ausente ? "Ausente" : "Em andamento"}
           </span>
         </div>
       </td>

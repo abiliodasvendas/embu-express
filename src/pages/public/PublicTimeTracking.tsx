@@ -177,7 +177,7 @@ export default function PublicTimeTracking() {
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total</p>
                                             <div className="flex items-center gap-1.5 font-bold text-gray-900 justify-center sm:justify-end">
                                                 <Timer className="h-4 w-4 text-gray-400" />
-                                                <span>{record.saida_hora ? formatMinutes(record.detalhes_calculo?.resumo?.liquido_minutos || 0) : '--:--'}</span>
+                                                <span>{record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : '--:--'}</span>
                                             </div>
                                         </div>
                                         <div className="w-px h-8 bg-gray-200 hidden sm:block" />

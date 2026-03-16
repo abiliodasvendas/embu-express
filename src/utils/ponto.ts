@@ -6,7 +6,7 @@ export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida')
     switch (status) {
         case STATUS_PONTO.VERDE: return "No Horário";
         case STATUS_PONTO.AMARELO: return type === 'entrada' ? "Atraso" : "Hora Extra";
-        case STATUS_PONTO.ANTECIPADA: return type === 'entrada' ? "Entrada Antecipada" : "Saída Antecipada";
+        case STATUS_PONTO.ANTECIPADA: return type === 'entrada' ? "Antecipada" : "Antecipada";
         case STATUS_PONTO.VERMELHO: return type === 'entrada' ? "Atraso Crítico" : "HE Excessiva";
         case STATUS_PONTO.CINZA: return "Aguardando";
         case STATUS_PONTO.EM_ANDAMENTO: return "Trabalhando";
@@ -37,7 +37,7 @@ export const getStatusColorClass = (status: string | null, type?: 'entrada' | 's
         case 'AUSENTE':
         case STATUS_PONTO.AUSENTE:
             return "bg-rose-50 text-rose-700 border-rose-100"; // Ausente (Rose tone for both)
-        case STATUS_PONTO.CINZA: 
+        case STATUS_PONTO.CINZA:
             return "bg-gray-100 text-gray-500 border-gray-200";
         case STATUS_PONTO.EM_ANDAMENTO: return "bg-blue-50 text-blue-600 border-blue-100";
         case 'iniciou': return "bg-sky-50 text-sky-600 border-sky-100";

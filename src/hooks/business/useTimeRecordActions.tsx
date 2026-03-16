@@ -19,7 +19,7 @@ export function useTimeRecordActions({
   const { can } = usePermissions();
   const actions = [];
 
-  if (onDetails) {
+  if (onDetails && record.entrada_hora) {
     actions.push({
       label: "Ver detalhes",
       icon: <Eye className="h-4 w-4" />,

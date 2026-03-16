@@ -74,10 +74,10 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                     <span className={cn(
                         "font-bold px-2 py-0.5 rounded-md",
                         status === STATUS_PONTO.VERDE ? "text-emerald-600 bg-emerald-50" :
-                        status === STATUS_PONTO.AMARELO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-sky-600 bg-sky-50") :
-                        status === STATUS_PONTO.ANTECIPADA ? (type === 'entrada' ? "text-sky-600 bg-sky-50" : "text-orange-600 bg-orange-50") :
-                        status === STATUS_PONTO.VERMELHO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-indigo-700 bg-indigo-50") :
-                        "text-gray-600 bg-gray-50"
+                            status === STATUS_PONTO.AMARELO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-sky-600 bg-sky-50") :
+                                status === STATUS_PONTO.ANTECIPADA ? (type === 'entrada' ? "text-sky-600 bg-sky-50" : "text-orange-600 bg-orange-50") :
+                                    status === STATUS_PONTO.VERMELHO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-indigo-700 bg-indigo-50") :
+                                        "text-gray-600 bg-gray-50"
                     )}>
                         {formatMinutes(diff)}
                     </span>
@@ -148,22 +148,24 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
 
                         <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
                             {/* Entry */}
-                            <div className="relative">
-                                <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm z-10" />
-                                <div className="flex flex-col w-full">
-                                    <div className="flex justify-between items-start w-full">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase">Entrada</span>
-                                            <span className="text-sm font-bold text-gray-900">{formatTime(record.entrada_hora)}</span>
+                            {record.entrada_hora && (
+                                <div className="relative">
+                                    <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm z-10" />
+                                    <div className="flex flex-col w-full">
+                                        <div className="flex justify-between items-start w-full">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black text-gray-400 uppercase">Entrada</span>
+                                                <span className="text-sm font-bold text-gray-900">{formatTime(record.entrada_hora)}</span>
+                                            </div>
+                                            {(record.entrada_km !== null && record.entrada_km !== undefined) && (
+                                                <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
+                                                    {formatKm(record.entrada_km)}
+                                                </span>
+                                            )}
                                         </div>
-                                        {(record.entrada_km !== null && record.entrada_km !== undefined) && (
-                                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
-                                                {formatKm(record.entrada_km)}
-                                            </span>
-                                        )}
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Pauses */}
                             {pausas.map((p: any, idx: number) => (
@@ -232,33 +234,33 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50 col-span-2">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Saldo Diário</span>
                             <span className={`text-xl font-black ${record.saldo_minutos !== undefined && record.saldo_minutos !== null ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-300"}`}>
-                                {record.saldo_minutos !== undefined && record.saldo_minutos !== null ? formatMinutes(record.saldo_minutos) : "--"}
+                                {record.entrada_hora && record.saida_hora && record.saldo_minutos !== undefined && record.saldo_minutos !== null ? formatMinutes(record.saldo_minutos) : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
                             </span>
                         </div>
 
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Trabalhadas</span>
                             <span className="text-lg font-black text-gray-700 font-mono">
-                                {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
+                                {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
                             </span>
                         </div>
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Em Pausa</span>
                             <span className="text-lg font-black text-amber-600 font-mono">
-                                {record.detalhes_calculo?.resumo?.horas_pausa || "--:--"}
+                                {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_pausa || "--:--") : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
                             </span>
                         </div>
 
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">KM Trabalhado</span>
                             <span className="text-lg font-black text-blue-600 font-mono">
-                                {record.detalhes_calculo?.resumo?.km_trabalhado !== undefined ? formatKm(record.detalhes_calculo.resumo.km_trabalhado) : "--"}
+                                {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_trabalhado !== undefined ? formatKm(record.detalhes_calculo.resumo.km_trabalhado) : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--" : "")}
                             </span>
                         </div>
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">KM em Pausa</span>
                             <span className="text-lg font-black text-amber-600 font-mono">
-                                {record.detalhes_calculo?.resumo?.km_pausa !== undefined ? formatKm(record.detalhes_calculo.resumo.km_pausa) : "--"}
+                                {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_pausa !== undefined ? formatKm(record.detalhes_calculo.resumo.km_pausa) : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--" : "")}
                             </span>
                         </div>
                     </div>

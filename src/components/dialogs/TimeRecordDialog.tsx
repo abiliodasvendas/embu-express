@@ -6,31 +6,38 @@ import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useActiveCollaborators, useCreatePonto } from "@/hooks";
+import { useActiveCollaborators } from "@/hooks";
+import { useCreatePonto, useUpdatePonto } from "@/hooks/api/usePontoMutations";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
-import { kmMask, kmToNumber, timeMask } from "@/utils/masks";
+import { kmMask, kmToNumber, timeMask, formatKm } from "@/utils/masks";
 import { ManualTimeRecordFormValues, manualTimeRecordSchema } from "@/schemas/pontoSchema";
 import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, Clock, Loader2, User, X, Gauge, PlusCircle, Building2 } from "lucide-react";
+import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, Clock, Loader2, User, X, Gauge, PlusCircle, Edit2, Building2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { RegistroPonto } from "@/types/database";
 
-
-interface ManualTimeRecordDialogProps {
+interface TimeRecordDialogProps {
     isOpen: boolean;
     onClose: () => void;
+    record?: RegistroPonto | null;
 }
 
-export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDialogProps) {
-    const { mutateAsync: createPonto, isPending } = useCreatePonto();
+export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogProps) {
+    const { mutateAsync: createPonto, isPending: isCreating } = useCreatePonto();
+    const { mutateAsync: updatePonto, isPending: isUpdating } = useUpdatePonto();
     const [openCombobox, setOpenCombobox] = useState(false);
 
-    const { data: collaborators = [] } = useActiveCollaborators({ enabled: isOpen });
+    const { data: collaborators = [] } = useActiveCollaborators({ enabled: isOpen && !record });
+
+    const isEditMode = !!record && !!record.id;
+    const isInclusionMode = !!record && !record.id; // Ausente ou Aguardando
+    const isManualMode = !record;
 
     const form = useForm<ManualTimeRecordFormValues>({
         resolver: zodResolver(manualTimeRecordSchema),
@@ -46,8 +53,8 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
     });
 
     const selectedCollaboratorId = form.watch("usuario_id");
-    const selectedCollaborator = collaborators.find(c => c.id.toString() === selectedCollaboratorId);
-    const hasTurnos = selectedCollaborator?.links && selectedCollaborator.links.length > 0;
+    const selectedCollaborator = record?.usuario || collaborators.find(c => c.id.toString() === selectedCollaboratorId);
+    const hasTurnos = (record as any)?.colaborador_cliente_id || (selectedCollaborator?.links && selectedCollaborator.links.length > 0);
 
     const handleClose = () => {
         safeCloseDialog(onClose);
@@ -55,18 +62,30 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
 
     useEffect(() => {
         if (isOpen) {
-            form.reset({
-                usuario_id: "",
-                data_referencia: format(new Date(), "yyyy-MM-dd"),
-                entrada_hora: "",
-                saida_hora: "",
-                entrada_km: "",
-                saida_km: "",
-                colaborador_cliente_id: "",
-            });
+            if (record) {
+                form.reset({
+                    usuario_id: record.usuario_id.toString(),
+                    data_referencia: record.data_referencia,
+                    entrada_hora: record.entrada_hora ? format(new Date(record.entrada_hora), "HH:mm") : "",
+                    saida_hora: record.saida_hora ? format(new Date(record.saida_hora), "HH:mm") : "",
+                    entrada_km: record.entrada_km ? formatKm(record.entrada_km).replace(" KM", "") : "",
+                    saida_km: record.saida_km ? formatKm(record.saida_km).replace(" KM", "") : "",
+                    colaborador_cliente_id: (record as any).colaborador_cliente_id?.toString() || "",
+                });
+            } else {
+                form.reset({
+                    usuario_id: "",
+                    data_referencia: format(new Date(), "yyyy-MM-dd"),
+                    entrada_hora: "",
+                    saida_hora: "",
+                    entrada_km: "",
+                    saida_km: "",
+                    colaborador_cliente_id: "",
+                });
+            }
             setOpenCombobox(false);
         }
-    }, [isOpen, form]);
+    }, [isOpen, record, form]);
 
     const onSubmit = async (values: ManualTimeRecordFormValues) => {
         try {
@@ -80,27 +99,40 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 }
             }
 
-            await createPonto({
-                usuario_id: values.usuario_id,
+            const payload = {
+                usuario_id: parseInt(values.usuario_id),
                 data_referencia: values.data_referencia,
                 entrada_hora: entrada.toISOString(),
                 entrada_km: kmToNumber(values.entrada_km),
                 saida_hora: saida ? saida.toISOString() : null,
                 saida_km: values.saida_km ? kmToNumber(values.saida_km) : null,
                 colaborador_cliente_id: values.colaborador_cliente_id ? parseInt(values.colaborador_cliente_id) : undefined
-            });
+            };
+
+            if (isEditMode && record) {
+                await updatePonto({
+                    id: record.id,
+                    data: payload as any
+                });
+            } else {
+                // Creation or Inclusion
+                await createPonto(payload as any);
+            }
 
             handleClose();
         } catch (error) {
-            console.error("Erro ao criar registro:", error);
+            console.error("Erro ao processar registro:", error);
         }
     };
+
+    const isPending = isCreating || isUpdating;
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <DialogContent
                 className="w-full max-w-sm p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
                 hideCloseButton
+                onOpenAutoFocus={(e) => e.preventDefault()}
             >
                 <div className="bg-blue-600 p-4 text-center relative shrink-0">
                     <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors" onClick={handleClose}>
@@ -109,32 +141,36 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                     </DialogClose>
 
                     <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-                        <PlusCircle className="w-5 h-5 text-white" />
+                        {isEditMode ? <Edit2 className="w-5 h-5 text-white" /> : <PlusCircle className="w-5 h-5 text-white" />}
                     </div>
                     <DialogTitle className="text-xl font-bold text-white">
-                        Novo Registro Manual
+                        {isEditMode ? "Editar Registro" : isInclusionMode ? "Incluir Registro" : "Novo Registro Manual"}
                     </DialogTitle>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
                     <Form {...form}>
-                        <form id="create-ponto-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <form id="time-record-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                                {selectedCollaboratorId ? (
+                                {record || selectedCollaboratorId ? (
                                     <div className="text-center space-y-1 animate-in fade-in slide-in-from-top-2">
                                         <div className="relative mx-auto w-10 h-10">
                                             <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
                                                 <User className="w-5 h-5" />
                                             </div>
-                                            <button 
-                                                onClick={() => {
-                                                    form.setValue("usuario_id", "");
-                                                    form.setValue("colaborador_cliente_id", "");
-                                                }}
-                                                className="absolute -right-1 -top-1 w-5 h-5 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm transition-colors"
-                                            >
-                                                <X className="w-2.5 h-2.5" />
-                                            </button>
+                                            {isManualMode && (
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => {
+                                                        form.setValue("usuario_id", "");
+                                                        form.setValue("colaborador_cliente_id", "");
+                                                    }}
+                                                    className="absolute -right-1 -top-1 w-5 h-5 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm transition-colors"
+                                                >
+                                                    <X className="w-2.5 h-2.5" />
+                                                </button>
+                                            )}
                                         </div>
                                         <h3 className="text-lg font-bold text-gray-900 leading-tight">{selectedCollaborator?.nome_completo}</h3>
                                         <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 font-medium">
@@ -143,9 +179,9 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                                 {(() => {
                                                     const linkId = form.watch("colaborador_cliente_id");
                                                     if (linkId) {
-                                                        return selectedCollaborator?.links?.find((l: any) => l.id.toString() === linkId)?.cliente?.nome_fantasia;
+                                                        return (record as any)?.cliente?.nome_fantasia || selectedCollaborator?.links?.find((l: any) => l.id.toString() === linkId)?.cliente?.nome_fantasia;
                                                     }
-                                                    return "Selecione o turno abaixo";
+                                                    return isManualMode ? "Selecione o turno abaixo" : "Sem cliente definido";
                                                 })()}
                                             </span>
                                         </div>
@@ -216,8 +252,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                     />
                                 )}
 
-
-                                {selectedCollaboratorId && hasTurnos && (
+                                {isManualMode && selectedCollaboratorId && hasTurnos && (
                                     <FormField
                                         control={form.control}
                                         name="colaborador_cliente_id"
@@ -225,7 +260,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                             <FormItem>
                                                 <FormLabel className="text-gray-700 font-bold">Turno/Vínculo <span className="text-red-500">*</span></FormLabel>
                                                 <div className="grid grid-cols-1 gap-2">
-                                                    {selectedCollaborator.links.map((link: any) => (
+                                                    {(selectedCollaborator as any)?.links?.map((link: any) => (
                                                         <div
                                                             key={link.id}
                                                             onClick={() => field.onChange(link.id.toString())}
@@ -263,15 +298,16 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                                     <FormControl>
                                                         <Button
                                                             variant={"outline"}
+                                                            disabled={!isManualMode}
                                                             className={cn(
-                                                                "h-11 w-full pl-3 text-left font-normal border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 rounded-xl transition-all",
+                                                                "h-11 w-full pl-3 text-left font-normal border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 rounded-xl transition-all disabled:opacity-100 disabled:bg-gray-50",
                                                                 !field.value && "text-muted-foreground"
                                                             )}
                                                         >
                                                             <div className="flex items-center gap-2">
                                                                 <CalendarIcon className="h-4 w-4 text-gray-400" />
                                                                 {field.value ? (
-                                                                    format(new Date(field.value), "dd 'de' MMMM, yyyy", { locale: ptBR })
+                                                                    format(new Date(field.value + "T00:00:00"), "dd 'de' MMMM, yyyy", { locale: ptBR })
                                                                 ) : (
                                                                     <span>Selecione a data</span>
                                                                 )}
@@ -401,12 +437,12 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                 </div>
 
                                 <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100 text-[10px] text-blue-700 text-center font-medium animate-in fade-in slide-in-from-top-1">
-                                    <span className="font-black uppercase tracking-widest block mb-0.5">Cálculo Automático</span>
-                                    Os status e o saldo de horas serão calculados após a criação.
+                                    <span className="font-black uppercase tracking-widest block mb-0.5">Recálculo Automático</span>
+                                    Os status e o saldo de horas serão atualizados após salvar.
                                 </div>
                             </div>
 
-                            {selectedCollaboratorId && !hasTurnos && (
+                            {isManualMode && selectedCollaboratorId && !hasTurnos && (
                                 <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800 rounded-2xl animate-in fade-in slide-in-from-top-2">
                                     <AlertCircle className="h-4 w-4" />
                                     <AlertTitle className="font-bold">Bloqueio de Registro</AlertTitle>
@@ -430,9 +466,9 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                     </Button>
                     <Button
                         type="submit"
-                        form="create-ponto-form"
-                        disabled={isPending || (!!selectedCollaboratorId && !hasTurnos)}
-                        className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+                        form="time-record-form"
+                        disabled={isPending || (isManualMode && !!selectedCollaboratorId && !hasTurnos)}
+                        className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 bg-blue-600 hover:bg-blue-700 text-white"
                     >
                         {isPending ? (
                             <>
@@ -440,7 +476,10 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                 Salvando...
                             </>
                         ) : (
-                            "Criar Registro"
+                            <>
+                                <Save className="w-4 h-4 mr-2" /> 
+                                {isEditMode ? "Salvar Alterações" : isInclusionMode ? "Salvar Inclusão" : "Criar Registro"}
+                            </>
                         )}
                     </Button>
                 </div>

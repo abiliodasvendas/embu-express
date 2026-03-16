@@ -98,56 +98,70 @@ const TimeRecordMobileItem = ({
 
   const content = (
     <div
-      onClick={isAguardando ? undefined : () => onDetails(record)}
+      onClick={(!record.entrada_hora) ? undefined : () => onDetails(record)}
       className={cn(
-        "bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all",
-        !isAguardando && "cursor-pointer active:scale-[0.98]",
-        isAguardando && "opacity-60 grayscale-[0.5]"
+        "bg-white rounded-[2rem] p-5 shadow-sm border border-transparent transition-all active:scale-[0.98]",
+        (!record.entrada_hora) ? "cursor-default border-dashed border-gray-100" : "hover:border-blue-100 hover:shadow-md cursor-pointer"
       )}
     >
       <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-50">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-bold text-gray-900">{record.usuario?.nome_completo}</span>
-          {record.cliente?.nome_fantasia && (
-            <span className="text-[10px] text-gray-400">
-              {record.cliente.nome_fantasia}
-            </span>
-          )}
+        <div className="flex items-center gap-3">
+          <div className={cn(
+            "h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm",
+            record.entrada_hora ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"
+          )}>
+            {record.usuario?.nome_completo?.charAt(0)}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-gray-900 leading-tight">{record.usuario?.nome_completo}</span>
+            <span className="text-[10px] text-gray-400 font-medium">{record.cliente?.nome_fantasia}</span>
+          </div>
         </div>
-
-
+        <Badge variant="outline" className="text-[10px] bg-gray-50/50 text-gray-400 font-bold border-gray-100 rounded-lg">
+          {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5)} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5)}
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="w-3 h-3" />
-            <span>Entrada</span>
-          </div>
-          <div className="flex flex-col items-start gap-1">
-            <span className="font-bold text-gray-700 text-lg">{formatTime(record.entrada_hora)}</span>
-            <StatusBadgeWithTooltip
-              status={record.status_entrada}
-              type={PONTO_SIDE.ENTRADA}
-              details={record.detalhes_calculo}
-              timeIso={record.entrada_hora}
-            />
+      <div className="grid grid-cols-2 gap-6">
+        <div className="space-y-1.5">
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Entrada
+          </span>
+          <div className="flex flex-col gap-1.5 min-h-[44px]">
+            {record.entrada_hora ? (
+              <span className="text-lg font-black text-gray-900">{formatTime(record.entrada_hora)}</span>
+            ) : (
+              <div className="h-7" />
+            )}
+            <div className="h-5">
+              <StatusBadgeWithTooltip 
+                status={record.status_entrada} 
+                type={PONTO_SIDE.ENTRADA} 
+                details={record.detalhes_calculo}
+                timeIso={record.entrada_hora}
+              />
+            </div>
           </div>
         </div>
 
-        <div className="space-y-1 pt-0">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="w-3 h-3" />
-            <span>Saída</span>
-          </div>
-          <div className="flex flex-col items-start gap-1">
-            <span className="font-bold text-gray-700 text-lg">{formatTime(record.saida_hora)}</span>
-            <StatusBadgeWithTooltip
-              status={record.status_saida}
-              type={PONTO_SIDE.SAIDA}
-              details={record.detalhes_calculo}
-              timeIso={record.saida_hora}
-            />
+        <div className="space-y-1.5 border-l border-gray-50 pl-6">
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Saída
+          </span>
+          <div className="flex flex-col gap-1.5 min-h-[44px]">
+            {record.saida_hora ? (
+              <span className="text-lg font-black text-gray-900">{formatTime(record.saida_hora)}</span>
+            ) : (
+              <div className="h-7" />
+            )}
+            <div className="h-5">
+              <StatusBadgeWithTooltip 
+                status={record.status_saida} 
+                type={PONTO_SIDE.SAIDA} 
+                details={record.detalhes_calculo}
+                timeIso={record.saida_hora}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -155,24 +169,30 @@ const TimeRecordMobileItem = ({
       <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {/* Mobile Balance */}
-          {record.saldo_minutos !== undefined && record.saldo_minutos !== null && !record.ausente && record.saida_hora ? (
-            <Badge variant="outline" className={`${record.saldo_minutos >= 0 ? "text-green-600 border-green-200 bg-green-50" : "text-red-600 border-red-200 bg-red-50"}`}>
-              {formatMinutes(record.saldo_minutos)}
-            </Badge>
-          ) : (
-            <span className="text-gray-400 text-xs font-bold px-3">--:--</span>
-          )}
+          <div className="h-6 flex items-center justify-center">
+            {record.entrada_hora && record.saida_hora && record.saldo_minutos !== undefined && record.saldo_minutos !== null && !record.ausente ? (
+              <Badge variant="outline" className={`${record.saldo_minutos >= 0 ? "text-green-600 border-green-200 bg-green-50" : "text-red-600 border-red-200 bg-red-50"}`}>
+                {formatMinutes(record.saldo_minutos)}
+              </Badge>
+            ) : (
+              <div className="w-12" />
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <span className="font-medium">Total:</span>
-              <span>{record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : "--:--"}</span>
+        <div className="flex items-center gap-2 text-xs text-slate-500 min-h-[16px]">
+          {record.entrada_hora && record.saida_hora && (
+            <>
+              <span className="font-medium">Total:</span>
+              <span>{record.detalhes_calculo?.resumo?.horas_trabalhadas || "00:00"}</span>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 
-  if (isAguardando) return content;
+  if (!record.entrada_hora) return content;
 
   return (
     <MobileActionItem actions={actions}>
@@ -199,9 +219,9 @@ const TimeRecordTableRow = ({
     <tr
       className={cn(
         "transition-colors group",
-        isAguardando ? "opacity-60 grayscale-[0.5]" : "hover:bg-gray-50/80 cursor-pointer"
+        (!record.entrada_hora) ? "cursor-default" : "hover:bg-gray-50/80 cursor-pointer"
       )}
-      onClick={isAguardando ? undefined : () => onDetails(record)}
+      onClick={(!record.entrada_hora) ? undefined : () => onDetails(record)}
     >
       <td className="py-4 pl-6 align-middle relative">
         <div className="flex flex-col gap-0.5">
@@ -221,42 +241,58 @@ const TimeRecordTableRow = ({
         </Badge>
       </td>
       <td className="px-6 py-4 align-middle">
-        <div className="flex flex-col items-start gap-1">
-          <span className="text-base font-bold text-gray-700">{formatTime(record.entrada_hora)}</span>
-          <StatusBadgeWithTooltip
-            status={record.status_entrada}
-            type={PONTO_SIDE.ENTRADA}
-            details={record.detalhes_calculo}
-            timeIso={record.entrada_hora}
-          />
+        <div className="flex flex-col items-start gap-1 min-h-[48px] justify-center">
+          {record.entrada_hora ? (
+            <span className="text-base font-bold text-gray-700">{formatTime(record.entrada_hora)}</span>
+          ) : (
+            <div className="h-6" />
+          )}
+          <div className="h-5">
+            <StatusBadgeWithTooltip
+              status={record.status_entrada}
+              type={PONTO_SIDE.ENTRADA}
+              details={record.detalhes_calculo}
+              timeIso={record.entrada_hora}
+            />
+          </div>
         </div>
       </td>
       <td className="px-6 py-4 align-middle">
-        <div className="flex flex-col items-start gap-1">
-          <span className="text-base font-bold text-gray-700">{formatTime(record.saida_hora)}</span>
-          <StatusBadgeWithTooltip
-            status={record.status_saida}
-            type={PONTO_SIDE.SAIDA}
-            details={record.detalhes_calculo}
-            timeIso={record.saida_hora}
-          />
+        <div className="flex flex-col items-start gap-1 min-h-[48px] justify-center">
+          {record.saida_hora ? (
+            <span className="text-base font-bold text-gray-700">{formatTime(record.saida_hora)}</span>
+          ) : (
+            <div className="h-6" />
+          )}
+          <div className="h-5">
+            <StatusBadgeWithTooltip
+              status={record.status_saida}
+              type={PONTO_SIDE.SAIDA}
+              details={record.detalhes_calculo}
+              timeIso={record.saida_hora}
+            />
+          </div>
         </div>
       </td>
       <td className="px-6 py-4 align-middle">
-        <div className="flex flex-col items-start gap-0.5">
+        <div className="flex flex-col items-start gap-0.5 min-h-[40px] justify-center">
           {/* Saldo Primary */}
-          {record.saldo_minutos !== undefined && record.saldo_minutos !== null && !record.ausente && record.saida_hora ? (
+          {record.entrada_hora && record.saida_hora && record.saldo_minutos !== undefined && record.saldo_minutos !== null && !record.ausente ? (
             <span className={`text-sm font-bold ${record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500"}`}>
               {formatMinutes(record.saldo_minutos)}
             </span>
           ) : (
-            <span className="text-gray-400 text-sm font-bold">--:--</span>
+            <div className="h-5" />
           )}
 
-          {/* Total Secondary */}
-          <span className="text-[10px] text-gray-400">
-            Total: {record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : "--:--"}
-          </span>
+          {/* Total Secondary - Mantemos a altura ocupada para alinhar a linha */}
+          <div className="min-h-[12px]">
+            {record.entrada_hora && record.saida_hora && (
+              <span className="text-[10px] text-gray-400">
+                Total: {record.detalhes_calculo?.resumo?.horas_trabalhadas || "00:00"}
+              </span>
+            )}
+          </div>
         </div>
       </td>
       <td className="px-6 py-4 align-middle text-right" onClick={(e) => e.stopPropagation()}>
@@ -270,7 +306,7 @@ const TimeRecordTableRow = ({
 // ...
 
 export function TimeTrackingList({ records }: TimeTrackingListProps) {
-  const { openTimeRecordDetailsDialog, openEditTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   const { mutateAsync: deletePonto } = useDeletePonto();
 
@@ -279,7 +315,7 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
      Radix Dialogs stack automatically. ensure z-index is handled if needed, usually is.
   */
   const handleEditFromDetails = (record: RegistroPonto) => {
-    openEditTimeRecordDialog({ record });
+    openTimeRecordDialog({ record });
   };
 
   const handleDelete = (record: RegistroPonto) => {
@@ -313,7 +349,7 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
             key={record.id}
             record={record}
             onDetails={openDetails}
-            onEdit={(record) => openEditTimeRecordDialog({ record })}
+            onEdit={(record) => openTimeRecordDialog({ record })}
             onDelete={handleDelete}
           />
         )}
@@ -336,7 +372,7 @@ export function TimeTrackingList({ records }: TimeTrackingListProps) {
                   key={record.id}
                   record={record}
                   onDetails={openDetails}
-                  onEdit={(record) => openEditTimeRecordDialog({ record })}
+                  onEdit={(record) => openTimeRecordDialog({ record })}
                   onDelete={handleDelete}
                 />
               ))}

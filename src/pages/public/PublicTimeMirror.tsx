@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { usePublicTimeMirror, usePublicCollaborators } from "@/hooks/api/usePublicClient";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar, Clock, TrendingDown, TrendingUp, Users, Filter, ArrowRight } from "lucide-react";
+import { Calendar, Clock, TrendingDown, TrendingUp, Users, Filter, ArrowRight, Timer } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -82,10 +82,13 @@ export default function PublicTimeMirror() {
             {/* Filters */}
             <Card className="border-none shadow-sm rounded-3xl">
                 <CardContent className="p-4 sm:p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className={cn(
+                        "grid grid-cols-1 gap-4 transition-all duration-300",
+                        selectedCollab ? "md:grid-cols-2 lg:grid-cols-4" : "max-w-md mx-auto"
+                    )}>
                         {/* Colaborador */}
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Colaborador</label>
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 text-center block sm:text-left">Colaborador</label>
                             <Combobox
                                 options={collaborators?.map(c => ({ value: c.id, label: c.nome_completo })) || []}
                                 value={selectedCollab}
@@ -93,66 +96,72 @@ export default function PublicTimeMirror() {
                                 placeholder="Selecione um colaborador..."
                                 searchPlaceholder="Buscar colaborador..."
                                 emptyText="Nenhum colaborador encontrado."
-                                className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-white hover:text-gray-700 transition-none shadow-none"
+                                className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-600 hover:bg-white hover:text-gray-700 transition-none shadow-none"
                             />
                         </div>
 
-                        {/* Turno (Só aparece se tiver colaborador selecionado) */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Turno</label>
-                            <Select 
-                                value={selectedShift} 
-                                onValueChange={setSelectedShift}
-                                disabled={!selectedCollab}
-                            >
-                                <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
-                                    <SelectValue placeholder="Todos" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {collabShifts.length > 1 && (
-                                        <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os turnos</SelectItem>
-                                    )}
-                                    {collabShifts.map((s: any) => {
-                                        const label = `${s.hora_inicio.substring(0, 5)} - ${s.hora_fim.substring(0, 5)}`;
-                                        return (
-                                            <SelectItem key={s.id} value={label}>
-                                                {label}
-                                            </SelectItem>
-                                        );
-                                    })}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        {selectedCollab && (
+                            <>
+                                {/* Turno */}
+                                <div className="space-y-2 animate-in fade-in zoom-in-95 duration-300">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Turno</label>
+                                    <Select 
+                                        value={selectedShift} 
+                                        onValueChange={setSelectedShift}
+                                    >
+                                        <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-600 shadow-none">
+                                            <div className="flex items-center gap-2">
+                                                <Timer className="h-4 w-4 text-gray-400" />
+                                                <SelectValue placeholder="Todos" />
+                                            </div>
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl">
+                                            {collabShifts.length > 1 && (
+                                                <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os turnos</SelectItem>
+                                            )}
+                                            {collabShifts.map((s: any) => {
+                                                const label = `${s.hora_inicio.substring(0, 5)} - ${s.hora_fim.substring(0, 5)}`;
+                                                return (
+                                                    <SelectItem key={s.id} value={label}>
+                                                        {label}
+                                                    </SelectItem>
+                                                );
+                                            })}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                        {/* Mês */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Mês</label>
-                            <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                                <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {monthOptions.map(m => (
-                                        <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                                {/* Mês */}
+                                <div className="space-y-2 animate-in fade-in zoom-in-95 duration-300">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Mês</label>
+                                    <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                                        <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-600 shadow-none">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl">
+                                            {monthOptions.map(m => (
+                                                <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                        {/* Ano */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Ano</label>
-                            <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                                <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {anos.map(a => (
-                                        <SelectItem key={a.value} value={String(a.value)}>{a.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                                {/* Ano */}
+                                <div className="space-y-2 animate-in fade-in zoom-in-95 duration-300">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Ano</label>
+                                    <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                                        <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-600 shadow-none">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl">
+                                            {anos.map(a => (
+                                                <SelectItem key={a.value} value={String(a.value)}>{a.label}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </CardContent>
             </Card>

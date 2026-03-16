@@ -20,6 +20,7 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { formatMinutes } from "@/utils/ponto";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { STATUS_PONTO } from "@/constants/ponto";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -70,7 +71,7 @@ export function TimeMirrorView({
         });
     }, [rawReport, selectedShift]);
 
-    const { openTimeRecordDetailsDialog, openEditTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+    const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
     const { mutateAsync: deletePonto } = useDeletePonto();
     const [selectedPontoId, setSelectedPontoId] = useState<number | null>(null);
     const { data: fullRecord, isFetching: isFetchingRecord } = useTimeRecord(selectedPontoId);
@@ -89,7 +90,7 @@ export function TimeMirrorView({
     };
 
     const handleEditFromDetails = (record: RegistroPonto) => {
-        openEditTimeRecordDialog({ record });
+        openTimeRecordDialog({ record });
     };
 
     useEffect(() => {
@@ -265,10 +266,11 @@ export function TimeMirrorView({
                                     <Card
                                         key={idx}
                                         className={cn(
-                                            "border-none shadow-sm rounded-[1.5rem] overflow-hidden group hover:shadow-md transition-all duration-300 cursor-pointer active:scale-[0.99]",
+                                            "border-none shadow-sm rounded-[1.5rem] overflow-hidden group transition-all duration-300",
+                                            day.entrada_hora ? "hover:shadow-md cursor-pointer active:scale-[0.99]" : "cursor-default opacity-80",
                                             isFetchingRecord && selectedPontoId === day.id && "opacity-60 cursor-wait"
                                         )}
-                                        onClick={() => !isFetchingRecord && setSelectedPontoId(day.id)}
+                                        onClick={() => day.entrada_hora && !isFetchingRecord && setSelectedPontoId(day.id)}
                                     >
                                         <CardContent className="p-4 md:py-3 md:px-6">
                                             <div className={cn(
@@ -310,13 +312,13 @@ export function TimeMirrorView({
                                                     <div>
                                                         <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Entrada</p>
                                                         <p className="text-sm font-bold text-gray-700">
-                                                            {day.entrada_hora ? format(new Date(day.entrada_hora), 'HH:mm') : '--:--'}
+                                                            {day.entrada_hora ? format(new Date(day.entrada_hora), 'HH:mm') : (day.status_entrada !== STATUS_PONTO.CINZA ? '--:--' : '')}
                                                         </p>
                                                     </div>
                                                     <div>
                                                         <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Saída</p>
                                                         <p className="text-sm font-bold text-gray-700">
-                                                            {day.saida_hora ? format(new Date(day.saida_hora), 'HH:mm') : '--:--'}
+                                                            {day.saida_hora ? format(new Date(day.saida_hora), 'HH:mm') : (day.status_saida !== STATUS_PONTO.CINZA ? '--:--' : '')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -363,17 +365,19 @@ export function TimeMirrorView({
                                                 {canViewAll && (
                                                     <div className="text-right">
                                                         <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Saldo</p>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={cn(
-                                                                "rounded-full px-3 py-1 font-black text-[10px] tracking-tight",
-                                                                balance > 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                                                    balance < 0 ? "bg-red-50 text-red-600 border-red-100" :
-                                                                        "bg-gray-50 text-gray-500 border-gray-100"
-                                                            )}
-                                                        >
-                                                            {formatMinutes(balance)}
-                                                        </Badge>
+                                                        {day.entrada_hora && day.saida_hora && (
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={cn(
+                                                                    "rounded-full px-3 py-1 font-black text-[10px] tracking-tight",
+                                                                    balance > 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                                                        balance < 0 ? "bg-red-50 text-red-600 border-red-100" :
+                                                                            "bg-gray-50 text-gray-500 border-gray-100"
+                                                                )}
+                                                            >
+                                                                {formatMinutes(balance)}
+                                                            </Badge>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

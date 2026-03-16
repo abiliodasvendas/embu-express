@@ -228,7 +228,7 @@ export function TimeTrackingToolbar({
               <SelectItem value={FILTER_OPTIONS.NAO_INICIOU}>Não Iniciou (Geral)</SelectItem>
               <SelectItem value={FILTER_OPTIONS.EM_ATRASO}>Em Atraso (Sem Ponto)</SelectItem>
               <SelectItem value={FILTER_OPTIONS.AGUARDANDO}>Aguardando Turno</SelectItem>
-              <SelectItem value={STATUS_PONTO.ANTECIPADA}>Entrada Antecipada</SelectItem>
+              <SelectItem value={STATUS_PONTO.ANTECIPADA}>Antecipada</SelectItem>
               <SelectItem value={STATUS_PONTO.AUSENTE}>Faltou (Dia Todo)</SelectItem>
             </SelectContent>
           </Select>
@@ -246,13 +246,13 @@ export function TimeTrackingToolbar({
               </div>
             </SelectTrigger>
             <SelectContent className="z-[10001]">
-                <SelectItem value={FILTER_OPTIONS.TODOS}>Todos os Status</SelectItem>
-                <SelectItem value={FILTER_OPTIONS.TRABALHANDO}>Trabalhando</SelectItem>
-                <SelectItem value={FILTER_OPTIONS.CONCLUIU}>Concluiu</SelectItem>
-                <SelectItem value={FILTER_OPTIONS.FALTA_SAIDA}>{getStatusLabel(STATUS_PONTO.PENDENTE, 'saida')}</SelectItem>
-                <SelectItem value={STATUS_PONTO.AMARELO}>Hora Extra</SelectItem>
-                <SelectItem value={STATUS_PONTO.VERMELHO}>HE Excessiva</SelectItem>
-                <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'saida')}</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.TODOS}>Todos os Status</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.TRABALHANDO}>Trabalhando</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.CONCLUIU}>Concluiu</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.FALTA_SAIDA}>{getStatusLabel(STATUS_PONTO.PENDENTE, 'saida')}</SelectItem>
+              <SelectItem value={STATUS_PONTO.AMARELO}>Hora Extra</SelectItem>
+              <SelectItem value={STATUS_PONTO.VERMELHO}>HE Excessiva</SelectItem>
+              <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'saida')}</SelectItem>
             </SelectContent>
           </Select>
         </div>

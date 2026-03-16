@@ -2,7 +2,7 @@ import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { CollaboratorFormDialog } from "@/components/dialogs/CollaboratorFormDialog";
 import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import { EditTimeRecordDialog } from "@/components/dialogs/EditTimeRecordDialog";
+import { TimeRecordDialog } from "@/components/dialogs/TimeRecordDialog";
 import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
 import { FeriadoFormDialog } from "@/components/dialogs/FeriadoFormDialog";
 import { MileageDialog } from "@/components/dialogs/MileageDialog";
@@ -69,8 +69,8 @@ export interface OpenTimeRecordDetailsProps {
   onDelete?: (record: RegistroPonto) => void;
 }
 
-export interface OpenEditTimeRecordProps {
-  record: RegistroPonto | null;
+export interface OpenTimeRecordProps {
+  record?: RegistroPonto | null;
 }
 
 export interface OpenSuccessRegistrationProps {
@@ -123,8 +123,8 @@ interface LayoutContextType {
   openTimeRecordDetailsDialog: (props: OpenTimeRecordDetailsProps) => void;
   closeTimeRecordDetailsDialog: () => void;
 
-  openEditTimeRecordDialog: (props: OpenEditTimeRecordProps) => void;
-  closeEditTimeRecordDialog: () => void;
+  openTimeRecordDialog: (props: OpenTimeRecordProps) => void;
+  closeTimeRecordDialog: () => void;
 
   openSuccessRegistrationDialog: (props: OpenSuccessRegistrationProps) => void;
   closeSuccessRegistrationDialog: () => void;
@@ -216,9 +216,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-  const [editTimeRecordDialogState, setEditTimeRecordDialogState] = useState<{
+  const [timeRecordDialogState, setTimeRecordDialogState] = useState<{
     open: boolean;
-    props?: OpenEditTimeRecordProps;
+    props?: OpenTimeRecordProps;
   }>({
     open: false,
   });
@@ -336,13 +336,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const openEditTimeRecordDialog = (props: OpenEditTimeRecordProps) => {
-    setEditTimeRecordDialogState({ open: true, props });
+  const openTimeRecordDialog = (props: OpenTimeRecordProps) => {
+    setTimeRecordDialogState({ open: true, props });
   };
 
-  const closeEditTimeRecordDialog = () => {
+  const closeTimeRecordDialog = () => {
     closeDialog(() => {
-      setEditTimeRecordDialogState((prev) => ({ ...prev, open: false }));
+      setTimeRecordDialogState((prev) => ({ ...prev, open: false }));
     });
   };
 
@@ -408,8 +408,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       closeCollaboratorTurnDialog,
       openTimeRecordDetailsDialog,
       closeTimeRecordDetailsDialog,
-      openEditTimeRecordDialog,
-      closeEditTimeRecordDialog,
+      openTimeRecordDialog,
+      closeTimeRecordDialog,
       openSuccessRegistrationDialog,
       closeSuccessRegistrationDialog,
       openOccurrenceFormDialog,
@@ -523,11 +523,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-      {editTimeRecordDialogState.open && editTimeRecordDialogState.props?.record && (
-        <EditTimeRecordDialog
+      {timeRecordDialogState.open && (
+        <TimeRecordDialog
           isOpen={true}
-          onClose={closeEditTimeRecordDialog}
-          record={editTimeRecordDialogState.props.record}
+          onClose={closeTimeRecordDialog}
+          record={timeRecordDialogState.props?.record}
         />
       )}
 

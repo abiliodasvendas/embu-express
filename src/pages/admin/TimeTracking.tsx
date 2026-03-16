@@ -1,4 +1,3 @@
-import { ManualTimeRecordDialog } from "@/components/dialogs/ManualTimeRecordDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { TimeTrackingList } from "@/components/features/timetracking/TimeTrackingList";
 import { TimeTrackingToolbar } from "@/components/features/timetracking/TimeTrackingToolbar";
@@ -15,7 +14,7 @@ import { CalendarX } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function TimeTracking() {
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openTimeRecordDialog } = useLayout();
   
   // Filters Hook
   const {
@@ -44,8 +43,6 @@ export default function TimeTracking() {
 
   const [date, setDate] = useState<Date>(new Date());
   
-  // Dialogs
-  const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
 
   // Data Hooks - Active Collaborators for Filter
   const { data: activeCollaborators = [] } = useActiveCollaborators();
@@ -112,7 +109,7 @@ export default function TimeTracking() {
                 turno: selectedTurno
             }}
             onFiltersChange={handleFiltersChange}
-            onRegister={() => setIsManualEntryOpen(true)}
+            onRegister={() => openTimeRecordDialog({})}
             collaborators={activeCollaborators}
             clients={clients}
             onApplyFilters={(newFilters) => {
@@ -140,12 +137,6 @@ export default function TimeTracking() {
             <TimeTrackingList records={filteredRecords} />
         )}
 
-        {isManualEntryOpen && (
-            <ManualTimeRecordDialog 
-                isOpen={isManualEntryOpen} 
-                onClose={() => setIsManualEntryOpen(false)} 
-            />
-        )}
 
         {/* Global Action Loader */}
         <LoadingOverlay 

@@ -76,7 +76,6 @@ export interface Usuario {
   moto_placa?: string;
   valor_mei?: number;
 
-  ponto_hoje?: Ponto;
   // Relacionamentos (virtual)
   perfil?: Perfil;
   cliente?: Client;
@@ -131,6 +130,7 @@ export interface Ponto {
   cliente_id?: number;
   empresa_id?: number;
   colaborador_cliente_id?: number;
+  ausente?: boolean;
 
   // Novas colunas de localização
   entrada_lat?: number;

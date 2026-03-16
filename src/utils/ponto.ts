@@ -36,9 +36,7 @@ export const getStatusColorClass = (status: string | null, type?: 'entrada' | 's
                 : "bg-indigo-900/10 text-indigo-800 border-indigo-200"; // HE Excessiva (Dark Blue)
         case 'AUSENTE':
         case STATUS_PONTO.AUSENTE:
-            return type === 'entrada'
-                ? "bg-rose-50 text-rose-400 border-rose-100 opacity-80" // Ausente Entrada (Light Red)
-                : "bg-slate-100 text-slate-500 border-slate-200 opacity-60";
+            return "bg-rose-50 text-rose-700 border-rose-100"; // Ausente (Rose tone for both)
         case STATUS_PONTO.CINZA: 
             return "bg-gray-100 text-gray-500 border-gray-200";
         case STATUS_PONTO.EM_ANDAMENTO: return "bg-blue-50 text-blue-600 border-blue-100";

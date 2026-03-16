@@ -176,21 +176,30 @@ export default function PublicTimeTracking() {
                                         <div className="flex items-center gap-3 sm:gap-6 bg-gray-50 rounded-2xl p-4 sm:p-5">
                                             <div className="text-center sm:text-right">
                                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total</p>
-                                                <div className="flex items-center gap-1.5 font-bold text-gray-900 justify-center sm:justify-end">
+                                                <div className={cn(
+                                                    "flex items-center gap-1.5 font-bold justify-center sm:justify-end",
+                                                    record.saida_hora ? "text-gray-900" : "text-gray-500"
+                                                )}>
                                                     <Timer className="h-4 w-4 text-gray-400" />
                                                     <span>{record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : '--:--'}</span>
                                                 </div>
                                             </div>
                                             <div className="w-px h-8 bg-gray-200 hidden sm:block" />
-                                            <div className="text-center sm:text-right">
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Saldo</p>
-                                                <Badge variant="outline" className={cn(
-                                                    "font-black text-xs px-3",
-                                                    (record.ausente || !record.saida_hora) ? "bg-gray-100 text-gray-400 border-gray-200" : ((record.saldo_minutos || 0) >= 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-600 border-red-100")
-                                                )}>
-                                                    {(record.ausente || !record.saida_hora) ? "--:--" : formatMinutes(record.saldo_minutos || 0)}
-                                                </Badge>
-                                            </div>
+                                             <div className="text-center sm:text-right">
+                                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Saldo</p>
+                                                 <div className="flex justify-center sm:justify-end">
+                                                     {(record.ausente || !record.saida_hora) ? (
+                                                         <span className="font-bold text-gray-500">--:--</span>
+                                                     ) : (
+                                                         <Badge variant="outline" className={cn(
+                                                             "font-black text-xs px-3",
+                                                             (record.saldo_minutos || 0) >= 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-600 border-red-100")
+                                                         }>
+                                                             {formatMinutes(record.saldo_minutos || 0)}
+                                                         </Badge>
+                                                     )}
+                                                 </div>
+                                             </div>
                                         </div>
                                     </div>
                                     {record.status_saida === STATUS_PONTO.PENDENTE && (

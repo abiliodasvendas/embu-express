@@ -40,8 +40,6 @@ export function Collaborators() {
     setSelectedCliente: setSelectedClient,
     selectedEmpresa: selectedEmpresa = STATUS_CADASTRO.TODOS,
     setSelectedEmpresa: setSelectedEmpresa,
-    selectedSemPontoHoje,
-    setSelectedSemPontoHoje,
     hasActiveFilters,
     setFilters,
   } = useFilters({
@@ -49,7 +47,6 @@ export function Collaborators() {
     categoriaParam: "cargo",
     clienteParam: "cliente",
     empresaParam: "empresa",
-    semPontoHojeParam: "sem_ponto",
     syncWithUrl: true,
   });
 
@@ -70,7 +67,6 @@ export function Collaborators() {
     perfil_id: selectedRole === STATUS_CADASTRO.TODOS ? undefined : selectedRole,
     cliente_id: selectedClient === STATUS_CADASTRO.TODOS ? undefined : selectedClient,
     empresa_id: selectedEmpresa === STATUS_CADASTRO.TODOS ? undefined : selectedEmpresa,
-    sem_ponto_hoje: selectedSemPontoHoje,
   });
 
   // Mutations
@@ -169,14 +165,12 @@ export function Collaborators() {
     categoria?: string;
     cliente?: string;
     empresa?: string;
-    sem_ponto_hoje?: boolean;
   }) => {
     setFilters({
       status: newFilters.status,
       categoria: newFilters.categoria,
       cliente: newFilters.cliente,
       empresa: newFilters.empresa,
-      sem_ponto_hoje: newFilters.sem_ponto_hoje,
     });
   };
 
@@ -203,8 +197,6 @@ export function Collaborators() {
                   empresas={empresas || []}
                   selectedEmpresa={selectedEmpresa}
                   onEmpresaChange={setSelectedEmpresa!}
-                  selectedSemPontoHoje={selectedSemPontoHoje || false}
-                  onSemPontoHojeChange={setSelectedSemPontoHoje!}
                 />
               </div>
 

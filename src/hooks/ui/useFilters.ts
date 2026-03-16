@@ -15,7 +15,6 @@ export interface UseFiltersOptions {
   statusEntradaParam?: string;
   statusSaidaParam?: string;
   turnoParam?: string;
-  semPontoHojeParam?: string;
   syncWithUrl?: boolean;
 }
 
@@ -46,10 +45,6 @@ export interface UseFiltersReturn {
   setSelectedTurno?: (value: string) => void;
   onClear: () => void;
   onApply?: () => void;
-  semPontoHojeValue: boolean;
-  onSemPontoHojeChange: (val: boolean) => void;
-  selectedSemPontoHoje?: boolean;
-  setSelectedSemPontoHoje?: (value: boolean) => void;
   clearFilters: () => void;
   setFilters: (newFilters: {
     searchTerm?: string;
@@ -64,7 +59,6 @@ export interface UseFiltersReturn {
     statusEntrada?: string;
     statusSaida?: string;
     turno?: string;
-    sem_ponto_hoje?: boolean;
   }) => void;
   hasActiveFilters: boolean;
 }
@@ -83,7 +77,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     statusEntradaParam,
     statusSaidaParam,
     turnoParam,
-    semPontoHojeParam,
     syncWithUrl = true,
   } = options;
 
@@ -103,7 +96,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     statusEntrada: string;
     statusSaida: string;
     turno: string;
-    semPontoHoje: boolean;
   }>({
     searchTerm: "",
     status: STATUS_CADASTRO.TODOS,
@@ -117,7 +109,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     statusEntrada: STATUS_CADASTRO.TODOS,
     statusSaida: STATUS_CADASTRO.TODOS,
     turno: STATUS_CADASTRO.TODOS,
-    semPontoHoje: false,
   });
 
   // Helper to get value from URL or Internal State
@@ -136,12 +127,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     return internalState[internalKey] as number;
   };
 
-  const getBooleanValue = (param: string | undefined, internalKey: keyof typeof internalState, defaultValue: boolean) => {
-    if (syncWithUrl && param) {
-      return searchParams.get(param) === "true";
-    }
-    return internalState[internalKey] as boolean;
-  };
 
   const searchTerm = getValue(searchParam, "searchTerm", "");
   const selectedStatus = getValue(statusParam, "status", STATUS_CADASTRO.TODOS);
@@ -155,7 +140,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const selectedStatusEntrada = getValue(statusEntradaParam, "statusEntrada", STATUS_CADASTRO.TODOS);
   const selectedStatusSaida = getValue(statusSaidaParam, "statusSaida", STATUS_CADASTRO.TODOS);
   const selectedTurno = getValue(turnoParam, "turno", STATUS_CADASTRO.TODOS);
-  const selectedSemPontoHoje = getBooleanValue(semPontoHojeParam, "semPontoHoje", false);
 
   const updateState = useCallback((key: keyof typeof internalState, value: any, param?: string) => {
     if (syncWithUrl && param) {
@@ -185,7 +169,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const setSelectedStatusEntrada = useCallback((v: string) => updateState("statusEntrada", v, statusEntradaParam), [updateState, statusEntradaParam]);
   const setSelectedStatusSaida = useCallback((v: string) => updateState("statusSaida", v, statusSaidaParam), [updateState, statusSaidaParam]);
   const setSelectedTurno = useCallback((v: string) => updateState("turno", v, turnoParam), [updateState, turnoParam]);
-  const setSelectedSemPontoHoje = useCallback((v: boolean) => updateState("semPontoHoje", v, semPontoHojeParam), [updateState, semPontoHojeParam]);
 
   const clearFilters = useCallback(() => {
     if (syncWithUrl) {
@@ -203,7 +186,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         if (statusEntradaParam) newParams.delete(statusEntradaParam);
         if (statusSaidaParam) newParams.delete(statusSaidaParam);
         if (turnoParam) newParams.delete(turnoParam);
-        if (semPontoHojeParam) newParams.delete(semPontoHojeParam);
         return newParams;
       }, { replace: true });
     } else {
@@ -220,7 +202,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
         statusEntrada: STATUS_CADASTRO.TODOS,
         statusSaida: STATUS_CADASTRO.TODOS,
         turno: STATUS_CADASTRO.TODOS,
-        semPontoHoje: false,
       });
     }
   }, [
@@ -237,7 +218,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     statusEntradaParam,
     statusSaidaParam,
     turnoParam,
-    semPontoHojeParam,
     setSearchParams,
   ]);
 
@@ -256,7 +236,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       statusEntrada?: string;
       statusSaida?: string;
       turno?: string;
-      sem_ponto_hoje?: boolean;
     }) => {
       if (syncWithUrl) {
         setSearchParams((prev) => {
@@ -282,7 +261,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           updateParam(statusEntradaParam, newFilters.statusEntrada);
           updateParam(statusSaidaParam, newFilters.statusSaida);
           updateParam(turnoParam, newFilters.turno);
-          updateParam(semPontoHojeParam, newFilters.sem_ponto_hoje);
 
           return newParams;
         }, { replace: true });
@@ -301,7 +279,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
           ...(newFilters.statusEntrada !== undefined && { statusEntrada: newFilters.statusEntrada }),
           ...(newFilters.statusSaida !== undefined && { statusSaida: newFilters.statusSaida }),
           ...(newFilters.turno !== undefined && { turno: newFilters.turno }),
-          ...(newFilters.sem_ponto_hoje !== undefined && { semPontoHoje: newFilters.sem_ponto_hoje }),
         }));
       }
     },
@@ -319,7 +296,6 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       statusEntradaParam,
       statusSaidaParam,
       turnoParam,
-      semPontoHojeParam,
       setSearchParams,
     ]
   );
@@ -334,8 +310,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
     (selectedUsuario !== undefined && selectedUsuario !== STATUS_CADASTRO.TODOS) ||
     (selectedStatusEntrada !== undefined && selectedStatusEntrada !== STATUS_CADASTRO.TODOS) ||
     (selectedStatusSaida !== undefined && selectedStatusSaida !== STATUS_CADASTRO.TODOS) ||
-    (selectedTurno !== undefined && selectedTurno !== STATUS_CADASTRO.TODOS) ||
-    !!selectedSemPontoHoje;
+    (selectedTurno !== undefined && selectedTurno !== STATUS_CADASTRO.TODOS);
 
   return {
     searchTerm,
@@ -382,11 +357,7 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
       selectedTurno,
       setSelectedTurno,
     }),
-    selectedSemPontoHoje: selectedSemPontoHoje || false,
-    setSelectedSemPontoHoje,
     onClear: clearFilters,
-    semPontoHojeValue: selectedSemPontoHoje || false,
-    onSemPontoHojeChange: setSelectedSemPontoHoje,
     clearFilters,
     setFilters,
     hasActiveFilters,

@@ -155,23 +155,18 @@ const TimeRecordMobileItem = ({
       <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {/* Mobile Balance */}
-          {record.saldo_minutos !== undefined && record.saldo_minutos !== null && (
+          {record.saldo_minutos !== undefined && record.saldo_minutos !== null && !record.ausente && record.saida_hora ? (
             <Badge variant="outline" className={`${record.saldo_minutos >= 0 ? "text-green-600 border-green-200 bg-green-50" : "text-red-600 border-red-200 bg-red-50"}`}>
               {formatMinutes(record.saldo_minutos)}
             </Badge>
+          ) : (
+            <span className="text-gray-400 text-xs font-bold px-3">--:--</span>
           )}
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-500">
           <span className="font-medium">Total:</span>
-          {record.saida_hora ? (
-            <div className="flex items-center gap-1">
-              <Timer className="w-3 h-3" />
-              {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
-            </div>
-          ) : (
-            <span>--:--</span>
-          )}
+              <span>{record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : "--:--"}</span>
         </div>
       </div>
     </div>
@@ -250,12 +245,12 @@ const TimeRecordTableRow = ({
       <td className="px-6 py-4 align-middle">
         <div className="flex flex-col items-start gap-0.5">
           {/* Saldo Primary */}
-          {record.saldo_minutos !== undefined && record.saldo_minutos !== null ? (
+          {record.saldo_minutos !== undefined && record.saldo_minutos !== null && !record.ausente && record.saida_hora ? (
             <span className={`text-sm font-bold ${record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500"}`}>
               {formatMinutes(record.saldo_minutos)}
             </span>
           ) : (
-            <span className="text-gray-300 text-sm font-bold">--</span>
+            <span className="text-gray-400 text-sm font-bold">--:--</span>
           )}
 
           {/* Total Secondary */}

@@ -1,71 +1,74 @@
 import { Capacitor } from '@capacitor/core';
-import { Geolocation, PermissionStatus } from '@capacitor/geolocation';
+import { Geolocation } from '@capacitor/geolocation';
 import { useCallback, useState } from 'react';
-
-export interface LocationData {
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-}
+import { getMessage } from '@/constants/messages';
+import { LocationData, GeolocationPermissionState } from '@/types/geolocation';
 
 export function useGeolocation() {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [permissionDenied, setPermissionDenied] = useState(false);
-  // Detecta se estamos rodando apenas no navegador PC/Mobile
+  const [permissionStatus, setPermissionStatus] = useState<GeolocationPermissionState>('unknown');
+  
   const isWeb = !Capacitor.isNativePlatform();
+
+  const checkPermissionState = useCallback(async (): Promise<GeolocationPermissionState> => {
+    if (isWeb) {
+      try {
+        // @ts-ignore - navigator.permissions might not be fully typed in all environments
+        const result = await navigator.permissions.query({ name: 'geolocation' });
+        return result.state as GeolocationPermissionState;
+      } catch (e) {
+        return 'unknown';
+      }
+    } else {
+      try {
+        const status = await Geolocation.checkPermissions();
+        if (status.location === 'granted' || status.coarseLocation === 'granted') return 'granted';
+        if (status.location === 'denied' || status.coarseLocation === 'denied') return 'denied';
+        return 'prompt';
+      } catch (e) {
+        return 'unknown';
+      }
+    }
+  }, [isWeb]);
 
   const requestLocation = useCallback(async (): Promise<LocationData | null> => {
     setLoading(true);
     setError(null);
-    setPermissionDenied(false);
 
     try {
-      // Verifica estado da permissão atual no Nativo
-      let check: PermissionStatus = { location: 'prompt', coarseLocation: 'prompt' };
-      try {
-        check = await Geolocation.checkPermissions();
-      } catch (e) {
-        // Fallback p/ web: checkPermissions pode falhar no desktop browser puro em algumas builds do Vite
-      }
+      // 1. Check current status
+      let state = await checkPermissionState();
+      setPermissionStatus(state);
 
-      if (check.location === 'denied' || check.coarseLocation === 'denied') {
-        const msg = isWeb
-          ? "Permissão de localização negada. Clique no ícone de cadeado perto da URL para liberar."
-          : "Permissão de localização foi negada.";
-        setError(msg);
-        setPermissionDenied(true);
-        setLoading(false);
-        return null;
-      }
-
-      // Se precisar, requisitamos ativamente (abre popup)
-      if (check.location === 'prompt' || check.location === 'prompt-with-rationale' || !isWeb) {
+      // 2. If it's prompt, try to request
+      if (state === 'prompt' || state === 'unknown') {
         try {
           const req = await Geolocation.requestPermissions();
-          if (req.location === 'denied') {
-            const msg = isWeb
-              ? "Permissão de localização negada pelo usuário. Use o cadeado do navegador para alterar."
-              : "Permissão de localização foi negada pelo usuário.";
-            setError(msg);
-            setPermissionDenied(true);
-            setLoading(false);
-            return null;
-          }
+          state = (req.location === 'granted' || req.coarseLocation === 'granted') ? 'granted' : 'denied';
+          setPermissionStatus(state);
         } catch (e) {
           console.error("Request permission error:", e);
         }
       }
 
-      // Procura ativamente a posição exata, aumento de timeout para dar tempo em popups nativos severos
+      // 3. If denied, stop here
+      if (state === 'denied') {
+        const msg = getMessage('geolocation.erro.permissaoNegada');
+        setError(msg);
+        setLoading(false);
+        return null;
+      }
+
+      // 4. Try to get position
       const position = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 20000,
         maximumAge: 0
       });
 
-      const data = {
+      const data: LocationData = {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         accuracy: position.coords.accuracy,
@@ -77,29 +80,35 @@ export function useGeolocation() {
 
     } catch (err: any) {
       console.error("Geo error:", err);
-      let msg = "Erro desconhecido ao obter localização.";
+      
+      // Re-verify permission because some browsers return "denied" error instead of "timeout" if GPS is off 
+      // but permission was technically granted before.
+      const currentState = await checkPermissionState();
+      setPermissionStatus(currentState);
 
-      // Mapeamento de possíveis erros do Capacitor ou Web
-      if (err.message?.includes('denied') || err.message?.includes('Permission')) {
-        msg = "Permissão de localização negada.";
-        setPermissionDenied(true);
+      let msg = getMessage('geolocation.erro.desconhecido');
+
+      // Check if it's actually a permission denial
+      if (err.message?.includes('denied') || err.message?.includes('Permission') || currentState === 'denied') {
+        msg = getMessage('geolocation.erro.permissaoNegada');
+        setPermissionStatus('denied');
       } else if (err.message?.includes('timeout') || err.code === 3) {
-        msg = "Tempo limite atingido para obter localização. Tente novamente.";
+        msg = getMessage('geolocation.erro.timeout');
       } else if (err.message?.includes('unavailable') || err.code === 2) {
-        msg = "Sinal de GPS indisponível. Ligue sua localização.";
+        msg = getMessage('geolocation.erro.indisponivel');
       }
 
       setError(msg);
       setLoading(false);
       return null;
     }
-  }, []);
+  }, [checkPermissionState]);
 
   return {
     location,
     loading,
     error,
-    permissionDenied,
+    permissionStatus,
     isWeb,
     requestLocation
   };

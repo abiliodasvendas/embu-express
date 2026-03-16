@@ -31,7 +31,7 @@ export default function RegistrarPonto() {
     const { user } = useSession();
     const { profile: userProfile } = useProfile(user?.id);
     const { isMotoboyOrFiscal } = usePermissions();
-    const { location, requestLocation, loading: loadingGeo, error: geoError, permissionDenied, isWeb } = useGeolocation();
+    const { location, requestLocation, loading: loadingGeo, error: geoError, permissionStatus, isWeb } = useGeolocation();
 
     const { mutateAsync: togglePonto } = useTogglePonto();
     const { mutateAsync: iniciarPausa } = useIniciarPausa();
@@ -453,9 +453,15 @@ export default function RegistrarPonto() {
                                 <ShieldAlert className="h-6 w-6 text-red-600 mb-2" />
                                 <AlertTitle className="font-black text-lg">Localização Requerida</AlertTitle>
                                 <AlertDescription className="text-red-700 font-medium leading-relaxed">
-                                    {geoError ? (permissionDenied ? "A permissão de localização foi negada no seu aparelho." : "O sinal de GPS está indisponível ou fraco demais.") : "Aguardando sinal de GPS para liberar o registro seguramente."}
+                                    {permissionStatus === 'denied' ? (
+                                        "A permissão de localização foi negada no seu aparelho."
+                                    ) : geoError ? (
+                                        "O sinal de GPS está indisponível, fraco demais ou o GPS está desligado."
+                                    ) : (
+                                        "Aguardando sinal de GPS para liberar o registro seguramente."
+                                    )}
 
-                                    {permissionDenied && (
+                                    {permissionStatus === 'denied' && (
                                         isWeb ? (
                                             <p className="mt-4 text-sm font-semibold text-red-800 text-balance bg-red-50 p-4 rounded-2xl border border-red-100">
                                                 Pelo navegador, não é possível reabrir a solicitação de GPS automaticamente. Clique no ícone de <strong className="mx-1 text-red-900 font-black">Cadeado</strong> ou <strong className="mx-1 text-red-900 font-black">Ajustes</strong> ao lado da barra de endereço e reative a localização.
@@ -473,12 +479,14 @@ export default function RegistrarPonto() {
                                         )
                                     )}
                                     
-                                    <button
-                                        onClick={() => requestLocation()}
-                                        className="mt-4 bg-white border border-red-200 px-6 py-3 rounded-2xl text-red-900 font-black hover:bg-red-50 transition-all flex items-center w-full justify-center shadow-sm"
-                                    >
-                                        <RefreshCw className="w-4 h-4 mr-2" /> Tentar Novamente
-                                    </button>
+                                    {permissionStatus !== 'denied' && (
+                                        <button
+                                            onClick={() => requestLocation()}
+                                            className="mt-4 bg-white border border-red-200 px-6 py-3 rounded-2xl text-red-900 font-black hover:bg-red-50 transition-all flex items-center w-full justify-center shadow-sm"
+                                        >
+                                            <RefreshCw className="w-4 h-4 mr-2" /> Tentar Novamente
+                                        </button>
+                                    )}
                                 </AlertDescription>
                             </Alert>
                         </motion.div>

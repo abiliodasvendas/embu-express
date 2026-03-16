@@ -331,6 +331,19 @@ export const messages = {
       excluido: "Turno removido com sucesso!",
     },
   },
+  // ========== GEOLOCALIZAÇÃO ==========
+  geolocation: {
+    erro: {
+      permissaoNegada: "Permissão de localização negada.",
+      permissaoNegadaInstrucao: "Clique no ícone de cadeado perto da URL para liberar a localização.",
+      timeout: "Tempo limite atingido para obter localização. Tente novamente.",
+      indisponivel: "Sinal de GPS indisponível. Ligue sua localização.",
+      desconhecido: "Erro desconhecido ao obter localização.",
+    },
+    info: {
+      aguardando: "Aguardando sinal de GPS para liberar o registro seguramente.",
+    }
+  },
 } as const;
 
 /**
@@ -369,7 +382,9 @@ export type MessageKey =
   | `ocorrencia.erro.${keyof typeof messages.ocorrencia.erro}`
   | `ocorrencia.sucesso.${keyof typeof messages.ocorrencia.sucesso}`
   | `vinculo.erro.${keyof typeof messages.vinculo.erro}`
-  | `vinculo.sucesso.${keyof typeof messages.vinculo.sucesso}`;
+  | `vinculo.sucesso.${keyof typeof messages.vinculo.sucesso}`
+  | `geolocation.erro.${keyof typeof messages.geolocation.erro}`
+  | `geolocation.info.${keyof typeof messages.geolocation.info}`;
 
 /**
  * Função helper para obter mensagem por chave

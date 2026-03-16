@@ -55,7 +55,6 @@ const StatusBadgeWithTooltip = ({
       className={cn(
         "text-[10px] px-2 py-0.5 rounded-md font-medium border",
         getStatusColorClass(status, type),
-        getStatusLabel(status, type) === "Trabalhando" && "animate-status-pulse",
         hasDetails ? "cursor-help" : "cursor-default"
       )}
     >
@@ -98,84 +97,84 @@ const TimeRecordMobileItem = ({
   const actions = useTimeRecordActions({ record, onDetails, onEdit, onDelete });
 
   const content = (
-    <div 
-      onClick={isAguardando ? undefined : () => onDetails(record)} 
+    <div
+      onClick={isAguardando ? undefined : () => onDetails(record)}
       className={cn(
         "bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all",
         !isAguardando && "cursor-pointer active:scale-[0.98]",
         isAguardando && "opacity-60 grayscale-[0.5]"
       )}
     >
-        <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-50">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-bold text-gray-900">{record.usuario?.nome_completo}</span>
-            {record.cliente?.nome_fantasia && (
-              <span className="text-[10px] text-gray-400">
-                {record.cliente.nome_fantasia}
-              </span>
-            )}
-          </div>
-
-
+      <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-50">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-bold text-gray-900">{record.usuario?.nome_completo}</span>
+          {record.cliente?.nome_fantasia && (
+            <span className="text-[10px] text-gray-400">
+              {record.cliente.nome_fantasia}
+            </span>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="w-3 h-3" />
-              <span>Entrada</span>
-            </div>
-            <div className="flex flex-col items-start gap-1">
-              <span className="font-bold text-gray-700 text-lg">{formatTime(record.entrada_hora)}</span>
-              <StatusBadgeWithTooltip
-                status={record.status_entrada}
-                type={PONTO_SIDE.ENTRADA}
-                details={record.detalhes_calculo}
-                timeIso={record.entrada_hora}
-              />
-            </div>
-          </div>
 
-          <div className="space-y-1 pt-0">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="w-3 h-3" />
-              <span>Saída</span>
-            </div>
-            <div className="flex flex-col items-start gap-1">
-              <span className="font-bold text-gray-700 text-lg">{formatTime(record.saida_hora)}</span>
-              <StatusBadgeWithTooltip
-                status={record.status_saida}
-                type={PONTO_SIDE.SAIDA}
-                details={record.detalhes_calculo}
-                timeIso={record.saida_hora}
-              />
-            </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Clock className="w-3 h-3" />
+            <span>Entrada</span>
+          </div>
+          <div className="flex flex-col items-start gap-1">
+            <span className="font-bold text-gray-700 text-lg">{formatTime(record.entrada_hora)}</span>
+            <StatusBadgeWithTooltip
+              status={record.status_entrada}
+              type={PONTO_SIDE.ENTRADA}
+              details={record.detalhes_calculo}
+              timeIso={record.entrada_hora}
+            />
           </div>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {/* Mobile Balance */}
-            {record.saldo_minutos !== undefined && record.saldo_minutos !== null && (
-              <Badge variant="outline" className={`${record.saldo_minutos >= 0 ? "text-green-600 border-green-200 bg-green-50" : "text-red-600 border-red-200 bg-red-50"}`}>
-                {formatMinutes(record.saldo_minutos)}
-              </Badge>
-            )}
+        <div className="space-y-1 pt-0">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Clock className="w-3 h-3" />
+            <span>Saída</span>
           </div>
-
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span className="font-medium">Total:</span>
-            {record.saida_hora ? (
-              <div className="flex items-center gap-1">
-                <Timer className="w-3 h-3" />
-                {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
-              </div>
-            ) : (
-              <span>--:--</span>
-            )}
+          <div className="flex flex-col items-start gap-1">
+            <span className="font-bold text-gray-700 text-lg">{formatTime(record.saida_hora)}</span>
+            <StatusBadgeWithTooltip
+              status={record.status_saida}
+              type={PONTO_SIDE.SAIDA}
+              details={record.detalhes_calculo}
+              timeIso={record.saida_hora}
+            />
           </div>
         </div>
       </div>
+
+      <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {/* Mobile Balance */}
+          {record.saldo_minutos !== undefined && record.saldo_minutos !== null && (
+            <Badge variant="outline" className={`${record.saldo_minutos >= 0 ? "text-green-600 border-green-200 bg-green-50" : "text-red-600 border-red-200 bg-red-50"}`}>
+              {formatMinutes(record.saldo_minutos)}
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <span className="font-medium">Total:</span>
+          {record.saida_hora ? (
+            <div className="flex items-center gap-1">
+              <Timer className="w-3 h-3" />
+              {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
+            </div>
+          ) : (
+            <span>--:--</span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 
   if (isAguardando || (record as any).ausente) return content;
@@ -221,9 +220,9 @@ const TimeRecordTableRow = ({
       </td>
       <td className="px-6 py-4 align-middle">
         <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-[10px] uppercase font-bold px-2 py-0 border-none h-5">
-           {record.detalhes_calculo?.entrada?.turno_base 
-              ? `${record.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(record.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
-              : 'Turno NI'}
+          {record.detalhes_calculo?.entrada?.turno_base
+            ? `${record.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(record.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
+            : 'Turno NI'}
         </Badge>
       </td>
       <td className="px-6 py-4 align-middle">

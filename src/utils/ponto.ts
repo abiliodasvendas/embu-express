@@ -22,7 +22,7 @@ export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida')
 export const getStatusColorClass = (status: string | null, type?: 'entrada' | 'saida') => {
     switch (status) {
         case STATUS_PONTO.VERDE: return "bg-emerald-100 text-emerald-700 border-emerald-200";
-        case STATUS_PONTO.AMARELO: 
+        case STATUS_PONTO.AMARELO:
             return type === 'saida'
                 ? "bg-sky-100 text-sky-700 border-sky-200" // Hora Extra (Blue)
                 : "bg-amber-100 text-amber-700 border-amber-200"; // Atraso (Amber/Yellow/Orange)
@@ -30,24 +30,22 @@ export const getStatusColorClass = (status: string | null, type?: 'entrada' | 's
             return type === 'entrada'
                 ? "bg-sky-100 text-sky-700 border-sky-200" // Entrada Antecipada (Blue)
                 : "bg-orange-100 text-orange-700 border-orange-200"; // Saída Antecipada (Orange)
-        case STATUS_PONTO.VERMELHO: 
+        case STATUS_PONTO.VERMELHO:
             return type === 'entrada'
                 ? "bg-rose-100 text-rose-700 border-rose-200" // Atraso Crítico
                 : "bg-indigo-900/10 text-indigo-800 border-indigo-200"; // HE Excessiva (Dark Blue)
-        case 'AUSENTE': 
+        case 'AUSENTE':
         case STATUS_PONTO.AUSENTE:
-            return type === 'entrada' 
+            return type === 'entrada'
                 ? "bg-rose-50 text-rose-400 border-rose-100 opacity-80" // Ausente Entrada (Light Red)
                 : "bg-slate-100 text-slate-500 border-slate-200 opacity-60";
         case STATUS_PONTO.CINZA: 
-            return type === 'entrada'
-                ? "bg-gray-100 text-gray-500 border-gray-200"
-                : "bg-gray-100 text-gray-500 border-gray-200";
+            return "bg-gray-100 text-gray-500 border-gray-200";
         case STATUS_PONTO.EM_ANDAMENTO: return "bg-blue-50 text-blue-600 border-blue-100";
         case 'iniciou': return "bg-sky-50 text-sky-600 border-sky-100";
         case 'concluiu': return "bg-indigo-50 text-indigo-700 border-indigo-100";
         case STATUS_PONTO.PENDENTE: return "bg-orange-50 text-orange-600 border-orange-100";
-        default: return "bg-gray-100 text-gray-700 border-gray-200";
+        default: return "bg-gray-100 text-gray-500 border-gray-200";
     }
 };
 
@@ -74,6 +72,6 @@ export const formatMinutes = (minutes: number, showSign: boolean = false) => {
     const h = Math.floor(absMin / 60);
     const m = absMin % 60;
     const sign = roundedMin < 0 ? "-" : (showSign && roundedMin > 0 ? "+" : "");
-    
+
     return `${sign}${h}h ${String(m).padStart(2, "0")}m`;
 };

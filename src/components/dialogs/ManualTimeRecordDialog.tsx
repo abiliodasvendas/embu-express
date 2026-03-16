@@ -15,7 +15,7 @@ import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, Clock, Loader2, User, X, Gauge } from "lucide-react";
+import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, Clock, Loader2, User, X, Gauge, PlusCircle, Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -99,7 +99,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <DialogContent
-                className="w-full max-w-md p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
+                className="w-full max-w-sm p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
                 hideCloseButton
             >
                 <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -109,7 +109,7 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                     </DialogClose>
 
                     <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-                        <Clock className="w-5 h-5 text-white" />
+                        <PlusCircle className="w-5 h-5 text-white" />
                     </div>
                     <DialogTitle className="text-xl font-bold text-white">
                         Novo Registro Manual
@@ -119,94 +119,103 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
                     <Form {...form}>
                         <form id="create-ponto-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                                <FormField
-                                    control={form.control}
-                                    name="usuario_id"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-col">
-                                            <FormLabel className="text-gray-700 font-bold">Colaborador <span className="text-red-500">*</span></FormLabel>
-                                            <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant="outline"
-                                                            role="combobox"
-                                                            className={cn(
-                                                                "w-full justify-between h-11 rounded-xl text-left font-normal border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 transition-all",
-                                                                !field.value && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            <div className="flex items-center gap-2">
-                                                                <User className="h-4 w-4 text-gray-400" />
-                                                                {field.value
-                                                                    ? collaborators.find((collaborator) => collaborator.id.toString() === field.value)?.nome_completo
-                                                                    : "Selecione o colaborador..."}
-                                                            </div>
-                                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                                                    <Command className="rounded-xl">
-                                                        <CommandInput placeholder="Buscar colaborador..." />
-                                                        <CommandList>
-                                                            <CommandEmpty>Nenhum colaborador encontrado.</CommandEmpty>
-                                                            <CommandGroup>
-                                                                {collaborators.map((collaborator) => (
-                                                                    <CommandItem
-                                                                        value={collaborator.nome_completo}
-                                                                        key={collaborator.id}
-                                                                        onSelect={() => {
-                                                                            form.setValue("usuario_id", collaborator.id.toString());
-                                                                            setOpenCombobox(false);
-                                                                        }}
-                                                                        className="cursor-pointer"
-                                                                    >
-                                                                        <Check
-                                                                            className={cn(
-                                                                                "mr-2 h-4 w-4 text-blue-600",
-                                                                                collaborator.id.toString() === field.value
-                                                                                    ? "opacity-100"
-                                                                                    : "opacity-0"
-                                                                            )}
-                                                                        />
-                                                                        {collaborator.nome_completo}
-                                                                    </CommandItem>
-                                                                ))}
-                                                            </CommandGroup>
-                                                        </CommandList>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-                                            <FormMessage />
-                                            <div className="flex items-start gap-2 mt-2 px-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-1.5 shrink-0">Turno(s):</span>
-                                                <div className="flex flex-wrap gap-1.5 font-mono">
-                                                    {field.value ? (
-                                                        (() => {
-                                                            const selectedEmp = collaborators.find(e => e.id.toString() === field.value);
-                                                            if (selectedEmp?.links && selectedEmp.links.length > 0) {
-                                                                return selectedEmp.links.map((link, idx) => (
-                                                                    <span
-                                                                        key={link.id || idx}
-                                                                        className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 w-fit whitespace-nowrap"
-                                                                    >
-                                                                        {link.hora_inicio.slice(0, 5)} - {link.hora_fim.slice(0, 5)}
-                                                                    </span>
-                                                                ));
-                                                            }
-                                                            return <span className="text-[10px] text-gray-400 mt-1 italic">Sem turno definido</span>;
-                                                        })()
-                                                    ) : (
-                                                        <span className="text-[10px] text-gray-400 mt-1">-</span>
-                                                    )}
-                                                </div>
+                                {selectedCollaboratorId ? (
+                                    <div className="text-center space-y-1 animate-in fade-in slide-in-from-top-2">
+                                        <div className="relative mx-auto w-10 h-10">
+                                            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+                                                <User className="w-5 h-5" />
                                             </div>
-                                        </FormItem>
-                                    )}
-                                />
+                                            <button 
+                                                onClick={() => {
+                                                    form.setValue("usuario_id", "");
+                                                    form.setValue("colaborador_cliente_id", "");
+                                                }}
+                                                className="absolute -right-1 -top-1 w-5 h-5 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm transition-colors"
+                                            >
+                                                <X className="w-2.5 h-2.5" />
+                                            </button>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-gray-900 leading-tight">{selectedCollaborator?.nome_completo}</h3>
+                                        <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 font-medium">
+                                            <Building2 className="w-3 h-3" />
+                                            <span>
+                                                {(() => {
+                                                    const linkId = form.watch("colaborador_cliente_id");
+                                                    if (linkId) {
+                                                        return selectedCollaborator?.links?.find((l: any) => l.id.toString() === linkId)?.cliente?.nome_fantasia;
+                                                    }
+                                                    return "Selecione o turno abaixo";
+                                                })()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <FormField
+                                        control={form.control}
+                                        name="usuario_id"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel className="text-gray-700 font-bold">Colaborador <span className="text-red-500">*</span></FormLabel>
+                                                <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+                                                    <PopoverTrigger asChild>
+                                                        <FormControl>
+                                                            <Button
+                                                                variant="outline"
+                                                                role="combobox"
+                                                                className={cn(
+                                                                    "w-full justify-between h-11 rounded-xl text-left font-normal border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300 transition-all",
+                                                                    !field.value && "text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                <div className="flex items-center gap-2">
+                                                                    <User className="h-4 w-4 text-gray-400" />
+                                                                    {field.value
+                                                                        ? collaborators.find((collaborator) => collaborator.id.toString() === field.value)?.nome_completo
+                                                                        : "Selecione o colaborador..."}
+                                                                </div>
+                                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                            </Button>
+                                                        </FormControl>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                                                        <Command className="rounded-xl">
+                                                            <CommandInput placeholder="Buscar colaborador..." />
+                                                            <CommandList>
+                                                                <CommandEmpty>Nenhum colaborador encontrado.</CommandEmpty>
+                                                                <CommandGroup>
+                                                                    {collaborators.map((collaborator) => (
+                                                                        <CommandItem
+                                                                            value={collaborator.nome_completo}
+                                                                            key={collaborator.id}
+                                                                            onSelect={() => {
+                                                                                form.setValue("usuario_id", collaborator.id.toString());
+                                                                                setOpenCombobox(false);
+                                                                            }}
+                                                                            className="cursor-pointer"
+                                                                        >
+                                                                            <Check
+                                                                                className={cn(
+                                                                                    "mr-2 h-4 w-4 text-blue-600",
+                                                                                    collaborator.id.toString() === field.value
+                                                                                        ? "opacity-100"
+                                                                                        : "opacity-0"
+                                                                                )}
+                                                                            />
+                                                                            {collaborator.nome_completo}
+                                                                        </CommandItem>
+                                                                    ))}
+                                                                </CommandGroup>
+                                                            </CommandList>
+                                                        </Command>
+                                                    </PopoverContent>
+                                                </Popover>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
+
 
                                 {selectedCollaboratorId && hasTurnos && (
                                     <FormField
@@ -297,17 +306,19 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                         name="entrada_hora"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
-                                                    <Clock className="w-3.5 h-3.5 text-blue-500" />
+                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider">
                                                     Entrada <span className="text-red-500">*</span>
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input
-                                                        placeholder="00:00"
-                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(timeMask(e.target.value))}
-                                                    />
+                                                    <div className="relative">
+                                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Input
+                                                            placeholder="00:00"
+                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                            {...field}
+                                                            onChange={(e) => field.onChange(timeMask(e.target.value))}
+                                                        />
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage className="text-[10px] uppercase font-bold" />
                                             </FormItem>
@@ -319,17 +330,19 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                         name="entrada_km"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
-                                                    <Gauge className="w-3.5 h-3.5 text-blue-500" />
+                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider">
                                                     KM Entrada <span className="text-red-500">*</span>
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input
-                                                        placeholder="0"
-                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(kmMask(e.target.value))}
-                                                    />
+                                                    <div className="relative">
+                                                        <Gauge className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Input
+                                                            placeholder="0"
+                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                            {...field}
+                                                            onChange={(e) => field.onChange(kmMask(e.target.value))}
+                                                        />
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage className="text-[10px] uppercase font-bold" />
                                             </FormItem>
@@ -343,17 +356,19 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                         name="saida_hora"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
-                                                    <Clock className="w-3.5 h-3.5 text-orange-500" />
+                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider">
                                                     Saída
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input
-                                                        placeholder="00:00"
-                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(timeMask(e.target.value))}
-                                                    />
+                                                    <div className="relative">
+                                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Input
+                                                            placeholder="00:00"
+                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                            {...field}
+                                                            onChange={(e) => field.onChange(timeMask(e.target.value))}
+                                                        />
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage className="text-[10px] uppercase font-bold" />
                                             </FormItem>
@@ -365,22 +380,29 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                         name="saida_km"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
-                                                    <Gauge className="w-3.5 h-3.5 text-orange-500" />
+                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider">
                                                     KM Saída
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input
-                                                        placeholder="0"
-                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(kmMask(e.target.value))}
-                                                    />
+                                                    <div className="relative">
+                                                        <Gauge className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Input
+                                                            placeholder="0"
+                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                            {...field}
+                                                            onChange={(e) => field.onChange(kmMask(e.target.value))}
+                                                        />
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage className="text-[10px] uppercase font-bold" />
                                             </FormItem>
                                         )}
                                     />
+                                </div>
+
+                                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100 text-[10px] text-blue-700 text-center font-medium animate-in fade-in slide-in-from-top-1">
+                                    <span className="font-black uppercase tracking-widest block mb-0.5">Cálculo Automático</span>
+                                    Os status e o saldo de horas serão calculados após a criação.
                                 </div>
                             </div>
 

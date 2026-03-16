@@ -1,17 +1,17 @@
 import { PermissionKey, PERMISSIONS } from "@/constants/permissions.enum";
 import { ROUTES } from "@/constants/routes";
 import { MENU_CATEGORIES, MenuCategory } from "@/constants/menu.constants";
-import { 
-    AlertCircle, 
-    Banknote, 
-    Briefcase, 
-    Building, 
-    Clock, 
-    FileText, 
-    Home, 
-    Settings, 
-    Users, 
-    AlertTriangle 
+import {
+    AlertCircle,
+    Banknote,
+    Briefcase,
+    Building,
+    Clock,
+    FileText,
+    Home,
+    Settings,
+    Users,
+    AlertTriangle
 } from "lucide-react";
 
 export interface PageItem {
@@ -75,14 +75,6 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.COLABORADORES,
         icon: Users,
         permissionKey: PERMISSIONS.USUARIOS.VER,
-        category: MENU_CATEGORIES.CADASTROS
-    },
-    {
-        title: "Perfis",
-        href: ROUTES.PRIVATE.PERFIS,
-        icon: Users,
-        permissionKey: PERMISSIONS.PERFIS.VER,
-        category: MENU_CATEGORIES.CADASTROS
     },
     {
         title: "Clientes",
@@ -105,7 +97,12 @@ export const pagesItems: PageItem[] = [
         permissionKey: PERMISSIONS.CONFIGURACAO.VER,
         category: MENU_CATEGORIES.CADASTROS
     },
-    // ITEM SOLTO (Antigo Sistema)
+    {
+        title: "Perfis",
+        href: ROUTES.PRIVATE.PERFIS,
+        icon: Users,
+        permissionKey: PERMISSIONS.PERFIS.VER,
+    },
     {
         title: "Configurações",
         href: ROUTES.PRIVATE.CONFIGURACOES,

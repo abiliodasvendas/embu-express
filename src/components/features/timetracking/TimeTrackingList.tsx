@@ -177,7 +177,7 @@ const TimeRecordMobileItem = ({
     </div>
   );
 
-  if (isAguardando || (record as any).ausente) return content;
+  if (isAguardando) return content;
 
   return (
     <MobileActionItem actions={actions}>
@@ -265,7 +265,7 @@ const TimeRecordTableRow = ({
         </div>
       </td>
       <td className="px-6 py-4 align-middle text-right" onClick={(e) => e.stopPropagation()}>
-        {!(record as any).ausente && <ActionsDropdown actions={actions} />}
+        {!isAguardando && <ActionsDropdown actions={actions} />}
       </td>
     </tr>
   );

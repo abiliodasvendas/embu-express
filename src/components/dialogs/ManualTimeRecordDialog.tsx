@@ -15,7 +15,7 @@ import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, Clock, Loader2, User, X } from "lucide-react";
+import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, Clock, Loader2, User, X, Gauge } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -39,8 +39,8 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
             data_referencia: format(new Date(), "yyyy-MM-dd"),
             entrada_hora: "",
             saida_hora: "",
-            entrada_loc: undefined,
-            saida_loc: undefined,
+            entrada_km: "",
+            saida_km: "",
             colaborador_cliente_id: "",
         },
     });
@@ -60,6 +60,8 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 data_referencia: format(new Date(), "yyyy-MM-dd"),
                 entrada_hora: "",
                 saida_hora: "",
+                entrada_km: "",
+                saida_km: "",
                 colaborador_cliente_id: "",
             });
             setOpenCombobox(false);
@@ -82,9 +84,9 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                 usuario_id: values.usuario_id,
                 data_referencia: values.data_referencia,
                 entrada_hora: entrada.toISOString(),
-                entrada_km: null,
+                entrada_km: kmToNumber(values.entrada_km),
                 saida_hora: saida ? saida.toISOString() : null,
-                saida_km: null,
+                saida_km: values.saida_km ? kmToNumber(values.saida_km) : null,
                 colaborador_cliente_id: values.colaborador_cliente_id ? parseInt(values.colaborador_cliente_id) : undefined
             });
 
@@ -289,51 +291,93 @@ export function ManualTimeRecordDialog({ isOpen, onClose }: ManualTimeRecordDial
                                     )}
                                 />
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
                                         name="entrada_hora"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold">Entrada <span className="text-red-500">*</span></FormLabel>
+                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                                    <Clock className="w-3.5 h-3.5 text-blue-500" />
+                                                    Entrada <span className="text-red-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
-                                                    <div className="relative">
-                                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                                        <Input
-                                                            type="text"
-                                                            placeholder="00:00"
-                                                            maxLength={5}
-                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors font-mono"
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(timeMask(e.target.value))}
-                                                        />
-                                                    </div>
+                                                    <Input
+                                                        placeholder="00:00"
+                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(timeMask(e.target.value))}
+                                                    />
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage className="text-[10px] uppercase font-bold" />
                                             </FormItem>
                                         )}
                                     />
 
                                     <FormField
                                         control={form.control}
+                                        name="entrada_km"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                                    <Gauge className="w-3.5 h-3.5 text-blue-500" />
+                                                    KM Entrada <span className="text-red-500">*</span>
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="0"
+                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(kmMask(e.target.value))}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage className="text-[10px] uppercase font-bold" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
                                         name="saida_hora"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold">Saída</FormLabel>
+                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                                    <Clock className="w-3.5 h-3.5 text-orange-500" />
+                                                    Saída
+                                                </FormLabel>
                                                 <FormControl>
-                                                    <div className="relative">
-                                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                                        <Input
-                                                            type="text"
-                                                            placeholder="00:00"
-                                                            maxLength={5}
-                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors font-mono"
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(timeMask(e.target.value))}
-                                                        />
-                                                    </div>
+                                                    <Input
+                                                        placeholder="00:00"
+                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(timeMask(e.target.value))}
+                                                    />
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage className="text-[10px] uppercase font-bold" />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="saida_km"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                                    <Gauge className="w-3.5 h-3.5 text-orange-500" />
+                                                    KM Saída
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="0"
+                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(kmMask(e.target.value))}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage className="text-[10px] uppercase font-bold" />
                                             </FormItem>
                                         )}
                                     />

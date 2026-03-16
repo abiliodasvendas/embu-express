@@ -2,17 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useUpdatePonto } from "@/hooks/api/usePontoMutations";
+import { useUpdatePonto, useCreatePonto } from "@/hooks/api/usePontoMutations";
 import { EditTimeRecordFormValues, editTimeRecordSchema } from "@/schemas/pontoSchema";
 import { RegistroPonto } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Building2, Clock, Edit2, Loader2, Save, User, X } from "lucide-react";
+import { Building2, Clock, Edit2, Loader2, Save, User, X, Gauge } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { timeMask } from "@/utils/masks";
+import { timeMask, kmMask, kmToNumber, formatKm } from "@/utils/masks";
 import { PONTO_SIDE } from "@/constants/ponto";
 import { toast } from "sonner";
 
@@ -25,12 +25,17 @@ interface EditTimeRecordDialogProps {
 
 export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecordDialogProps) {
   const updatePonto = useUpdatePonto();
+  const createPonto = useCreatePonto();
+
+  const isAusente = (record as any)?.ausente === true;
 
   const form = useForm<EditTimeRecordFormValues>({
     resolver: zodResolver(editTimeRecordSchema),
     defaultValues: {
       entrada_hora: "",
       saida_hora: "",
+      entrada_km: "",
+      saida_km: "",
     },
   });
 
@@ -39,6 +44,8 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
       form.reset({
         entrada_hora: record.entrada_hora ? format(new Date(record.entrada_hora), "HH:mm") : "",
         saida_hora: record.saida_hora ? format(new Date(record.saida_hora), "HH:mm") : "",
+        entrada_km: record.entrada_km ? formatKm(record.entrada_km).replace(" KM", "") : "",
+        saida_km: record.saida_km ? formatKm(record.saida_km).replace(" KM", "") : "",
       });
     }
   }, [record, isOpen, form]);
@@ -50,7 +57,7 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
   const onSubmit = (values: EditTimeRecordFormValues) => {
     if (!record) return;
 
-    const baseDate = record.entrada_hora ? format(new Date(record.entrada_hora), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
+    const baseDate = record.data_referencia;
     const { entrada, saida } = TimeRules.resolveDates(baseDate, values.entrada_hora, values.saida_hora || undefined);
 
     if (saida) {
@@ -61,20 +68,38 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
       }
     }
 
-    updatePonto.mutate(
-      {
-        id: record.id,
-        data: {
-          entrada_hora: entrada.toISOString(),
-          saida_hora: saida ? saida.toISOString() : null,
+    const payload = {
+      entrada_hora: entrada.toISOString(),
+      saida_hora: saida ? saida.toISOString() : null,
+      entrada_km: kmToNumber(values.entrada_km),
+      saida_km: values.saida_km ? kmToNumber(values.saida_km) : null,
+    };
+
+    if (isAusente) {
+      createPonto.mutate(
+        {
+          usuario_id: record.usuario_id,
+          data_referencia: record.data_referencia,
+          cliente_id: record.cliente_id,
+          empresa_id: record.empresa_id,
+          colaborador_cliente_id: (record as any).colaborador_cliente_id,
+          ...payload
         },
-      },
-      {
-        onSuccess: () => {
-          handleClose();
+        {
+          onSuccess: () => handleClose(),
+        }
+      );
+    } else {
+      updatePonto.mutate(
+        {
+          id: record.id,
+          data: payload,
         },
-      }
-    );
+        {
+          onSuccess: () => handleClose(),
+        }
+      );
+    }
   };
 
   if (!record) return null;
@@ -96,7 +121,7 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
             <Edit2 className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            Editar Registro
+            {isAusente ? "Incluir Registro" : "Editar Registro"}
           </DialogTitle>
         </div>
 
@@ -108,18 +133,18 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
             <h3 className="text-lg font-bold text-gray-900">{record.usuario?.nome_completo}</h3>
             <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 font-medium">
               <Building2 className="w-3 h-3" />
-              <span>{record.usuario?.cliente?.nome_fantasia}</span>
+              <span>{(record as any).cliente?.nome_fantasia || record.usuario?.cliente?.nome_fantasia || "Sem Cliente"}</span>
             </div>
           </div>
 
           <form id="edit-ponto-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor={PONTO_SIDE.ENTRADA} className="text-gray-700 font-bold">Entrada <span className="text-red-500">*</span></Label>
+                <Label htmlFor="entrada_hora" className="text-gray-700 font-bold text-xs uppercase tracking-wider">Entrada <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    id={PONTO_SIDE.ENTRADA}
+                    id="entrada_hora"
                     type="text"
                     placeholder="00:00"
                     maxLength={5}
@@ -137,11 +162,32 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={PONTO_SIDE.SAIDA} className="text-gray-700 font-bold">Saída</Label>
+                <Label htmlFor="entrada_km" className="text-gray-700 font-bold text-xs uppercase tracking-wider">KM Entrada <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <Gauge className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="entrada_km"
+                    type="text"
+                    placeholder="0"
+                    className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                    {...form.register("entrada_km")}
+                    onChange={(e) => {
+                      const masked = kmMask(e.target.value);
+                      form.setValue("entrada_km", masked);
+                    }}
+                  />
+                </div>
+                {form.formState.errors.entrada_km && (
+                  <span className="text-[10px] text-red-500 block font-bold mt-1 uppercase">{form.formState.errors.entrada_km.message}</span>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="saida_hora" className="text-gray-700 font-bold text-xs uppercase tracking-wider">Saída</Label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    id={PONTO_SIDE.SAIDA}
+                    id="saida_hora"
                     type="text"
                     placeholder="00:00"
                     maxLength={5}
@@ -150,6 +196,27 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
                     onChange={(e) => {
                       const masked = timeMask(e.target.value);
                       form.setValue("saida_hora", masked);
+                    }}
+                  />
+                </div>
+                {form.formState.errors.saida_hora && (
+                  <span className="text-[10px] text-red-500 block font-bold mt-1 uppercase">{form.formState.errors.saida_hora.message}</span>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="saida_km" className="text-gray-700 font-bold text-xs uppercase tracking-wider">KM Saída</Label>
+                <div className="relative">
+                  <Gauge className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="saida_km"
+                    type="text"
+                    placeholder="0"
+                    className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                    {...form.register("saida_km")}
+                    onChange={(e) => {
+                      const masked = kmMask(e.target.value);
+                      form.setValue("saida_km", masked);
                     }}
                   />
                 </div>
@@ -175,16 +242,16 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
           <Button
             type="submit"
             form="edit-ponto-form"
-            disabled={updatePonto.isPending}
+            disabled={updatePonto.isPending || createPonto.isPending}
             className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
           >
-            {updatePonto.isPending ? (
+            {updatePonto.isPending || createPonto.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Salvando...
               </>
             ) : (
               <>
-                <Save className="w-4 h-4 mr-2" /> Salvar
+                <Save className="w-4 h-4 mr-2" /> {isAusente ? "Salvar Inclusão" : "Salvar Alterações"}
               </>
             )}
           </Button>

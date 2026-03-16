@@ -6,6 +6,7 @@ export function useFinanceiro(usuarioId: string | undefined, mes: number, ano: n
         queryKey: ["financeiro-extrato", usuarioId, mes, ano],
         queryFn: () => financeiroApi.getExtratoMensal(usuarioId!, mes, ano),
         enabled: !!usuarioId && !!mes && !!ano,
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 0,
+        refetchOnMount: true,
     });
 }

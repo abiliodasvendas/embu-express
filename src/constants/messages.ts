@@ -264,17 +264,17 @@ export const messages = {
       pago: "Pagamento registrado com sucesso!",
     },
     labels: {
-      detalhamentoCliente: "Detalhamento por Cliente",
+      detalhamentoTurno: "Detalhamento por Turno",
       lancamentosGerais: "Lançamentos Gerais",
       saldoLiquido: "Saldo Líquido Estimado",
-      criterioProRata: "Cálculo Pro-rata Aplicado",
+      criterioProRata: "Cálculo Pró-Rata Aplicado",
       infoRascunho: "Este é um cálculo em tempo real (Rascunho). Pode ser ajustado até o pagamento.",
       infoPago: "Este é um registro estático de pagamento.",
     },
     confirmacao: {
-      titulo: "Confirmar Pagamento",
-      descricao: "Você está marcando o extrato como pago. Esta ação criará um registro histórico e não poderá ser desfeita. Deseja continuar?",
-      botao: "Confirmar Pagamento",
+      titulo: "Finalizar Fechamento",
+      descricao: "Você está finalizando este fechamento e marcando-o como pago. Os valores atuais serão salvos de forma permanente para este mês. Deseja continuar?",
+      botao: "Finalizar e Pagar",
     },
   },
 
@@ -292,6 +292,45 @@ export const messages = {
       excluido: "Feriado removido com sucesso.",
     },
   },
+
+  // ========== OCORRÊNCIAS ==========
+  ocorrencia: {
+    erro: {
+      carregar: "Erro ao carregar ocorrências.",
+      criar: "Erro ao registrar ocorrência.",
+      atualizar: "Erro ao atualizar ocorrência.",
+      excluir: "Erro ao remover ocorrência.",
+      tipo: {
+        criar: "Erro ao criar tipo de ocorrência.",
+        atualizar: "Erro ao atualizar tipo de ocorrência.",
+        excluir: "Erro ao remover tipo de ocorrência.",
+      },
+    },
+    sucesso: {
+      criada: "Ocorrência registrada com sucesso!",
+      atualizada: "Ocorrência atualizada com sucesso!",
+      excluida: "Ocorrência removida com sucesso!",
+      tipo: {
+        criado: "Tipo de ocorrência criado com sucesso!",
+        atualizado: "Tipo de ocorrência atualizado com sucesso!",
+        excluido: "Tipo de ocorrência removido com sucesso!",
+      },
+    },
+  },
+
+  // ========== VÍNCULOS / TURNOS ==========
+  vinculo: {
+    erro: {
+      criar: "Erro ao criar turno.",
+      atualizar: "Erro ao atualizar turno.",
+      excluir: "Erro ao remover turno.",
+    },
+    sucesso: {
+      criado: "Turno criado com sucesso!",
+      atualizado: "Turno atualizado com sucesso!",
+      excluido: "Turno removido com sucesso!",
+    },
+  },
 } as const;
 
 /**
@@ -305,6 +344,7 @@ export type MessageKey =
   | `colaborador.erro.${keyof typeof messages.colaborador.erro}`
   | `colaborador.sucesso.${keyof typeof messages.colaborador.sucesso}`
   | `ponto.erro.${keyof typeof messages.ponto.erro}`
+  | `ponto.sucesso.${keyof typeof messages.ponto.sucesso}`
   | `auth.erro.${keyof typeof messages.auth.erro}`
   | `auth.sucesso.${keyof typeof messages.auth.sucesso}`
   | `auth.info.${keyof typeof messages.auth.info}`
@@ -325,7 +365,11 @@ export type MessageKey =
   | `financeiro.labels.${keyof typeof messages.financeiro.labels}`
   | `financeiro.confirmacao.${keyof typeof messages.financeiro.confirmacao}`
   | `feriado.erro.${keyof typeof messages.feriado.erro}`
-  | `feriado.sucesso.${keyof typeof messages.feriado.sucesso}`;
+  | `feriado.sucesso.${keyof typeof messages.feriado.sucesso}`
+  | `ocorrencia.erro.${keyof typeof messages.ocorrencia.erro}`
+  | `ocorrencia.sucesso.${keyof typeof messages.ocorrencia.sucesso}`
+  | `vinculo.erro.${keyof typeof messages.vinculo.erro}`
+  | `vinculo.sucesso.${keyof typeof messages.vinculo.sucesso}`;
 
 /**
  * Função helper para obter mensagem por chave

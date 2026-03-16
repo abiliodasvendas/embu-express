@@ -10,9 +10,10 @@ import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
 import { calculateTotalTime, formatMinutes, formatTime, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { Clock, Timer } from "lucide-react";
+import { PONTO_SIDE } from "@/constants/ponto";
 import { useState } from "react";
 
-const renderStatusTooltip = (details: any, type: 'entrada' | 'saida', timeIso?: string | null) => {
+const renderStatusTooltip = (details: any, type: typeof PONTO_SIDE.ENTRADA | typeof PONTO_SIDE.SAIDA, timeIso?: string | null) => {
   const info = details?.[type];
   if (!info || !info.turno_base) return null;
 
@@ -25,7 +26,7 @@ const renderStatusTooltip = (details: any, type: 'entrada' | 'saida', timeIso?: 
       <p><span className="font-semibold">Marcado às:</span> {formatTime(timeIso)}</p>
       <p><span className="font-semibold">Turno Base:</span> {info.turno_base.substring(0, 5)}</p>
       <p>
-        <span className="font-semibold">{type === 'entrada' ? 'Atraso:' : 'Hora Extra:'}</span>
+        <span className="font-semibold">{type === PONTO_SIDE.ENTRADA ? 'Atraso:' : 'Hora Extra:'}</span>
         <span className={isLateOrExtra ? "text-red-500 ml-1" : "text-green-500 ml-1"}>
           {sign}{diff} min
         </span>
@@ -42,7 +43,7 @@ const StatusBadgeWithTooltip = ({
   timeIso
 }: {
   status: string,
-  type: 'entrada' | 'saida',
+  type: typeof PONTO_SIDE.ENTRADA | typeof PONTO_SIDE.SAIDA,
   details: any,
   timeIso?: string | null
 }) => {
@@ -127,7 +128,7 @@ const TimeRecordMobileItem = ({
               <span className="font-bold text-gray-700 text-lg">{formatTime(record.entrada_hora)}</span>
               <StatusBadgeWithTooltip
                 status={record.status_entrada}
-                type="entrada"
+                type={PONTO_SIDE.ENTRADA}
                 details={record.detalhes_calculo}
                 timeIso={record.entrada_hora}
               />
@@ -143,7 +144,7 @@ const TimeRecordMobileItem = ({
               <span className="font-bold text-gray-700 text-lg">{formatTime(record.saida_hora)}</span>
               <StatusBadgeWithTooltip
                 status={record.status_saida}
-                type="saida"
+                type={PONTO_SIDE.SAIDA}
                 details={record.detalhes_calculo}
                 timeIso={record.saida_hora}
               />
@@ -229,7 +230,7 @@ const TimeRecordTableRow = ({
           <span className="text-base font-bold text-gray-700">{formatTime(record.entrada_hora)}</span>
           <StatusBadgeWithTooltip
             status={record.status_entrada}
-            type="entrada"
+            type={PONTO_SIDE.ENTRADA}
             details={record.detalhes_calculo}
             timeIso={record.entrada_hora}
           />
@@ -240,7 +241,7 @@ const TimeRecordTableRow = ({
           <span className="text-base font-bold text-gray-700">{formatTime(record.saida_hora)}</span>
           <StatusBadgeWithTooltip
             status={record.status_saida}
-            type="saida"
+            type={PONTO_SIDE.SAIDA}
             details={record.detalhes_calculo}
             timeIso={record.saida_hora}
           />

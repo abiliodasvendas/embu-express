@@ -18,6 +18,7 @@ export const ROUTES = {
         OCORRENCIAS: "/admin/ocorrencias",
         ESPELHO_PONTO: "/admin/espelho-ponto",
         RELATORIO_FINANCEIRO: "/admin/financeiro",
+        INCONSISTENCIAS: "/admin/inconsistencias",
         MEUS_PONTOS: "/meus-pontos",
         MEU_FINANCEIRO: "/meu-financeiro",
         INICIO: "/inicio"

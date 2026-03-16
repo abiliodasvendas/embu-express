@@ -132,7 +132,7 @@ export function TimeMirrorView({
     return (
         <div className="space-y-6">
                 {/* Context Filters - Only show if not provided via props */}
-                {!propMonth && (
+                {!propMonth && !propYear && (
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
                             <Select value={String(month)} onValueChange={(v) => setSelectedMonth(Number(v))}>
@@ -325,11 +325,21 @@ export function TimeMirrorView({
                                                 {canViewAll && (
                                                     <>
                                                         {/* Intervalo */}
-                                                        <div className="text-center">
+                                                        <div className="text-center flex flex-col items-center gap-0.5">
                                                             <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Intervalo</p>
-                                                            <p className="text-sm font-medium text-gray-400 italic">
+                                                            <p className="text-sm font-bold text-gray-700 leading-none">
                                                                 {day.total_pausas_minutos ? `${Math.round(day.total_pausas_minutos)}m` : '0m'}
                                                             </p>
+                                                            {day.detalhes_calculo?.resumo?.pausa_configurada > 0 && (
+                                                                <span className="text-[9px] text-gray-400 font-medium leading-none">
+                                                                    Limite: {day.detalhes_calculo.resumo.pausa_configurada}m
+                                                                </span>
+                                                            )}
+                                                            {day.detalhes_calculo?.resumo?.pausa_extra > 0 && (
+                                                                <span className="text-[9px] text-red-500 font-black leading-none uppercase">
+                                                                    +{day.detalhes_calculo.resumo.pausa_extra}m extra
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         {/* Trabalhado */}

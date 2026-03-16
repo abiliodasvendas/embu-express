@@ -74,6 +74,7 @@ export interface Usuario {
   moto_cor?: string;
   moto_ano?: string;
   moto_placa?: string;
+  valor_mei?: number;
 
   ponto_hoje?: Ponto;
   // Relacionamentos (virtual)
@@ -102,10 +103,10 @@ export interface ColaboradorCliente {
   valor_aluguel?: number;
   valor_bonus?: number;
   ajuda_custo?: number;
-  valor_mei?: number;
   valor_adiantamento?: number;
   data_inicio?: string;
   data_fim?: string;
+  tolerancia_pausa_min?: number;
   // Virtual
   cliente?: Client;
   empresa?: Empresa;
@@ -179,6 +180,7 @@ export interface TipoOcorrencia {
   descricao: string;
   valor_padrao?: number;
   impacto_financeiro: boolean;
+  tipo_lancamento: 'ENTRADA' | 'SAIDA';
   created_at?: string;
 }
 

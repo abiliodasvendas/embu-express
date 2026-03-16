@@ -15,7 +15,9 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/ui/MoneyInput";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -36,6 +38,24 @@ const tipoOcorrenciaSchema = z.object({
     descricao: z.string().min(1, "A descrição é obrigatória"),
     valor_padrao: z.coerce.number().min(0, "O valor não pode ser negativo").default(0),
     impacto_financeiro: z.boolean().default(false),
+    tipo_lancamento: z.enum(["ENTRADA", "SAIDA"]).optional(),
+}).superRefine((data, ctx) => {
+    if (data.impacto_financeiro) {
+        if (!data.tipo_lancamento) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Obrigatório quando há impacto financeiro",
+                path: ["tipo_lancamento"],
+            });
+        }
+        if (data.valor_padrao <= 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "O valor deve ser maior que zero",
+                path: ["valor_padrao"],
+            });
+        }
+    }
 });
 
 type TipoOcorrenciaFormData = z.infer<typeof tipoOcorrenciaSchema>;
@@ -66,6 +86,7 @@ export function OccurrenceTypesDialog({
             descricao: "",
             valor_padrao: 0,
             impacto_financeiro: false,
+            tipo_lancamento: "SAIDA",
         },
     });
 
@@ -75,6 +96,7 @@ export function OccurrenceTypesDialog({
             descricao: tipo.descricao,
             valor_padrao: tipo.valor_padrao || 0,
             impacto_financeiro: tipo.impacto_financeiro,
+            tipo_lancamento: tipo.tipo_lancamento || "SAIDA",
         });
         setIsFormVisible(true);
         setTimeout(() => {
@@ -89,6 +111,7 @@ export function OccurrenceTypesDialog({
             descricao: "",
             valor_padrao: 0,
             impacto_financeiro: false,
+            tipo_lancamento: "SAIDA",
         });
     };
 
@@ -176,7 +199,7 @@ export function OccurrenceTypesDialog({
 
                                 <Form {...form}>
                                     <form id="type-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 gap-4">
                                             <FormField
                                                 control={form.control}
                                                 name="descricao"
@@ -197,38 +220,74 @@ export function OccurrenceTypesDialog({
 
                                             <FormField
                                                 control={form.control}
-                                                name="valor_padrao"
+                                                name="impacto_financeiro"
                                                 render={({ field }) => (
-                                                    <FormItem className="space-y-1">
-                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Valor Sugerido</FormLabel>
+                                                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-blue-50 bg-blue-50/20 p-3 shadow-sm">
+                                                        <div className="space-y-0.5">
+                                                            <FormLabel className="text-xs font-bold text-gray-700">Impacto Financeiro</FormLabel>
+                                                            <p className="text-[10px] text-gray-500 font-medium leading-tight">Gera lançamento automático no financeiro.</p>
+                                                        </div>
                                                         <FormControl>
-                                                            <MoneyInput
-                                                                value={field.value}
-                                                                onChange={field.onChange}
-                                                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
-                                                            />
+                                                            <Switch checked={field.value} onCheckedChange={(val) => {
+                                                                field.onChange(val);
+                                                                if (val && !form.getValues("tipo_lancamento")) {
+                                                                    form.setValue("tipo_lancamento", "SAIDA");
+                                                                }
+                                                            }} />
                                                         </FormControl>
-                                                        <FormMessage className="text-[10px]" />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
 
-                                        <FormField
-                                            control={form.control}
-                                            name="impacto_financeiro"
-                                            render={({ field }) => (
-                                                <FormItem className="flex flex-row items-center justify-between rounded-xl border border-blue-50 bg-blue-50/20 p-3 shadow-sm">
-                                                    <div className="space-y-0.5">
-                                                        <FormLabel className="text-xs font-bold text-gray-700">Impacto Financeiro</FormLabel>
-                                                        <p className="text-[10px] text-gray-500 font-medium leading-tight">Gera lançamento automático no financeiro.</p>
-                                                    </div>
-                                                    <FormControl>
-                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                                    </FormControl>
-                                                </FormItem>
+                                            {form.watch("impacto_financeiro") && (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <FormField
+                                                        control={form.control}
+                                                        name="tipo_lancamento"
+                                                        render={({ field }) => (
+                                                            <FormItem className="space-y-1">
+                                                                <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Tipo de Lançamento</FormLabel>
+                                                                <FormControl>
+                                                                    <RadioGroup
+                                                                        onValueChange={field.onChange}
+                                                                        value={field.value || "SAIDA"}
+                                                                        className="flex gap-4 h-11 items-center px-4 bg-gray-50 rounded-xl border border-gray-200"
+                                                                    >
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <RadioGroupItem value="SAIDA" id="saida" />
+                                                                            <Label htmlFor="saida" className="text-xs font-bold text-gray-600 cursor-pointer">Saída (Débito)</Label>
+                                                                        </div>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <RadioGroupItem value="ENTRADA" id="entrada" />
+                                                                            <Label htmlFor="entrada" className="text-xs font-bold text-gray-600 cursor-pointer">Entrada (Crédito)</Label>
+                                                                        </div>
+                                                                    </RadioGroup>
+                                                                </FormControl>
+                                                                <FormMessage className="text-[10px]" />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+
+                                                    <FormField
+                                                        control={form.control}
+                                                        name="valor_padrao"
+                                                        render={({ field }) => (
+                                                            <FormItem className="space-y-1">
+                                                                <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Valor Sugerido</FormLabel>
+                                                                <FormControl>
+                                                                    <MoneyInput
+                                                                        value={field.value}
+                                                                        onChange={field.onChange}
+                                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
+                                                                    />
+                                                                </FormControl>
+                                                                <FormMessage className="text-[10px]" />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
                                             )}
-                                        />
+                                        </div>
 
                                         <div className="flex justify-end gap-2 pt-1">
                                             <Button
@@ -278,9 +337,17 @@ export function OccurrenceTypesDialog({
                                         <div className="flex items-center gap-2">
                                             <span className="font-bold text-gray-800">{tipo.descricao}</span>
                                             {tipo.impacto_financeiro && (
-                                                <Badge variant="secondary" className="bg-blue-50 text-blue-600 text-[9px] uppercase font-black px-1.5 py-0 border-blue-100">
-                                                    Financeiro
-                                                </Badge>
+                                                <>
+                                                    <Badge variant="secondary" className="bg-blue-50 text-blue-600 text-[9px] uppercase font-black px-1.5 py-0 border-blue-100">
+                                                        Financeiro
+                                                    </Badge>
+                                                    <Badge variant="outline" className={cn(
+                                                        "text-[9px] uppercase font-black px-1.5 py-0",
+                                                        tipo.tipo_lancamento === 'ENTRADA' ? "text-green-600 border-green-100 bg-green-50" : "text-amber-600 border-amber-100 bg-amber-50"
+                                                    )}>
+                                                        {tipo.tipo_lancamento === 'ENTRADA' ? 'Crédito' : 'Débito'}
+                                                    </Badge>
+                                                </>
                                             )}
                                         </div>
                                         {tipo.impacto_financeiro && (

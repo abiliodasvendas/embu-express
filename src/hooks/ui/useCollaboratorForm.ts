@@ -1,11 +1,11 @@
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { Usuario } from "@/types/database";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { cnpjMask, cpfMask, phoneMask, rgMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
-import { CollaboratorFormData, collaboratorSchema } from "../../schemas/collaboratorSchema";
+import { CollaboratorFormValues, collaboratorSchema } from "../../schemas/collaboratorSchema";
 
 interface UseCollaboratorFormProps {
   open: boolean;
@@ -13,7 +13,7 @@ interface UseCollaboratorFormProps {
 }
 
 export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaboratorFormProps) {
-  const form = useForm<CollaboratorFormData>({
+  const form = useForm<CollaboratorFormValues>({
     resolver: zodResolver(collaboratorSchema),
     defaultValues: {
       id: "",
@@ -35,6 +35,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
       cnh_vencimento: "",
       cnh_categoria: "",
       cnpj: "", // This is MEI CNPJ
+      valor_mei: "",
       tipo_chave_pix: "",
       chave_pix: "",
       moto_modelo: "",
@@ -54,7 +55,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           cpf: cpfMask(collaboratorToEdit.cpf),
           perfil_id: collaboratorToEdit.perfil_id.toString(),
           isMotoboyOrFiscal: false, // Updated later by useEffect in Dialog
-          status: collaboratorToEdit.status || "ATIVO",
+          status: collaboratorToEdit.status || STATUS_CADASTRO.ATIVO,
           senha_padrao: !!collaboratorToEdit.senha_padrao,
           rg: collaboratorToEdit.rg ? rgMask(collaboratorToEdit.rg) : "",
           data_nascimento: collaboratorToEdit.data_nascimento ? formatDateToBR(collaboratorToEdit.data_nascimento) : "",
@@ -68,6 +69,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           cnh_vencimento: collaboratorToEdit.cnh_vencimento ? formatDateToBR(collaboratorToEdit.cnh_vencimento) : "",
           cnh_categoria: collaboratorToEdit.cnh_categoria || "",
           cnpj: collaboratorToEdit.cnpj ? cnpjMask(collaboratorToEdit.cnpj) : "",
+          valor_mei: collaboratorToEdit.valor_mei ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(collaboratorToEdit.valor_mei as number) : "",
           tipo_chave_pix: collaboratorToEdit.tipo_chave_pix || "",
           chave_pix: collaboratorToEdit.chave_pix || "",
           moto_modelo: collaboratorToEdit.moto_modelo || "",
@@ -95,6 +97,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           cnh_vencimento: "",
           cnh_categoria: "",
           cnpj: "",
+          valor_mei: "",
           tipo_chave_pix: "",
           chave_pix: "",
           moto_modelo: "",

@@ -6,6 +6,7 @@ import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useFilters } from "@/hooks";
 import {
@@ -31,13 +32,13 @@ export function Collaborators() {
   const {
     searchTerm,
     setSearchTerm,
-    selectedStatus = "todos",
+    selectedStatus = STATUS_CADASTRO.TODOS,
     setSelectedStatus,
-    selectedCategoria: selectedRole = "todos",
+    selectedCategoria: selectedRole = STATUS_CADASTRO.TODOS,
     setSelectedCategoria: setSelectedRole,
-    selectedCliente: selectedClient = "todos",
+    selectedCliente: selectedClient = STATUS_CADASTRO.TODOS,
     setSelectedCliente: setSelectedClient,
-    selectedEmpresa: selectedEmpresa = "todos",
+    selectedEmpresa: selectedEmpresa = STATUS_CADASTRO.TODOS,
     setSelectedEmpresa: setSelectedEmpresa,
     selectedSemPontoHoje,
     setSelectedSemPontoHoje,
@@ -65,10 +66,10 @@ export function Collaborators() {
     refetch,
   } = useCollaborators({
     searchTerm: searchTerm || undefined,
-    status: selectedStatus === "todos" ? undefined : selectedStatus,
-    perfil_id: selectedRole === "todos" ? undefined : selectedRole,
-    cliente_id: selectedClient === "todos" ? undefined : selectedClient,
-    empresa_id: selectedEmpresa === "todos" ? undefined : selectedEmpresa,
+    status: selectedStatus === STATUS_CADASTRO.TODOS ? undefined : selectedStatus,
+    perfil_id: selectedRole === STATUS_CADASTRO.TODOS ? undefined : selectedRole,
+    cliente_id: selectedClient === STATUS_CADASTRO.TODOS ? undefined : selectedClient,
+    empresa_id: selectedEmpresa === STATUS_CADASTRO.TODOS ? undefined : selectedEmpresa,
     sem_ponto_hoje: selectedSemPontoHoje,
   });
 
@@ -120,7 +121,7 @@ export function Collaborators() {
     collaborator: Collaborator,
     newStatus: string,
   ) => {
-    const isActivating = newStatus === "ATIVO";
+    const isActivating = newStatus === STATUS_CADASTRO.ATIVO;
     openConfirmationDialog({
       title: isActivating ? "Ativar Colaborador" : "Desativar Colaborador",
       description: `Tem certeza que deseja ${isActivating ? "ativar" : "desativar"} o colaborador "${collaborator.nome_completo}"?`,
@@ -135,7 +136,7 @@ export function Collaborators() {
 
           closeConfirmationDialog();
 
-          if (newStatus === "ATIVO") {
+          if (newStatus === STATUS_CADASTRO.ATIVO) {
             setTimeout(() => {
               openSuccessRegistrationDialog({
                 collaborator: collaborator,

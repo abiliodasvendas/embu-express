@@ -2,11 +2,10 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { Usuario } from "@/types/database";
-import { getPerfilLabel } from "@/utils/formatters";
 import { useNavigate } from "react-router-dom";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 interface CollaboratorListProps {
   collaborators: Usuario[];

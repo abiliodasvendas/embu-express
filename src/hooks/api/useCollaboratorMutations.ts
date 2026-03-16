@@ -2,7 +2,26 @@ import { messages } from "@/constants/messages";
 import { colaboradorApi } from "@/services/api/colaborador.api";
 import { formatDateToISO } from "@/utils/date";
 import { toast } from "@/utils/notifications/toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
+
+/**
+ * Invalida caches de colaborador de forma robusta.
+ */
+async function invalidateCollaboratorCache(queryClient: QueryClient, id?: string) {
+  // Invalida listas
+  await queryClient.invalidateQueries({ queryKey: ["collaborators"] });
+  await queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
+  await queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
+
+  if (id) {
+    // Invalida o colaborador específico
+    await queryClient.removeQueries({ queryKey: ["collaborator", id.toString()] });
+    await queryClient.invalidateQueries({ queryKey: ["collaborator", id.toString()] });
+    
+    // Invalida caches derivados (financeiro)
+    await queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", id.toString()] });
+  }
+}
 
 export function useCreateCollaborator() {
   const queryClient = useQueryClient();
@@ -20,10 +39,8 @@ export function useCreateCollaborator() {
 
       return colaboradorApi.createColaborador(payload);
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["collaborators"] });
-      queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
-      queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
+    onSuccess: async (_, variables) => {
+      await invalidateCollaboratorCache(queryClient);
       if (!variables.silent) {
         toast.success(messages.colaborador.sucesso.criado);
       }
@@ -50,11 +67,8 @@ export function useUpdateCollaborator() {
       };
       return colaboradorApi.updateColaborador(id, payload);
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["collaborators"] });
-      queryClient.invalidateQueries({ queryKey: ["collaborator", variables.id.toString()] });
-      queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
-      queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
+    onSuccess: async (_, variables) => {
+      await invalidateCollaboratorCache(queryClient, variables.id);
 
       if (!variables.silent) {
         toast.success(messages.colaborador.sucesso.atualizado);
@@ -75,11 +89,8 @@ export function useUpdateCollaboratorStatus() {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       colaboradorApi.updateStatus(id, status),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["collaborators"] });
-      queryClient.invalidateQueries({ queryKey: ["collaborator", variables.id.toString()] });
-      queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
-      queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
+    onSuccess: async (_, variables) => {
+      await invalidateCollaboratorCache(queryClient, variables.id);
       toast.success(messages.colaborador.sucesso.status);
     },
     onError: (error: any) => {
@@ -94,10 +105,8 @@ export function useDeleteCollaborator() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => colaboradorApi.deleteColaborador(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["collaborators"] });
-      queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
-      queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
+    onSuccess: async () => {
+      await invalidateCollaboratorCache(queryClient);
       queryClient.invalidateQueries({ queryKey: ["time-records"] });
       toast.success(messages.colaborador.sucesso.excluido);
     },
@@ -113,13 +122,12 @@ export function useCreateVinculo() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: any) => colaboradorApi.createVinculo(data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["collaborator", variables.colaborador_id] });
-      queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.colaborador_id] });
-      toast.success("Turno criado com sucesso!");
+    onSuccess: async (_, variables) => {
+      await invalidateCollaboratorCache(queryClient, variables.colaborador_id);
+      toast.success(messages.vinculo.sucesso.criado);
     },
     onError: (error: any) => {
-      toast.error("Erro ao criar turno", {
+      toast.error(messages.vinculo.erro.criar, {
         description: error.message,
       });
     },
@@ -130,19 +138,12 @@ export function useUpdateVinculo() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, silent, ...data }: any) => colaboradorApi.updateVinculo(id, data),
-    onSuccess: (_, variables) => {
-      // Invalida o colaborador específico se o ID estiver disponível nas variáveis
-      if (variables.colaborador_id) {
-        queryClient.invalidateQueries({ queryKey: ["collaborator", variables.colaborador_id] });
-        queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.colaborador_id] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["collaborator"] });
-        queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
-      }
-      toast.success("Turno atualizado!");
+    onSuccess: async (_, variables) => {
+      await invalidateCollaboratorCache(queryClient, variables.colaborador_id);
+      toast.success(messages.vinculo.sucesso.atualizado);
     },
     onError: (error: any) => {
-      toast.error("Erro ao atualizar turno", {
+      toast.error(messages.vinculo.erro.atualizar, {
         description: error.message,
       });
     },
@@ -153,13 +154,12 @@ export function useDeleteVinculo() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => colaboradorApi.deleteVinculo(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["collaborator"] });
-      queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
-      toast.success("Turno removido!");
+    onSuccess: async () => {
+      await invalidateCollaboratorCache(queryClient);
+      toast.success(messages.vinculo.sucesso.excluido);
     },
     onError: (error: any) => {
-      toast.error("Erro ao remover turno", {
+      toast.error(messages.vinculo.erro.excluir, {
         description: error.message,
       });
     },

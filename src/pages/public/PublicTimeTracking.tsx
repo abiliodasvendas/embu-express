@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { usePublicTimeTracking, usePublicCollaborators } from "@/hooks/api/usePublicClient";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon, Clock, FilterX, Users, Timer, Info } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, FilterX, Users, Timer, Info, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { Combobox } from "@/components/ui/combobox";
 import { DateNavigation } from "@/components/common/DateNavigation";
+import { STATUS_PONTO } from "@/constants/ponto";
 
 export default function PublicTimeTracking() {
     const { uuid } = useParams();
@@ -142,15 +143,15 @@ export default function PublicTimeTracking() {
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Entrada</p>
                                             <div className="flex flex-col gap-1.5">
                                                 <span className="text-xl font-black text-gray-800">{formatTime(record.entrada_hora)}</span>
-                                                <Badge 
-                                                    variant="outline" 
-                                                    className={cn(
-                                                        "text-[9px] w-fit", 
-                                                        record.ausente ? "bg-gray-100 text-gray-400 border-gray-200" : getStatusColorClass(record.status_entrada)
-                                                    )}
-                                                >
-                                                    {record.ausente ? "AUSENTE" : getStatusLabel(record.status_entrada, 'entrada')}
-                                                </Badge>
+                                                 <Badge 
+                                                     variant="outline" 
+                                                     className={cn(
+                                                         "text-[9px] w-fit", 
+                                                         getStatusColorClass(record.status_entrada)
+                                                     )}
+                                                 >
+                                                     {getStatusLabel(record.status_entrada, 'entrada')}
+                                                 </Badge>
                                             </div>
                                         </div>
 
@@ -158,15 +159,15 @@ export default function PublicTimeTracking() {
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saída</p>
                                             <div className="flex flex-col gap-1.5">
                                                 <span className="text-xl font-black text-gray-800">{formatTime(record.saida_hora)}</span>
-                                                <Badge 
-                                                    variant="outline" 
-                                                    className={cn(
-                                                        "text-[9px] w-fit", 
-                                                        record.ausente ? "bg-gray-100 text-gray-400 border-gray-200" : (record.saida_hora ? getStatusColorClass(record.status_saida) : "bg-blue-50 text-blue-400 border-blue-100")
-                                                    )}
-                                                >
-                                                    {record.ausente ? "AUSENTE" : (record.saida_hora ? getStatusLabel(record.status_saida, 'saida') : "TRABALHANDO")}
-                                                </Badge>
+                                                 <Badge 
+                                                     variant="outline" 
+                                                     className={cn(
+                                                         "text-[9px] w-fit", 
+                                                         (!record.saida_hora && record.status_saida === STATUS_PONTO.CINZA) ? "bg-blue-50 text-blue-400 border-blue-100" : getStatusColorClass(record.status_saida)
+                                                     )}
+                                                 >
+                                                     {(!record.saida_hora && record.status_saida === STATUS_PONTO.CINZA) ? "TRABALHANDO" : getStatusLabel(record.status_saida, 'saida')}
+                                                 </Badge>
                                             </div>
                                         </div>
                                     </div>
@@ -192,6 +193,12 @@ export default function PublicTimeTracking() {
                                         </div>
                                     </div>
                                 </div>
+                                {record.status_saida === STATUS_PONTO.PENDENTE && (
+                                    <div className="mt-4 p-3 bg-orange-50 border border-orange-100 rounded-xl flex items-center gap-2 text-orange-700 animate-in slide-in-from-top-2">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <p className="text-xs font-bold">Ponto inconsistente de ontem. Por favor, procure o RH para ajustar sua saída.</p>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     ))}

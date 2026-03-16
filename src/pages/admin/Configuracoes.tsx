@@ -18,26 +18,12 @@ interface ConfigItem {
 }
 
 const CONFIG_METADATA: Record<string, { label: string; icon: any; unit?: string; description: string; example: string }> = {
-    tolerancia_verde_min: {
-        label: "Tolerância Ideal (Verde)",
-        icon: CheckCircle2,
-        unit: "min",
-        description: "Tempo máximo de atraso permitido para que a entrada ainda seja considerada pontual no painel.",
-        example: "Ex: Se definido como 5 min, entrar às 08:05 em um turno das 08:00 ainda manterá o status Verde."
-    },
     tolerancia_amarelo_min: {
         label: "Alerta de Atraso (Amarelo)",
         icon: Clock,
         unit: "min",
         description: "Limite superior para o status de 'Atenção'. Após este tempo, o atraso é considerado crítico (Vermelho).",
         example: "Ex: Se definido como 15 min, entradas de 6 a 15 min de atraso ficam amarelas. Acima disso, vermelhas."
-    },
-    tolerancia_saida_min: {
-        label: "Flexibilidade de Saída",
-        icon: Clock,
-        unit: "min",
-        description: "Janela aceitável para bater o ponto de saída sem gerar alertas de saída antecipada ou atrasada.",
-        example: "Ex: Se definido como 10 min, sair 10 min antes ou depois do horário oficial não gera inconsistência."
     },
     limite_he_excessiva_min: {
         label: "Limite de Hora Extra Alerta",
@@ -115,7 +101,7 @@ export default function Configuracoes() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ToleranceTimeline draftValues={draftValues} />
                 
-                {configs?.map((config) => (
+                {configs?.filter(c => c.chave !== 'tolerancia_verde_min' && c.chave !== 'tolerancia_saida_min').map((config) => (
                     <ConfigCard
                         key={config.chave}
                         config={config}

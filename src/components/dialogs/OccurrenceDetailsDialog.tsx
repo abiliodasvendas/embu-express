@@ -11,6 +11,7 @@ import { Ocorrencia } from "@/types/database";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AlertCircle, ArrowDownCircle, ArrowUpCircle, Briefcase, Calendar, Clock, User, X } from "lucide-react";
+import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
 
 interface OccurrenceDetailsDialogProps {
     occurrence: Ocorrencia | null;
@@ -27,7 +28,7 @@ export function OccurrenceDetailsDialog({
 }: OccurrenceDetailsDialogProps) {
     if (!occurrence) return null;
 
-    const isNegative = occurrence.tipo_lancamento === "SAIDA";
+    const isNegative = occurrence.tipo_lancamento === LANCAMENTO_TIPO.SAIDA;
 
     const formatTime = (time?: string) => {
         if (!time) return "";
@@ -77,13 +78,13 @@ export function OccurrenceDetailsDialog({
                             </div>
                         </div>
 
-                        {/* Vínculo (Turno) */}
+                        {/* Vínculo/Turno */}
                         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
                             <div className="bg-gray-50 p-2.5 rounded-xl">
                                 <Briefcase className="w-5 h-5 text-gray-400" />
                             </div>
                             <div className="flex-1">
-                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Vínculo (Turno)</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Turno</p>
                                 {occurrence.colaborador_cliente_id ? (
                                     <p className="text-sm font-bold text-gray-700 mt-0.5">
                                         {occurrence.vinculo?.cliente?.nome_fantasia || 'Turno Vinculado'} 

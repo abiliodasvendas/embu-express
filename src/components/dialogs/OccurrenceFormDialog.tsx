@@ -29,9 +29,9 @@ import { useCollaborator, useCollaborators } from "@/hooks/api/useCollaborators"
 import { useCreateOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
 import { cn } from "@/lib/utils";
+import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
 import { OccurrenceFormData, occurrenceSchema } from "@/schemas/occurrenceSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
 import { AlertCircle, Loader2, X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -84,7 +84,7 @@ export function OccurrenceFormDialog({
                 data_ocorrencia: data.data_ocorrencia,
                 valor: data.valor,
                 impacto_financeiro: data.impacto_financeiro,
-                tipo_lancamento: data.tipo_lancamento as "ENTRADA" | "SAIDA" | undefined,
+                tipo_lancamento: data.tipo_lancamento as typeof LANCAMENTO_TIPO.ENTRADA | typeof LANCAMENTO_TIPO.SAIDA | undefined,
                 observacao: data.observacao,
                 colaborador_cliente_id: data.colaborador_cliente_id ? Number(data.colaborador_cliente_id) : undefined,
             });
@@ -108,6 +108,9 @@ export function OccurrenceFormDialog({
                 if (hasImpact) {
                     if (tipo.valor_padrao) {
                         form.setValue("valor", tipo.valor_padrao);
+                    }
+                    if (tipo.tipo_lancamento) {
+                        form.setValue("tipo_lancamento", tipo.tipo_lancamento);
                     }
                 } else {
                     // Limpa os campos financeiros se o tipo não tiver impacto por padrão
@@ -245,7 +248,7 @@ export function OccurrenceFormDialog({
                                         return (
                                             <FormItem className="space-y-1.5 w-full">
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    Vínculo (Turno) <span className="text-red-500">*</span>
+                                                    Turno <span className="text-red-500">*</span>
                                                 </FormLabel>
                                                 <Select 
                                                     onValueChange={(val) => {
@@ -269,7 +272,7 @@ export function OccurrenceFormDialog({
                                                         </SelectItem>
                                                         {links.map((link: any) => (
                                                             <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
-                                                                {link.cliente?.nome_fantasia} ({link.hora_inicio} - {link.hora_fim})
+                                                                {link.cliente?.nome_fantasia} ({link.hora_inicio.slice(0,5)} - {link.hora_fim.slice(0,5)})
                                                             </SelectItem>
                                                         ))}
                                                     </SelectContent>
@@ -349,8 +352,8 @@ export function OccurrenceFormDialog({
                                                                 </SelectTrigger>
                                                             </FormControl>
                                                             <SelectContent className="rounded-xl shadow-xl">
-                                                                <SelectItem value="SAIDA" className="cursor-pointer">Saída (Débito)</SelectItem>
-                                                                <SelectItem value="ENTRADA" className="cursor-pointer">Entrada (Crédito)</SelectItem>
+                                                                <SelectItem value={LANCAMENTO_TIPO.SAIDA} className="cursor-pointer">Saída (Débito)</SelectItem>
+                                                                <SelectItem value={LANCAMENTO_TIPO.ENTRADA} className="cursor-pointer">Entrada (Crédito)</SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                         <FormMessage className="text-[10px]" />

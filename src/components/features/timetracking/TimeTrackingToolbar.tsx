@@ -110,19 +110,19 @@ export function TimeTrackingToolbar({
   const clearFilters = () => {
     onSearchChange("");
     onApplyFilters({
-      statusEntrada: "todos",
-      statusSaida: "todos",
-      usuarioId: "todos",
-      clienteId: "todos",
-      turno: "todos",
+      statusEntrada: FILTER_OPTIONS.TODOS,
+      statusSaida: FILTER_OPTIONS.TODOS,
+      usuarioId: FILTER_OPTIONS.TODOS,
+      clienteId: FILTER_OPTIONS.TODOS,
+      turno: FILTER_OPTIONS.TODOS,
     });
     // Also clear local sheet state to keep it in sync
     setSheetFilters({
-      statusEntrada: "todos",
-      statusSaida: "todos",
-      usuarioId: "todos",
-      clienteId: "todos",
-      turno: "todos"
+      statusEntrada: FILTER_OPTIONS.TODOS,
+      statusSaida: FILTER_OPTIONS.TODOS,
+      usuarioId: FILTER_OPTIONS.TODOS,
+      clienteId: FILTER_OPTIONS.TODOS,
+      turno: FILTER_OPTIONS.TODOS
     });
     setSheetSearch("");
   };
@@ -130,10 +130,10 @@ export function TimeTrackingToolbar({
   const clearSheetFilters = () => {
     setSheetFilters(prev => ({
       ...prev,
-      statusEntrada: "todos",
-      statusSaida: "todos",
-      clienteId: "todos",
-      turno: "todos"
+      statusEntrada: FILTER_OPTIONS.TODOS,
+      statusSaida: FILTER_OPTIONS.TODOS,
+      clienteId: FILTER_OPTIONS.TODOS,
+      turno: FILTER_OPTIONS.TODOS
       // usuarioId is preserved
     }));
   };
@@ -151,7 +151,7 @@ export function TimeTrackingToolbar({
     filters.usuarioId,
     filters.clienteId,
     filters.turno,
-  ].filter((v) => v && v !== "todos").length;
+  ].filter((v) => v && v !== FILTER_OPTIONS.TODOS).length;
 
   const FilterContent = ({ isSheet = false }) => {
     // If isSheet, use setSheetFilters/sheetSearch. Else uses onFiltersChange/onSearchChange
@@ -177,9 +177,9 @@ export function TimeTrackingToolbar({
         <div className="space-y-2">
           <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Cliente</Label>
           <Combobox
-            options={[{ value: "todos", label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
+            options={[{ value: FILTER_OPTIONS.TODOS, label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
             value={currentFilters.clienteId}
-            onSelect={(val) => updateFilter("clienteId", val || "todos")}
+            onSelect={(val) => updateFilter("clienteId", val || FILTER_OPTIONS.TODOS)}
             placeholder="Todos os Clientes"
             searchPlaceholder="Buscar cliente..."
             emptyText="Nenhum cliente encontrado."
@@ -203,7 +203,7 @@ export function TimeTrackingToolbar({
               </div>
             </SelectTrigger>
             <SelectContent className="z-[10001]">
-              <SelectItem value="todos">Todos os Turnos</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.TODOS}>Todos os Turnos</SelectItem>
               {uniqueShifts.map(shift => (
                 <SelectItem key={shift} value={shift}>{shift}</SelectItem>
               ))}
@@ -223,11 +223,11 @@ export function TimeTrackingToolbar({
               </div>
             </SelectTrigger>
             <SelectContent className="z-[10001]">
-              <SelectItem value="todos">Todos os Status</SelectItem>
-              <SelectItem value={STATUS_PONTO.VERDE}>{getStatusLabel(STATUS_PONTO.VERDE, 'entrada')}</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.TODOS}>Todos os Status</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.INICIOU}>Iniciou</SelectItem>
+              <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'entrada')}</SelectItem>
               <SelectItem value={STATUS_PONTO.AMARELO}>{getStatusLabel(STATUS_PONTO.AMARELO, 'entrada')}</SelectItem>
               <SelectItem value={STATUS_PONTO.VERMELHO}>{getStatusLabel(STATUS_PONTO.VERMELHO, 'entrada')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'entrada')}</SelectItem>
               <SelectItem value={STATUS_PONTO.AUSENTE}>{getStatusLabel(STATUS_PONTO.AUSENTE, 'entrada')}</SelectItem>
             </SelectContent>
           </Select>
@@ -245,13 +245,13 @@ export function TimeTrackingToolbar({
               </div>
             </SelectTrigger>
             <SelectContent className="z-[10001]">
-              <SelectItem value="todos">Todos os Status</SelectItem>
-              <SelectItem value={FILTER_OPTIONS.TRABALHANDO}>Trabalhando</SelectItem>
-              <SelectItem value={STATUS_PONTO.VERDE}>{getStatusLabel(STATUS_PONTO.VERDE, 'saida')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.AMARELO}>{getStatusLabel(STATUS_PONTO.AMARELO, 'saida')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.VERMELHO}>{getStatusLabel(STATUS_PONTO.VERMELHO, 'saida')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'saida')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.AUSENTE}>{getStatusLabel(STATUS_PONTO.AUSENTE, 'saida')}</SelectItem>
+                <SelectItem value={FILTER_OPTIONS.TODOS}>Todos os Status</SelectItem>
+                <SelectItem value={FILTER_OPTIONS.TRABALHANDO}>Trabalhando</SelectItem>
+                <SelectItem value={FILTER_OPTIONS.CONCLUIU}>Concluiu</SelectItem>
+                <SelectItem value={FILTER_OPTIONS.FALTA_SAIDA}>{getStatusLabel(STATUS_PONTO.PENDENTE, 'saida')}</SelectItem>
+                <SelectItem value={STATUS_PONTO.AMARELO}>Hora Extra</SelectItem>
+                <SelectItem value={STATUS_PONTO.VERMELHO}>HE Excessiva</SelectItem>
+                <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'saida')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -270,9 +270,9 @@ export function TimeTrackingToolbar({
       <div className="flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <Combobox
-            options={[{ value: "todos", label: "Todos os Colaboradores" }, ...collaborators.map(f => ({ value: f.id.toString(), label: f.nome_completo }))]}
-            value={filters.usuarioId === "todos" ? "" : filters.usuarioId}
-            onSelect={(val) => onFiltersChange("usuarioId", val || "todos")}
+            options={[{ value: FILTER_OPTIONS.TODOS, label: "Todos os Colaboradores" }, ...collaborators.map(f => ({ value: f.id.toString(), label: f.nome_completo }))]}
+            value={filters.usuarioId === FILTER_OPTIONS.TODOS ? "" : filters.usuarioId}
+            onSelect={(val) => onFiltersChange("usuarioId", val || FILTER_OPTIONS.TODOS)}
             placeholder="Buscar colaborador..."
             searchPlaceholder="Digite o nome..."
             emptyText="Nenhum colaborador encontrado."

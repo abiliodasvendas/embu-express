@@ -285,9 +285,21 @@ export default function PublicTimeMirror() {
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <span className="text-sm font-medium text-gray-400 italic">
-                                                        {day.total_pausas_minutos ? `${Math.round(day.total_pausas_minutos)}m` : '0m'}
-                                                    </span>
+                                                    <div className="flex flex-col items-start gap-0.5">
+                                                        <span className="text-sm font-bold text-gray-700 leading-none">
+                                                            {day.total_pausas_minutos ? `${Math.round(day.total_pausas_minutos)}m` : '0m'}
+                                                        </span>
+                                                        {day.detalhes_calculo?.resumo?.pausa_configurada > 0 && (
+                                                            <span className="text-[9px] text-gray-400 font-medium leading-none">
+                                                                Limite: {day.detalhes_calculo.resumo.pausa_configurada}m
+                                                            </span>
+                                                        )}
+                                                        {day.detalhes_calculo?.resumo?.pausa_extra > 0 && (
+                                                            <span className="text-[9px] text-red-500 font-black leading-none uppercase">
+                                                                +{day.detalhes_calculo.resumo.pausa_extra}m extra
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="py-4 px-6 text-right">
                                                     <Badge variant="outline" className={cn(

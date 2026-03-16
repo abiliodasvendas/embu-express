@@ -11,6 +11,7 @@ interface MoneyInputProps<T extends FieldValues> {
   placeholder?: string;
   className?: string;
   inputClassName?: string;
+  labelClassName?: string;
   disabled?: boolean;
 }
 
@@ -21,13 +22,14 @@ export function MoneyInput<T extends FieldValues>({
   placeholder = "R$ 0,00",
   className,
   inputClassName,
+  labelClassName,
   disabled = false,
 }: MoneyInputProps<T>) {
   const { error } = useFormField();
 
   return (
     <FormItem className={className}>
-      <FormLabel>
+      <FormLabel className={labelClassName}>
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
       <FormControl>

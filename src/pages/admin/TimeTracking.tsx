@@ -9,6 +9,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useActiveCollaborators, useClients, useFilters } from "@/hooks";
 import { useCreateTimeRecord, useDeleteTimeRecord, useUpdateTimeRecord } from "@/hooks/api/useTimeRecordMutations";
 import { useTimeRecords } from "@/hooks/api/useTimeRecords";
+import { FILTER_OPTIONS } from "@/constants/ponto";
 import { format } from "date-fns";
 import { CalendarX } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -20,15 +21,15 @@ export default function TimeTracking() {
   const {
       searchTerm,
       setSearchTerm,
-      selectedStatusEntrada = "todos",
+      selectedStatusEntrada = FILTER_OPTIONS.TODOS,
       setSelectedStatusEntrada,
-      selectedStatusSaida = "todos",
+      selectedStatusSaida = FILTER_OPTIONS.TODOS,
       setSelectedStatusSaida,
-      selectedUsuario = "todos",
+      selectedUsuario = FILTER_OPTIONS.TODOS,
       setSelectedUsuario,
-      selectedCliente = "todos",
+      selectedCliente = FILTER_OPTIONS.TODOS,
       setSelectedCliente,
-      selectedTurno = "todos",
+      selectedTurno = FILTER_OPTIONS.TODOS,
       setSelectedTurno,
       hasActiveFilters,
       setFilters
@@ -55,16 +56,16 @@ export default function TimeTracking() {
   const { data: records, isLoading, refetch } = useTimeRecords({
       date: format(date, "yyyy-MM-dd"),
       searchTerm,
-      usuarioId: selectedUsuario === "todos" ? undefined : selectedUsuario,
-      statusEntrada: selectedStatusEntrada === "todos" ? undefined : selectedStatusEntrada,
-      statusSaida: selectedStatusSaida === "todos" ? undefined : selectedStatusSaida,
-      clienteId: selectedCliente === "todos" ? undefined : selectedCliente,
+      usuarioId: selectedUsuario === FILTER_OPTIONS.TODOS ? undefined : selectedUsuario,
+      statusEntrada: selectedStatusEntrada === FILTER_OPTIONS.TODOS ? undefined : selectedStatusEntrada,
+      statusSaida: selectedStatusSaida === FILTER_OPTIONS.TODOS ? undefined : selectedStatusSaida,
+      clienteId: selectedCliente === FILTER_OPTIONS.TODOS ? undefined : selectedCliente,
       incluirTodos: true
   });
 
   // Local filtering for Turno (if not handled by API)
   const filteredRecords = records?.filter(record => {
-    if (selectedTurno === "todos") return true;
+    if (selectedTurno === FILTER_OPTIONS.TODOS) return true;
     
     // Check if any of collab's links match the selected shift label
     // OR if the current record's shift label matches

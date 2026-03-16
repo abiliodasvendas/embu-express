@@ -2,7 +2,13 @@ import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { messages } from "@/constants/messages";
 import { z } from "zod";
 import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
+import { moneyToNumber } from "@/utils/masks";
 import { pixKeyRefinement } from "./pixSchema";
+
+const optionalMoneySchema = z.string()
+  .optional()
+  .refine(val => !val || moneyToNumber(val) > 0, "O valor deve ser maior que zero ou vazio")
+  .transform((val) => val ? moneyToNumber(val) : 0);
 
 // 1. Schema Base: Campos comuns a todos os perfis
 // Garante que o perfil_id tenha a mensagem "Campo obrigatório" padrão
@@ -37,6 +43,7 @@ const professionalSchema = z.object({
   moto_ano: z.string().optional(),
   moto_placa: z.string().optional(),
   cnpj: z.string().optional(),
+  valor_mei: optionalMoneySchema,
   tipo_chave_pix: z.string().optional(),
   chave_pix: z.string().optional(),
 }).superRefine((data, ctx) => {
@@ -72,4 +79,6 @@ const professionalSchema = z.object({
 // Isso garante validação paralela e mensagens de erro amigáveis
 export const collaboratorSchema = commonSchema.and(professionalSchema);
 
+// 4. Tipagem
+export type CollaboratorFormValues = z.input<typeof collaboratorSchema>;
 export type CollaboratorFormData = z.infer<typeof collaboratorSchema>;

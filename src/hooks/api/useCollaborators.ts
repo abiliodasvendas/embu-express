@@ -19,6 +19,8 @@ export function useCollaborator(id?: string) {
     queryKey: ["collaborator", id],
     queryFn: () => colaboradorApi.getColaborador(id!),
     enabled: !!id,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }
 

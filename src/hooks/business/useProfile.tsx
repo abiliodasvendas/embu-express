@@ -32,12 +32,19 @@ export function useProfile(uid?: string) {
     enabled: !!uid && !!session,
     staleTime: 5000,
     refetchOnWindowFocus: true,
-    retry: false,
+    // Habilitar retentativa para erros de rede/timeout
+    retry: (failureCount, error: any) => {
+      if (failureCount < 3 && !error.response) return true;
+      return false;
+    },
     refetchInterval: 120000, // Heartbeat: check user status every 2 minutes
   });
 
   useEffect(() => {
-    if (error) {
+    // SÓ desloga se o erro for explicitamente de autorização (401/403)
+    // Erros de rede (sem response) são ignorados para evitar logout por instabilidade
+    if (error && (error as any).response?.status && [401, 403].includes((error as any).response.status)) {
+      console.warn("[useProfile] Sessão inválida detectada no heartbeat. Deslogando...");
       sessionManager.signOut().catch(() => { });
     }
   }, [error]);

@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { messages } from "@/constants/messages";
 import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
+import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
 import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCollaborator, useDeleteVinculo, useRoles } from "@/hooks";
@@ -357,6 +358,29 @@ export default function CollaboratorDetails() {
         </TabsList>
 
         <TabsContent value="dados" forceMount className={cn("space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "dados" && "hidden")}>
+          
+              {collaborator.senha_padrao && (
+                <Alert className="bg-blue-50 border-blue-200 text-blue-800 rounded-3xl shadow-sm border-l-4 border-l-blue-600 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-blue-600 p-2.5 rounded-2xl shadow-md shadow-blue-200">
+                      <Lock className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <AlertTitle className="text-xs font-black uppercase tracking-[0.15em] mb-1">
+                        Senha Provisória Ativa
+                      </AlertTitle>
+                      <AlertDescription className="text-sm font-medium opacity-90 leading-relaxed">
+                        Este colaborador ainda utiliza a senha padrão. A senha para o primeiro acesso são os <strong>6 primeiros dígitos do CPF</strong>.
+                        <div className="mt-2 pt-2 border-t border-blue-200/50 flex flex-col gap-0.5">
+                          <p className="text-[11px] font-bold">Login: <span className="font-mono text-xs">{cpfMask(collaborator.cpf)}</span></p>
+                          <p className="text-[11px] font-bold">Senha: <span className="font-mono text-xs text-blue-600">{collaborator.cpf?.replace(/\D/g, "").slice(0, 6)}</span></p>
+                        </div>
+                      </AlertDescription>
+                    </div>
+                  </div>
+                </Alert>
+              )}
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Info - Left Column */}
             <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white">
@@ -386,12 +410,6 @@ export default function CollaboratorDetails() {
                         <p className="text-[10px] text-muted-foreground font-semibold">RG</p>
                         <p className="text-sm font-medium text-gray-700">{collaborator.rg || '-'}</p>
                       </div>
-                      {collaborator.cnpj && (
-                        <div className="col-span-2">
-                          <p className="text-[10px] text-muted-foreground font-semibold">CNPJ (MEI)</p>
-                          <p className="text-sm font-medium text-gray-700">{cnpjMask(collaborator.cnpj)}</p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -435,6 +453,20 @@ export default function CollaboratorDetails() {
                           {pixMask(collaborator.chave_pix, collaborator.tipo_chave_pix) || '-'}
                         </p>
                       </div>
+                      {collaborator.cnpj && (
+                        <div className="col-span-2">
+                          <p className="text-[10px] text-muted-foreground font-semibold">CNPJ (MEI)</p>
+                          <p className="text-sm font-medium text-gray-700">{cnpjMask(collaborator.cnpj)}</p>
+                        </div>
+                      )}
+                      {(collaborator.valor_mei !== undefined) && (
+                        <div className="col-span-2">
+                          <p className="text-[10px] text-muted-foreground font-semibold">VALOR MEI</p>
+                          <p className="text-sm font-medium text-gray-700">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(collaborator.valor_mei || 0)}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -451,29 +483,7 @@ export default function CollaboratorDetails() {
               </CardContent>
             </Card>
 
-
             <div className="lg:col-span-2 space-y-6">
-              {collaborator.senha_padrao && (
-                <Alert className="bg-blue-50 border-blue-200 text-blue-800 rounded-3xl shadow-sm border-l-4 border-l-blue-600 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-blue-600 p-2.5 rounded-2xl shadow-md shadow-blue-200">
-                      <Lock className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <AlertTitle className="text-xs font-black uppercase tracking-[0.15em] mb-1">
-                        Senha Provisória Ativa
-                      </AlertTitle>
-                      <AlertDescription className="text-sm font-medium opacity-90 leading-relaxed">
-                        Este colaborador ainda utiliza a senha padrão. A senha para o primeiro acesso são os <strong>6 primeiros dígitos do CPF</strong>.
-                        <div className="mt-2 pt-2 border-t border-blue-200/50 flex flex-col gap-0.5">
-                          <p className="text-[11px] font-bold">Login: <span className="font-mono text-xs">{cpfMask(collaborator.cpf)}</span></p>
-                          <p className="text-[11px] font-bold">Senha: <span className="font-mono text-xs text-blue-600">{collaborator.cpf?.replace(/\D/g, "").slice(0, 6)}</span></p>
-                        </div>
-                      </AlertDescription>
-                    </div>
-                  </div>
-                </Alert>
-              )}
 
               {role?.nome === ROLES.MOTOBOY && (
                 <Card className="border-0 shadow-sm rounded-3xl border-l-4 border-l-primary bg-white">
@@ -520,18 +530,26 @@ export default function CollaboratorDetails() {
 
         <TabsContent value="turnos" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "turnos" && "hidden")}>
           <Card className="border-0 shadow-sm rounded-3xl min-h-[500px] flex flex-col pt-4">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 pb-6 px-8">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5 text-primary" />
-                  Turnos Ativos
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <CalendarIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <span className="block">Turnos Ativos</span>
+                    <span className="text-xs text-muted-foreground font-medium mt-0.5">Vínculos diretos com clientes e horários.</span>
+                  </div>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">Vínculos diretos com clientes e horários.</p>
               </div>
               <Can I={PERMISSIONS.USUARIOS.EDITAR}>
-                <Button onClick={handleAddTurn} size="sm" className="rounded-xl shadow-md shadow-primary/20">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Turno
+                <Button 
+                  onClick={handleAddTurn} 
+                  size="sm" 
+                  className="rounded-2xl h-10 px-4 gap-2 shadow-md shadow-primary/10 font-black uppercase tracking-widest text-[10px] bg-primary hover:bg-primary/90 text-white border-none transition-all active:scale-95"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Novo Turno</span>
                 </Button>
               </Can>
             </CardHeader>
@@ -634,45 +652,53 @@ export default function CollaboratorDetails() {
 
         <TabsContent value="ocorrencias" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "ocorrencias" && "hidden")}>
           <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
-            <CardHeader className="pb-6 pt-8 px-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <History className="h-5 w-5 text-primary" />
-                  Histórico de Ocorrências
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <History className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <span className="block">Histórico de Ocorrências</span>
+                    <span className="text-xs text-muted-foreground font-medium mt-0.5">Registros de faltas, atrasos e outros eventos.</span>
+                  </div>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">Registros de faltas, atrasos e outros eventos.</p>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
-                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                  <SelectTrigger className="h-9 w-[130px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    {meses.map((label, index) => (
-                      <SelectItem key={index} value={String(index + 1)} className="text-xs">{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                    <SelectTrigger className="h-11 w-[130px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                      {meses.map((label, index) => (
+                        <SelectItem key={index} value={String(index + 1)} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1 capitalize">{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                  <SelectTrigger className="h-9 w-[90px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    {[new Date().getFullYear(), new Date().getFullYear() - 1].map(ano => (
-                      <SelectItem key={ano} value={String(ano)} className="text-xs">{ano}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                    <SelectTrigger className="h-11 w-[90px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                      {[new Date().getFullYear(), new Date().getFullYear() - 1].map(ano => (
+                        <SelectItem key={ano} value={String(ano)} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1">{ano}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="h-8 w-[1px] bg-gray-200 hidden sm:block mx-1" />
 
                 <Button
                   onClick={() => openOccurrenceFormDialog({ collaboratorId: id, onSuccess: refetchOccurrences })}
-                  className="rounded-xl h-9 px-4 gap-2 shadow-sm font-bold bg-primary hover:bg-primary/90 text-white border-none"
+                  className="rounded-2xl h-10 px-4 gap-2 shadow-md shadow-primary/10 font-black uppercase tracking-widest text-[10px] bg-primary hover:bg-primary/90 text-white border-none transition-all active:scale-95"
                   size="sm"
                 >
-                  <Plus className="h-4 w-4" />
-                  <span>Lançar</span>
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Registrar</span>
                 </Button>
               </div>
             </CardHeader>
@@ -698,7 +724,11 @@ export default function CollaboratorDetails() {
                       {/* Ponto da Timeline */}
                       <div className={cn(
                         "absolute left-0 top-[22px] w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-all group-hover:scale-110",
-                        oc.tipo_lancamento === "SAIDA" ? "bg-red-500" : "bg-green-500"
+                        !oc.impacto_financeiro 
+                          ? "bg-slate-300" 
+                          : oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA 
+                            ? "bg-red-500" 
+                            : "bg-green-500"
                       )}>
                         <div className="w-1.5 h-1.5 rounded-full bg-white" />
                       </div>
@@ -707,7 +737,7 @@ export default function CollaboratorDetails() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs font-black text-gray-400 uppercase tracking-wider">
-                              {format(new Date(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
+                              {format(parseISO(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
                             </span>
                             <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-gray-200 text-gray-500 font-bold bg-white">
                               {oc.tipo?.descricao || 'Ocorrência'}
@@ -722,9 +752,9 @@ export default function CollaboratorDetails() {
                           {oc.impacto_financeiro && (
                             <div className={cn(
                               "text-xs font-black px-2 py-1 rounded-lg",
-                              oc.tipo_lancamento === "SAIDA" ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"
+                              oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"
                             )}>
-                              {oc.tipo_lancamento === "SAIDA" ? "-" : "+"} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
+                              {oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA ? "-" : "+"} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
                             </div>
                           )}
                           <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
@@ -748,30 +778,99 @@ export default function CollaboratorDetails() {
 
         <TabsContent value="ponto" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "ponto" && "hidden")}>
           <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
-            <CardHeader className="pb-6 pt-8 px-8">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                Espelho de Ponto
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Histórico detalhado de entradas, saídas e intervalos.</p>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4">
+              <div>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Clock className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <span className="block">Espelho de Ponto</span>
+                    <span className="text-xs text-muted-foreground font-medium mt-0.5">Histórico detalhado de entradas e saídas.</span>
+                  </div>
+                </CardTitle>
+              </div>
+
+              <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
+                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                  <SelectTrigger className="h-11 w-[130px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                    {meses.map((label, index) => (
+                      <SelectItem key={index} value={String(index + 1)} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1 capitalize">{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                  <SelectTrigger className="h-11 w-[90px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                    {[new Date().getFullYear(), new Date().getFullYear() - 1].map(ano => (
+                      <SelectItem key={ano} value={String(ano)} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1">{ano}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
-            <CardContent className="px-8 pb-8">
-              <TimeMirrorView usuarioId={id} />
+            <CardContent className="px-8 pb-8 pt-6">
+              <TimeMirrorView 
+                usuarioId={id} 
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="financeiro" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "financeiro" && "hidden")}>
           <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
-            <CardHeader className="pb-6 pt-8 px-8">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Wallet className="h-5 w-5 text-primary" />
-                Fechamento Financeiro
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Relatórios de pagamentos e descontos mensais.</p>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4">
+              <div>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Wallet className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <span className="block">Fechamento Financeiro</span>
+                    <span className="text-xs text-muted-foreground font-medium mt-0.5">Relatórios de pagamentos e descontos.</span>
+                  </div>
+                </CardTitle>
+              </div>
+
+              <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
+                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                  <SelectTrigger className="h-11 w-[130px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                    {meses.map((label, index) => (
+                      <SelectItem key={index} value={String(index + 1)} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1 capitalize">{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                  <SelectTrigger className="h-11 w-[90px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                    {[new Date().getFullYear(), new Date().getFullYear() - 1].map(ano => (
+                      <SelectItem key={ano} value={String(ano)} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1">{ano}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
-            <CardContent className="px-8 pb-8">
-              <FinancialReportView usuarioId={id} colaboradorNome={collaborator?.nome_completo} />
+            <CardContent className="px-8 pb-8 pt-6">
+              <FinancialReportView 
+                usuarioId={id} 
+                colaboradorNome={collaborator?.nome_completo}
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+              />
             </CardContent>
           </Card>
         </TabsContent>

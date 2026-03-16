@@ -13,6 +13,8 @@ export function useOcorrencias(filtros?: {
     return useQuery({
         queryKey: ["ocorrencias", filtros],
         queryFn: () => ocorrenciaService.listOcorrencias(filtros),
+        staleTime: 0,
+        refetchOnMount: true,
     });
 }
 

@@ -1,16 +1,15 @@
-import { useEffect } from "react";
-import { Plus } from "lucide-react";
-import { PerfisTable } from "@/components/features/perfil/PerfisTable";
-import { usePerfis } from "@/hooks/api/usePerfis";
-import { ListSkeleton } from "@/components/skeletons";
-import { Card, CardContent } from "@/components/ui/card";
 import { Can } from "@/components/auth/Can";
+import { PerfisTable } from "@/components/features/perfil/PerfisTable";
+import { ListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { PERMISSIONS } from "@/constants/permissions.enum";
-import { useDeletePerfil } from "@/hooks/api/usePerfis";
 import { useLayout } from "@/contexts/LayoutContext";
-import { toast } from "@/utils/notifications/toast";
+import { useDeletePerfil, usePerfis } from "@/hooks/api/usePerfis";
 import { Perfil } from "@/types/database";
+import { toast } from "@/utils/notifications/toast";
+import { Plus } from "lucide-react";
+import { useEffect } from "react";
 
 export default function Perfis() {
     const { data: perfis, isLoading } = usePerfis();
@@ -57,7 +56,7 @@ export default function Perfis() {
                     <p className="text-muted-foreground">Gerencie os perfis de acesso e suas permissões no sistema.</p>
                 </div>
                 <Can I={PERMISSIONS.PERFIS.CRIAR}>
-                    <Button onClick={handleCreate} className="w-full sm:w-auto">
+                    <Button onClick={handleCreate} className="w-full sm:w-auto font-bold">
                         <Plus className="mr-2 h-4 w-4" />
                         Novo Perfil
                     </Button>

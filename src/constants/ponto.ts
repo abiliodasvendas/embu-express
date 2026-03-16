@@ -5,11 +5,19 @@ export const STATUS_PONTO = {
   ANTECIPADA: "ANTECIPADA",
   CINZA: "CINZA",
   EM_ANDAMENTO: "EM_ANDAMENTO",
-  PENDENTE: "PENDENTE",
   AUSENTE: "AUSENTE",
+  PENDENTE: "PENDENTE",
 } as const;
 
 export const FILTER_OPTIONS = {
   TRABALHANDO: "trabalhando",
+  INICIOU: "iniciou",
+  CONCLUIU: "concluiu",
+  FALTA_SAIDA: "falta_saida",
   TODOS: "todos"
+} as const;
+
+export const PONTO_SIDE = {
+  ENTRADA: 'entrada',
+  SAIDA: 'saida',
 } as const;

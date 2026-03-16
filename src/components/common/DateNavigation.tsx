@@ -11,11 +11,12 @@ interface DateNavigationProps {
   date: Date;
   onNavigate: (date: Date) => void;
   disabled?: boolean;
+  maxDate?: Date | null;
 }
 
-export function DateNavigation({ date, onNavigate, disabled }: DateNavigationProps) {
+export function DateNavigation({ date, onNavigate, disabled, maxDate: customMaxDate }: DateNavigationProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const maxDate = startOfDay(new Date());
+  const maxDate = customMaxDate === undefined ? startOfDay(new Date()) : customMaxDate;
 
   const handlePrevious = () => {
     onNavigate(subDays(date, 1));
@@ -23,12 +24,12 @@ export function DateNavigation({ date, onNavigate, disabled }: DateNavigationPro
 
   const handleNext = () => {
     const nextDate = addDays(date, 1);
-    if (!isAfter(startOfDay(nextDate), maxDate)) {
+    if (!maxDate || !isAfter(startOfDay(nextDate), maxDate)) {
        onNavigate(nextDate);
     }
   };
 
-  const isNextDisabled = disabled || isSameDay(date, maxDate) || isAfter(date, maxDate);
+  const isNextDisabled = disabled || (maxDate && (isSameDay(date, maxDate) || isAfter(date, maxDate)));
 
   return (
     <div className="flex items-center justify-center gap-2 bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 w-full md:w-auto">
@@ -69,7 +70,7 @@ export function DateNavigation({ date, onNavigate, disabled }: DateNavigationPro
             }}
             locale={ptBR}
             initialFocus
-            disabled={{ after: maxDate }}
+            disabled={maxDate ? { after: maxDate } : undefined}
           />
         </PopoverContent>
       </Popover>

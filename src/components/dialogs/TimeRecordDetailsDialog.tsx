@@ -10,7 +10,7 @@ import { formatKm } from "@/utils/masks";
 import { formatMinutes, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Building2, CalendarClock, Clock, Edit2, MapPin, Pause, User, X } from "lucide-react";
+import { Building2, CalendarClock, Clock, Edit2, MapPin, Pause, User, X, AlertTriangle } from "lucide-react";
 import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface TimeRecordDetailsDialogProps {
@@ -73,10 +73,11 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                     <span className="text-gray-400">Diferença</span>
                     <span className={cn(
                         "font-bold px-2 py-0.5 rounded-md",
-                        status === STATUS_PONTO.VERDE ? "text-green-600 bg-green-50" :
-                            status === STATUS_PONTO.AMARELO ? (type === 'entrada' ? "text-red-600 bg-red-50" : "text-amber-600 bg-amber-50") :
-                                status === STATUS_PONTO.ANTECIPADA ? (type === 'entrada' ? "text-blue-600 bg-blue-50" : "text-orange-600 bg-orange-50") :
-                                    "text-red-600 bg-red-50"
+                        status === STATUS_PONTO.VERDE ? "text-emerald-600 bg-emerald-50" :
+                        status === STATUS_PONTO.AMARELO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-sky-600 bg-sky-50") :
+                        status === STATUS_PONTO.ANTECIPADA ? (type === 'entrada' ? "text-sky-600 bg-sky-50" : "text-orange-600 bg-orange-50") :
+                        status === STATUS_PONTO.VERMELHO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-indigo-700 bg-indigo-50") :
+                        "text-gray-600 bg-gray-50"
                     )}>
                         {formatMinutes(diff)}
                     </span>
@@ -112,6 +113,17 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30 space-y-6">
+                    {record.status_saida === STATUS_PONTO.PENDENTE && (
+                        <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                            <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
+                            <div>
+                                <h4 className="text-sm font-bold text-orange-900">Ponto Inconsistente</h4>
+                                <p className="text-xs text-orange-700 font-medium">
+                                    Este colaborador não registrou a saída. O sistema marcou como inconsistente após 4 horas do término previsto.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center space-y-2">
                         <div className="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-2">

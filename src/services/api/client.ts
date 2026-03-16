@@ -5,7 +5,6 @@ import axios, { AxiosInstance } from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 let cachedToken: string | null = null;
-
 // Listen to session changes to update cached token
 sessionManager.onAuthStateChange((_event, session) => {
   cachedToken = session?.access_token ?? null;
@@ -42,8 +41,15 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Se NÃO houver resposta do servidor (ex: queda de internet, ERR_NETWORK_CHANGED), 
+    // apenas rejeitamos a promessa SEM deslogar o usuário.
+    if (!error.response) {
+      console.error('[ApiClient] Erro de rede ou timeout detectado:', error.message);
+      return Promise.reject(error);
+    }
+
     // 403 (Forbidden) logic - immediate sign out
-    if (error.response && error.response.status === 403) {
+    if (error.response.status === 403) {
       if (!originalRequest.url?.includes("/app/updates")) {
         console.warn('[ApiClient] 403 Forbidden: Sessão revogada.', originalRequest.url);
         sessionManager.signOut().catch(() => { });
@@ -52,7 +58,7 @@ api.interceptors.response.use(
     }
 
     // 401 (Unauthorized) Logic
-    if (error.response && error.response.status === 401) {
+    if (error.response.status === 401) {
       // Ignora interceptação global de logout se for na própria tela de login, refresh ou OTA
       if (
         originalRequest.url?.includes("/auth/login") ||
@@ -90,12 +96,18 @@ api.interceptors.response.use(
           }
         } catch (refreshErr: any) {
           console.error('[ApiClient] Erro crítico durante o refresh:', refreshErr?.message);
+          // Se o erro do refresh for de rede, NÃO deslogamos
+          if (!refreshErr.response) {
+            return Promise.reject(error);
+          }
         }
       }
 
-      // Logout se falhar o refresh e não houver sessão válida
-      console.warn('[ApiClient] 401 Interceptor: Sessão revogada ou não recuperável. Usuário deslogado.', originalRequest.url);
-      sessionManager.signOut().catch(() => { });
+      // Logout se falhar o refresh e FOR de fato um erro de autorização do servidor
+      if (error.response?.status === 401) {
+        console.warn('[ApiClient] 401 Interceptor: Sessão revogada ou não recuperável. Usuário deslogado.', originalRequest.url);
+        sessionManager.signOut().catch(() => { });
+      }
     }
 
     return Promise.reject(error);

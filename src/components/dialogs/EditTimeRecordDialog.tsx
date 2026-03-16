@@ -13,6 +13,7 @@ import { Building2, Clock, Edit2, Loader2, Save, User, X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { timeMask } from "@/utils/masks";
+import { PONTO_SIDE } from "@/constants/ponto";
 import { toast } from "sonner";
 
 interface EditTimeRecordDialogProps {
@@ -114,11 +115,11 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
           <form id="edit-ponto-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="entrada" className="text-gray-700 font-bold">Entrada <span className="text-red-500">*</span></Label>
+                <Label htmlFor={PONTO_SIDE.ENTRADA} className="text-gray-700 font-bold">Entrada <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    id="entrada"
+                    id={PONTO_SIDE.ENTRADA}
                     type="text"
                     placeholder="00:00"
                     maxLength={5}
@@ -136,11 +137,11 @@ export function EditTimeRecordDialog({ isOpen, onClose, record }: EditTimeRecord
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="saida" className="text-gray-700 font-bold">Saída</Label>
+                <Label htmlFor={PONTO_SIDE.SAIDA} className="text-gray-700 font-bold">Saída</Label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    id="saida"
+                    id={PONTO_SIDE.SAIDA}
                     type="text"
                     placeholder="00:00"
                     maxLength={5}

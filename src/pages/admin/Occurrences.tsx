@@ -1,27 +1,25 @@
+import { DateNavigation } from "@/components/common/DateNavigation";
+import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { ListSkeleton } from "@/components/skeletons";
-import { Card, CardContent } from "@/components/ui/card";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { useLayout } from "@/contexts/LayoutContext";
-import { useOcorrencias } from "@/hooks/api/useOcorrencias";
-import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
-import { useCollaborators } from "@/hooks/api/useCollaborators";
-import { Ocorrencia } from "@/types/database";
-import { AlertCircle, Filter, User, X, Calendar as CalendarIcon, Plus, Settings } from "lucide-react";
-import { useCallback, useEffect, useState, useMemo } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { PERMISSIONS } from "@/constants/permissions.enum";
-import { usePermissions } from "@/hooks/business/usePermissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
-import { ChevronRight } from "lucide-react";
-import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
-import { DateNavigation } from "@/components/common/DateNavigation";
+import { Card, CardContent } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
+import { PERMISSIONS } from "@/constants/permissions.enum";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useCollaborators } from "@/hooks/api/useCollaborators";
+import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
+import { useOcorrencias } from "@/hooks/api/useOcorrencias";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { cn } from "@/lib/utils";
+import { Ocorrencia } from "@/types/database";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { AlertCircle, ChevronRight, Plus, Settings } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 
 export function Occurrences() {
@@ -115,6 +113,7 @@ export function Occurrences() {
                                     <DateNavigation 
                                         date={selectedDate} 
                                         onNavigate={setSelectedDate} 
+                                        maxDate={null}
                                     />
                                 </div>
                             </div>
@@ -129,14 +128,11 @@ export function Occurrences() {
                                 Histórico
                             </h2>
                             <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="rounded-full bg-white border-gray-100 text-gray-500 font-medium font-bold">
-                                    {occurrences.length} {occurrences.length === 1 ? 'registro' : 'registros'}
-                                </Badge>
                                 {can(PERMISSIONS.OCORRENCIAS.TIPOS) && (
                                     <Button
                                         onClick={() => openOccurrenceTypesDialog()}
                                         variant="outline"
-                                        className="rounded-xl h-9 px-4 gap-2 shadow-sm font-semibold border-gray-200 bg-white"
+                                        className="bg-blue-600 h-11 rounded-xl gap-2 shadow-sm border-gray-200 bg-white transition-all active:scale-95 whitespace-nowrap"
                                         size="sm"
                                     >
                                         <Settings className="h-4 w-4" />
@@ -146,11 +142,11 @@ export function Occurrences() {
                                 {can(PERMISSIONS.OCORRENCIAS.CRIAR) && (
                                     <Button
                                         onClick={() => openOccurrenceFormDialog({ onSuccess: refetch })}
-                                        className="rounded-xl h-9 px-4 gap-2 shadow-sm font-bold"
+                                        className="bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap"
                                         size="sm"
                                     >
                                         <Plus className="h-4 w-4" />
-                                        <span className="hidden sm:inline">Nova Ocorrência</span>
+                                        <span className="hidden sm:inline">Registrar Ocorrência</span>
                                     </Button>
                                 )}
                             </div>
@@ -181,7 +177,11 @@ export function Occurrences() {
                                             {/* Ponto da Timeline */}
                                             <div className={cn(
                                                 "absolute left-0 top-[22px] w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-all group-hover:scale-110",
-                                                oc.tipo_lancamento === "SAIDA" ? "bg-red-500" : "bg-green-500"
+                                                !oc.impacto_financeiro 
+                                                    ? "bg-slate-300" 
+                                                    : oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA 
+                                                        ? "bg-red-500" 
+                                                        : "bg-green-500"
                                             )}>
                                                 <div className="w-1.5 h-1.5 rounded-full bg-white" />
                                             </div>
@@ -190,7 +190,7 @@ export function Occurrences() {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <span className="text-xs font-black text-gray-400 uppercase tracking-wider">
-                                                            {format(new Date(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
+                                                            {format(parseISO(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
                                                         </span>
                                                         <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-gray-200 text-gray-500 font-bold bg-white">
                                                             {oc.tipo?.descricao || 'Ocorrência'}
@@ -208,9 +208,9 @@ export function Occurrences() {
                                                     {oc.impacto_financeiro && (
                                                         <div className={cn(
                                                             "text-xs font-black px-2 py-1 rounded-lg",
-                                                            oc.tipo_lancamento === "SAIDA" ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"
+                                                            oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"
                                                         )}>
-                                                            {oc.tipo_lancamento === "SAIDA" ? "-" : "+"} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
+                                                            {oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA ? "-" : "+"} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
                                                         </div>
                                                     )}
                                                     <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />

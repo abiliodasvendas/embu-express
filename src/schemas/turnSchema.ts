@@ -24,9 +24,9 @@ const baseSchema = {
   valor_aluguel: optionalMoneySchema,
   valor_bonus: optionalMoneySchema,
   ajuda_custo: optionalMoneySchema,
-  valor_mei: optionalMoneySchema,
   valor_adiantamento: optionalMoneySchema,
   data_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
+  tolerancia_pausa_min: z.string().optional().transform(val => val ? parseInt(val) : 0),
 };
 
 export const turnSchema = z.discriminatedUnion("isMotoboyOrFiscal", [

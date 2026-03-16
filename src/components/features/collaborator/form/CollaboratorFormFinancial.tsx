@@ -13,11 +13,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Empresa } from "@/types/database";
-import { useFormContext } from "react-hook-form";
-import { cn } from "@/lib/utils";
 import { PIX_TYPES } from "@/constants/financeiro.constants";
+import { cn } from "@/lib/utils";
+import { Empresa } from "@/types/database";
 import { cnpjMask, pixMask } from "@/utils/masks";
+import { useFormContext } from "react-hook-form";
+
+import { MoneyInput } from "@/components/forms/MoneyInput";
 
 interface CollaboratorFormFinancialProps {
     empresas: Empresa[] | undefined;
@@ -44,6 +46,15 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                         </FormControl>
                         <FormMessage />
                     </FormItem>
+                )} />
+                <FormField name="valor_mei" control={form.control} render={({ field }) => (
+                    <MoneyInput
+                        field={field}
+                        label="Valor MEI"
+                        labelClassName="text-gray-700 font-bold ml-1 text-sm opacity-70"
+                        placeholder="R$ 0,00"
+                        inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                    />
                 )} />
                 <FormField name="tipo_chave_pix" control={form.control} render={({ field }) => (
                     <FormItem>
@@ -75,7 +86,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                 <FormField name="chave_pix" control={form.control} render={({ field }) => {
                     const tipoChavePix = form.watch("tipo_chave_pix");
                     return (
-                        <FormItem className="md:col-span-2">
+                        <FormItem>
                             <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Chave Pix <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                                 <Input

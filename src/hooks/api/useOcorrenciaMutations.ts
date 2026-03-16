@@ -1,20 +1,39 @@
+import { messages } from "@/constants/messages";
 import { ocorrenciaService } from "@/services/api/ocorrencia.service";
 import { Ocorrencia } from "@/types/database";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+async function invalidateOccurrenceCache(queryClient: QueryClient, colaboradorId?: string) {
+    await queryClient.removeQueries({ queryKey: ["ocorrencias"] });
+    await queryClient.invalidateQueries({ queryKey: ["ocorrencias"] });
+
+    if (colaboradorId) {
+        await queryClient.removeQueries({ queryKey: ["collaborator", colaboradorId] });
+        await queryClient.invalidateQueries({ queryKey: ["collaborator", colaboradorId] });
+
+        await queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", colaboradorId] });
+        await queryClient.invalidateQueries({ queryKey: ["time-mirror", colaboradorId] });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["collaborators"] });
+    queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
+    queryClient.invalidateQueries({ queryKey: ["time-mirror"] });
+}
 
 export function useCreateOcorrencia() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (data: Partial<Ocorrencia>) => ocorrenciaService.createOcorrencia(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["ocorrencias"] });
-            queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
-            toast.success("Ocorrência registrada com sucesso!");
+        onSuccess: async (_data, variables) => {
+            await invalidateOccurrenceCache(queryClient, variables.colaborador_id);
+            toast.success(messages.ocorrencia.sucesso.criada);
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.error || "Erro ao registrar ocorrência");
+            toast.error(messages.ocorrencia.erro.criar, {
+                description: error.response?.data?.error || error.message
+            });
         },
     });
 }
@@ -25,13 +44,14 @@ export function useUpdateOcorrencia() {
     return useMutation({
         mutationFn: ({ id, data }: { id: number; data: Partial<Ocorrencia> }) =>
             ocorrenciaService.updateOcorrencia(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["ocorrencias"] });
-            queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
-            toast.success("Ocorrência atualizada com sucesso!");
+        onSuccess: async (_data, variables) => {
+            await invalidateOccurrenceCache(queryClient, variables.data?.colaborador_id);
+            toast.success(messages.ocorrencia.sucesso.atualizada);
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.error || "Erro ao atualizar ocorrência");
+            toast.error(messages.ocorrencia.erro.atualizar, {
+                description: error.response?.data?.error || error.message
+            });
         },
     });
 }
@@ -41,13 +61,14 @@ export function useDeleteOcorrencia() {
 
     return useMutation({
         mutationFn: (id: number) => ocorrenciaService.deleteOcorrencia(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["ocorrencias"] });
-            queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
-            toast.success("Ocorrência removida com sucesso!");
+        onSuccess: async () => {
+            await invalidateOccurrenceCache(queryClient);
+            toast.success(messages.ocorrencia.sucesso.excluida);
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.error || "Erro ao remover ocorrência");
+            toast.error(messages.ocorrencia.erro.excluir, {
+                description: error.response?.data?.error || error.message
+            });
         },
     });
 }
@@ -59,10 +80,12 @@ export function useCreateTipoOcorrencia() {
         mutationFn: (data: any) => ocorrenciaService.createTipoOcorrencia(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
-            toast.success("Tipo de ocorrência criado com sucesso!");
+            toast.success(messages.ocorrencia.sucesso.tipo.criado);
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.error || "Erro ao criar tipo de ocorrência");
+            toast.error(messages.ocorrencia.erro.tipo.criar, {
+                description: error.response?.data?.error || error.message
+            });
         },
     });
 }
@@ -75,10 +98,12 @@ export function useUpdateTipoOcorrencia() {
             ocorrenciaService.updateTipoOcorrencia(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
-            toast.success("Tipo de ocorrência atualizado com sucesso!");
+            toast.success(messages.ocorrencia.sucesso.tipo.atualizado);
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.error || "Erro ao atualizar tipo de ocorrência");
+            toast.error(messages.ocorrencia.erro.tipo.atualizar, {
+                description: error.response?.data?.error || error.message
+            });
         },
     });
 }
@@ -90,10 +115,12 @@ export function useDeleteTipoOcorrencia() {
         mutationFn: (id: number) => ocorrenciaService.deleteTipoOcorrencia(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
-            toast.success("Tipo de ocorrência removido com sucesso!");
+            toast.success(messages.ocorrencia.sucesso.tipo.excluido);
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.error || "Erro ao remover tipo de ocorrência");
+            toast.error(messages.ocorrencia.erro.tipo.excluir, {
+                description: error.response?.data?.error || error.message
+            });
         },
     });
 }

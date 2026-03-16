@@ -87,9 +87,9 @@ export function CollaboratorTurnDialog({
       valor_aluguel: "",
       valor_bonus: "",
       ajuda_custo: "",
-      valor_mei: "",
       valor_adiantamento: "",
       data_inicio: "",
+      tolerancia_pausa_min: "0",
       isMotoboyOrFiscal: false,
     },
   });
@@ -108,9 +108,9 @@ export function CollaboratorTurnDialog({
           valor_aluguel: formatCurrency(turnToEdit.valor_aluguel || 0),
           valor_bonus: formatCurrency(turnToEdit.valor_bonus || 0),
           ajuda_custo: formatCurrency(turnToEdit.ajuda_custo || 0),
-          valor_mei: formatCurrency(turnToEdit.valor_mei || 0),
           valor_adiantamento: formatCurrency(turnToEdit.valor_adiantamento || 0),
           data_inicio: turnToEdit.data_inicio || getLocalDate(),
+          tolerancia_pausa_min: (turnToEdit.tolerancia_pausa_min || 0).toString(),
           isMotoboyOrFiscal: collaborator?.perfil?.nome === ROLES.MOTOBOY || collaborator?.perfil?.nome === ROLES.FISCAL,
         });
       } else {
@@ -127,9 +127,9 @@ export function CollaboratorTurnDialog({
           valor_aluguel: "",
           valor_bonus: "",
           ajuda_custo: "",
-          valor_mei: "",
           valor_adiantamento: "",
           data_inicio: "",
+          tolerancia_pausa_min: "0",
           isMotoboyOrFiscal: isMOrF,
         });
       }
@@ -150,9 +150,9 @@ export function CollaboratorTurnDialog({
         valor_aluguel: values.valor_aluguel,
         valor_bonus: values.valor_bonus,
         ajuda_custo: values.ajuda_custo,
-        valor_mei: values.valor_mei,
         valor_adiantamento: values.valor_adiantamento,
         data_inicio: values.data_inicio,
+        tolerancia_pausa_min: values.tolerancia_pausa_min,
       };
 
       if (turnToEdit) {
@@ -315,6 +315,35 @@ export function CollaboratorTurnDialog({
                         )}
                       />
                     </div>
+
+                    <div className="grid grid-cols-1 gap-4 mt-4">
+                      <FormField
+                        control={form.control}
+                        name="tolerancia_pausa_min"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-1">
+                              Tolerância de Pausa (minutos)
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                  type="number"
+                                  placeholder="Ex: 60"
+                                  {...field}
+                                  className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormDescription className="text-[10px] leading-tight text-blue-600 font-medium">
+                              Será subtraído do total do turno e considerado como "Teto de Pausa".
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
 
@@ -351,6 +380,7 @@ export function CollaboratorTurnDialog({
                     {/* 2. CRÉDITOS */}
                     <div className="space-y-3 bg-green-50/30 p-4 rounded-2xl border border-green-100">
                       <h4 className="text-sm font-bold text-green-800 ml-1">Ganhos / Créditos</h4>
+                      
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -366,19 +396,19 @@ export function CollaboratorTurnDialog({
                         />
                         <FormField
                           control={form.control}
-                          name="valor_mei"
+                          name="valor_bonus"
                           render={({ field }) => (
                             <MoneyInput
                               field={field}
-                              label="Valor MEI"
+                              label="Bônus Zero Falta"
                               required={false}
-                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
                             />
                           )}
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-green-100">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                         <FormField
                           control={form.control}
                           name="valor_aluguel"
@@ -398,20 +428,6 @@ export function CollaboratorTurnDialog({
                             <MoneyInput
                               field={field}
                               label="Ajuda Custo"
-                              required={false}
-                              inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
-                            />
-                          )}
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 pt-2">
-                        <FormField
-                          control={form.control}
-                          name="valor_bonus"
-                          render={({ field }) => (
-                            <MoneyInput
-                              field={field}
-                              label="Bônus Zero Falta"
                               required={false}
                               inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors text-xs"
                             />

@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { MENU_CATEGORIES } from "@/constants/menu.constants";
 
 interface AppSidebarProps {
@@ -59,25 +59,32 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
     return blocks;
   }, [filteredItems]);
 
+  const lastPathname = useRef<string>("");
+
   useEffect(() => {
+    if (menuBlocks.length === 0) return;
+
     const currentPath = location.pathname;
-    const newOpenGroups = { ...openGroups };
-    let changed = false;
+    const isPathAcknowledged = lastPathname.current === currentPath;
 
-    menuBlocks.forEach((block) => {
-      if (block.type === 'group') {
-        const hasActiveChild = block.items.some(item => item.href === currentPath);
-        if (hasActiveChild && !openGroups[block.category]) {
-          newOpenGroups[block.category] = true;
-          changed = true;
+    if (!isPathAcknowledged) {
+      let activeCategory = "";
+      menuBlocks.forEach((block) => {
+        if (block.type === 'group') {
+          const hasActiveChild = block.items.some(item => item.href === currentPath);
+          if (hasActiveChild) activeCategory = block.category;
         }
-      }
-    });
+      });
 
-    if (changed) {
-      setOpenGroups(newOpenGroups);
+      if (activeCategory) {
+        setOpenGroups({ [activeCategory]: true });
+        lastPathname.current = currentPath;
+      } else if (filteredItems.some(i => i.href === currentPath)) {
+        setOpenGroups({});
+        lastPathname.current = currentPath;
+      }
     }
-  }, [location.pathname, menuBlocks]);
+  }, [location.pathname, menuBlocks, filteredItems]);
 
   const toggleGroup = (category: string) => {
     setOpenGroups(prev => ({
@@ -148,20 +155,17 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
                 <button
                   className={cn(
                     "group flex w-full items-center justify-between gap-3 rounded-xl px-4 py-1.5 text-sm font-semibold transition-all md:py-2",
-                    isActiveGroup && !isOpen
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-slate-500 hover:bg-slate-50"
+                    "text-slate-500 hover:bg-slate-50"
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    {renderIcon(CategoryIcon, isActiveGroup && !isOpen)}
+                    {renderIcon(CategoryIcon, false)}
                     <span className="truncate">{category}</span>
                   </div>
                   <ChevronRight 
                     className={cn(
                       "h-4 w-4 transition-transform duration-200 text-slate-400",
-                      isOpen && "rotate-90",
-                      isActiveGroup && "text-blue-400"
+                      isOpen && "rotate-90"
                     )} 
                   />
                 </button>

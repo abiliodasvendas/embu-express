@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
 import { calculateTotalTime, formatMinutes, formatTime, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
 import { Clock, Timer } from "lucide-react";
-import { PONTO_SIDE } from "@/constants/ponto";
+import { PONTO_SIDE, STATUS_PONTO } from "@/constants/ponto";
 import { useState } from "react";
 
 const renderStatusTooltip = (details: any, type: typeof PONTO_SIDE.ENTRADA | typeof PONTO_SIDE.SAIDA, timeIso?: string | null) => {
@@ -54,7 +54,8 @@ const StatusBadgeWithTooltip = ({
       variant="outline"
       className={cn(
         "text-[10px] px-2 py-0.5 rounded-md font-medium border",
-        getStatusColorClass(status),
+        getStatusColorClass(status, type),
+        getStatusLabel(status, type) === "Trabalhando" && "animate-status-pulse",
         hasDetails ? "cursor-help" : "cursor-default"
       )}
     >
@@ -93,16 +94,16 @@ const TimeRecordMobileItem = ({
   onEdit: (r: RegistroPonto) => void;
   onDelete: (r: RegistroPonto) => void;
 }) => {
-  const isAusente = (record as any).ausente;
+  const isAguardando = record.status_entrada === STATUS_PONTO.CINZA;
   const actions = useTimeRecordActions({ record, onDetails, onEdit, onDelete });
 
   const content = (
     <div 
-      onClick={isAusente ? undefined : () => onDetails(record)} 
+      onClick={isAguardando ? undefined : () => onDetails(record)} 
       className={cn(
         "bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all",
-        !isAusente && "cursor-pointer active:scale-[0.98]",
-        isAusente && "opacity-60 grayscale-[0.5]"
+        !isAguardando && "cursor-pointer active:scale-[0.98]",
+        isAguardando && "opacity-60 grayscale-[0.5]"
       )}
     >
         <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-50">
@@ -170,14 +171,14 @@ const TimeRecordMobileItem = ({
                 {record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--"}
               </div>
             ) : (
-              <span>{(record as any).ausente ? "Ausente" : "Em andamento"}</span>
+              <span>--:--</span>
             )}
           </div>
         </div>
       </div>
   );
 
-  if (isAusente) return content;
+  if (isAguardando || (record as any).ausente) return content;
 
   return (
     <MobileActionItem actions={actions}>
@@ -197,16 +198,16 @@ const TimeRecordTableRow = ({
   onEdit: (r: RegistroPonto) => void;
   onDelete: (r: RegistroPonto) => void;
 }) => {
-  const isAusente = (record as any).ausente;
+  const isAguardando = record.status_entrada === STATUS_PONTO.CINZA;
   const actions = useTimeRecordActions({ record, onDetails, onEdit, onDelete });
 
   return (
     <tr
       className={cn(
         "transition-colors group",
-        isAusente ? "opacity-60 grayscale-[0.5] cursor-default" : "hover:bg-gray-50/80 cursor-pointer"
+        isAguardando ? "opacity-60 grayscale-[0.5]" : "hover:bg-gray-50/80 cursor-pointer"
       )}
-      onClick={isAusente ? undefined : () => onDetails(record)}
+      onClick={isAguardando ? undefined : () => onDetails(record)}
     >
       <td className="py-4 pl-6 align-middle relative">
         <div className="flex flex-col gap-0.5">
@@ -260,12 +261,12 @@ const TimeRecordTableRow = ({
 
           {/* Total Secondary */}
           <span className="text-[10px] text-gray-400">
-            Total: {record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : (record as any).ausente ? "Ausente" : "Em andamento"}
+            Total: {record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : "--:--"}
           </span>
         </div>
       </td>
       <td className="px-6 py-4 align-middle text-right" onClick={(e) => e.stopPropagation()}>
-        {!isAusente && <ActionsDropdown actions={actions} />}
+        {!(record as any).ausente && <ActionsDropdown actions={actions} />}
       </td>
     </tr>
   );

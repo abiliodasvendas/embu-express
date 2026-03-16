@@ -1,7 +1,7 @@
 import { STATUS_PONTO } from "@/constants/ponto";
 
 export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida') => {
-    if (!status) return type === 'saida' ? "Em Andamento" : "Pendente";
+    if (!status) return type === 'saida' ? "Trabalhando" : "Pendente";
 
     switch (status) {
         case STATUS_PONTO.VERDE: return "No Horário";
@@ -23,9 +23,9 @@ export const getStatusColorClass = (status: string | null, type?: 'entrada' | 's
     switch (status) {
         case STATUS_PONTO.VERDE: return "bg-emerald-100 text-emerald-700 border-emerald-200";
         case STATUS_PONTO.AMARELO: 
-            return type === 'entrada'
-                ? "bg-amber-100 text-amber-700 border-amber-200" // Atraso entry
-                : "bg-sky-100 text-sky-700 border-sky-200"; // HE normal (Blue)
+            return type === 'saida'
+                ? "bg-sky-100 text-sky-700 border-sky-200" // Hora Extra (Blue)
+                : "bg-amber-100 text-amber-700 border-amber-200"; // Atraso (Amber/Yellow/Orange)
         case STATUS_PONTO.ANTECIPADA:
             return type === 'entrada'
                 ? "bg-sky-100 text-sky-700 border-sky-200" // Entrada Antecipada (Blue)
@@ -34,8 +34,15 @@ export const getStatusColorClass = (status: string | null, type?: 'entrada' | 's
             return type === 'entrada'
                 ? "bg-rose-100 text-rose-700 border-rose-200" // Atraso Crítico
                 : "bg-indigo-900/10 text-indigo-800 border-indigo-200"; // HE Excessiva (Dark Blue)
-        case 'AUSENTE': return "bg-slate-100 text-slate-500 border-slate-200 opacity-60";
-        case STATUS_PONTO.CINZA: return "bg-gray-100 text-gray-500 border-gray-200";
+        case 'AUSENTE': 
+        case STATUS_PONTO.AUSENTE:
+            return type === 'entrada' 
+                ? "bg-rose-50 text-rose-400 border-rose-100 opacity-80" // Ausente Entrada (Light Red)
+                : "bg-slate-100 text-slate-500 border-slate-200 opacity-60";
+        case STATUS_PONTO.CINZA: 
+            return type === 'entrada'
+                ? "bg-gray-100 text-gray-500 border-gray-200"
+                : "bg-gray-100 text-gray-500 border-gray-200";
         case STATUS_PONTO.EM_ANDAMENTO: return "bg-blue-50 text-blue-600 border-blue-100";
         case 'iniciou': return "bg-sky-50 text-sky-600 border-sky-100";
         case 'concluiu': return "bg-indigo-50 text-indigo-700 border-indigo-100";

@@ -116,7 +116,7 @@ export default function PublicTimeTracking() {
                     {filteredRecords.map((record) => (
                         <Card key={record.id} className={cn(
                             "border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300",
-                            record.ausente && "opacity-60 grayscale-[0.5] hover:shadow-sm"
+                            record.status_entrada === STATUS_PONTO.CINZA && "opacity-60 grayscale-[0.5] hover:shadow-sm"
                         )}>
                             <CardContent className="p-5 sm:p-6">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -147,7 +147,7 @@ export default function PublicTimeTracking() {
                                                      variant="outline" 
                                                      className={cn(
                                                          "text-[9px] w-fit", 
-                                                         getStatusColorClass(record.status_entrada)
+                                                         getStatusColorClass(record.status_entrada, 'entrada')
                                                      )}
                                                  >
                                                      {getStatusLabel(record.status_entrada, 'entrada')}
@@ -163,10 +163,16 @@ export default function PublicTimeTracking() {
                                                      variant="outline" 
                                                      className={cn(
                                                          "text-[9px] w-fit", 
-                                                         (!record.saida_hora && record.status_saida === STATUS_PONTO.CINZA) ? "bg-blue-50 text-blue-400 border-blue-100" : getStatusColorClass(record.status_saida)
+                                                         (!record.saida_hora && record.entrada_hora && !record.ausente) 
+                                                            ? getStatusColorClass(STATUS_PONTO.EM_ANDAMENTO) 
+                                                            : getStatusColorClass(record.status_saida, 'saida'),
+                                                         ((!record.saida_hora && record.entrada_hora && !record.ausente) || getStatusLabel(record.status_saida, 'saida') === "Trabalhando") 
+                                                            && "animate-status-pulse"
                                                      )}
                                                  >
-                                                     {(!record.saida_hora && record.status_saida === STATUS_PONTO.CINZA) ? "TRABALHANDO" : getStatusLabel(record.status_saida, 'saida')}
+                                                     {(!record.saida_hora && record.entrada_hora && !record.ausente) 
+                                                        ? "TRABALHANDO" 
+                                                        : getStatusLabel(record.status_saida, 'saida')}
                                                  </Badge>
                                             </div>
                                         </div>

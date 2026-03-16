@@ -224,11 +224,12 @@ export function TimeTrackingToolbar({
             </SelectTrigger>
             <SelectContent className="z-[10001]">
               <SelectItem value={FILTER_OPTIONS.TODOS}>Todos os Status</SelectItem>
-              <SelectItem value={FILTER_OPTIONS.INICIOU}>Iniciou</SelectItem>
-              <SelectItem value={STATUS_PONTO.ANTECIPADA}>{getStatusLabel(STATUS_PONTO.ANTECIPADA, 'entrada')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.AMARELO}>{getStatusLabel(STATUS_PONTO.AMARELO, 'entrada')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.VERMELHO}>{getStatusLabel(STATUS_PONTO.VERMELHO, 'entrada')}</SelectItem>
-              <SelectItem value={STATUS_PONTO.AUSENTE}>{getStatusLabel(STATUS_PONTO.AUSENTE, 'entrada')}</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.INICIOU}>Iniciou (Batido)</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.NAO_INICIOU}>Não Iniciou (Geral)</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.EM_ATRASO}>Em Atraso (Sem Ponto)</SelectItem>
+              <SelectItem value={FILTER_OPTIONS.AGUARDANDO}>Aguardando Turno</SelectItem>
+              <SelectItem value={STATUS_PONTO.ANTECIPADA}>Entrada Antecipada</SelectItem>
+              <SelectItem value={STATUS_PONTO.AUSENTE}>Faltou (Dia Todo)</SelectItem>
             </SelectContent>
           </Select>
         </div>

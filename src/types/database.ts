@@ -81,6 +81,7 @@ export interface Usuario {
   cliente?: Client;
   empresa?: Empresa;
   links?: ColaboradorCliente[];
+  foto_url?: string;
 }
 
 export interface UsuarioTurno {

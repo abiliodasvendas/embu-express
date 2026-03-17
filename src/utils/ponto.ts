@@ -1,4 +1,7 @@
 import { STATUS_PONTO } from "@/constants/ponto";
+import { format, isAfter, startOfToday, addDays } from "date-fns";
+
+export type ManagementStatus = 'LATE' | 'WORKING' | 'DONE' | 'WAITING' | 'ABSENT';
 
 export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida') => {
     if (!status) return type === 'saida' ? "Trabalhando" : "Pendente";
@@ -72,4 +75,58 @@ export const formatMinutes = (minutes: number, showSign: boolean = false) => {
     const sign = roundedMin < 0 ? "-" : (showSign && roundedMin > 0 ? "+" : "");
 
     return `${sign}${h}h ${String(m).padStart(2, "0")}m`;
+};
+
+/**
+ * Determines the management status of a time record
+ * Used for KPI filtering and status badges (Internal/Public)
+ */
+export const getManagementStatus = (record: any, dateReference: Date): ManagementStatus => {
+    const isToday = format(dateReference, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+    const isPast = !isToday && dateReference < startOfToday();
+
+    // 1. Finalizado
+    if (record.saida_hora) return 'DONE';
+
+    // 2. Trabalhando (Se tem entrada mas não tem saída)
+    if (record.entrada_hora) return 'WORKING';
+
+    // 3. Se não tem entrada:
+    if (!record.entrada_hora) {
+        // Se for data passada -> Faltou
+        if (isPast) return 'ABSENT';
+
+        // Se for hoje
+        if (isToday) {
+            if (record.detalhes_calculo?.entrada?.turno_base) {
+                const now = new Date();
+                
+                // Horário esperado de entrada
+                const [hIn, mIn] = record.detalhes_calculo.entrada.turno_base.split(':').map(Number);
+                const shiftStart = new Date(dateReference);
+                shiftStart.setHours(hIn, mIn, 0, 0);
+
+                // Horário esperado de saída
+                const [hOut, mOut] = record.detalhes_calculo.saida?.turno_base?.split(':').map(Number) || [23, 59];
+                let shiftEnd = new Date(dateReference);
+                shiftEnd.setHours(hOut, mOut, 0, 0);
+
+                // BUG FIX: Se o horário de saída é menor ou igual ao de entrada, o turno vira a noite (ex: 18:00 às 00:00)
+                if (hOut < hIn || (hOut === hIn && mOut <= mIn)) {
+                    shiftEnd = addDays(shiftEnd, 1);
+                }
+
+                // Se já passou do horário de FIM do turno e ele nunca entrou -> Faltou
+                if (isAfter(now, shiftEnd)) return 'ABSENT';
+
+                // Se já passou do horário de INÍCIO do turno e ele não entrou -> Atrasado
+                if (isAfter(now, shiftStart)) return 'LATE';
+            }
+            
+            // Se o turno ainda não começou (ex: agora é 10h e o turno é às 18h)
+            return 'WAITING';
+        }
+    }
+
+    return 'WAITING';
 };

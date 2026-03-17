@@ -33,12 +33,14 @@ interface MobileActionItemProps {
   actions: MobileAction[];
   /** Optional visual hint on mount */
   showHint?: boolean;
+  className?: string;
 }
 
 export function MobileActionItem({
   children,
   actions,
   showHint = false,
+  className,
 }: MobileActionItemProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -92,7 +94,7 @@ export function MobileActionItem({
       <SwipeableItem
         showHint={showHint}
         rightActions={swipeActions}
-        className="touch-manipulation"
+        className={cn("touch-manipulation", className)}
       >
         {children}
       </SwipeableItem>

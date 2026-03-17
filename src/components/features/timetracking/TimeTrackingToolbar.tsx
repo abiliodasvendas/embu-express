@@ -184,7 +184,7 @@ export function TimeTrackingToolbar({
             searchPlaceholder="Buscar cliente..."
             emptyText="Nenhum cliente encontrado."
             className={cn(
-              "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-700 transition-none",
+              "h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-700 transition-none",
               isSheet && "h-12 bg-white hover:bg-white"
             )}
             modal={isSheet}
@@ -195,7 +195,7 @@ export function TimeTrackingToolbar({
           <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Turno</Label>
           <Select value={currentFilters.turno} onValueChange={(v) => updateFilter("turno", v)}>
             <SelectTrigger className={cn(
-              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-700",
+              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600",
               isSheet && "h-12 bg-white"
             )}>
               <div className="flex items-center">
@@ -215,7 +215,7 @@ export function TimeTrackingToolbar({
           <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Status Entrada</Label>
           <Select value={currentFilters.statusEntrada} onValueChange={(v) => updateFilter("statusEntrada", v)}>
             <SelectTrigger className={cn(
-              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium",
+              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600",
               isSheet && "h-12 bg-white"
             )}>
               <div className="flex items-center">
@@ -238,7 +238,7 @@ export function TimeTrackingToolbar({
           <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Status Saída</Label>
           <Select value={currentFilters.statusSaida} onValueChange={(v) => updateFilter("statusSaida", v)}>
             <SelectTrigger className={cn(
-              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium",
+              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600",
               isSheet && "h-12 bg-white"
             )}>
               <div className="flex items-center">
@@ -262,81 +262,39 @@ export function TimeTrackingToolbar({
   };
 
   return (
-    <div className="flex flex-col space-y-4 mb-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="flex flex-col space-y-6 mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* 1. Date Navigation */}
         <DateNavigation date={date} onNavigate={onDateChange} />
-      </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Combobox
-            options={[{ value: FILTER_OPTIONS.TODOS, label: "Todos os Colaboradores" }, ...collaborators.map(f => ({ value: f.id.toString(), label: f.nome_completo }))]}
-            value={filters.usuarioId === FILTER_OPTIONS.TODOS ? "" : filters.usuarioId}
-            onSelect={(val) => onFiltersChange("usuarioId", val || FILTER_OPTIONS.TODOS)}
-            placeholder="Buscar colaborador..."
-            searchPlaceholder="Digite o nome..."
-            emptyText="Nenhum colaborador encontrado."
-            startIcon={<Search className="h-4 w-4 text-gray-400" />}
-            className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium shadow-none text-sm sm:text-base text-gray-700 hover:bg-white hover:text-gray-700 transition-none pl-9"
-          />
-        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-gray-500 hover:text-gray-900 h-11 px-3 order-last sm:order-none w-full sm:w-auto"
+            >
+              <X className="h-4 w-4 mr-1.5" />
+              Limpar
+            </Button>
+          )}
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          {isMobile ? (
-            <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
-              <SheetTrigger asChild>
-                <FilterButton
-                  hasActiveFilters={hasActiveFilters}
-                  isMobile={isMobile}
-                  selectedCount={selectedCount}
-                />
-              </SheetTrigger>
-              <SheetContent
-                side="bottom"
-                className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 pb-0 bg-gray-50 border-t-0 shadow-2xl"
-                onOpenAutoFocus={(e) => e.preventDefault()}
-                aria-describedby={undefined}
-              >
-                <SheetHeader className="text-left mb-4 px-6">
-                  <SheetTitle className="text-xl font-bold">Filtrar</SheetTitle>
-                  <SheetDescription className="text-gray-500">
-                    Refine a visualização pelas opções abaixo.
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="flex-1 overflow-y-auto">
-                  <FilterContent isSheet={true} />
-                </div>
-                <div className="p-4 border-t bg-white mt-auto flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={clearSheetFilters}
-                    className="flex-1 h-12 rounded-xl text-slate-500 font-bold border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
-                  >
-                    Limpar
-                  </Button>
-                  <Button
-                    onClick={handleApply}
-                    className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white"
-                  >
-                    Aplicar
-                  </Button>
-                </div>
-              </SheetContent>
-            </Sheet>
-          ) : (
-            <div className="flex items-center gap-3">
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="text-gray-500 hover:text-gray-900"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Limpar
-                </Button>
-              )}
+          <div className="relative flex-1 w-full sm:w-64 lg:w-72">
+            <Combobox
+              options={[{ value: FILTER_OPTIONS.TODOS, label: "Todos os Colaboradores" }, ...collaborators.map(f => ({ value: f.id.toString(), label: f.nome_completo }))]}
+              value={filters.usuarioId === FILTER_OPTIONS.TODOS ? "" : filters.usuarioId}
+              onSelect={(val) => onFiltersChange("usuarioId", val || FILTER_OPTIONS.TODOS)}
+              placeholder="Buscar colaborador..."
+              searchPlaceholder="Digite o nome..."
+              emptyText="Nenhum colaborador encontrado."
+              startIcon={<Search className="h-4 w-4 text-gray-400" />}
+              className="h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-primary/20 font-medium shadow-none text-sm text-gray-600 hover:bg-gray-50 transition-none pl-9"
+            />
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {!isMobile && (
               <Popover>
                 <PopoverTrigger asChild>
                   <FilterButton
@@ -354,22 +312,64 @@ export function TimeTrackingToolbar({
                   <FilterContent />
                 </PopoverContent>
               </Popover>
-            </div>
-          )}
+            )}
 
-          {/* Mobile Register Button */}
-          <Can I={PERMISSIONS.PONTO.ADMIN_CRIAR}>
-            <Button
-              onClick={onRegister}
-              className={cn(
-                "bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap",
-                isMobile && "flex-1 h-11"
-              )}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Novo Registro</span>
-            </Button>
-          </Can>
+            {isMobile && (
+              <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
+                <SheetTrigger asChild>
+                  <FilterButton
+                    hasActiveFilters={hasActiveFilters}
+                    isMobile={isMobile}
+                    selectedCount={selectedCount}
+                  />
+                </SheetTrigger>
+                <SheetContent
+                  side="bottom"
+                  className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 pb-0 bg-gray-50 border-t-0 shadow-2xl"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                  aria-describedby={undefined}
+                >
+                  <SheetHeader className="text-left mb-4 px-6">
+                    <SheetTitle className="text-xl font-bold">Filtrar</SheetTitle>
+                    <SheetDescription className="text-gray-500">
+                      Refine a visualização pelas opções abaixo.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto">
+                    <FilterContent isSheet={true} />
+                  </div>
+                  <div className="p-4 border-t bg-white mt-auto flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={clearSheetFilters}
+                      className="flex-1 h-12 rounded-xl text-slate-500 font-bold border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
+                    >
+                      Limpar
+                    </Button>
+                    <Button
+                      onClick={handleApply}
+                      className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white"
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
+
+            <Can I={PERMISSIONS.PONTO.ADMIN_CRIAR}>
+              <Button
+                onClick={onRegister}
+                className={cn(
+                  "bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap",
+                  isMobile && "flex-1 h-11"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>{isMobile ? "Novo" : "Novo Registro"}</span>
+              </Button>
+            </Can>
+          </div>
         </div>
       </div>
     </div>

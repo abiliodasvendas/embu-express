@@ -1,7 +1,5 @@
 import { Can } from "@/components/auth/Can";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { EndTurnDialog } from "@/components/dialogs/EndTurnDialog";
-import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
 import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -51,6 +49,7 @@ export default function CollaboratorDetails() {
     openCollaboratorTurnDialog,
     openSuccessRegistrationDialog,
     openOccurrenceFormDialog,
+    openEndTurnDialog,
     setPageTitle,
   } = useLayout();
 
@@ -65,7 +64,6 @@ export default function CollaboratorDetails() {
   }, [id, openCollaboratorTurnDialog]);
 
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
-  const [endTurnState, setEndTurnState] = useState<{ open: boolean; turnId: number; clientName: string }>({ open: false, turnId: 0, clientName: "" });
 
   useEffect(() => {
     if (!hasAutoOpened && searchParams.get('openTurnDialog') === 'true' && collaborator && !isLoading) {
@@ -211,9 +209,9 @@ export default function CollaboratorDetails() {
   };
 
   const handleEndTurn = (link: ColaboradorCliente) => {
-    setEndTurnState({
-      open: true,
+    openEndTurnDialog({
       turnId: link.id,
+      collaboratorId: id!,
       clientName: (link as any).cliente?.nome_fantasia || "Cliente",
     });
   };
@@ -801,14 +799,6 @@ export default function CollaboratorDetails() {
       </Tabs>
 
 
-
-      <EndTurnDialog
-        open={endTurnState.open}
-        onOpenChange={(open) => setEndTurnState(prev => ({ ...prev, open }))}
-        turnId={endTurnState.turnId}
-        collaboratorId={id!}
-        clientName={endTurnState.clientName}
-      />
 
     </div>
   );

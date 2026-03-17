@@ -6,236 +6,79 @@ import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
-import { useLayout } from "@/contexts/LayoutContext";
-import { useFilters } from "@/hooks";
-import {
-    useCreateCollaborator,
-    useDeleteCollaborator,
-    useUpdateCollaboratorStatus,
-} from "@/hooks/api/useCollaboratorMutations";
-import { useCollaborators, useRoles } from "@/hooks/api/useCollaborators";
-import { useEmpresas } from "@/hooks/api/useEmpresas";
-import { useClientSelection } from "@/hooks/ui/useClientSelection";
-import { Usuario as Collaborator } from "@/types/database";
+import { useCollaboratorsViewModel } from "@/hooks";
 import { Users } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export function Collaborators() {
-  const {
-    setPageTitle,
-    openConfirmationDialog,
-    closeConfirmationDialog,
-    openCollaboratorFormDialog,
-    openSuccessRegistrationDialog,
-  } = useLayout();
-  const {
-    searchTerm,
-    setSearchTerm,
-    selectedStatus = STATUS_CADASTRO.TODOS,
-    setSelectedStatus,
-    selectedCategoria: selectedRole = STATUS_CADASTRO.TODOS,
-    setSelectedCategoria: setSelectedRole,
-    selectedCliente: selectedClient = STATUS_CADASTRO.TODOS,
-    setSelectedCliente: setSelectedClient,
-    selectedEmpresa: selectedEmpresa = STATUS_CADASTRO.TODOS,
-    setSelectedEmpresa: setSelectedEmpresa,
-    hasActiveFilters,
-    setFilters,
-  } = useFilters({
-    statusParam: "status",
-    categoriaParam: "cargo",
-    clienteParam: "cliente",
-    empresaParam: "empresa",
-    syncWithUrl: true,
-  });
+    const vm = useCollaboratorsViewModel();
 
-  const [isQuickCreateLoading, setIsQuickCreateLoading] = useState(false);
+    useEffect(() => {
+        vm.setPageTitle("Colaboradores");
+    }, [vm]);
 
-  // Queries
-  const { data: roles } = useRoles();
-  const { data: clients } = useClientSelection();
-  const { data: empresas } = useEmpresas({ ativo: "true" });
+    return (
+        <>
+            <PullToRefreshWrapper onRefresh={async () => { await vm.refetch(); }}>
+                <div className="space-y-6">
+                    <Card className="border-none shadow-none bg-transparent">
+                        <CardContent className="px-0">
+                            <div className="mb-6">
+                                <CollaboratorsToolbar
+                                    searchTerm={vm.searchTerm}
+                                    onSearchChange={vm.setSearchTerm}
+                                    selectedStatus={vm.selectedStatus}
+                                    onStatusChange={vm.setSelectedStatus}
+                                    selectedRole={vm.selectedRole}
+                                    onRoleChange={vm.setSelectedRole}
+                                    onRegister={vm.handleRegister}
+                                    onApplyFilters={vm.handleApplyFilters}
+                                    roles={vm.roles}
+                                    clients={vm.clients}
+                                    selectedClient={vm.selectedClient}
+                                    onClientChange={vm.setSelectedClient}
+                                    empresas={vm.empresas}
+                                    selectedEmpresa={vm.selectedEmpresa}
+                                    onEmpresaChange={(val) => vm.setSelectedEmpresa(val)}
+                                />
+                            </div>
 
-  const {
-    data: collaborators = [],
-    isLoading,
-    refetch,
-  } = useCollaborators({
-    searchTerm: searchTerm || undefined,
-    status: selectedStatus === STATUS_CADASTRO.TODOS ? undefined : selectedStatus,
-    perfil_id: selectedRole === STATUS_CADASTRO.TODOS ? undefined : selectedRole,
-    cliente_id: selectedClient === STATUS_CADASTRO.TODOS ? undefined : selectedClient,
-    empresa_id: selectedEmpresa === STATUS_CADASTRO.TODOS ? undefined : selectedEmpresa,
-  });
+                            {vm.isLoading ? (
+                                <ListSkeleton />
+                            ) : vm.collaborators && vm.collaborators.length > 0 ? (
+                                <CollaboratorList
+                                    collaborators={vm.collaborators}
+                                    onEdit={vm.handleEdit}
+                                    onStatusChange={vm.handleStatusChange}
+                                    onDelete={vm.handleDelete}
+                                />
+                            ) : (
+                                <UnifiedEmptyState
+                                    icon={Users}
+                                    title={messages.emptyState.colaborador.titulo}
+                                    description={
+                                        vm.searchTerm
+                                            ? messages.emptyState.colaborador.semResultados
+                                            : messages.emptyState.colaborador.descricao
+                                    }
+                                    action={
+                                        !vm.searchTerm
+                                            ? {
+                                                label: "Cadastrar Colaborador",
+                                                onClick: vm.handleRegister,
+                                            }
+                                            : undefined
+                                    }
+                                />
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </PullToRefreshWrapper>
 
-  // Mutations
-  const createCollaborator = useCreateCollaborator();
-  const deleteCollaborator = useDeleteCollaborator();
-  const updateStatus = useUpdateCollaboratorStatus();
-
-  useEffect(() => {
-    setPageTitle("Colaboradores");
-  }, [setPageTitle]);
-
-  const pullToRefreshReload = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
-
-  const handleEdit = (collaborator: Collaborator) => {
-    openCollaboratorFormDialog({
-      mode: "edit",
-      editingCollaborator: collaborator,
-    });
-  };
-
-  const handleRegister = () => {
-    openCollaboratorFormDialog({
-      mode: "create",
-      editingCollaborator: null,
-    });
-  };
-
-  const handleDelete = async (collaborator: Collaborator) => {
-    openConfirmationDialog({
-      title: messages.dialogo.remover.titulo,
-      description: `Tem certeza que deseja remover "${collaborator.nome_completo}"? Esta ação não pode ser desfeita.`,
-      confirmText: messages.dialogo.remover.botao,
-      variant: "destructive",
-      onConfirm: async () => {
-        try {
-          await deleteCollaborator.mutateAsync(collaborator.id);
-          closeConfirmationDialog();
-        } catch (error) {
-          console.error(error);
-        }
-      },
-    });
-  };
-
-  const handleStatusChange = (
-    collaborator: Collaborator,
-    newStatus: string,
-  ) => {
-    const isActivating = newStatus === STATUS_CADASTRO.ATIVO;
-    openConfirmationDialog({
-      title: isActivating ? "Ativar Colaborador" : "Desativar Colaborador",
-      description: `Tem certeza que deseja ${isActivating ? "ativar" : "desativar"} o colaborador "${collaborator.nome_completo}"?`,
-      confirmText: isActivating ? "Ativar" : "Desativar",
-      variant: isActivating ? "default" : "destructive",
-      onConfirm: async () => {
-        try {
-          await updateStatus.mutateAsync({
-            id: collaborator.id,
-            status: newStatus,
-          });
-
-          closeConfirmationDialog();
-
-          if (newStatus === STATUS_CADASTRO.ATIVO) {
-            setTimeout(() => {
-              openSuccessRegistrationDialog({
-                collaborator: collaborator,
-                title: "Aprovação Realizada!",
-                hideNewCollaboratorButton: true,
-                description: (
-                  <>
-                    O colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi aprovado com sucesso.
-                  </>
-                )
-              });
-            }, 300);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      },
-    });
-  };
-
-  const isCreatingCollaborator = createCollaborator.isPending;
-  const isActionLoading =
-    deleteCollaborator.isPending ||
-    updateStatus.isPending ||
-    isCreatingCollaborator ||
-    isQuickCreateLoading;
-
-  const handleApplyFilters = (newFilters: {
-    status?: string;
-    categoria?: string;
-    cliente?: string;
-    empresa?: string;
-  }) => {
-    setFilters({
-      status: newFilters.status,
-      categoria: newFilters.categoria,
-      cliente: newFilters.cliente,
-      empresa: newFilters.empresa,
-    });
-  };
-
-  return (
-    <>
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6">
-          <Card className="border-none shadow-none bg-transparent">
-            <CardContent className="px-0">
-              <div className="mb-6">
-                <CollaboratorsToolbar
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  selectedStatus={selectedStatus}
-                  onStatusChange={setSelectedStatus}
-                  selectedRole={selectedRole}
-                  onRoleChange={setSelectedRole}
-                  onRegister={handleRegister}
-                  onApplyFilters={handleApplyFilters}
-                  roles={roles || []}
-                  clients={clients || []}
-                  selectedClient={selectedClient}
-                  onClientChange={setSelectedClient}
-                  empresas={empresas || []}
-                  selectedEmpresa={selectedEmpresa}
-                  onEmpresaChange={setSelectedEmpresa!}
-                />
-              </div>
-
-              {isLoading ? (
-                <ListSkeleton />
-              ) : collaborators && collaborators.length > 0 ? (
-                <CollaboratorList
-                  collaborators={collaborators}
-                  onEdit={handleEdit}
-                  onStatusChange={handleStatusChange}
-                  onDelete={handleDelete}
-                />
-              ) : (
-                <UnifiedEmptyState
-                  icon={Users}
-                  title={messages.emptyState.colaborador.titulo}
-                  description={
-                    searchTerm
-                      ? messages.emptyState.colaborador.semResultados
-                      : messages.emptyState.colaborador.descricao
-                  }
-                  action={
-                    !searchTerm
-                      ? {
-                        label: "Cadastrar Colaborador",
-                        onClick: handleRegister,
-                      }
-                      : undefined
-                  }
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </PullToRefreshWrapper>
-
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
-    </>
-  );
+            <LoadingOverlay active={vm.isActionLoading} text="Processando..." />
+        </>
+    );
 }
 
 export default Collaborators;

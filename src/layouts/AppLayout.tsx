@@ -1,16 +1,27 @@
-import { PasswordGuardDialog } from "@/components/dialogs/PasswordGuardDialog";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useSession } from "@/hooks/business/useSession";
-import { supabase } from "@/integrations/supabase/client";
 import { ROUTES } from "@/constants/routes";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 export default function AppLayout() {
   const { loading: loadingSession } = useSession();
   const { profile, isLoading } = usePermissions();
+  const { openPasswordGuardDialog } = useLayout();
   const navigate = useNavigate();
+
+  const showGuard = !!profile?.senha_padrao;
+
+  useEffect(() => {
+    if (showGuard) {
+      openPasswordGuardDialog({
+        onSuccess: () => window.location.reload()
+      });
+    }
+  }, [showGuard, openPasswordGuardDialog]);
 
   if (loadingSession || isLoading || !profile) {
     return (
@@ -20,15 +31,8 @@ export default function AppLayout() {
     );
   }
 
-
-  const showGuard = !!profile?.senha_padrao;
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <PasswordGuardDialog
-        open={showGuard}
-        onSuccess={() => window.location.reload()}
-      />
       <AppNavbar />
 
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white">

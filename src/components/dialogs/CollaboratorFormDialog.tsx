@@ -34,7 +34,7 @@ import { PIX_TYPES } from "@/constants/financeiro.constants";
 import { cn } from "@/lib/utils";
 import { useCreateCollaborator, useEmpresas, useLayout, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
-import { CollaboratorFormData } from "@/schemas/collaboratorSchema";
+import { CollaboratorFormData, CollaboratorFormValues, collaboratorSchema } from "@/schemas/collaboratorSchema";
 import { Perfil, Usuario } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { getPerfilLabel } from "@/utils/formatters";
@@ -166,32 +166,38 @@ export function CollaboratorFormDialog({
     form.setValue("chave_pix", cpfMask(mockGenerator.cpf()));
   };
 
-  const onSubmit = async (vals: CollaboratorFormData) => {
+  const onSubmit = async (values: CollaboratorFormValues) => {
     try {
-      const values = vals as any;
-      // Convert dates from DD/MM/YYYY to YYYY-MM-DD
-      const formattedBirthDate = parseDateBr(values.data_nascimento);
-      const formattedCnhDate = values.cnh_vencimento ? parseDateBr(values.cnh_vencimento) : null;
+      // O zodResolver já validou, mas o .parse nos dá os dados transformados 
+      // (ex: valor_mei de string para number) com a tipagem correta de CollaboratorFormData.
+      const data = collaboratorSchema.parse(values) as CollaboratorFormData;
 
-      const data = {
-        ...values,
-        data_nascimento: formattedBirthDate || values.data_nascimento, // Fallback if parse fails or already ISO (unlikely with mask)
-        cnh_vencimento: formattedCnhDate || values.cnh_vencimento,
-        perfil_id: parseInt(values.perfil_id)
+      // Formatação de datas para o padrão do banco (YYYY-MM-DD)
+      const payload = {
+        ...data,
+        data_nascimento: parseDateBr(data.data_nascimento) || data.data_nascimento,
+        cnh_vencimento: data.cnh_vencimento ? (parseDateBr(data.cnh_vencimento) || data.cnh_vencimento) : null,
+        perfil_id: parseInt(data.perfil_id)
       };
 
       if (collaboratorToEdit) {
-        // @ts-ignore - links not needed for partial personal update
-        await updateCollaborator.mutateAsync({ id: collaboratorToEdit.id, ...data, silent: true });
+        await updateCollaborator.mutateAsync({ 
+          id: collaboratorToEdit.id, 
+          ...payload, 
+          silent: true 
+        } as any);
+        
         onSuccess?.();
-        safeCloseDialog(() => onClose());
+        safeCloseDialog(onClose);
       } else {
-        // Execute creation with 'silent' to handle feedback with the success dialog
-        const result = await createCollaborator.mutateAsync({ ...data, silent: true } as any);
+        const result = await createCollaborator.mutateAsync({ 
+          ...payload, 
+          silent: true 
+        } as any);
+        
         onSuccess?.(result);
         safeCloseDialog(() => {
           onClose();
-          // Small delay to ensure the registration dialog is fully closed
           setTimeout(() => {
             openSuccessRegistrationDialog({ collaborator: result });
           }, 100);
@@ -200,28 +206,28 @@ export function CollaboratorFormDialog({
     } catch (error: any) {
       console.error("Erro ao salvar colaborador:", error);
       const message = error.response?.data?.error || error.message || "";
+      const messageLower = message.toLowerCase();
 
-      // Map backend error messages to form fields
-      if (message.toLowerCase().includes("cpf")) {
-        const errorMessage = messages.usuario.erro.cpfJaExiste;
-        form.setError("cpf", { message: errorMessage });
-        toast.error(errorMessage);
-        setOpenSections(prev => prev.includes("personal") ? prev : [...prev, "personal"]);
-      } else if (message.toLowerCase().includes("email") || message.toLowerCase().includes("e-mail")) {
-        const errorMessage = messages.usuario.erro.emailJaExiste;
-        form.setError("email", { message: errorMessage });
-        toast.error(errorMessage);
-        setOpenSections(prev => prev.includes("personal") ? prev : [...prev, "personal"]);
-      } else if (message.toLowerCase().includes("cnpj")) {
-        const errorMessage = messages.usuario.erro.cnpjJaExiste;
-        form.setError("cnpj", { message: errorMessage });
-        toast.error(errorMessage);
-        setOpenSections(prev => prev.includes("personal") ? prev : [...prev, "personal"]);
-      } else if (message.toLowerCase().includes("chave_pix")) {
-        const errorMessage = "Esta chave PIX já está em uso";
-        form.setError("chave_pix", { message: errorMessage });
-        toast.error(errorMessage);
-        setOpenSections(prev => prev.includes("financial") ? prev : [...prev, "financial"]);
+      // Mapeamento de erros do backend para campos do formulário
+      const errorMappings: Record<string, { field: keyof CollaboratorFormValues; section: string }> = {
+        "cpf": { field: "cpf", section: "personal" },
+        "email": { field: "email", section: "personal" },
+        "e-mail": { field: "email", section: "personal" },
+        "cnpj": { field: "cnpj", section: "personal" },
+        "chave_pix": { field: "chave_pix", section: "financial" },
+      };
+
+      const matchedError = Object.entries(errorMappings).find(([key]) => messageLower.includes(key));
+
+      if (matchedError) {
+        const [key, { field, section }] = matchedError;
+        let errorMessage = messages.usuario.erro[key as keyof typeof messages.usuario.erro] || message;
+        
+        if (key === "chave_pix") errorMessage = "Esta chave PIX já está em uso";
+        
+        form.setError(field, { message: errorMessage as string });
+        toast.error(errorMessage as string);
+        setOpenSections(prev => prev.includes(section) ? prev : [...prev, section]);
       } else {
         toast.error(message || messages.erro.salvar);
       }

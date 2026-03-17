@@ -1,26 +1,20 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTimeMirror } from "@/hooks/api/useTimeMirror";
 import { cn } from "@/lib/utils";
 import { Calendar, Clock, TrendingDown, TrendingUp } from "lucide-react";
-import { useMemo } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { meses, anos } from "@/utils/formatters/constants";
-import { useFilters } from "@/hooks/ui/useFilters";
+import { useMemo, useState, useEffect } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useTimeRecord } from "@/hooks/api/useTimeRecord";
-import { useState, useEffect } from "react";
 import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { RegistroPonto } from "@/types/database";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { formatMinutes } from "@/utils/ponto";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
-import { STATUS_PONTO } from "@/constants/ponto";
+import { useTimeMirrorBusiness } from "@/hooks/business/useTimeMirrorBusiness";
+import { TimeMirrorDailyCard } from "./TimeMirrorDailyCard";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -32,23 +26,13 @@ interface TimeMirrorViewProps {
 
 export function TimeMirrorView({ 
     usuarioId, 
-    selectedMonth: propMonth,
-    selectedYear: propYear,
+    selectedMonth,
+    selectedYear,
     selectedShift = STATUS_CADASTRO.TODOS,
     hideCollaboratorSelect = false 
 }: TimeMirrorViewProps) {
-    const {
-        selectedMes: internalMonth = new Date().getMonth() + 1,
-        setSelectedMes: setSelectedMonth = () => {},
-        selectedAno: internalYear = new Date().getFullYear(),
-        setSelectedAno: setSelectedYear = () => {},
-    } = useFilters({
-        mesParam: "mes",
-        anoParam: "ano",
-    });
-
-    const month = propMonth ?? internalMonth;
-    const year = propYear ?? internalYear;
+    const month = selectedMonth || new Date().getMonth() + 1;
+    const year = selectedYear || new Date().getFullYear();
 
     const { data: rawReport = [], isLoading, refetch } = useTimeMirror(
         usuarioId || undefined,
@@ -56,20 +40,11 @@ export function TimeMirrorView({
         year
     );
 
-    // Apply Shift Filter
-    const report = useMemo(() => {
-        if (!rawReport) return [];
-        if (selectedShift === STATUS_CADASTRO.TODOS) return rawReport;
-        
-        return rawReport.filter(r => {
-            const label = r.turno_hora_inicio && r.turno_hora_fim
-                ? `${r.turno_hora_inicio.substring(0, 5)} - ${r.turno_hora_fim.substring(0, 5)}`
-                : (r.detalhes_calculo?.entrada?.turno_base 
-                    ? `${r.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(r.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
-                    : null);
-            return label === selectedShift;
-        });
-    }, [rawReport, selectedShift]);
+    const { processRecords } = useTimeMirrorBusiness();
+    
+    const { records: report, totals } = useMemo(() => 
+        processRecords(rawReport, selectedShift), 
+    [rawReport, selectedShift, processRecords]);
 
     const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
     const { mutateAsync: deletePonto } = useDeletePonto();
@@ -83,7 +58,7 @@ export function TimeMirrorView({
             confirmText: "Sim, excluir",
             variant: "destructive",
             onConfirm: async () => {
-                await deletePonto(record.id);
+                await deletePonto(Number(record.id));
                 closeConfirmationDialog();
             }
         });
@@ -104,63 +79,11 @@ export function TimeMirrorView({
         }
     }, [fullRecord, selectedPontoId]);
 
-    const monthOptions = useMemo(() =>
-        meses.map((label, index) => ({ value: index + 1, label })),
-        []);
-
-    const totals = useMemo(() => {
-        if (!report.length) return { worked: 0, expected: 0, balance: 0 };
-
-        let workedMin = 0;
-        let expectedMin = 0;
-
-        report.forEach(day => {
-            workedMin += (day.tempo_trabalhado_minutos || 0);
-            expectedMin += ((day.tempo_trabalhado_minutos || 0) - (day.saldo_minutos || 0));
-        });
-
-        return {
-            worked: workedMin,
-            expected: expectedMin,
-            balance: workedMin - expectedMin
-        };
-    }, [report]);
-
-
     const { can } = usePermissions();
     const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
 
     return (
         <div className="space-y-6">
-                {/* Context Filters - Only show if not provided via props */}
-                {!propMonth && !propYear && (
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
-                            <Select value={String(month)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                                <SelectTrigger className="h-9 w-[130px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {monthOptions.map(m => (
-                                        <SelectItem key={m.value} value={String(m.value)} className="text-xs">{m.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-
-                            <Select value={String(year)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                                <SelectTrigger className="h-9 w-[90px] rounded-xl border-none bg-white shadow-sm font-semibold text-xs">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {anos.map(a => (
-                                        <SelectItem key={a.value} value={a.value} className="text-xs">{a.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                )}
-
                 {!usuarioId ? (
                     <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
                         <div className="p-4 bg-primary/5 rounded-full">
@@ -259,132 +182,16 @@ export function TimeMirrorView({
                                 )}
                             </div>
 
-                            {report.map((day, idx) => {
-                                const balance = day.saldo_minutos || 0;
-                                const esperadoForDay = (day.tempo_trabalhado_minutos || 0) - (day.saldo_minutos || 0);
-                                return (
-                                    <Card
-                                        key={idx}
-                                        className={cn(
-                                            "border-none shadow-sm rounded-[1.5rem] overflow-hidden group transition-all duration-300",
-                                            day.entrada_hora ? "hover:shadow-md cursor-pointer active:scale-[0.99]" : "cursor-default opacity-80",
-                                            isFetchingRecord && selectedPontoId === day.id && "opacity-60 cursor-wait"
-                                        )}
-                                        onClick={() => day.entrada_hora && !isFetchingRecord && setSelectedPontoId(day.id)}
-                                    >
-                                        <CardContent className="p-4 md:py-3 md:px-6">
-                                            <div className={cn(
-                                                "grid items-center gap-4",
-                                                canViewAll ? "grid-cols-1 md:grid-cols-8" : "grid-cols-1 md:grid-cols-4"
-                                            )}>
-                                                {/* Date */}
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-xl bg-gray-50 group-hover:bg-primary/5 transition-colors flex flex-col items-center justify-center shrink-0">
-                                                        <span className="text-[10px] uppercase font-bold text-gray-400 group-hover:text-primary transition-colors leading-none mb-0.5">
-                                                            {format(new Date(day.data_referencia + 'T12:00:00'), 'EEE', { locale: ptBR })}
-                                                        </span>
-                                                        <span className="text-sm font-black text-gray-700 group-hover:text-primary transition-colors">
-                                                            {format(new Date(day.data_referencia + 'T12:00:00'), 'dd')}
-                                                        </span>
-                                                    </div>
-                                                    <div className="md:hidden">
-                                                        <h4 className="font-bold text-gray-900">
-                                                            {format(new Date(day.data_referencia + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })}
-                                                        </h4>
-                                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-0.5">{day.cliente_nome || 'Sem Cliente'}</p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Turno */}
-                                                <div>
-                                                    <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Turno</p>
-                                                    <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-[10px] uppercase font-bold px-2 py-0 border-none h-5">
-                                                        {day.turno_hora_inicio 
-                                                            ? `${day.turno_hora_inicio.substring(0, 5)} - ${day.turno_hora_fim.substring(0, 5)}` 
-                                                            : (day.detalhes_calculo?.entrada?.turno_base 
-                                                                ? `${day.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(day.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
-                                                                : 'Sem Turno')}
-                                                    </Badge>
-                                                </div>
-
-                                                {/* Entrada / Saída */}
-                                                <div className="grid grid-cols-2 md:contents gap-2">
-                                                    <div>
-                                                        <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Entrada</p>
-                                                        <p className="text-sm font-bold text-gray-700">
-                                                            {day.entrada_hora ? format(new Date(day.entrada_hora), 'HH:mm') : (day.status_entrada !== STATUS_PONTO.CINZA ? '--:--' : '')}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Saída</p>
-                                                        <p className="text-sm font-bold text-gray-700">
-                                                            {day.saida_hora ? format(new Date(day.saida_hora), 'HH:mm') : (day.status_saida !== STATUS_PONTO.CINZA ? '--:--' : '')}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Informações detalhadas - Só visíveis para Admin */}
-                                                {canViewAll && (
-                                                    <>
-                                                        {/* Intervalo */}
-                                                        <div className="text-center flex flex-col items-center gap-0.5">
-                                                            <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Intervalo</p>
-                                                            <p className="text-sm font-bold text-gray-700 leading-none">
-                                                                {day.total_pausas_minutos ? `${Math.round(day.total_pausas_minutos)}m` : '0m'}
-                                                            </p>
-                                                            {day.detalhes_calculo?.resumo?.pausa_configurada > 0 && (
-                                                                <span className="text-[9px] text-gray-400 font-medium leading-none">
-                                                                    Limite: {day.detalhes_calculo.resumo.pausa_configurada}m
-                                                                </span>
-                                                            )}
-                                                            {day.detalhes_calculo?.resumo?.pausa_extra > 0 && (
-                                                                <span className="text-[9px] text-red-500 font-black leading-none uppercase">
-                                                                    +{day.detalhes_calculo.resumo.pausa_extra}m extra
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Trabalhado */}
-                                                        <div className="text-center bg-gray-50/50 md:bg-transparent rounded-2xl p-2 md:p-0">
-                                                            <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Trabalhado</p>
-                                                            <p className="text-sm font-black text-gray-900">
-                                                                {formatMinutes(day.tempo_trabalhado_minutos || 0)}
-                                                            </p>
-                                                        </div>
-
-                                                        {/* Esperado */}
-                                                        <div className="text-center">
-                                                            <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Esperado</p>
-                                                            <p className="text-xs font-bold text-gray-300">
-                                                                {formatMinutes(esperadoForDay || 0)}
-                                                            </p>
-                                                        </div>
-                                                    </>
-                                                )}
-
-                                                {canViewAll && (
-                                                    <div className="text-right">
-                                                        <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Saldo</p>
-                                                        {day.entrada_hora && day.saida_hora && (
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={cn(
-                                                                    "rounded-full px-3 py-1 font-black text-[10px] tracking-tight",
-                                                                    balance > 0 ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                                                        balance < 0 ? "bg-red-50 text-red-600 border-red-100" :
-                                                                            "bg-gray-50 text-gray-500 border-gray-100"
-                                                                )}
-                                                            >
-                                                                {formatMinutes(balance)}
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
+                            {report.map((day, idx) => (
+                                <TimeMirrorDailyCard
+                                    key={idx}
+                                    day={day}
+                                    canViewAll={canViewAll}
+                                    isFetchingRecord={isFetchingRecord}
+                                    selectedPontoId={selectedPontoId}
+                                    onClick={(id) => setSelectedPontoId(id)}
+                                />
+                            ))}
                         </div>
                     </>
                 ) : (

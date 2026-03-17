@@ -11,10 +11,15 @@ import { OccurrenceTypesDialog } from "@/components/dialogs/OccurrenceTypesDialo
 import { PerfilFormDialog } from "@/components/dialogs/PerfilFormDialog";
 import { SuccessRegistrationDialog } from "@/components/dialogs/SuccessRegistrationDialog";
 import { TimeRecordDetailsDialog } from "@/components/dialogs/TimeRecordDetailsDialog";
+import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
+import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
+import { EndTurnDialog } from "@/components/dialogs/EndTurnDialog";
+import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
+import { PasswordGuardDialog } from "@/components/dialogs/PasswordGuardDialog";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
-import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Perfil, RegistroPonto } from '@/types/database';
+import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto } from '@/types/database';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 // --- Interfaces ---
@@ -85,6 +90,22 @@ export interface OpenOccurrenceFormProps {
   onSuccess?: () => void;
 }
 
+export interface OpenOccurrenceDetailsProps {
+  occurrence: Ocorrencia | null;
+  onDelete?: (id: number) => void | Promise<void>;
+}
+
+export interface OpenEndTurnProps {
+  turnId: number;
+  collaboratorId: string;
+  clientName?: string;
+  onSuccess?: () => void;
+}
+
+export interface OpenPasswordGuardProps {
+  onSuccess?: () => void;
+}
+
 export interface OpenFeriadoFormProps {
   feriadoToEdit?: Feriado;
   onSuccess?: () => void;
@@ -137,6 +158,21 @@ interface LayoutContextType {
 
   openFeriadoFormDialog: (props: OpenFeriadoFormProps) => void;
   closeFeriadoFormDialog: () => void;
+
+  openEndTurnDialog: (props: OpenEndTurnProps) => void;
+  closeEndTurnDialog: () => void;
+
+  openOccurrenceDetailsDialog: (props: OpenOccurrenceDetailsProps) => void;
+  closeOccurrenceDetailsDialog: () => void;
+
+  openAlterarSenhaDialog: () => void;
+  closeAlterarSenhaDialog: () => void;
+
+  openEditarCadastroDialog: () => void;
+  closeEditarCadastroDialog: () => void;
+
+  openPasswordGuardDialog: (props: OpenPasswordGuardProps) => void;
+  closePasswordGuardDialog: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -244,6 +280,35 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [feriadoFormDialogState, setFeriadoFormDialogState] = useState<{
     open: boolean;
     props?: OpenFeriadoFormProps;
+  }>({
+    open: false,
+  });
+
+  const [endTurnDialogState, setEndTurnDialogState] = useState<{
+    open: boolean;
+    props?: OpenEndTurnProps;
+  }>({
+    open: false,
+  });
+
+  const [occurrenceDetailsDialogState, setOccurrenceDetailsDialogState] = useState<{
+    open: boolean;
+    props?: OpenOccurrenceDetailsProps;
+  }>({
+    open: false,
+  });
+
+  const [alterarSenhaDialogState, setAlterarSenhaDialogState] = useState({
+    open: false,
+  });
+
+  const [editarCadastroDialogState, setEditarCadastroDialogState] = useState({
+    open: false,
+  });
+
+  const [passwordGuardDialogState, setPasswordGuardDialogState] = useState<{
+    open: boolean;
+    props?: OpenPasswordGuardProps;
   }>({
     open: false,
   });
@@ -386,6 +451,56 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openEndTurnDialog = (props: OpenEndTurnProps) => {
+    setEndTurnDialogState({ open: true, props });
+  };
+
+  const closeEndTurnDialog = () => {
+    closeDialog(() => {
+      setEndTurnDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
+  const openOccurrenceDetailsDialog = (props: OpenOccurrenceDetailsProps) => {
+    setOccurrenceDetailsDialogState({ open: true, props });
+  };
+
+  const closeOccurrenceDetailsDialog = () => {
+    closeDialog(() => {
+      setOccurrenceDetailsDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
+  const openAlterarSenhaDialog = () => {
+    setAlterarSenhaDialogState({ open: true });
+  };
+
+  const closeAlterarSenhaDialog = () => {
+    closeDialog(() => {
+      setAlterarSenhaDialogState({ open: false });
+    });
+  };
+
+  const openEditarCadastroDialog = () => {
+    setEditarCadastroDialogState({ open: true });
+  };
+
+  const closeEditarCadastroDialog = () => {
+    closeDialog(() => {
+      setEditarCadastroDialogState({ open: false });
+    });
+  };
+
+  const openPasswordGuardDialog = (props: OpenPasswordGuardProps) => {
+    setPasswordGuardDialogState({ open: true, props });
+  };
+
+  const closePasswordGuardDialog = () => {
+    closeDialog(() => {
+      setPasswordGuardDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
   return (
     <LayoutContext.Provider value={{
       pageTitle,
@@ -417,7 +532,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openOccurrenceTypesDialog,
       closeOccurrenceTypesDialog,
       openFeriadoFormDialog,
-      closeFeriadoFormDialog
+      closeFeriadoFormDialog,
+      openEndTurnDialog,
+      closeEndTurnDialog,
+      openOccurrenceDetailsDialog,
+      closeOccurrenceDetailsDialog,
+      openAlterarSenhaDialog,
+      closeAlterarSenhaDialog,
+      openEditarCadastroDialog,
+      closeEditarCadastroDialog,
+      openPasswordGuardDialog,
+      closePasswordGuardDialog
     }}>
       {children}
 
@@ -567,6 +692,50 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           open={true}
           onOpenChange={(open) => !open && closeFeriadoFormDialog()}
           feriadoToEdit={feriadoFormDialogState.props?.feriadoToEdit}
+        />
+      )}
+
+      {endTurnDialogState.open && endTurnDialogState.props && (
+        <EndTurnDialog
+          open={true}
+          onOpenChange={(open) => !open && closeEndTurnDialog()}
+          turnId={endTurnDialogState.props.turnId}
+          collaboratorId={endTurnDialogState.props.collaboratorId}
+          clientName={endTurnDialogState.props.clientName}
+          onSuccess={endTurnDialogState.props.onSuccess}
+        />
+      )}
+
+      {occurrenceDetailsDialogState.open && occurrenceDetailsDialogState.props?.occurrence && (
+        <OccurrenceDetailsDialog
+          open={true}
+          onOpenChange={(open) => !open && closeOccurrenceDetailsDialog()}
+          occurrence={occurrenceDetailsDialogState.props.occurrence}
+          onDelete={occurrenceDetailsDialogState.props.onDelete}
+        />
+      )}
+
+      {alterarSenhaDialogState.open && (
+        <AlterarSenhaDialog
+          isOpen={true}
+          onClose={closeAlterarSenhaDialog}
+        />
+      )}
+
+      {editarCadastroDialogState.open && (
+        <EditarCadastroDialog
+          isOpen={true}
+          onClose={closeEditarCadastroDialog}
+        />
+      )}
+
+      {passwordGuardDialogState.open && passwordGuardDialogState.props && (
+        <PasswordGuardDialog
+          open={true}
+          onSuccess={() => {
+            passwordGuardDialogState.props?.onSuccess?.();
+            closePasswordGuardDialog();
+          }}
         />
       )}
 

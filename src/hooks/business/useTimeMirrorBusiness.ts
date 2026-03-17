@@ -1,16 +1,16 @@
-import { useMemo } from "react";
+import { useCallback } from "react";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
 
 export function useTimeMirrorBusiness() {
-  const getShiftLabel = (r: any) => {
+  const getShiftLabel = useCallback((r: any) => {
     return r.turno_hora_inicio && r.turno_hora_fim
       ? `${r.turno_hora_inicio.substring(0, 5)} - ${r.turno_hora_fim.substring(0, 5)}`
       : (r.detalhes_calculo?.entrada?.turno_base 
           ? `${r.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(r.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
           : null);
-  };
+  }, []);
 
-  const processRecords = (rawReport: any[], selectedShift: string) => {
+  const processRecords = useCallback((rawReport: any[], selectedShift: string) => {
     if (!rawReport || rawReport.length === 0) {
       return {
         records: [],
@@ -19,12 +19,16 @@ export function useTimeMirrorBusiness() {
       };
     }
     
-    // Filter by shift
+    const shifts = new Set<string>();
+    rawReport.forEach(r => {
+      const label = getShiftLabel(r);
+      if (label) shifts.add(label);
+    });
+
     const filtered = selectedShift === STATUS_CADASTRO.TODOS 
       ? rawReport 
       : rawReport.filter(r => getShiftLabel(r) === selectedShift);
 
-    // Calculate totals
     let workedMin = 0;
     let expectedMin = 0;
 
@@ -42,9 +46,9 @@ export function useTimeMirrorBusiness() {
     return {
       records: filtered,
       totals,
-      availableShifts: Array.from(new Set(rawReport.map(getShiftLabel).filter(Boolean))) as string[]
+      availableShifts: Array.from(shifts).sort()
     };
-  };
+  }, [getShiftLabel]);
 
   return {
     getShiftLabel,

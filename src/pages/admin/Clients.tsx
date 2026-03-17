@@ -5,154 +5,66 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { messages } from "@/constants/messages";
-import { useLayout } from "@/contexts/LayoutContext";
-import {
-    useClients,
-    useCreateClient,
-    useDeleteClient,
-    useToggleClientStatus,
-} from "@/hooks";
-import { useFilters } from "@/hooks/ui/useFilters";
-import { Client } from "@/types/client";
+import { useClientsViewModel } from "@/hooks";
 import { Users } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 export default function Clients() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openClientFormDialog } =
-    useLayout();
+    const vm = useClientsViewModel();
 
-  const {
-    searchTerm,
-    setSearchTerm,
-    selectedStatus,
-    setSelectedStatus,
-    setFilters,
-    hasActiveFilters,
-  } = useFilters();
+    useEffect(() => {
+        vm.setPageTitle("Clientes");
+    }, [vm]);
 
-  const {
-    data: clients,
-    isLoading,
-    refetch,
-  } = useClients({
-    searchTerm: searchTerm || undefined,
-    ativo:
-      selectedStatus === STATUS_CADASTRO.TODOS
-        ? undefined
-        : selectedStatus === STATUS_CADASTRO.ATIVO
-          ? "true"
-          : "false",
-  });
-  const toggleStatus = useToggleClientStatus();
-  const deleteClient = useDeleteClient();
-  const createClient = useCreateClient();
+    return (
+        <>
+            <PullToRefreshWrapper onRefresh={async () => { await vm.refetch(); }}>
+                <div className="space-y-6">
+                    <Card className="border-none shadow-none bg-transparent">
+                        <CardContent className="px-0">
+                            <div className="mb-6">
+                                <ClientsToolbar
+                                    searchTerm={vm.searchTerm}
+                                    onSearchChange={vm.setSearchTerm}
+                                    selectedStatus={vm.selectedStatus}
+                                    onStatusChange={vm.setSelectedStatus}
+                                    onRegister={vm.handleRegister}
+                                    onApplyFilters={vm.handleApplyFilters}
+                                />
+                            </div>
 
-  useEffect(() => {
-    setPageTitle("Clientes");
-  }, [setPageTitle]);
+                            {vm.isLoading ? (
+                                <ListSkeleton />
+                            ) : vm.clients && vm.clients.length > 0 ? (
+                                <ClientList
+                                    clients={vm.clients}
+                                    onEdit={vm.handleEdit}
+                                    onToggleStatus={vm.handleToggleStatus}
+                                    onDelete={vm.handleDelete}
+                                />
+                            ) : (
+                                <UnifiedEmptyState
+                                    icon={Users}
+                                    title={messages.emptyState.cliente.titulo}
+                                    description={
+                                        vm.searchTerm
+                                            ? messages.emptyState.cliente.semResultados
+                                            : messages.emptyState.cliente.descricao
+                                    }
+                                    action={
+                                        !vm.searchTerm
+                                            ? { label: "Cadastrar Cliente", onClick: vm.handleRegister }
+                                            : undefined
+                                    }
+                                />
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </PullToRefreshWrapper>
 
-  const pullToRefreshReload = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
-
-  const handleEdit = (client: Client) => {
-    openClientFormDialog({
-      editingClient: client
-    });
-  };
-
-  const handleAdd = () => {
-    openClientFormDialog({});
-  };
-
-  const handleToggleStatus = (client: Client) => {
-    const action = client.ativo ? "desativar" : "ativar";
-    openConfirmationDialog({
-      title: `${client.ativo ? "Desativar" : "Ativar"} Cliente`,
-      description: `Tem certeza que deseja ${action} o cliente "${client.nome_fantasia}"?`,
-      confirmText: client.ativo ? "Desativar" : "Ativar",
-      variant: client.ativo ? "destructive" : "default",
-      onConfirm: async () => {
-        try {
-          await toggleStatus.mutateAsync({ id: client.id, ativo: !client.ativo });
-          closeConfirmationDialog();
-        } catch (error) {
-          console.error(error);
-        }
-      },
-    });
-  };
-
-  const handleDelete = (client: Client) => {
-    openConfirmationDialog({
-      title: messages.dialogo.remover.titulo,
-      description: `Tem certeza que deseja remover o cliente "${client.nome_fantasia}"? Esta ação não pode ser desfeita.`,
-      confirmText: messages.dialogo.remover.botao,
-      variant: "destructive",
-      onConfirm: async () => {
-        try {
-          await deleteClient.mutateAsync(client.id);
-          closeConfirmationDialog();
-        } catch (error) {
-          console.error(error);
-        }
-      },
-    });
-  };
-
-  const isActionLoading =
-    toggleStatus.isPending || deleteClient.isPending || createClient.isPending;
-
-  return (
-    <>
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6">
-          <Card className="border-none shadow-none bg-transparent">
-            <CardContent className="px-0">
-              <div className="mb-6">
-                <ClientsToolbar
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  selectedStatus={selectedStatus}
-                  onStatusChange={setSelectedStatus}
-                  onRegister={handleAdd}
-                  onApplyFilters={setFilters}
-                />
-              </div>
-
-              {isLoading ? (
-                <ListSkeleton />
-              ) : clients && clients.length > 0 ? (
-                <ClientList
-                  clients={clients}
-                  onEdit={handleEdit}
-                  onToggleStatus={handleToggleStatus}
-                  onDelete={handleDelete}
-                />
-              ) : (
-                <UnifiedEmptyState
-                  icon={Users}
-                  title={messages.emptyState.cliente.titulo}
-                  description={
-                    searchTerm
-                      ? messages.emptyState.cliente.semResultados
-                      : messages.emptyState.cliente.descricao
-                  }
-                  action={
-                    !searchTerm
-                      ? { label: "Cadastrar Cliente", onClick: handleAdd }
-                      : undefined
-                  }
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </PullToRefreshWrapper>
-
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
-    </>
-  );
+            <LoadingOverlay active={vm.isActionLoading} text="Processando..." />
+        </>
+    );
 }

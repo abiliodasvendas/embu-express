@@ -6,6 +6,7 @@ export { useOccurrenceBusiness } from "./business/useOccurrenceBusiness";
 export { useFinancialReportBusiness } from "./business/useFinancialReportBusiness";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
+export { useRegistrarPontoBusiness } from "./business/useRegistrarPontoBusiness";
 
 // UI Hooks
 export * from "./ui/useAnimatedNumber";
@@ -17,6 +18,10 @@ export { useTimeTrackingViewModel } from "./ui/useTimeTrackingViewModel";
 export { useTimeMirrorViewModel } from "./ui/useTimeMirrorViewModel";
 export { useOccurrenceViewModel } from "./ui/useOccurrenceViewModel";
 export { useFinancialReportViewModel } from "./ui/useFinancialReportViewModel";
+export { useRegistrarPontoViewModel } from "./ui/useRegistrarPontoViewModel";
+export { useInconsistenciesViewModel } from "./ui/useInconsistenciesViewModel";
+export { useCollaboratorsViewModel } from "./ui/useCollaboratorsViewModel";
+export { useClientsViewModel } from "./ui/useClientsViewModel";
 
 // Embu Express Hooks
 export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClient } from "./api/useClientMutations";

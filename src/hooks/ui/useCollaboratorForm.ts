@@ -5,7 +5,7 @@ import { cnpjMask, cpfMask, phoneMask, rgMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { CollaboratorFormValues, collaboratorSchema } from "../../schemas/collaboratorSchema";
+import { CollaboratorFormValues, CollaboratorFormData, collaboratorSchema } from "@/schemas/collaboratorSchema";
 
 interface UseCollaboratorFormProps {
   open: boolean;

@@ -1,31 +1,70 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useFilters } from './useFilters';
 import { useTimeTrackingBusiness } from '../business/useTimeTrackingBusiness';
 import { STATUS_PONTO, FILTER_OPTIONS } from '@/constants/ponto';
 import { ManagementStatus } from '@/utils/ponto';
 import { RegistroPonto, Usuario } from '@/types/database';
+import { useLayout } from '@/contexts/LayoutContext';
+import { useCreatePonto, useUpdatePonto, useDeletePonto } from '../api/usePontoMutations';
+import { format } from 'date-fns';
+
+import { useTimeRecords } from '../api/useTimeRecords';
+import { usePublicTimeTracking, usePublicCollaborators } from '../api/usePublicClient';
 
 interface UseTimeTrackingViewModelProps {
-    records: RegistroPonto[] | undefined;
-    date: Date;
-    collaborators?: Usuario[];
+    uuid?: string; // If provided, uses public fetches
+    isAdmin?: boolean; // If true, uses admin fetches
+    initialDate?: Date;
     syncWithUrl?: boolean;
+    records?: RegistroPonto[]; // Support manual override if needed
+    collaborators?: Usuario[]; // Optional manual override
 }
 
 export function useTimeTrackingViewModel({ 
-    records, 
-    date, 
-    collaborators, 
-    syncWithUrl = true 
+    uuid,
+    isAdmin = false,
+    initialDate = new Date(), 
+    syncWithUrl = true,
+    records: externalRecords,
+    collaborators: externalCollaborators
 }: UseTimeTrackingViewModelProps) {
-    // 1. Business Logic
-    const { processedRecords, kpiCounts, uniqueShifts } = useTimeTrackingBusiness({
+    const { setPageTitle, openTimeRecordDialog, openTimeRecordDetailsDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+    
+    // 1. Local UI State
+    const [date, setDate] = useState<Date>(initialDate);
+    const [activeKpiFilter, setActiveKpiFilter] = useState<ManagementStatus | null>(null);
+
+    // 2. Data Fetching
+    const formattedDateString = format(date, "yyyy-MM-dd");
+    
+    // Admin Fetch
+    const { data: adminRecords, isLoading: isAdminLoading, refetch: refetchAdmin } = useTimeRecords({
+        date: formattedDateString,
+        incluirTodos: true,
+    });
+
+    // Public Fetch
+    const { data: publicRecords, isLoading: isPublicLoading, refetch: refetchPublic } = usePublicTimeTracking(uuid, formattedDateString);
+    const { data: publicCollabs } = usePublicCollaborators(uuid);
+
+    const records = uuid ? (publicRecords || []) : (externalRecords || adminRecords);
+    const collaborators = uuid ? publicCollabs : externalCollaborators;
+    const isLoading = uuid ? isPublicLoading : isAdminLoading;
+    const refetch = uuid ? refetchPublic : refetchAdmin;
+
+    // 3. Mutations (Admin Only)
+    const createRecord = useCreatePonto();
+    const updateRecord = useUpdatePonto();
+    const deleteRecord = useDeletePonto();
+
+    // 3. Business Logic
+    const { processedRecords, uniqueShifts } = useTimeTrackingBusiness({
         records,
         date,
         collaborators
     });
 
-    // 2. Filters State (via useFilters common hook)
+    // 4. Filters State
     const {
         searchTerm,
         setSearchTerm,
@@ -39,8 +78,9 @@ export function useTimeTrackingViewModel({
         setSelectedCliente,
         selectedTurno = FILTER_OPTIONS.TODOS,
         setSelectedTurno,
-        hasActiveFilters: hasActiveFiltersFromUrl, // Renamed to avoid conflict
-        setFilters
+        hasActiveFilters: hasActiveFiltersFromUrl,
+        setFilters,
+        clearFilters
     } = useFilters({
         statusEntradaParam: "status_entrada",
         statusSaidaParam: "status_saida",
@@ -50,32 +90,54 @@ export function useTimeTrackingViewModel({
         syncWithUrl
     });
 
-    // 3. Local UI State
-    const [activeKpiFilter, setActiveKpiFilter] = useState<ManagementStatus | null>(null);
+    // 5. Actions Handlers
+    const handleCreate = useCallback(() => {
+        openTimeRecordDialog({});
+    }, [openTimeRecordDialog]);
 
-    // 4. Apply Ultimate Filtering
+    const handleEdit = useCallback((record: RegistroPonto) => {
+        openTimeRecordDialog({ record });
+    }, [openTimeRecordDialog]);
+
+    const handleDelete = useCallback((record: RegistroPonto) => {
+        openConfirmationDialog({
+            title: "Excluir Registro",
+            description: "Tem certeza que deseja excluir permanentemente este registro de ponto? Esta ação não pode ser desfeita.",
+            confirmText: "Sim, excluir",
+            variant: "destructive",
+            onConfirm: async () => {
+                await deleteRecord.mutateAsync(Number(record.id));
+                closeConfirmationDialog();
+            }
+        });
+    }, [deleteRecord, openConfirmationDialog, closeConfirmationDialog]);
+
+    const handleOpenDetails = useCallback((record: RegistroPonto) => {
+        openTimeRecordDetailsDialog({
+            record,
+            onEdit: handleEdit,
+            onDelete: handleDelete
+        });
+    }, [handleEdit, handleDelete, openTimeRecordDetailsDialog]);
+
+    // 6. Apply Ultimate Filtering
     const filteredRecords = useMemo(() => {
         return processedRecords.filter(record => {
-            // 1. Search Term (Name) - Accent & Case insensitive
             if (searchTerm) {
                 const search = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const name = (record.usuario?.nome_completo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 if (!name.includes(search)) return false;
             }
 
-            // 2. Usuario Filter (Combobox)
             if (selectedUsuario !== FILTER_OPTIONS.TODOS && record.usuario_id?.toString() !== selectedUsuario) {
                 return false;
             }
 
-            // 3. Cliente Filter
             if (selectedCliente !== FILTER_OPTIONS.TODOS) {
-                // Now uses the enriched collaborator data from business hook
                 const hasClient = record.usuario?.links?.some((l: any) => l.cliente_id?.toString() === selectedCliente);
                 if (!hasClient) return false;
             }
 
-            // 4. Turno Filter
             if (selectedTurno !== FILTER_OPTIONS.TODOS) {
                 const recordShifts = record.usuario?.links?.map((l: any) => 
                     `${l.hora_inicio?.substring(0, 5)} - ${l.hora_fim?.substring(0, 5)}`
@@ -83,9 +145,7 @@ export function useTimeTrackingViewModel({
                 if (!recordShifts.includes(selectedTurno)) return false;
             }
 
-            // 5. Status Filters (Entrada e Saída)
             if (selectedStatusEntrada !== FILTER_OPTIONS.TODOS) {
-                // Special cases for entry status groups
                 if (selectedStatusEntrada === FILTER_OPTIONS.INICIOU && record.status_entrada !== STATUS_PONTO.VERDE) return false;
                 if (selectedStatusEntrada === FILTER_OPTIONS.NAO_INICIOU && record.status_entrada === STATUS_PONTO.VERDE) return false;
                 if (selectedStatusEntrada === FILTER_OPTIONS.EM_ATRASO && record.mgtStatus !== 'LATE') return false;
@@ -98,20 +158,14 @@ export function useTimeTrackingViewModel({
                 if (selectedStatusSaida === FILTER_OPTIONS.FALTA_SAIDA && record.mgtStatus !== 'ABSENT') return false;
             }
 
-            // KPI Quick Filter (the top cards)
             if (activeKpiFilter && record.mgtStatus !== activeKpiFilter) return false;
 
             return true;
         });
     }, [processedRecords, searchTerm, selectedUsuario, selectedCliente, selectedTurno, selectedStatusEntrada, selectedStatusSaida, activeKpiFilter]);
 
-    // 5. Recalculate KPIs based on filtered (non-KPI) results
-    // This makes KPIs "reactive" to filters like Cliente, Turno, etc.
     const dynamicKpiCounts = useMemo(() => {
         const counts: Record<string, number> = { ALL: filteredRecords.length, LATE: 0, WORKING: 0, DONE: 0, WAITING: 0, ABSENT: 0 };
-        // We only want to count items that pass ALL filters EXCEPT the KPI filter itself
-        // But for simplicity, we'll just count items in the already filtered list if they were filtered by something else
-        // Actually, dashboards usually show "Filtered Totals".
         filteredRecords.forEach(r => {
             if (counts[r.mgtStatus] !== undefined) {
                 counts[r.mgtStatus]++;
@@ -131,8 +185,6 @@ export function useTimeTrackingViewModel({
         ].filter(v => v && v !== FILTER_OPTIONS.TODOS).length;
     }, [searchTerm, selectedStatusEntrada, selectedStatusSaida, selectedUsuario, selectedCliente, selectedTurno]);
 
-    const hasActiveFilters = hasActiveFiltersFromUrl || activeFiltersCount > 0 || activeKpiFilter !== null;
-
     const handleKpiClick = (status: ManagementStatus | 'ALL') => {
         if (status === 'ALL') {
             setActiveKpiFilter(null);
@@ -141,27 +193,24 @@ export function useTimeTrackingViewModel({
         }
     };
 
-    const clearAllFilters = () => {
+    const clearAllFiltersFinal = () => {
         setSearchTerm("");
-        setFilters({
-            statusEntrada: FILTER_OPTIONS.TODOS,
-            statusSaida: FILTER_OPTIONS.TODOS,
-            usuario: FILTER_OPTIONS.TODOS,
-            cliente: FILTER_OPTIONS.TODOS,
-            turno: FILTER_OPTIONS.TODOS,
-            searchTerm: ""
-        });
+        clearFilters();
         setActiveKpiFilter(null);
     };
 
     return {
         // Data
+        date,
+        formattedDate: format(date, "yyyy-MM-dd"),
         filteredRecords,
-        kpiCounts: dynamicKpiCounts, // Map dynamic to kpiCounts for backward compatibility or use both
         dynamicKpiCounts,
         uniqueShifts,
+        collaborators,
         
         // State
+        isLoading,
+        isActionLoading: createRecord.isPending || updateRecord.isPending || deleteRecord.isPending,
         searchTerm,
         activeKpiFilter,
         selectedStatusEntrada,
@@ -169,9 +218,10 @@ export function useTimeTrackingViewModel({
         selectedUsuario,
         selectedCliente,
         selectedTurno,
-        hasActiveFilters: hasActiveFilters || activeKpiFilter !== null,
+        hasActiveFilters: hasActiveFiltersFromUrl || activeFiltersCount > 0 || activeKpiFilter !== null,
 
         // Handlers
+        setDate,
         setSearchTerm,
         setSelectedStatusEntrada,
         setSelectedStatusSaida,
@@ -179,7 +229,15 @@ export function useTimeTrackingViewModel({
         setSelectedCliente,
         setSelectedTurno,
         handleKpiClick,
-        clearAllFilters,
-        setFilters
+        clearAllFilters: clearAllFiltersFinal,
+        setFilters,
+        
+        // Actions
+        handleCreate,
+        handleEdit,
+        handleDelete,
+        handleOpenDetails,
+        setPageTitle,
+        refetch
     };
 }

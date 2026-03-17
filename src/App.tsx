@@ -59,6 +59,8 @@ const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
 import { queryClient } from "@/services/queryClient";
 
+import { LayoutProvider } from "@/contexts/LayoutContext";
+
 const App = () => {
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -166,109 +168,111 @@ const App = () => {
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <BackButtonController />
             <ScrollToTop />
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                {/* Rotas Públicas */}
-                <Route
-                  path="/cadastro"
-                  element={<SelfRegistration />}
-                />
+            <LayoutProvider>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* Rotas Públicas */}
+                  <Route
+                    path="/cadastro"
+                    element={<SelfRegistration />}
+                  />
 
-                <Route path="/public/c/:uuid" element={<PublicClientLayout />}>
-                  <Route index element={<Navigate to="controle" replace />} />
-                  <Route path="controle" element={<PublicTimeTracking />} />
-                  <Route path="espelho" element={<PublicTimeMirror />} />
-                </Route>
-
-                <Route
-                  path="/login"
-                  element={
-                    <AppGate>
-                      <Login />
-                    </AppGate>
-                  }
-                />
-
-
-                <Route
-                  path="/nova-senha"
-                  element={
-                    <AppGate>
-                      <NovaSenha />
-                    </AppGate>
-                  }
-                />
-
-
-
-                {/* Rotas Protegidas - Admin */}
-                <Route
-                  element={
-                    <AppGate>
-                      <AppLayout />
-                    </AppGate>
-                  }
-                >
-                  <Route index element={<RedirectByRole />} />
-
-                  {/* Rotas Operacionais (Motoboy/Fiscal) */}
-                  <Route element={<RequirePermission requireOperational={true} />}>
-                    <Route path={ROUTES.PRIVATE.REGISTRAR_PONTO.replace("/", "")} element={<RegistrarPonto />} />
+                  <Route path="/public/c/:uuid" element={<PublicClientLayout />}>
+                    <Route index element={<Navigate to="controle" replace />} />
+                    <Route path="controle" element={<PublicTimeTracking />} />
+                    <Route path="espelho" element={<PublicTimeMirror />} />
                   </Route>
 
-                  {/* Rotas Administrativas Puras */}
-                  <Route element={<RequirePermission permissions={[PERMISSIONS.PONTO.ADMIN_VER]} />}>
-                    <Route path={ROUTES.PRIVATE.INICIO.replace("/", "")} element={<Inicio />} />
-                    <Route path={ROUTES.PRIVATE.CONTROLE_PONTO.replace("/", "")} element={<TimeTracking />} />
-                    <Route path={ROUTES.PRIVATE.INCONSISTENCIAS.replace("/", "")} element={<Inconsistencias />} />
+                  <Route
+                    path="/login"
+                    element={
+                      <AppGate>
+                        <Login />
+                      </AppGate>
+                    }
+                  />
+
+
+                  <Route
+                    path="/nova-senha"
+                    element={
+                      <AppGate>
+                        <NovaSenha />
+                      </AppGate>
+                    }
+                  />
+
+
+
+                  {/* Rotas Protegidas - Admin */}
+                  <Route
+                    element={
+                      <AppGate>
+                        <AppLayout />
+                      </AppGate>
+                    }
+                  >
+                    <Route index element={<RedirectByRole />} />
+
+                    {/* Rotas Operacionais (Motoboy/Fiscal) */}
+                    <Route element={<RequirePermission requireOperational={true} />}>
+                      <Route path={ROUTES.PRIVATE.REGISTRAR_PONTO.replace("/", "")} element={<RegistrarPonto />} />
+                    </Route>
+
+                    {/* Rotas Administrativas Puras */}
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.PONTO.ADMIN_VER]} />}>
+                      <Route path={ROUTES.PRIVATE.INICIO.replace("/", "")} element={<Inicio />} />
+                      <Route path={ROUTES.PRIVATE.CONTROLE_PONTO.replace("/", "")} element={<TimeTracking />} />
+                      <Route path={ROUTES.PRIVATE.INCONSISTENCIAS.replace("/", "")} element={<Inconsistencias />} />
+                    </Route>
+
+                    {/* Rotas Pessoais/Administrativas (Híbridas) */}
+                    <Route element={<RequirePermission 
+                      permissions={[PERMISSIONS.PONTO.ADMIN_VER, PERMISSIONS.PONTO.VER_MEU]} 
+                      useOrCondition={true} 
+                    />}>
+                      <Route path={ROUTES.PRIVATE.ESPELHO_PONTO.replace("/", "")} element={<TimeMirror />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.USUARIOS.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />
+                      <Route path={ROUTES.PRIVATE.COLABORADOR_DETAILS.replace(/^\//, "")} element={<CollaboratorDetails />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.CLIENTES.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.CLIENTES.replace("/", "")} element={<Clients />} />
+                      <Route path={ROUTES.PRIVATE.CLIENTE_DETAILS.replace(/^\//, "")} element={<ClientDetails />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.EMPRESAS.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.EMPRESAS.replace("/", "")} element={<Empresas />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.PERFIS.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.PERFIS.replace("/", "")} element={<Perfis />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.OCORRENCIAS.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.OCORRENCIAS.replace("/", "")} element={<Ocorrencias />} />
+                    </Route>
+
+                    <Route element={<RequirePermission 
+                      permissions={[PERMISSIONS.FINANCEIRO.EXTRATO, PERMISSIONS.FINANCEIRO.VER_MEU]} 
+                      useOrCondition={true}
+                    />}>
+                      <Route path={ROUTES.PRIVATE.RELATORIO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.CONFIGURACAO.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />
+                      <Route path={ROUTES.PRIVATE.FERIADOS.replace("/", "")} element={<Feriados />} />
+                    </Route>
                   </Route>
 
-                  {/* Rotas Pessoais/Administrativas (Híbridas) */}
-                  <Route element={<RequirePermission 
-                    permissions={[PERMISSIONS.PONTO.ADMIN_VER, PERMISSIONS.PONTO.VER_MEU]} 
-                    useOrCondition={true} 
-                  />}>
-                    <Route path={ROUTES.PRIVATE.ESPELHO_PONTO.replace("/", "")} element={<TimeMirror />} />
-                  </Route>
-
-                  <Route element={<RequirePermission permissions={[PERMISSIONS.USUARIOS.VER]} />}>
-                    <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />
-                    <Route path={ROUTES.PRIVATE.COLABORADOR_DETAILS.replace(/^\//, "")} element={<CollaboratorDetails />} />
-                  </Route>
-
-                  <Route element={<RequirePermission permissions={[PERMISSIONS.CLIENTES.VER]} />}>
-                    <Route path={ROUTES.PRIVATE.CLIENTES.replace("/", "")} element={<Clients />} />
-                    <Route path={ROUTES.PRIVATE.CLIENTE_DETAILS.replace(/^\//, "")} element={<ClientDetails />} />
-                  </Route>
-
-                  <Route element={<RequirePermission permissions={[PERMISSIONS.EMPRESAS.VER]} />}>
-                    <Route path={ROUTES.PRIVATE.EMPRESAS.replace("/", "")} element={<Empresas />} />
-                  </Route>
-
-                  <Route element={<RequirePermission permissions={[PERMISSIONS.PERFIS.VER]} />}>
-                    <Route path={ROUTES.PRIVATE.PERFIS.replace("/", "")} element={<Perfis />} />
-                  </Route>
-
-                  <Route element={<RequirePermission permissions={[PERMISSIONS.OCORRENCIAS.VER]} />}>
-                    <Route path={ROUTES.PRIVATE.OCORRENCIAS.replace("/", "")} element={<Ocorrencias />} />
-                  </Route>
-
-                  <Route element={<RequirePermission 
-                    permissions={[PERMISSIONS.FINANCEIRO.EXTRATO, PERMISSIONS.FINANCEIRO.VER_MEU]} 
-                    useOrCondition={true}
-                  />}>
-                    <Route path={ROUTES.PRIVATE.RELATORIO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
-                  </Route>
-
-                  <Route element={<RequirePermission permissions={[PERMISSIONS.CONFIGURACAO.VER]} />}>
-                    <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />
-                    <Route path={ROUTES.PRIVATE.FERIADOS.replace("/", "")} element={<Feriados />} />
-                  </Route>
-                </Route>
-
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </LayoutProvider>
           </BrowserRouter>
         </AppErrorBoundary>
 

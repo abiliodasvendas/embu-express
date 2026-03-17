@@ -35,8 +35,11 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
 
     const { data: collaborators = [] } = useActiveCollaborators({ enabled: isOpen && !record });
 
-    const isEditMode = !!record && !!record.id;
-    const isInclusionMode = !!record && !record.id; // Ausente ou Aguardando
+    const idValue = record?.id;
+    const isVirtualId = !!idValue && String(idValue).startsWith('ausente-');
+
+    const isEditMode = !!record && !!idValue && !isVirtualId;
+    const isInclusionMode = !!record && (!idValue || isVirtualId);
     const isManualMode = !record;
 
     const form = useForm<ManualTimeRecordFormValues>({
@@ -63,15 +66,16 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
     useEffect(() => {
         if (isOpen) {
             if (record) {
-                form.reset({
-                    usuario_id: record.usuario_id.toString(),
-                    data_referencia: record.data_referencia,
-                    entrada_hora: record.entrada_hora ? format(new Date(record.entrada_hora), "HH:mm") : "",
+                const values = {
+                    usuario_id: String(record.usuario_id),
+                    data_referencia: format(new Date(record.data_referencia), "yyyy-MM-dd"),
+                    entrada_hora: format(new Date(record.entrada_hora), "HH:mm"),
                     saida_hora: record.saida_hora ? format(new Date(record.saida_hora), "HH:mm") : "",
-                    entrada_km: record.entrada_km ? formatKm(record.entrada_km).replace(" KM", "") : "",
-                    saida_km: record.saida_km ? formatKm(record.saida_km).replace(" KM", "") : "",
-                    colaborador_cliente_id: (record as any).colaborador_cliente_id?.toString() || "",
-                });
+                    entrada_km: record.entrada_km != null ? String(record.entrada_km) : "",
+                    saida_km: record.saida_km != null ? String(record.saida_km) : "",
+                    colaborador_cliente_id: String(record.colaborador_cliente_id || ""),
+                };
+                form.reset(values);
             } else {
                 form.reset({
                     usuario_id: "",
@@ -100,7 +104,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
             }
 
             const payload = {
-                usuario_id: parseInt(values.usuario_id),
+                usuario_id: values.usuario_id, // Já é string/UUID
                 data_referencia: values.data_referencia,
                 entrada_hora: entrada.toISOString(),
                 entrada_km: kmToNumber(values.entrada_km),
@@ -109,7 +113,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                 colaborador_cliente_id: values.colaborador_cliente_id ? parseInt(values.colaborador_cliente_id) : undefined
             };
 
-            if (isEditMode && record) {
+            if (isEditMode && record && typeof record.id === 'number') {
                 await updatePonto({
                     id: record.id,
                     data: payload as any
@@ -160,7 +164,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                                 <User className="w-5 h-5" />
                                             </div>
                                             {isManualMode && (
-                                                <button 
+                                                <button
                                                     type="button"
                                                     onClick={() => {
                                                         form.setValue("usuario_id", "");
@@ -192,7 +196,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         name="usuario_id"
                                         render={({ field }) => (
                                             <FormItem className="flex flex-col">
-                                                <FormLabel className="text-gray-700 font-bold">Colaborador <span className="text-red-500">*</span></FormLabel>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Colaborador <span className="text-red-500">*</span></FormLabel>
                                                 <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
                                                     <PopoverTrigger asChild>
                                                         <FormControl>
@@ -258,7 +262,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         name="colaborador_cliente_id"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold">Turno/Vínculo <span className="text-red-500">*</span></FormLabel>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Turno / Vínculo <span className="text-red-500">*</span></FormLabel>
                                                 <div className="grid grid-cols-1 gap-2">
                                                     {(selectedCollaborator as any)?.links?.map((link: any) => (
                                                         <div
@@ -292,7 +296,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                     name="data_referencia"
                                     render={({ field }) => (
                                         <FormItem className="flex flex-col">
-                                            <FormLabel className="text-gray-700 font-bold">Data de Referência <span className="text-red-500">*</span></FormLabel>
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Data de Referência <span className="text-red-500">*</span></FormLabel>
                                             <Popover>
                                                 <PopoverTrigger asChild>
                                                     <FormControl>
@@ -342,21 +346,24 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         name="entrada_hora"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider">
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                                                     Entrada <span className="text-red-500">*</span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
-                                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Clock className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                                         <Input
                                                             placeholder="00:00"
-                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                            className={cn(
+                                                                "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                                                form.formState.errors.entrada_hora && "border-red-500 focus-visible:ring-red-200"
+                                                            )}
                                                             {...field}
                                                             onChange={(e) => field.onChange(timeMask(e.target.value))}
                                                         />
                                                     </div>
                                                 </FormControl>
-                                                <FormMessage className="text-[10px] uppercase font-bold" />
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -366,21 +373,24 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         name="entrada_km"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider">
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                                                     KM Entrada <span className="text-red-500">*</span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
-                                                        <Gauge className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Gauge className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                                         <Input
                                                             placeholder="0"
-                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                            className={cn(
+                                                                "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                                                form.formState.errors.entrada_km && "border-red-500 focus-visible:ring-red-200"
+                                                            )}
                                                             {...field}
                                                             onChange={(e) => field.onChange(kmMask(e.target.value))}
                                                         />
                                                     </div>
                                                 </FormControl>
-                                                <FormMessage className="text-[10px] uppercase font-bold" />
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -392,21 +402,24 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         name="saida_hora"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider">
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                                                     Saída
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
-                                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Clock className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                                         <Input
                                                             placeholder="00:00"
-                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                            className={cn(
+                                                                "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                                                form.formState.errors.saida_hora && "border-red-500 focus-visible:ring-red-200"
+                                                            )}
                                                             {...field}
                                                             onChange={(e) => field.onChange(timeMask(e.target.value))}
                                                         />
                                                     </div>
                                                 </FormControl>
-                                                <FormMessage className="text-[10px] uppercase font-bold" />
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -416,21 +429,24 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         name="saida_km"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-wider">
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                                                     KM Saída
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
-                                                        <Gauge className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Gauge className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                                         <Input
                                                             placeholder="0"
-                                                            className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all font-mono"
+                                                            className={cn(
+                                                                "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                                                                form.formState.errors.saida_km && "border-red-500 focus-visible:ring-red-200"
+                                                            )}
                                                             {...field}
                                                             onChange={(e) => field.onChange(kmMask(e.target.value))}
                                                         />
                                                     </div>
                                                 </FormControl>
-                                                <FormMessage className="text-[10px] uppercase font-bold" />
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -477,7 +493,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                             </>
                         ) : (
                             <>
-                                <Save className="w-4 h-4 mr-2" /> 
+                                <Save className="w-4 h-4 mr-2" />
                                 {isEditMode ? "Salvar Alterações" : isInclusionMode ? "Salvar Inclusão" : "Criar Registro"}
                             </>
                         )}

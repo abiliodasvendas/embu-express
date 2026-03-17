@@ -113,7 +113,7 @@ export interface ColaboradorCliente {
 }
 
 export interface Ponto {
-  id: number; // BIGINT
+  id: number | string; // BIGINT no DB, mas pode ser string para IDs virtuais no front (ex: 'ausente-id')
   usuario_id: string; // UUID
   data_referencia: string; // DATE (YYYY-MM-DD)
   entrada_hora: string; // TIMESTAMP WITH TIME ZONE

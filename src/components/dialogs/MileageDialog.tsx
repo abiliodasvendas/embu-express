@@ -102,7 +102,7 @@ export function MileageDialog({
                                 name="km"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm uppercase tracking-wider opacity-70">
+                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                                             Quilometragem <span className="text-red-600">*</span>
                                         </FormLabel>
                                         <FormControl>
@@ -117,8 +117,8 @@ export function MileageDialog({
                                                     }}
                                                     autoFocus
                                                     className={cn(
-                                                        "pl-12 pr-14 h-14 rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500/10 transition-all font-mono text-xl font-bold text-slate-700",
-                                                        form.formState.errors.km && "border-red-500 bg-red-50/30"
+                                                        "pl-12 pr-14 h-11 rounded-xl border-gray-200 bg-gray-50 focus:bg-white transition-all text-base",
+                                                        form.formState.errors.km && "border-red-500 bg-red-50/10"
                                                     )}
                                                 />
                                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xs tracking-widest pointer-events-none group-focus-within:text-blue-500">
@@ -126,7 +126,7 @@ export function MileageDialog({
                                                 </span>
                                             </div>
                                         </FormControl>
-                                        <FormMessage className="ml-1 font-semibold" />
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
@@ -135,15 +135,15 @@ export function MileageDialog({
                                 <AlertDialogCancel
                                     type="button"
                                     onClick={onClose}
-                                    className="flex-1 sm:flex-none h-14 rounded-2xl border-slate-200 text-slate-500 font-bold hover:bg-slate-50 transition-all m-0"
+                                    className="flex-1 sm:flex-none h-11 rounded-xl border-gray-200 text-gray-700 font-medium hover:bg-white transition-all m-0"
                                 >
-                                    CANCELAR
+                                    Cancelar
                                 </AlertDialogCancel>
                                 <Button
                                     type="submit"
-                                    className="flex-1 sm:flex-none h-14 rounded-2xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
+                                    className="flex-1 sm:flex-none h-11 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
                                 >
-                                    CONFIRMAR
+                                    Confirmar
                                 </Button>
                             </AlertDialogFooter>
                         </form>

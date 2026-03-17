@@ -151,7 +151,8 @@ export function TimeTrackingToolbar({
     filters.usuarioId,
     filters.clienteId,
     filters.turno,
-  ].filter((v) => v && v !== FILTER_OPTIONS.TODOS).length;
+    searchTerm
+  ].filter((v) => v && v !== FILTER_OPTIONS.TODOS && v !== "").length;
 
   const FilterContent = ({ isSheet = false }) => {
     // If isSheet, use setSheetFilters/sheetSearch. Else uses onFiltersChange/onSearchChange
@@ -178,7 +179,7 @@ export function TimeTrackingToolbar({
           <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Cliente</Label>
           <Combobox
             options={[{ value: FILTER_OPTIONS.TODOS, label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
-            value={currentFilters.clienteId}
+            value={currentFilters.clienteId === FILTER_OPTIONS.TODOS ? "" : currentFilters.clienteId}
             onSelect={(val) => updateFilter("clienteId", val || FILTER_OPTIONS.TODOS)}
             placeholder="Todos os Clientes"
             searchPlaceholder="Buscar cliente..."

@@ -5,6 +5,7 @@ import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsD
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
 import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { OccurrenceView } from "@/components/features/ocorrencias/OccurrenceView";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,10 +17,11 @@ import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
 import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useCollaborator, useDeleteVinculo, useRoles } from "@/hooks";
+import {
+  useCollaborator, useDeleteVinculo, useRoles, useTimeMirrorViewModel,
+  useOccurrenceViewModel, useFinancialReportViewModel, useFilters
+} from "@/hooks";
 import { useDeleteCollaborator, useUpdateCollaboratorStatus, useUpdateVinculo } from "@/hooks/api/useCollaboratorMutations";
-import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
-import { useOcorrencias } from "@/hooks/api/useOcorrencias";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
@@ -28,7 +30,7 @@ import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, ChevronRight, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 
@@ -56,15 +58,13 @@ export default function CollaboratorDetails() {
     setPageTitle("Colaborador");
   }, [setPageTitle]);
 
-  const handleAddTurn = () => {
+  const handleAddTurn = useCallback(() => {
     openCollaboratorTurnDialog({
       collaboratorId: id!
     });
-  };
+  }, [id, openCollaboratorTurnDialog]);
 
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
-  const [selectedOccurrence, setSelectedOccurrence] = useState<any>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [endTurnState, setEndTurnState] = useState<{ open: boolean; turnId: number; clientName: string }>({ open: false, turnId: 0, clientName: "" });
 
   useEffect(() => {
@@ -142,41 +142,21 @@ export default function CollaboratorDetails() {
     hideDetails: true,
   });
 
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-
-  const dateRange = useMemo(() => {
-    const date = new Date(selectedYear, selectedMonth - 1, 1);
-    return {
-      inicio: format(startOfMonth(date), "yyyy-MM-dd"),
-      fim: format(endOfMonth(date), "yyyy-MM-dd")
-    };
-  }, [selectedMonth, selectedYear]);
-
-  const { data: occurrences = [], isLoading: isLoadingOccurrences, refetch: refetchOccurrences } = useOcorrencias({
-    usuario_id: id,
-    data_inicio: dateRange.inicio,
-    data_fim: dateRange.fim,
-    order: "data_ocorrencia",
-    ascending: false,
+  const filters = useFilters({
+    mesParam: "mes",
+    anoParam: "ano",
   });
 
-  const deleteOcorrencia = useDeleteOcorrencia();
+  const pontoVm = useTimeMirrorViewModel({ 
+    usuarioId: id, 
+    syncWithUrl: true,
+  });
 
-  const handleDeleteOccurrence = (occurrence: any) => {
-    openConfirmationDialog({
-      title: "Remover Ocorrência",
-      description: `Deseja realmente remover esta ocorrência? Esta ação não pode ser desfeita.`,
-      confirmText: "Remover",
-      variant: "destructive",
-      onConfirm: async () => {
-        await deleteOcorrencia.mutateAsync(occurrence.id);
-        setIsDetailsOpen(false);
-        closeConfirmationDialog();
-        refetchOccurrences();
-      },
-    });
-  };
+  const financeiroVm = useFinancialReportViewModel({ 
+    usuarioId: id,
+    syncWithUrl: true,
+  });
+
 
   const monthOptions = useMemo(() =>
     meses.map((label, index) => ({ value: index + 1, label })),
@@ -667,7 +647,7 @@ export default function CollaboratorDetails() {
 
               <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
                 <div className="flex items-center gap-2">
-                  <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                  <Select value={String(filters.selectedMes)} onValueChange={(v) => filters.setSelectedMes?.(Number(v))}>
                     <SelectTrigger className="h-11 w-[130px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                       <SelectValue />
                     </SelectTrigger>
@@ -678,7 +658,7 @@ export default function CollaboratorDetails() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                  <Select value={String(filters.selectedAno)} onValueChange={(v) => filters.setSelectedAno?.(Number(v))}>
                     <SelectTrigger className="h-11 w-[90px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                       <SelectValue />
                     </SelectTrigger>
@@ -693,7 +673,12 @@ export default function CollaboratorDetails() {
                 <div className="h-8 w-[1px] bg-gray-200 hidden sm:block mx-1" />
 
                 <Button
-                  onClick={() => openOccurrenceFormDialog({ collaboratorId: id, onSuccess: refetchOccurrences })}
+                  onClick={() => openOccurrenceFormDialog({ 
+                    collaboratorId: id, 
+                    onSuccess: () => {
+                      financeiroVm.refetch();
+                    } 
+                  })}
                   className="rounded-2xl h-10 px-4 gap-2 shadow-md shadow-primary/10 font-black uppercase tracking-widest text-[10px] bg-primary hover:bg-primary/90 text-white border-none transition-all active:scale-95"
                   size="sm"
                 >
@@ -702,76 +687,15 @@ export default function CollaboratorDetails() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="px-8 pb-8">
-              {isLoadingOccurrences ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map(i => <div key={i} className="h-32 bg-gray-50 animate-pulse rounded-2xl" />)}
-                </div>
-              ) : occurrences.length > 0 ? (
-                <div className="relative space-y-0 pb-4">
-                  {/* Linha Vertical da TimeLine */}
-                  <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-gray-100" />
-
-                  {occurrences.map((oc, index) => (
-                    <div
-                      key={oc.id}
-                      onClick={() => {
-                        setSelectedOccurrence(oc);
-                        setIsDetailsOpen(true);
-                      }}
-                      className="relative pl-9 py-4 group cursor-pointer transition-all hover:bg-gray-50/50 rounded-2xl"
-                    >
-                      {/* Ponto da Timeline */}
-                      <div className={cn(
-                        "absolute left-0 top-[22px] w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-all group-hover:scale-110",
-                        !oc.impacto_financeiro 
-                          ? "bg-slate-300" 
-                          : oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA 
-                            ? "bg-red-500" 
-                            : "bg-green-500"
-                      )}>
-                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-black text-gray-400 uppercase tracking-wider">
-                              {format(parseISO(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
-                            </span>
-                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-gray-200 text-gray-500 font-bold bg-white">
-                              {oc.tipo?.descricao || 'Ocorrência'}
-                            </Badge>
-                          </div>
-                          <p className="text-sm font-semibold text-gray-700 truncate pr-4 italic">
-                            {oc.observacao || 'Sem observação'}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-3 shrink-0">
-                          {oc.impacto_financeiro && (
-                            <div className={cn(
-                              "text-xs font-black px-2 py-1 rounded-lg",
-                              oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"
-                            )}>
-                              {oc.tipo_lancamento === LANCAMENTO_TIPO.SAIDA ? "-" : "+"} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(oc.valor || 0)}
-                            </div>
-                          )}
-                          <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-20 flex flex-col items-center justify-center text-center">
-                  <div className="p-4 bg-primary/5 rounded-full mb-4">
-                    <History className="h-8 w-8 text-primary/40" />
-                  </div>
-                  <h3 className="font-bold text-gray-900">Nenhuma ocorrência</h3>
-                  <p className="text-sm text-gray-500 max-w-xs mx-auto mt-1">Este colaborador não possui ocorrências registradas para este período.</p>
-                </div>
-              )}
+            <CardContent className="px-8 pb-8 pt-6">
+              <OccurrenceView 
+                usuarioId={id} 
+                mode="monthly" 
+                selectedMonth={filters.selectedMes}
+                selectedYear={filters.selectedAno}
+                showFilters={false}
+                onOccurrenceDeleted={() => financeiroVm.refetch()}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -792,7 +716,7 @@ export default function CollaboratorDetails() {
               </div>
 
               <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
-                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                <Select value={String(filters.selectedMes)} onValueChange={(v) => filters.setSelectedMes?.(Number(v))}>
                   <SelectTrigger className="h-11 w-[130px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue />
                   </SelectTrigger>
@@ -803,7 +727,7 @@ export default function CollaboratorDetails() {
                   </SelectContent>
                 </Select>
 
-                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                <Select value={String(filters.selectedAno)} onValueChange={(v) => filters.setSelectedAno?.(Number(v))}>
                   <SelectTrigger className="h-11 w-[90px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue />
                   </SelectTrigger>
@@ -818,8 +742,8 @@ export default function CollaboratorDetails() {
             <CardContent className="px-8 pb-8 pt-6">
               <TimeMirrorView 
                 usuarioId={id} 
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
+                selectedMonth={filters.selectedMes}
+                selectedYear={filters.selectedAno}
               />
             </CardContent>
           </Card>
@@ -841,7 +765,7 @@ export default function CollaboratorDetails() {
               </div>
 
               <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
-                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                <Select value={String(filters.selectedMes)} onValueChange={(v) => filters.setSelectedMes?.(Number(v))}>
                   <SelectTrigger className="h-11 w-[130px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue />
                   </SelectTrigger>
@@ -852,7 +776,7 @@ export default function CollaboratorDetails() {
                   </SelectContent>
                 </Select>
 
-                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                <Select value={String(filters.selectedAno)} onValueChange={(v) => filters.setSelectedAno?.(Number(v))}>
                   <SelectTrigger className="h-11 w-[90px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue />
                   </SelectTrigger>
@@ -868,8 +792,8 @@ export default function CollaboratorDetails() {
               <FinancialReportView 
                 usuarioId={id} 
                 colaboradorNome={collaborator?.nome_completo}
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
+                selectedMonth={filters.selectedMes}
+                selectedYear={filters.selectedAno}
               />
             </CardContent>
           </Card>
@@ -877,12 +801,6 @@ export default function CollaboratorDetails() {
       </Tabs>
 
 
-      <OccurrenceDetailsDialog
-        open={isDetailsOpen}
-        onOpenChange={setIsDetailsOpen}
-        occurrence={selectedOccurrence}
-        onDelete={() => handleDeleteOccurrence(selectedOccurrence)}
-      />
 
       <EndTurnDialog
         open={endTurnState.open}

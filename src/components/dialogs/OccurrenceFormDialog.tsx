@@ -104,7 +104,7 @@ export function OccurrenceFormDialog({
             if (tipo) {
                 const hasImpact = !!tipo.impacto_financeiro;
                 form.setValue("impacto_financeiro", hasImpact);
-                
+
                 if (hasImpact) {
                     if (tipo.valor_padrao) {
                         form.setValue("valor", tipo.valor_padrao);
@@ -174,7 +174,7 @@ export function OccurrenceFormDialog({
                                                         )}
                                                     />
                                                 </FormControl>
-                                                <FormMessage className="text-[10px]" />
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -210,7 +210,7 @@ export function OccurrenceFormDialog({
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
-                                                <FormMessage className="text-[10px]" />
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -233,7 +233,7 @@ export function OccurrenceFormDialog({
                                                         )}
                                                     />
                                                 </FormControl>
-                                                <FormMessage className="text-[10px]" />
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -250,10 +250,10 @@ export function OccurrenceFormDialog({
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                                                     Turno <span className="text-red-500">*</span>
                                                 </FormLabel>
-                                                <Select 
+                                                <Select
                                                     onValueChange={(val) => {
                                                         field.onChange(val === "none" ? null : val);
-                                                    }} 
+                                                    }}
                                                     value={field.value === null ? "none" : (field.value || "")}
                                                 >
                                                     <FormControl>
@@ -272,12 +272,12 @@ export function OccurrenceFormDialog({
                                                         </SelectItem>
                                                         {links.map((link: any) => (
                                                             <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
-                                                                {link.cliente?.nome_fantasia} ({link.hora_inicio.slice(0,5)} - {link.hora_fim.slice(0,5)})
+                                                                {link.cliente?.nome_fantasia} ({link.hora_inicio.slice(0, 5)} - {link.hora_fim.slice(0, 5)})
                                                             </SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
-                                                <FormMessage className="text-[10px]" />
+                                                <FormMessage />
                                             </FormItem>
                                         );
                                     }}
@@ -301,7 +301,7 @@ export function OccurrenceFormDialog({
                                                     )}
                                                 />
                                             </FormControl>
-                                            <FormMessage className="text-[10px]" />
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -356,7 +356,7 @@ export function OccurrenceFormDialog({
                                                                 <SelectItem value={LANCAMENTO_TIPO.ENTRADA} className="cursor-pointer">Entrada (Crédito)</SelectItem>
                                                             </SelectContent>
                                                         </Select>
-                                                        <FormMessage className="text-[10px]" />
+                                                        <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
@@ -379,7 +379,7 @@ export function OccurrenceFormDialog({
                                                                 )}
                                                             />
                                                         </FormControl>
-                                                        <FormMessage className="text-[10px]" />
+                                                        <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />

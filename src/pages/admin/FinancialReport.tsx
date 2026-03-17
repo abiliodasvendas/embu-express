@@ -1,58 +1,29 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useCollaborators } from "@/hooks/api/useCollaborators";
+import { useCollaborators, useFinancialReportViewModel } from "@/hooks";
 import { useEffect } from "react";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
-import { useFilters } from "@/hooks/ui/useFilters";
-import { usePermissions } from "@/hooks/business/usePermissions";
-import { PERMISSIONS } from "@/constants/permissions.enum";
 import { Combobox } from "@/components/ui/combobox";
 import { STATUS_CADASTRO } from "@/constants/cadastro";
 import { meses, anos } from "@/utils/formatters/constants";
-import { useMemo } from "react";
 
 export function FinancialReport() {
     const { setPageTitle } = useLayout();
-    const { can, profile } = usePermissions();
-    const { 
-        selectedUsuario: selectedCollaborator = "", 
-        setSelectedUsuario: setSelectedCollaborator = () => {},
-        selectedMes: selectedMonth = new Date().getMonth() + 1,
-        setSelectedMes: setSelectedMonth = () => {},
-        selectedAno: selectedYear = new Date().getFullYear(),
-        setSelectedAno: setSelectedYear = () => {},
-    } = useFilters({ 
-        usuarioParam: "usuario",
-        mesParam: "mes",
-        anoParam: "ano"
-    });
-
-    // Lógica Híbrida de Permissões
-    const canViewAll = can(PERMISSIONS.FINANCEIRO.EXTRATO);
-    const canViewOwn = can(PERMISSIONS.FINANCEIRO.VER_MEU);
-
-    // Prioridade: Admin sobrepõe Pessoal
-    const isOnlyPersonal = canViewOwn && !canViewAll;
+    const vm = useFinancialReportViewModel();
 
     useEffect(() => {
-        setPageTitle(isOnlyPersonal ? "Meu Extrato Financeiro" : "Relatório Financeiro");
-    }, [setPageTitle, isOnlyPersonal]);
+        setPageTitle(vm.isOnlyPersonal ? "Meu Extrato Financeiro" : "Relatório Financeiro");
+    }, [setPageTitle, vm.isOnlyPersonal]);
 
-    const { data: collaborators = [] } = useCollaborators({ status: STATUS_CADASTRO.ATIVO }, { enabled: canViewAll });
-
-    // Se for apenas pessoal, forçamos o valor do perfil
-    const finalUsuarioId = isOnlyPersonal ? profile?.id : (selectedCollaborator === 'todos' ? undefined : selectedCollaborator);
-    const finalColaboradorNome = isOnlyPersonal ? profile?.nome_completo : collaborators.find(c => c.id === selectedCollaborator)?.nome_completo;
+    const { data: collaborators = [] } = useCollaborators({ status: STATUS_CADASTRO.ATIVO }, { enabled: vm.canViewAll });
 
     return (
         <div className="space-y-6 pb-24">
-            {/* Global Filters */}
             <Card className="border-none shadow-sm rounded-3xl">
                 <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row gap-4 items-end">
-                        {/* Global Collaborator Filter - Só aparece se tiver permissão Admin */}
-                        {canViewAll && (
+                        {vm.canViewAll && (
                             <div className="flex-[2] w-full space-y-2">
                                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Colaborador</label>
                                 <Combobox
@@ -60,8 +31,8 @@ export function FinancialReport() {
                                         { value: STATUS_CADASTRO.TODOS, label: "Todos os colaboradores" },
                                         ...collaborators.map(c => ({ value: c.id, label: c.nome_completo }))
                                     ]}
-                                    value={selectedCollaborator}
-                                    onSelect={(val) => setSelectedCollaborator(val || STATUS_CADASTRO.TODOS)}
+                                    value={vm.filters.selectedUsuario || STATUS_CADASTRO.TODOS}
+                                    onSelect={(val) => vm.setUsuario(val || STATUS_CADASTRO.TODOS)}
                                     placeholder="Selecione um colaborador..."
                                     searchPlaceholder="Buscar colaborador..."
                                     emptyText="Nenhum colaborador encontrado."
@@ -70,10 +41,9 @@ export function FinancialReport() {
                             </div>
                         )}
 
-                        {/* Mês Select */}
                         <div className="flex-1 w-full space-y-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Mês</label>
-                            <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                            <Select value={String(vm.filters.selectedMes)} onValueChange={(v) => vm.setMonth(Number(v))}>
                                 <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -85,10 +55,9 @@ export function FinancialReport() {
                             </Select>
                         </div>
 
-                        {/* Ano Select */}
                         <div className="flex-1 w-full space-y-2">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Ano</label>
-                            <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                            <Select value={String(vm.filters.selectedAno)} onValueChange={(v) => vm.setYear(Number(v))}>
                                 <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 focus:ring-primary/20 font-medium text-gray-700 shadow-none">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -104,8 +73,10 @@ export function FinancialReport() {
             </Card>
 
             <FinancialReportView
-                usuarioId={finalUsuarioId}
-                colaboradorNome={finalColaboradorNome}
+                usuarioId={vm.usuarioId}
+                colaboradorNome={vm.colaboradorNome}
+                selectedMonth={vm.filters.selectedMes}
+                selectedYear={vm.filters.selectedAno}
             />
         </div>
     );

@@ -213,7 +213,7 @@ export function CollaboratorTurnDialog({
                         name="cliente_id"
                         render={({ field, fieldState }) => (
                           <FormItem>
-                            <FormLabel className="flex items-center gap-1">
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               Cliente
                               {isMotoboyOrFiscal && <span className="text-red-500">*</span>}
                             </FormLabel>
@@ -244,7 +244,7 @@ export function CollaboratorTurnDialog({
                         name="empresa_id"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Empresa (Contratante) <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Empresa (Contratante) <span className="text-red-500">*</span></FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
@@ -271,16 +271,16 @@ export function CollaboratorTurnDialog({
                         name="hora_inicio"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Início <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Início <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Clock className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                 <Input
                                   type="text"
                                   placeholder="00:00"
                                   maxLength={5}
                                   {...field}
-                                  className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors font-mono"
+                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors font-mono"
                                   onChange={(e) => field.onChange(timeMask(e.target.value))}
                                   autoComplete="off"
                                 />
@@ -295,16 +295,16 @@ export function CollaboratorTurnDialog({
                         name="hora_fim"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Fim <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Fim <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Clock className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                 <Input
                                   type="text"
                                   placeholder="00:00"
                                   maxLength={5}
                                   {...field}
-                                  className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors font-mono"
+                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors font-mono"
                                   onChange={(e) => field.onChange(timeMask(e.target.value))}
                                   autoComplete="off"
                                 />
@@ -322,17 +322,17 @@ export function CollaboratorTurnDialog({
                         name="tolerancia_pausa_min"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="flex items-center gap-1">
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                               Tolerância de Pausa (minutos)
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Clock className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                 <Input
                                   type="number"
                                   placeholder="Ex: 60"
                                   {...field}
-                                  className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                  className="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                                 />
                               </div>
                             </FormControl>
@@ -363,7 +363,7 @@ export function CollaboratorTurnDialog({
                           name="data_inicio"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Data de Início do Período <span className="text-red-500">*</span></FormLabel>
+                             <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Data de Início do Período <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input type="date" {...field} className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
                               </FormControl>

@@ -188,131 +188,131 @@ export function OccurrenceTypesDialog({
                         <div ref={formContainerRef}>
                             <Card className="mb-6 border border-blue-100 shadow-sm rounded-2xl bg-white animate-in fade-in slide-in-from-top-4 duration-300">
                                 <CardContent className="p-5">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="bg-blue-600 p-1.5 rounded-lg">
-                                        <Plus className="w-3.5 h-3.5 text-white" />
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="bg-blue-600 p-1.5 rounded-lg">
+                                            <Plus className="w-3.5 h-3.5 text-white" />
+                                        </div>
+                                        <span className="text-sm font-bold text-gray-800">
+                                            {editingTipo ? "Editar Tipo" : "Cadastrar Novo Tipo"}
+                                        </span>
                                     </div>
-                                    <span className="text-sm font-bold text-gray-800">
-                                        {editingTipo ? "Editar Tipo" : "Cadastrar Novo Tipo"}
-                                    </span>
-                                </div>
 
-                                <Form {...form}>
-                                    <form id="type-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="descricao"
-                                                render={({ field }) => (
-                                                    <FormItem className="space-y-1">
-                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Descrição</FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                {...field}
-                                                                placeholder="Ex: Falta, Atraso..."
-                                                                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage className="text-[10px]" />
-                                                    </FormItem>
+                                    <Form {...form}>
+                                        <form id="type-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="descricao"
+                                                    render={({ field }) => (
+                                                        <FormItem className="space-y-1">
+                                                            <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Descrição</FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    {...field}
+                                                                    placeholder="Ex: Falta, Atraso..."
+                                                                    className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="impacto_financeiro"
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-blue-50 bg-blue-50/20 p-3 shadow-sm">
+                                                            <div className="space-y-0.5">
+                                                                <FormLabel className="text-xs font-bold text-gray-700">Impacto Financeiro</FormLabel>
+                                                                <p className="text-[10px] text-gray-500 font-medium leading-tight">Gera lançamento automático no financeiro.</p>
+                                                            </div>
+                                                            <FormControl>
+                                                                <Switch checked={field.value} onCheckedChange={(val) => {
+                                                                    field.onChange(val);
+                                                                    if (val && !form.getValues("tipo_lancamento")) {
+                                                                        form.setValue("tipo_lancamento", "SAIDA");
+                                                                    }
+                                                                }} />
+                                                            </FormControl>
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                {form.watch("impacto_financeiro") && (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="tipo_lancamento"
+                                                            render={({ field }) => (
+                                                                <FormItem className="space-y-1">
+                                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Tipo de Lançamento</FormLabel>
+                                                                    <FormControl>
+                                                                        <RadioGroup
+                                                                            onValueChange={field.onChange}
+                                                                            value={field.value || "SAIDA"}
+                                                                            className="flex gap-4 h-11 items-center px-4 bg-gray-50 rounded-xl border border-gray-200"
+                                                                        >
+                                                                            <div className="flex items-center space-x-2">
+                                                                                <RadioGroupItem value="SAIDA" id="saida" />
+                                                                                <Label htmlFor="saida" className="text-xs font-bold text-gray-600 cursor-pointer">Saída (Débito)</Label>
+                                                                            </div>
+                                                                            <div className="flex items-center space-x-2">
+                                                                                <RadioGroupItem value="ENTRADA" id="entrada" />
+                                                                                <Label htmlFor="entrada" className="text-xs font-bold text-gray-600 cursor-pointer">Entrada (Crédito)</Label>
+                                                                            </div>
+                                                                        </RadioGroup>
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="valor_padrao"
+                                                            render={({ field }) => (
+                                                                <FormItem className="space-y-1">
+                                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Valor Sugerido</FormLabel>
+                                                                    <FormControl>
+                                                                        <MoneyInput
+                                                                            value={field.value}
+                                                                            onChange={field.onChange}
+                                                                            className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
                                                 )}
-                                            />
+                                            </div>
 
-                                            <FormField
-                                                control={form.control}
-                                                name="impacto_financeiro"
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-blue-50 bg-blue-50/20 p-3 shadow-sm">
-                                                        <div className="space-y-0.5">
-                                                            <FormLabel className="text-xs font-bold text-gray-700">Impacto Financeiro</FormLabel>
-                                                            <p className="text-[10px] text-gray-500 font-medium leading-tight">Gera lançamento automático no financeiro.</p>
-                                                        </div>
-                                                        <FormControl>
-                                                            <Switch checked={field.value} onCheckedChange={(val) => {
-                                                                field.onChange(val);
-                                                                if (val && !form.getValues("tipo_lancamento")) {
-                                                                    form.setValue("tipo_lancamento", "SAIDA");
-                                                                }
-                                                            }} />
-                                                        </FormControl>
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            {form.watch("impacto_financeiro") && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="tipo_lancamento"
-                                                        render={({ field }) => (
-                                                            <FormItem className="space-y-1">
-                                                                <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Tipo de Lançamento</FormLabel>
-                                                                <FormControl>
-                                                                    <RadioGroup
-                                                                        onValueChange={field.onChange}
-                                                                        value={field.value || "SAIDA"}
-                                                                        className="flex gap-4 h-11 items-center px-4 bg-gray-50 rounded-xl border border-gray-200"
-                                                                    >
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <RadioGroupItem value="SAIDA" id="saida" />
-                                                                            <Label htmlFor="saida" className="text-xs font-bold text-gray-600 cursor-pointer">Saída (Débito)</Label>
-                                                                        </div>
-                                                                        <div className="flex items-center space-x-2">
-                                                                            <RadioGroupItem value="ENTRADA" id="entrada" />
-                                                                            <Label htmlFor="entrada" className="text-xs font-bold text-gray-600 cursor-pointer">Entrada (Crédito)</Label>
-                                                                        </div>
-                                                                    </RadioGroup>
-                                                                </FormControl>
-                                                                <FormMessage className="text-[10px]" />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="valor_padrao"
-                                                        render={({ field }) => (
-                                                            <FormItem className="space-y-1">
-                                                                <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-70">Valor Sugerido</FormLabel>
-                                                                <FormControl>
-                                                                    <MoneyInput
-                                                                        value={field.value}
-                                                                        onChange={field.onChange}
-                                                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage className="text-[10px]" />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="flex justify-end gap-2 pt-1">
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                onClick={handleCancel}
-                                                className="rounded-xl h-9 px-4 text-xs font-semibold"
-                                            >
-                                                Cancelar
-                                            </Button>
-                                            <Button
-                                                type="submit"
-                                                disabled={createMutation.isPending || updateMutation.isPending}
-                                                className="rounded-xl h-9 px-6 text-xs font-bold shadow-md shadow-blue-500/20"
-                                            >
-                                                {createMutation.isPending || updateMutation.isPending ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    editingTipo ? "Atualizar" : "Salvar Tipo"
-                                                )}
-                                            </Button>
-                                        </div>
-                                    </form>
-                                </Form>
-                            </CardContent>
+                                            <div className="flex justify-end gap-2 pt-1">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    onClick={handleCancel}
+                                                    className="rounded-xl h-9 px-4 text-xs font-semibold"
+                                                >
+                                                    Cancelar
+                                                </Button>
+                                                <Button
+                                                    type="submit"
+                                                    disabled={createMutation.isPending || updateMutation.isPending}
+                                                    className="rounded-xl h-9 px-6 text-xs font-bold shadow-md shadow-blue-500/20"
+                                                >
+                                                    {createMutation.isPending || updateMutation.isPending ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        editingTipo ? "Atualizar" : "Salvar Tipo"
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </Form>
+                                </CardContent>
                             </Card>
                         </div>
                     )}

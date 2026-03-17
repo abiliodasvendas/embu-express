@@ -23,6 +23,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Briefcase, CalendarX, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getLocalDate } from "@/utils/date";
+import { formatKm } from "@/utils/masks";
 
 type PontoAction = 'idle' | 'working' | 'paused';
 
@@ -565,17 +566,17 @@ export default function RegistrarPonto() {
                                                     </div>
 
                                                     {isMotoboyOrFiscal && (
-                                                        <div className="grid grid-cols-2 gap-4 pb-2">
+                                                    <div className="grid grid-cols-2 gap-4 pb-2 text-left">
                                                             <div className="bg-blue-50/50 rounded-2xl p-3 border border-blue-100/50">
                                                                 <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest block mb-1">KM em Serviço</span>
                                                                 <span className="text-lg font-black text-blue-700">
-                                                                    {pausasMetric.kmTrabalho.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <small className="text-[10px] font-bold opacity-70">KM</small>
+                                                                    {formatKm(pausasMetric.kmTrabalho)} <small className="text-[10px] font-bold opacity-70">KM</small>
                                                                 </span>
                                                             </div>
                                                             <div className="bg-amber-50/50 rounded-2xl p-3 border border-amber-100/50">
                                                                 <span className="text-[9px] font-bold text-amber-600 uppercase tracking-widest block mb-1">KM em Pausa</span>
                                                                 <span className="text-lg font-black text-amber-700">
-                                                                    {pausasMetric.kmPausa.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <small className="text-[10px] font-bold opacity-70">KM</small>
+                                                                    {formatKm(pausasMetric.kmPausa)} <small className="text-[10px] font-bold opacity-70">KM</small>
                                                                 </span>
                                                             </div>
                                                         </div>

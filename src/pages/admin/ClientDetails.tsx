@@ -131,6 +131,16 @@ export default function ClientDetails() {
                     Voltar
                 </Button>
                 <div className="flex gap-2 items-center">
+                    {client.public_id && (
+                        <Button 
+                            variant="outline" 
+                            className="rounded-xl border-blue-100 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 hidden sm:flex items-center gap-2 font-bold shadow-none"
+                            onClick={() => window.open(`/public/c/${client.public_id}/controle`, '_blank')}
+                        >
+                            <ExternalLink className="h-4 w-4" />
+                            Painel Público
+                        </Button>
+                    )}
                     <ActionsDropdown actions={actions}>
                         <Button variant="outline" className="rounded-xl border-gray-200 shadow-sm text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1 px-3">
                             <span className="hidden sm:inline font-semibold">Ações</span>

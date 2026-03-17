@@ -95,15 +95,15 @@ export function EndTurnDialog({
             </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+          <div className="space-y-1.5">
+            <label className="text-gray-700 font-bold ml-1 text-sm opacity-70">
               Data de Término <span className="text-red-500">*</span>
             </label>
             <Input
               type="date"
               value={dataFim}
               onChange={(e) => setDataFim(e.target.value)}
-              className="h-12 rounded-xl border-gray-200 bg-white text-base font-medium"
+              className="h-11 rounded-xl bg-white border-gray-200 focus:bg-white transition-all focus-visible:ring-primary/20"
               required
             />
           </div>
@@ -111,7 +111,7 @@ export function EndTurnDialog({
           <div className="flex gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-12 rounded-xl font-bold"
+              className="flex-1 h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
               onClick={() => handleOpenChange(false)}
             >
               Cancelar
@@ -119,12 +119,12 @@ export function EndTurnDialog({
             <Button
               onClick={handleConfirm}
               disabled={!dataFim || updateVinculo.isPending}
-              className="flex-1 h-12 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white"
+              className="flex-1 h-11 rounded-xl font-bold shadow-lg shadow-amber-500/10 transition-all hover:-translate-y-0.5"
             >
               {updateVinculo.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : null}
-              Confirmar Encerramento
+              Confirmar
             </Button>
           </div>
         </div>

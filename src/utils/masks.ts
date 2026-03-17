@@ -130,44 +130,19 @@ export const rgMask = (value: string): string => {
 
 export const kmMask = (value: string | number): string => {
   if (value === undefined || value === null || value === "") return "";
-
-  // Converte para string e troca ponto por vírgula para uniformizar
-  let val = value.toString().replace(".", ",");
-
-  // Remove tudo que não for dígito ou vírgula
-  val = val.replace(/[^0-9,]/g, "");
-
-  // Garante apenas uma vírgula
-  const parts = val.split(",");
-  if (parts.length > 2) {
-    val = parts[0] + "," + parts.slice(1).join("");
-  }
-
-  // Limita a 3 casas decimais (metros)
-  if (parts.length === 2 && parts[1].length > 3) {
-    val = parts[0] + "," + parts[1].slice(0, 3);
-  }
-
-  return val;
+  // Remove tudo que não for dígito
+  return value.toString().replace(/\D/g, "");
 };
 
 export const kmToNumber = (value: string): number => {
   if (!value) return 0;
-  // Converte formato BR (0,5 ou 10,5) para padrão numérico (0.5 ou 10.5)
-  const numericString = value.replace(",", ".");
-  return parseFloat(numericString) || 0;
+  return parseInt(value.replace(/\D/g, ""), 10) || 0;
 };
 
 export const formatKm = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return "--";
-
-  // Usa KM com separador de milhar e até 3 decimais para todos os valores
-  return (
-    new Intl.NumberFormat("pt-BR", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    }).format(value) + " km"
-  );
+  // Apenas o número puro, sem "km" ou formatação de milhar/decimal
+  return value.toString();
 };
 
 export const timeMask = (value: string): string => {

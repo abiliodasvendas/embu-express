@@ -1,0 +1,59 @@
+import { useMemo } from "react";
+import { useFilters, UseFiltersOptions } from "./useFilters";
+import { useFinanceiro } from "@/hooks/api/useFinanceiro";
+import { useFinancialReportBusiness } from "../business/useFinancialReportBusiness";
+import { usePermissions } from "../business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
+
+interface UseFinancialReportViewModelOptions extends UseFiltersOptions {
+  usuarioId?: string;
+  colaboradorNome?: string;
+}
+
+export function useFinancialReportViewModel(options: UseFinancialReportViewModelOptions = {}) {
+  const { usuarioId: initialUsuarioId, colaboradorNome, ...filterOptions } = options;
+  const { can, profile } = usePermissions();
+
+  const filters = useFilters({
+    usuarioParam: "usuario",
+    mesParam: "mes",
+    anoParam: "ano",
+    ...filterOptions
+  });
+
+  const canViewAll = can(PERMISSIONS.FINANCEIRO.EXTRATO);
+  const canViewOwn = can(PERMISSIONS.FINANCEIRO.VER_MEU);
+  const isOnlyPersonal = canViewOwn && !canViewAll;
+
+  const finalUsuarioId = initialUsuarioId || (isOnlyPersonal ? profile?.id : (filters.selectedUsuario === 'todos' ? undefined : filters.selectedUsuario));
+
+  const { data: rawReport, isLoading, refetch } = useFinanceiro(
+    finalUsuarioId || undefined,
+    filters.selectedMes,
+    filters.selectedAno
+  );
+
+  const business = useFinancialReportBusiness();
+  const report = useMemo(() => business.processReport(rawReport), [rawReport, business]);
+
+  return useMemo(() => ({
+    // State
+    filters,
+    report,
+    isLoading,
+    canViewAll,
+    isOnlyPersonal,
+    usuarioId: finalUsuarioId,
+    colaboradorNome: isOnlyPersonal ? profile?.nome_completo : colaboradorNome,
+    
+    // Actions
+    refetch,
+    setMonth: filters.setSelectedMes,
+    setYear: filters.setSelectedAno,
+    setUsuario: filters.setSelectedUsuario
+  }), [
+    filters, report, isLoading, canViewAll, isOnlyPersonal, finalUsuarioId, 
+    profile?.nome_completo, colaboradorNome, refetch, 
+    filters.setSelectedMes, filters.setSelectedAno, filters.setSelectedUsuario
+  ]);
+}

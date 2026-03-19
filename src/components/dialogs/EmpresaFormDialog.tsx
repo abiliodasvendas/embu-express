@@ -140,30 +140,32 @@ export function EmpresaFormDialog({
       <DialogContent className="w-full max-lg p-0 gap-0 h-[100dvh] sm:h-auto sm:max-h-[90vh] bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl" hideCloseButton>
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
           {/* Header buttons omitted for brevity if they are the same, but I'll keep them */}
-          <div className="absolute left-4 top-4 flex gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-              onClick={handleFillMock}
-              title="Preencher com dados fictícios"
-            >
-              <Wand2 className="h-5 w-5" />
-            </Button>
-            {!isEditing && (
+          {import.meta.env.DEV && (
+            <div className="absolute left-4 top-4 flex gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-                onClick={handleQuickCreate}
-                title="Criação Rápida"
+                onClick={handleFillMock}
+                title="Preencher com dados fictícios"
               >
-                <Zap className="h-5 w-5" />
+                <Wand2 className="h-5 w-5" />
               </Button>
-            )}
-          </div>
+              {!isEditing && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
+                  onClick={handleQuickCreate}
+                  title="Criação Rápida"
+                >
+                  <Zap className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
+          )}
 
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />

@@ -54,58 +54,60 @@ export default function SelfRegistration() {
             Voltar
           </Button>
 
-          <div className="absolute top-6 right-6 flex items-center gap-2">
-            {/* Botão Parcial */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                form.reset();
-                const mockData = mockGenerator.selfRegistrationMandatory();
-                const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
+          {import.meta.env.DEV && (
+            <div className="absolute top-6 right-6 flex items-center gap-2">
+              {/* Botão Parcial */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  form.reset();
+                  const mockData = mockGenerator.selfRegistrationMandatory();
+                  const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
 
-                Object.keys(mockData).forEach((key) => {
-                  // @ts-ignore
-                  form.setValue(key, mockData[key], { shouldValidate: true });
-                });
+                  Object.keys(mockData).forEach((key) => {
+                    // @ts-ignore
+                    form.setValue(key, mockData[key], { shouldValidate: true });
+                  });
 
-                if (motoboyRole) {
-                  form.setValue("perfil_id", motoboyRole.id.toString());
-                  form.setValue("isMotoboyOrFiscal", true);
-                }
-              }}
-              className="w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
-              title="Preenchimento Parcial (Obrigatórios)"
-            >
-              <Wand2 className="h-4 w-4 opacity-60" />
-            </Button>
+                  if (motoboyRole) {
+                    form.setValue("perfil_id", motoboyRole.id.toString());
+                    form.setValue("isMotoboyOrFiscal", true);
+                  }
+                }}
+                className="w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
+                title="Preenchimento Parcial (Obrigatórios)"
+              >
+                <Wand2 className="h-4 w-4 opacity-60" />
+              </Button>
 
-            {/* Botão Completo */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                const mockData = mockGenerator.selfRegistration();
-                const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
+              {/* Botão Completo */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  const mockData = mockGenerator.selfRegistration();
+                  const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
 
-                Object.keys(mockData).forEach((key) => {
-                  // @ts-ignore
-                  form.setValue(key, mockData[key], { shouldValidate: true });
-                });
+                  Object.keys(mockData).forEach((key) => {
+                    // @ts-ignore
+                    form.setValue(key, mockData[key], { shouldValidate: true });
+                  });
 
-                if (motoboyRole) {
-                  form.setValue("perfil_id", motoboyRole.id.toString());
-                  form.setValue("isMotoboyOrFiscal", true);
-                }
-              }}
-              className="w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
-              title="Preenchimento Completo"
-            >
-              <Wand2 className="h-5 w-5" />
-            </Button>
-          </div>
+                  if (motoboyRole) {
+                    form.setValue("perfil_id", motoboyRole.id.toString());
+                    form.setValue("isMotoboyOrFiscal", true);
+                  }
+                }}
+                className="w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
+                title="Preenchimento Completo"
+              >
+                <Wand2 className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
 
           <div className="mx-auto bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-3 backdrop-blur-sm shadow-inner">
             <UserPlus className="w-6 h-6 text-white" />

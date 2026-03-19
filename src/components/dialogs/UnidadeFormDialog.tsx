@@ -171,18 +171,20 @@ export function UnidadeFormDialog({
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
-          <div className="absolute left-4 top-4 flex gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-              onClick={handleFillMagic}
-              title="Preencher com dados mágicos"
-            >
-              <Wand2 className="h-5 w-5" />
-            </Button>
-          </div>
+          {import.meta.env.DEV && (
+            <div className="absolute left-4 top-4 flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
+                onClick={handleFillMagic}
+                title="Preencher com dados mágicos"
+              >
+                <Wand2 className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
 
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />

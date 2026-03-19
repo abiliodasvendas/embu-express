@@ -19,7 +19,7 @@ import { Client, ColaboradorCliente, Unidade } from "@/types/database";
 import { cnpjMask } from "@/utils/masks";
 import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users, Zap, CalendarDays, ExternalLink, Copy, CopyCheck, Plus, Edit2, Trash2, MapPinned } from "lucide-react";
 import { WeeklyScale } from "@/components/common/WeeklyScale";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 
@@ -29,6 +29,8 @@ export default function ClientDetails() {
     const [isCopied, setIsCopied] = useState(false);
     const [isUnidadeDialogOpen, setIsUnidadeDialogOpen] = useState(false);
     const [editingUnidade, setEditingUnidade] = useState<Unidade | null>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [hasAutoOpened, setHasAutoOpened] = useState(false);
 
     const { data: clients, isLoading: isClientLoading } = useClients({ includeId: id });
     const client = clients?.find(c => c.id.toString() === id);
@@ -52,6 +54,18 @@ export default function ClientDetails() {
             setPageTitle("Carregando Cliente...");
         }
     }, [client, isClientLoading, setPageTitle]);
+
+    useEffect(() => {
+        if (!hasAutoOpened && searchParams.get('openUnitDialog') === 'true' && client && !isClientLoading) {
+            setHasAutoOpened(true);
+            handleAddUnidade();
+
+            // Properly clear the search param
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('openUnitDialog');
+            setSearchParams(newParams, { replace: true });
+        }
+    }, [searchParams, client, isClientLoading, hasAutoOpened, setSearchParams]);
 
     const handleToggleStatus = async () => {
         if (!client) return;

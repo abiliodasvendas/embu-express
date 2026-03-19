@@ -128,19 +128,21 @@ export default function Login() {
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 text-center">
                   Área Administrativa
                 </h1>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    form.setValue("cpfcnpj", "030.755.445-74");
-                    form.setValue("senha", "Ogaiht+1");
-                  }}
-                  className="hidden absolute -top-2 -right-2 w-8 h-8 rounded-full text-blue-600 hover:bg-blue-50"
-                  title="Acesso Rápido"
-                >
-                  <Wand2 className="h-4 w-4" />
-                </Button>
+                {import.meta.env.DEV && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      form.setValue("cpfcnpj", "030.755.445-74");
+                      form.setValue("senha", "Ogaiht+1");
+                    }}
+                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full text-blue-600 hover:bg-blue-50"
+                    title="Acesso Rápido"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
 
               <form

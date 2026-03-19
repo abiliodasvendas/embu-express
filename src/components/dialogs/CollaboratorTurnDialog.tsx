@@ -329,18 +329,20 @@ export function CollaboratorTurnDialog({
         hideCloseButton
       >
         <div className="bg-gradient-to-r from-blue-700 to-blue-600 p-6 sm:px-8 relative shrink-0 shadow-sm z-10">
-          <div className="absolute left-6 top-6 flex gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20 transition-all active:scale-95"
-              onClick={handleFillMagic}
-              title="Preencher com dados mágicos"
-            >
-              <Wand2 className="h-5 w-5" />
-            </Button>
-          </div>
+          {import.meta.env.DEV && (
+            <div className="absolute left-6 top-6 flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20 transition-all active:scale-95"
+                onClick={handleFillMagic}
+                title="Preencher com dados mágicos"
+              >
+                <Wand2 className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
 
           <DialogClose className="absolute right-6 top-6 text-white/70 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10 active:scale-95">
             <X className="h-6 w-6" />

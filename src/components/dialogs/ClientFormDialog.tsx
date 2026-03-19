@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 import { ClientFormData, clientSchema } from "@/schemas/clientSchema";
 
@@ -80,6 +81,7 @@ export function ClientFormDialog({
 
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
+  const navigate = useNavigate();
 
   const form = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
@@ -141,11 +143,14 @@ export function ClientFormDialog({
           ...values, 
           silent: true 
         });
+        toast.success(messages.cliente.sucesso.atualizado);
       } else {
-        await createClient.mutateAsync({ 
+        const newClient = await createClient.mutateAsync({ 
           ...values, 
           silent: true 
         });
+        toast.success(messages.cliente.sucesso.criado);
+        navigate(`/clientes/${newClient.id}?openUnitDialog=true`);
       }
       safeCloseDialog(() => onClose());
       onSuccess?.();
@@ -165,18 +170,20 @@ export function ClientFormDialog({
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
-          <div className="absolute left-4 top-4 flex gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-              onClick={handleFillMock}
-              title="Preencher com dados fictícios"
-            >
-              <Wand2 className="h-5 w-5" />
-            </Button>
-          </div>
+          {import.meta.env.DEV && (
+            <div className="absolute left-4 top-4 flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
+                onClick={handleFillMock}
+                title="Preencher com dados fictícios"
+              >
+                <Wand2 className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
 
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />

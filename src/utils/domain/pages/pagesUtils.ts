@@ -34,7 +34,12 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.REGISTRAR_PONTO,
         icon: Clock,
     },
-    // GRUPO: PONTO
+    {
+        title: "Colaboradores",
+        href: ROUTES.PRIVATE.COLABORADORES,
+        icon: Users,
+        permissionKey: PERMISSIONS.USUARIOS.VER,
+    },
     {
         title: "Controle de Ponto",
         href: ROUTES.PRIVATE.CONTROLE_PONTO,
@@ -56,7 +61,6 @@ export const pagesItems: PageItem[] = [
         permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
         category: MENU_CATEGORIES.PONTO
     },
-    // ITENS SOLTOS (Antigo Financeiro)
     {
         title: "Relatório Financeiro",
         href: ROUTES.PRIVATE.RELATORIO_FINANCEIRO,
@@ -69,19 +73,11 @@ export const pagesItems: PageItem[] = [
         icon: AlertCircle,
         permissionKey: PERMISSIONS.OCORRENCIAS.VER,
     },
-    // GRUPO: CADASTROS
-    {
-        title: "Colaboradores",
-        href: ROUTES.PRIVATE.COLABORADORES,
-        icon: Users,
-        permissionKey: PERMISSIONS.USUARIOS.VER,
-    },
     {
         title: "Clientes",
         href: ROUTES.PRIVATE.CLIENTES,
         icon: Briefcase,
         permissionKey: PERMISSIONS.CLIENTES.VER,
-        category: MENU_CATEGORIES.CADASTROS
     },
     {
         title: "Empresas",

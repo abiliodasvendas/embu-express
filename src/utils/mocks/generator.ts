@@ -437,6 +437,23 @@ export const generateTurnData = () => {
   };
 };
 
+/**
+ * Gera dados fictícios para uma ocorrência
+ */
+export const generateOccurrenceData = (colaboradorId?: string) => {
+  const data = new Date();
+  const formattedDate = data.toISOString().split('T')[0];
+
+  return {
+    colaborador_id: colaboradorId || "",
+    data_ocorrencia: formattedDate,
+    valor: randomNumber(50, 250),
+    impacto_financeiro: true as const,
+    tipo_lancamento: (Math.random() > 0.3 ? "SAIDA" : "ENTRADA") as "ENTRADA" | "SAIDA",
+    observacao: "Ocorrência simulada gerada automaticamente pelo sistema.",
+  };
+};
+
 export const mockGenerator = {
   rg: generateRG,
   cpf: generateCPF,
@@ -455,5 +472,6 @@ export const mockGenerator = {
   cnh: generateCNHData,
   selfRegistration: generateSelfRegistrationData,
   selfRegistrationMandatory: generateSelfRegistrationMandatoryData,
-  turn: generateTurnData
+  turn: generateTurnData,
+  occurrence: generateOccurrenceData
 };

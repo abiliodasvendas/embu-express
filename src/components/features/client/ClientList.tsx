@@ -4,7 +4,6 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useClientActions } from "@/hooks/business/useClientActions";
 import { Client } from "@/types/client";
-import { cnpjMask } from "@/utils/masks";
 import { useNavigate } from "react-router-dom";
 
 interface ClientListProps {
@@ -42,12 +41,6 @@ const ClientMobileItem = ({
             <p className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
               {client.nome_fantasia}
             </p>
-            {client.cnpj && (
-              <p className="text-xs text-muted-foreground mt-0.5">{cnpjMask(client.cnpj)}</p>
-            )}
-            {client.razao_social && (
-              <p className="text-[10px] text-gray-500 line-clamp-2 leading-tight mt-1">{client.razao_social}</p>
-            )}
           </div>
           <StatusBadge status={client.ativo} className="absolute top-4 right-4" />
         </div>
@@ -77,12 +70,6 @@ const ClientTableRow = ({
     >
       <td className="py-4 pl-6 align-middle">
         <p className="font-bold text-gray-900 text-sm">{client.nome_fantasia}</p>
-      </td>
-      <td className="px-6 py-4 align-middle text-sm text-gray-600">
-        {client.cnpj ? cnpjMask(client.cnpj) : "-"}
-      </td>
-      <td className="px-6 py-4 align-middle text-sm text-gray-600">
-        {client.razao_social || "-"}
       </td>
       <td className="px-6 py-4 align-middle">
         <StatusBadge status={client.ativo} />
@@ -116,12 +103,6 @@ export function ClientList({ clients, onEdit, onDelete, onToggleStatus }: Client
             <tr className="border-b border-gray-100 text-left">
               <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Nome Fantasia
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                CNPJ
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Razão Social
               </th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Status

@@ -56,11 +56,6 @@ const CollaboratorMobileItem = ({
               <h3 className="font-bold text-gray-900 text-sm break-words leading-tight">
                 {collaborator.nome_completo}
               </h3>
-              {collaborator.links?.[0]?.cliente?.nome_fantasia && (
-                <p className="text-[10px] text-gray-400 mt-0.5 break-words">
-                  {collaborator.links[0].cliente.nome_fantasia}
-                </p>
-              )}
             </div>
           </div>
           <StatusBadge status={collaborator.status} className="absolute top-4 right-4" />
@@ -76,6 +71,22 @@ const CollaboratorMobileItem = ({
                 {collaborator.perfil?.nome.toUpperCase()}
               </p>
             </div>
+          </div>
+          <div className="space-y-3">
+            {collaborator.links && collaborator.links.length > 0 && (
+              <div className="flex flex-col items-end">
+                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider text-right w-full">
+                  {(collaborator.links.length > 1) ? "Clientes" : "Cliente"}
+                </p>
+                <div className="flex flex-col gap-0.5 w-full">
+                  {collaborator.links.slice(0, 2).map((link) => (
+                    <p key={link.id} className="font-medium text-gray-700 text-[11px] text-right leading-tight truncate">
+                      {link.cliente?.nome_fantasia}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -113,11 +124,16 @@ const CollaboratorTableRow = ({
             <p className="font-bold text-gray-900 text-sm">
               {collaborator.nome_completo}
             </p>
-            {collaborator.links?.[0]?.cliente?.nome_fantasia && (
-              <p className="text-[10px] text-gray-400 mt-0.5">
-                {collaborator.links[0].cliente.nome_fantasia}
-              </p>
-            )}
+            <div className="flex items-center gap-1.5 mt-0.5 leading-none">
+              {collaborator.links?.slice(0, 2).map((link, i) => (
+                <div key={link.id} className="flex items-center gap-1.5">
+                  {i > 0 && <span className="text-gray-300 scale-75">•</span>}
+                  <span className="text-[10px] text-gray-400 font-medium">
+                    {link.cliente?.nome_fantasia}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </td>

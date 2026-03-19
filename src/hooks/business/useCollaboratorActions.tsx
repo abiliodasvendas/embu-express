@@ -4,7 +4,7 @@ import { canManageRole } from "@/utils/auth/hierarchy";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { Usuario } from "@/types/database";
 import { ActionItem } from "@/types/actions";
-import { Ban, Check, Edit, Eye, Trash2 } from "lucide-react";
+import { Ban, Check, Edit, Eye, Key, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { StatusUsuario } from "@/types/enums";
 
@@ -62,7 +62,7 @@ export function useCollaboratorActions({
       if (!isCurrentUser && onResetPassword) {
         actions.push({
           label: "Resetar Senha",
-          icon: <Check className="h-4 w-4" />, // We'll just use a Check or Key if Key was imported. Let's stick with Check or Edit to avoid import issues
+          icon: <Key className="h-4 w-4" />, // We'll just use a Check or Key if Key was imported. Let's stick with Check or Edit to avoid import issues
           onClick: () => onResetPassword(collaborator),
           swipeColor: "bg-purple-600",
           drawerClass: "text-purple-600",

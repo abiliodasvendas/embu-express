@@ -32,7 +32,8 @@ import { cn } from "@/lib/utils";
 import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
 import { OccurrenceFormData, occurrenceSchema } from "@/schemas/occurrenceSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Loader2, X } from "lucide-react";
+import { AlertCircle, Loader2, Wand2, X } from "lucide-react";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
@@ -75,6 +76,16 @@ export function OccurrenceFormDialog({
             form.setValue("colaborador_id", collaboratorId);
         }
     }, [collaboratorId, form]);
+
+    const handleFillMagic = () => {
+        const data = mockGenerator.occurrence(collaboratorId);
+        const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+        
+        form.reset({
+            ...(data as any),
+            tipo_id: tipo ? String(tipo.id) : "",
+        });
+    };
 
     const onSubmit = async (data: OccurrenceFormData) => {
         try {
@@ -130,6 +141,21 @@ export function OccurrenceFormDialog({
             >
                 {/* Header Padronizado */}
                 <div className="bg-blue-600 p-4 text-center relative shrink-0">
+                    <div className="absolute left-4 top-4 flex gap-2">
+                        {import.meta.env.DEV && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20 transition-all active:scale-95"
+                                onClick={handleFillMagic}
+                                title="Preencher com dados mágicos"
+                            >
+                                <Wand2 className="h-5 w-5" />
+                            </Button>
+                        )}
+                    </div>
+
                     <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
                         <X className="h-6 w-6" />
                         <span className="sr-only">Fechar</span>

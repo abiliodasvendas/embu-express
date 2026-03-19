@@ -138,7 +138,7 @@ export function CepInput<T extends FieldValues>({
   return (
     <FormItem className={className}>
       <FormLabel className="text-gray-700 font-medium ml-1">
-        {label} {required && <span className="text-red-600">*</span>}
+        {label} {required && <span className="text-red-500">*</span>}
       </FormLabel>
       <FormControl>
         <div className="relative">

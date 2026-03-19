@@ -2,26 +2,26 @@ import { CepInput } from "@/components/forms";
 import { WeeklyScaleSelection } from "@/components/common/WeeklyScaleSelection";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
@@ -33,14 +33,14 @@ import { cnpjMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-    Building2,
-    FileText,
-    Hash,
-    Loader2,
-    MapPin,
-    Wand2,
-    X,
-    Zap,
+  Building2,
+  FileText,
+  Hash,
+  Loader2,
+  MapPin,
+  Wand2,
+  X,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, FieldErrors } from "react-hook-form";
@@ -143,12 +143,12 @@ export function UnidadeFormDialog({
   const onSubmit = async (values: UnidadeFormData) => {
     try {
       if (editingUnidade) {
-        await updateUnidade.mutateAsync({ 
-          id: editingUnidade.id, 
+        await updateUnidade.mutateAsync({
+          id: editingUnidade.id,
           ...values,
         });
       } else {
-        await createUnidade.mutateAsync({ 
+        await createUnidade.mutateAsync({
           ...values,
           cliente_id: clienteId
         });
@@ -289,7 +289,7 @@ export function UnidadeFormDialog({
                   <MapPin className="w-4 h-4 text-blue-600" />
                   Endereço da Unidade
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                   <FormField
                     control={form.control}
@@ -298,6 +298,7 @@ export function UnidadeFormDialog({
                       <div className="md:col-span-2">
                         <CepInput
                           field={field}
+                          required
                           inputClassName="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary transition-all"
                           onLoadingChange={setIsCepLoading}
                         />
@@ -356,7 +357,9 @@ export function UnidadeFormDialog({
                     name="bairro"
                     render={({ field }) => (
                       <FormItem className="md:col-span-3">
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Bairro</FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                          Bairro <span className="text-red-500">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input {...field} className="h-11 rounded-xl bg-gray-50" disabled={isCepLoading} />
                         </FormControl>
@@ -369,7 +372,9 @@ export function UnidadeFormDialog({
                     name="cidade"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cidade</FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                          Cidade <span className="text-red-500">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input {...field} className="h-11 rounded-xl bg-gray-50" disabled={isCepLoading} />
                         </FormControl>
@@ -382,7 +387,9 @@ export function UnidadeFormDialog({
                     name="estado"
                     render={({ field }) => (
                       <FormItem className="md:col-span-1">
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">UF</FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                          UF <span className="text-red-500">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input {...field} className="h-11 rounded-xl bg-gray-50" disabled={isCepLoading} />
                         </FormControl>
@@ -400,7 +407,7 @@ export function UnidadeFormDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                        KM Contratados (Mês) <span className="text-red-500">*</span>
+                        KM Contratados (Motoboy/Mês) <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -412,7 +419,7 @@ export function UnidadeFormDialog({
                             onChange={(e) => field.onChange(Number(e.target.value))}
                           />
                         </div>
-              </FormControl>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -439,7 +446,7 @@ export function UnidadeFormDialog({
                       <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                         Escala Semanal da Unidade <span className="text-red-500">*</span>
                       </FormLabel>
-                      <WeeklyScaleSelection 
+                      <WeeklyScaleSelection
                         value={field.value}
                         onChange={field.onChange}
                       />

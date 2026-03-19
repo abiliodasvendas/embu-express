@@ -29,21 +29,21 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
     return pagesItems.filter(item => {
       if (isSuperAdmin) return true;
       if (!item.permissionKey) return true;
-      
+
       if (Array.isArray(item.permissionKey)) {
         return item.permissionKey.some(pk => can(pk as any));
       }
-      
+
       return can(item.permissionKey as any);
     });
   }, [can, isSuperAdmin]);
 
   const menuBlocks = useMemo(() => {
     const blocks: Array<{ type: 'link'; item: PageItem } | { type: 'group'; category: string; items: PageItem[] }> = [];
-    
+
     filteredItems.forEach((item) => {
       const category = item.category;
-      
+
       if (!category) {
         blocks.push({ type: 'link', item });
       } else {
@@ -140,7 +140,6 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
 
           const category = block.category;
           const items = block.items;
-          const isActiveGroup = items.some(item => item.href === location.pathname);
           const isOpen = !!openGroups[category];
           const CategoryIcon = CATEGORY_ICONS[category] || LayoutGrid;
 
@@ -155,24 +154,24 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
                 <button
                   className={cn(
                     "group flex w-full items-center justify-between gap-3 rounded-xl px-4 py-1.5 text-sm font-semibold transition-all md:py-2",
-                    "text-slate-500 hover:bg-slate-50"
+                    "text-slate-500 hover:bg-slate-50 hover:text-blue-600"
                   )}
                 >
                   <div className="flex items-center gap-3">
                     {renderIcon(CategoryIcon, false)}
                     <span className="truncate">{category}</span>
                   </div>
-                  <ChevronRight 
+                  <ChevronRight
                     className={cn(
                       "h-4 w-4 transition-transform duration-200 text-slate-400",
                       isOpen && "rotate-90"
-                    )} 
+                    )}
                   />
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-1 animate-in slide-in-from-top-2 duration-200 overflow-hidden">
                 <div className="pt-1 border-l-2 border-slate-100/80 ml-8 mb-2">
-                    {items.map(item => renderLink(item, true))}
+                  {items.map(item => renderLink(item, true))}
                 </div>
               </CollapsibleContent>
             </Collapsible>

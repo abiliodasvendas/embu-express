@@ -2,15 +2,18 @@ import { messages } from "@/constants/messages";
 import { moneyToNumber } from "@/utils/masks";
 import { z } from "zod";
 
-const moneySchema = z.string()
-  .min(1, messages.validacao.campoObrigatorio)
+const moneySchema = z.union([
+  z.string().min(1, messages.validacao.campoObrigatorio),
+  z.number()
+])
   .transform((val) => moneyToNumber(val))
   .refine(val => val > 0, "O valor deve ser maior que zero");
 
-const optionalMoneySchema = z.string()
+const optionalMoneySchema = z.union([z.string(), z.number()])
   .optional()
-  .refine(val => !val || moneyToNumber(val) > 0, "O valor deve ser maior que zero ou vazio")
-  .transform((val) => val ? moneyToNumber(val) : 0);
+  .nullable()
+  .transform((val) => moneyToNumber(val))
+  .refine(val => val === 0 || val > 0, "O valor deve ser maior ou igual a zero");
 
 const horarioSchema = z.object({
   dia_semana: z.number().min(1).max(7),

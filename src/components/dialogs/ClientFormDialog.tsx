@@ -1,35 +1,20 @@
-import { CepInput } from "@/components/forms";
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { FieldErrors } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
 import { useCreateClient, useUpdateClient } from "@/hooks";
@@ -41,14 +26,10 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-    Building2,
-    FileText,
-    Hash,
-    Loader2,
-    MapPin,
-    Wand2,
-    X,
-    Zap,
+  Building2,
+  Loader2,
+  Wand2,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -138,16 +119,16 @@ export function ClientFormDialog({
   const onSubmit = async (values: ClientFormData) => {
     try {
       if (editingClient) {
-        await updateClient.mutateAsync({ 
-          id: editingClient.id, 
-          ...values, 
-          silent: true 
+        await updateClient.mutateAsync({
+          id: editingClient.id,
+          ...values,
+          silent: true
         });
         toast.success(messages.cliente.sucesso.atualizado);
       } else {
-        const newClient = await createClient.mutateAsync({ 
-          ...values, 
-          silent: true 
+        const newClient = await createClient.mutateAsync({
+          ...values,
+          silent: true
         });
         toast.success(messages.cliente.sucesso.criado);
         navigate(`/clientes/${newClient.id}?openUnitDialog=true`);

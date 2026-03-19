@@ -467,7 +467,7 @@ export function UnidadeFormDialog({
             variant="outline"
             onClick={() => safeCloseDialog(() => onClose())}
             disabled={isPending}
-            className="w-full h-11 rounded-xl"
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
           >
             Cancelar
           </Button>
@@ -475,7 +475,7 @@ export function UnidadeFormDialog({
             type="submit"
             form="unidade-form"
             disabled={isPending}
-            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 shadow-none"
+            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
           >
             {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "Salvar Unidade"}
           </Button>

@@ -254,6 +254,7 @@ export interface TipoOcorrencia {
   descricao: string;
   impacto_financeiro?: boolean;
   valor_padrao?: number | null;
+  tipo_lancamento?: 'ENTRADA' | 'SAIDA';
   created_at?: string;
 }
 

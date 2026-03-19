@@ -39,7 +39,7 @@ export function MoneyInput<T extends FieldValues>({
             {...field}
             placeholder={placeholder}
             type="text"
-            className={inputClassName}
+            className={cn("rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all", inputClassName)}
             disabled={disabled}
             onChange={(e) => {
               field.onChange(moneyMask(e.target.value));

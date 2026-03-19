@@ -21,13 +21,15 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useFinanceiro } from "@/hooks/api/useFinanceiro";
 import { useFinanceiroMutations } from "@/hooks/api/useFinanceiroMutations";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { useFilters } from "@/hooks/ui/useFilters";
+import { useDateFilters } from "@/hooks/ui/useFilters";
 import { cn } from "@/lib/utils";
 import { meses } from "@/utils/formatters/constants";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateTimeToBR } from "@/utils/formatters/date";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Ocorrencia, RegistroPonto } from "@/types/database";
+import { ExtratoMensal, ResumoClienteFinanceiro } from "@/types/financeiro";
 import {
   AlertCircle,
   ArrowDownCircle,
@@ -59,11 +61,11 @@ export function FinancialReportView({
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { can } = usePermissions();
   const {
-    selectedMes: internalMonth = new Date().getMonth() + 1,
-    setSelectedMes: setSelectedMonth = () => {},
-    selectedAno: internalYear = new Date().getFullYear(),
-    setSelectedAno: setSelectedYear = () => {},
-  } = useFilters({
+    selectedMes: internalMonth,
+    setSelectedMes: setSelectedMonth,
+    selectedAno: internalYear,
+    setSelectedAno: setSelectedYear,
+  } = useDateFilters({
     mesParam: "mes",
     anoParam: "ano",
   });
@@ -202,7 +204,7 @@ export function FinancialReportView({
                         disabled={confirmarAdiantamentoMutation.isPending}
                         onClick={() => {
                           const valorTotalAdiantamento = extrato.totais?.total_adiantamento ?? 
-                            extrato.resumo_por_cliente?.reduce((acc: number, r: any) => acc + Number(r.valores_fixos?.adiantamento_config || 0), 0) ?? 0;
+                            extrato.resumo_por_cliente?.reduce((acc: number, r: ResumoClienteFinanceiro) => acc + Number(r.valores_fixos?.adiantamento_config || 0), 0) ?? 0;
 
                           openConfirmationDialog({
                             title: "Confirmar Adiantamento",
@@ -379,7 +381,7 @@ export function FinancialReportView({
                 </h3>
               </div>
 
-              {extrato.resumo_por_cliente?.map((resumo: any, idx: number) => (
+              {extrato.resumo_por_cliente?.map((resumo: ResumoClienteFinanceiro, idx: number) => (
                 <Card
                   key={idx}
                   className="border-none shadow-lg rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 transition-all hover:shadow-xl group"
@@ -542,7 +544,7 @@ export function FinancialReportView({
                           </div>
                           <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center px-2">
                             <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                               Base mensal (Cheio)
+                                Base mensal (Cheio)
                             </span>
                             <span className="text-lg font-black text-gray-400 line-through opacity-40">
                               {formatCurrency(resumo.saldo_fixo_original)}
@@ -571,13 +573,13 @@ export function FinancialReportView({
                           </h5>
                         </div>
 
-                        {(extrato.ocorrencias as any[]).filter(
+                        {(extrato.ocorrencias as Ocorrencia[]).filter(
                           (o) =>
                             o.colaborador_cliente_id === resumo.id_vinculo &&
                             o.impacto_financeiro,
                         ).length > 0 ? (
                           <div className="space-y-4">
-                            {(extrato.ocorrencias as any[])
+                            {(extrato.ocorrencias as Ocorrencia[])
                               .filter(
                                 (o) =>
                                   o.colaborador_cliente_id ===
@@ -681,8 +683,8 @@ export function FinancialReportView({
 
               {/* Lançamentos Avulsos no Mês (Incluindo MEI se houver) */}
               {(extrato.totais?.total_mei > 0 ||
-                extrato.ocorrencias?.filter(
-                  (o: any) => !o.colaborador_cliente_id && o.impacto_financeiro,
+                (extrato.ocorrencias as Ocorrencia[]).filter(
+                  (o) => !o.colaborador_cliente_id && o.impacto_financeiro,
                 ).length > 0) && (
                 <div className="mt-12 space-y-6">
                   <div className="flex items-center gap-3 ml-2">
@@ -717,12 +719,12 @@ export function FinancialReportView({
                         )}
 
                         {/* Ocorrências Avulsas */}
-                        {extrato.ocorrencias
-                          ?.filter(
-                            (o: any) =>
+                        {(extrato.ocorrencias as Ocorrencia[])
+                          .filter(
+                            (o) =>
                               !o.colaborador_cliente_id && o.impacto_financeiro,
                           )
-                          .map((occ: any, oIdx: number) => (
+                          .map((occ, oIdx: number) => (
                             <div
                               key={oIdx}
                               className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ"

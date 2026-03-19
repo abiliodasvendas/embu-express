@@ -1,5 +1,5 @@
-import { PONTO_STATUS_UI_CONFIG } from "@/constants/ponto";
-import { ManagementStatus } from "@/utils/ponto";
+import { PONTO_STATUS_UI_CONFIG } from "@/config/ponto-ui";
+import { ManagementStatus } from "@/types/enums";
 import { cn } from "@/lib/utils";
 
 interface TimeTrackingKpiFiltersProps {
@@ -15,13 +15,13 @@ export function TimeTrackingKpiFilters({
     onFilterClick,
     className
 }: TimeTrackingKpiFiltersProps) {
-    const statuses = ['ALL', 'LATE', 'WORKING', 'DONE', 'WAITING', 'ABSENT'] as const;
+    const statuses = Object.values(ManagementStatus);
 
     return (
         <div className={cn("grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 lg:gap-4", className)}>
             {statuses.map((status) => {
-                const config = PONTO_STATUS_UI_CONFIG[status];
-                const isActive = (status === 'ALL' && activeFilter === null) || activeFilter === status;
+                const config = PONTO_STATUS_UI_CONFIG[status as ManagementStatus];
+                const isActive = (status === ManagementStatus.ALL && activeFilter === null) || activeFilter === (status as ManagementStatus);
                 const count = counts[status];
 
                 return (

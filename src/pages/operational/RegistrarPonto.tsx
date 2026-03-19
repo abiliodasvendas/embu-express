@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { StatusPonto } from "@/types/enums";
 import { useRegistrarPontoViewModel } from "@/hooks";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,6 +16,7 @@ import {
 import { AndroidSettings, IOSSettings, NativeSettings } from 'capacitor-native-settings';
 import { AnimatePresence, motion } from "framer-motion";
 import { Briefcase, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
+import { ColaboradorCliente } from "@/types/database";
 
 export default function RegistrarPonto() {
     const vm = useRegistrarPontoViewModel();
@@ -95,41 +97,41 @@ export default function RegistrarPonto() {
                                 </div>
                             </div>
                         ) : (
-                            <div className={`flex gap-6 ${vm.status === 'idle' ? 'flex-col-reverse sm:flex-row' : 'flex-col sm:flex-row'}`}>
-                                {/* Dashboard Card */}
-                                <div className="flex-1 flex flex-col min-w-0">
-                                    <Card className={`border shadow-sm rounded-3xl overflow-hidden relative transition-all duration-500 h-full flex flex-col justify-center ${
-                                        vm.status === 'idle' ? 'min-h-[180px] sm:min-h-[300px]' : 'min-h-[110px] sm:min-h-[300px]'
-                                        } ${vm.status === 'working' ? 'bg-white border-blue-100' :
-                                            vm.status === 'paused' ? 'bg-amber-50 border-amber-200' :
-                                            'bg-slate-50 border-slate-200'
-                                        }`}>
-                                        <CardContent className={`p-4 sm:p-5 md:p-6 lg:p-10 relative z-10 flex flex-col items-center justify-center text-center ${vm.status !== 'idle' ? 'py-4' : 'py-8'}`}>
-                                            <span className={`text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] mb-0 sm:mb-4 ${
-                                                    vm.status === 'working' ? 'text-blue-500' :
-                                                    vm.status === 'paused' ? 'text-amber-600' :
-                                                    'text-slate-400'
-                                                }`}>
+                        <div className={`flex gap-6 ${vm.status === StatusPonto.AGUARDANDO ? 'flex-col-reverse sm:flex-row' : 'flex-col sm:flex-row'}`}>
+                            {/* Dashboard Card */}
+                            <div className="flex-1 flex flex-col min-w-0">
+                                <Card className={`border shadow-sm rounded-3xl overflow-hidden relative transition-all duration-500 h-full flex flex-col justify-center ${
+                                    vm.status === StatusPonto.AGUARDANDO ? 'min-h-[180px] sm:min-h-[300px]' : 'min-h-[110px] sm:min-h-[300px]'
+                                    } ${vm.status === StatusPonto.TRABALHANDO ? 'bg-white border-blue-100' :
+                                        vm.status === StatusPonto.PAUSADO ? 'bg-amber-50 border-amber-200' :
+                                        'bg-slate-50 border-slate-200'
+                                    }`}>
+                                    <CardContent className={`p-4 sm:p-5 md:p-6 lg:p-10 relative z-10 flex flex-col items-center justify-center text-center ${vm.status !== StatusPonto.AGUARDANDO ? 'py-4' : 'py-8'}`}>
+                                        <span className={`text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] mb-0 sm:mb-4 ${
+                                                vm.status === StatusPonto.TRABALHANDO ? 'text-blue-500' :
+                                                vm.status === StatusPonto.PAUSADO ? 'text-amber-600' :
+                                                'text-slate-400'
+                                            }`}>
                                                 Status Atual
                                             </span>
-                                            <h2 className={`text-lg sm:text-2xl font-black mb-0 sm:mb-2 tracking-tight ${
-                                                    vm.status === 'working' ? 'text-slate-800' :
-                                                    vm.status === 'paused' ? 'text-amber-900' :
-                                                    'text-slate-700'
-                                                }`}>
-                                                {vm.status === 'idle' && "AGUARDANDO INÍCIO"}
-                                                {vm.status === 'working' && "EM SERVIÇO"}
-                                                {vm.status === 'paused' && "EM PAUSA"}
-                                            </h2>
-                                            <div className={`text-2xl sm:text-2xl md:text-3xl lg:text-5xl xl:text-6xl font-mono font-bold mt-1 sm:mt-4 tabular-nums tracking-tighter ${
-                                                    vm.status === 'working' ? 'text-blue-600' :
-                                                    vm.status === 'paused' ? 'text-amber-700' :
-                                                    'text-slate-800'
-                                                }`}>
-                                                {vm.timer}
-                                            </div>
+                                        <h2 className={`text-lg sm:text-2xl font-black mb-0 sm:mb-2 tracking-tight ${
+                                                vm.status === StatusPonto.TRABALHANDO ? 'text-slate-800' :
+                                                vm.status === StatusPonto.PAUSADO ? 'text-amber-900' :
+                                                'text-slate-700'
+                                            }`}>
+                                            {vm.status === StatusPonto.AGUARDANDO && "AGUARDANDO INÍCIO"}
+                                            {vm.status === StatusPonto.TRABALHANDO && "EM SERVIÇO"}
+                                            {vm.status === StatusPonto.PAUSADO && "EM PAUSA"}
+                                        </h2>
+                                        <div className={`text-2xl sm:text-2xl md:text-3xl lg:text-5xl xl:text-6xl font-mono font-bold mt-1 sm:mt-4 tabular-nums tracking-tighter ${
+                                                vm.status === StatusPonto.TRABALHANDO ? 'text-blue-600' :
+                                                vm.status === StatusPonto.PAUSADO ? 'text-amber-700' :
+                                                'text-slate-800'
+                                            }`}>
+                                            {vm.timer}
+                                        </div>
 
-                                            {vm.status !== 'idle' && (
+                                        {vm.status !== StatusPonto.AGUARDANDO && (
                                                 <div className="mt-6 w-full border-t border-slate-200/50 pt-6 space-y-6">
                                                     <div className="grid grid-cols-3 gap-4">
                                                         <div className="text-center">
@@ -175,7 +177,7 @@ export default function RegistrarPonto() {
 
                                 {/* Actions & Selection */}
                                 <div className="w-full sm:w-60 md:w-72 lg:w-80 xl:w-[400px] flex flex-col gap-6 shrink-0 min-w-0">
-                                    {vm.status === 'idle' && business.hasShifts && (
+                                    {vm.status === StatusPonto.AGUARDANDO && business.hasShifts && (
                                         <Card className="rounded-3xl shadow-sm border-slate-200 bg-white">
                                             <CardContent className="p-6">
                                                 <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-3">Selecione o Turno</label>
@@ -188,7 +190,7 @@ export default function RegistrarPonto() {
                                                         <SelectValue placeholder="Escolha a empresa e horário..." />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-xl border-slate-200 shadow-xl">
-                                                        {business.activeLinks.map((link: any) => (
+                                                        {business.activeLinks.map((link: ColaboradorCliente) => (
                                                             <SelectItem key={link.id} value={link.id.toString()} className="rounded-lg cursor-pointer py-3">
                                                                 <div className="flex flex-col">
                                                                     <span className="font-bold text-slate-800">{link.cliente?.nome_fantasia || "Cliente"}</span>
@@ -205,7 +207,7 @@ export default function RegistrarPonto() {
                                         </Card>
                                     )}
 
-                                    {vm.status !== 'idle' && (
+                                    {vm.status !== StatusPonto.AGUARDANDO && (
                                         <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden bg-white">
                                             <CardContent className="p-4 sm:p-6 flex justify-between items-center bg-slate-50/50">
                                                 <div className="flex flex-col">
@@ -225,49 +227,49 @@ export default function RegistrarPonto() {
 
                                     {/* Action Buttons */}
                                     <div className="grid grid-cols-1 gap-4">
-                                        {vm.status === 'idle' && (
+                                    {vm.status === StatusPonto.AGUARDANDO && (
+                                        <Button
+                                            onClick={vm.handleToggle}
+                                            disabled={vm.isProcessing || !vm.selectedLinkId}
+                                            className="h-20 text-xl font-bold rounded-2xl shadow-md bg-blue-600 text-white hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50"
+                                        >
+                                            {vm.isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (geo.loading ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
+                                            {vm.isProcessing ? "PROCESSANDO..." : "INICIAR TURNO"}
+                                        </Button>
+                                    )}
+
+                                    {vm.status === StatusPonto.TRABALHANDO && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <Button
+                                                variant="outline"
+                                                onClick={vm.handlePauseStart}
+                                                disabled={vm.isProcessing}
+                                                className="h-20 text-lg font-bold rounded-2xl border-2 border-amber-500 text-amber-600 hover:bg-amber-50 shadow-sm active:scale-[0.98]"
+                                            >
+                                                {vm.isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2" /> : <Pause className="w-5 h-5 mr-2" />}
+                                                PAUSA
+                                            </Button>
                                             <Button
                                                 onClick={vm.handleToggle}
-                                                disabled={vm.isProcessing || !vm.selectedLinkId}
-                                                className="h-20 text-xl font-bold rounded-2xl shadow-md bg-blue-600 text-white hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50"
-                                            >
-                                                {vm.isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : (geo.loading ? <MapPin className="animate-pulse w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />)}
-                                                {vm.isProcessing ? "PROCESSANDO..." : "INICIAR TURNO"}
-                                            </Button>
-                                        )}
-
-                                        {vm.status === 'working' && (
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={vm.handlePauseStart}
-                                                    disabled={vm.isProcessing}
-                                                    className="h-20 text-lg font-bold rounded-2xl border-2 border-amber-500 text-amber-600 hover:bg-amber-50 shadow-sm active:scale-[0.98]"
-                                                >
-                                                    {vm.isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2" /> : <Pause className="w-5 h-5 mr-2" />}
-                                                    PAUSA
-                                                </Button>
-                                                <Button
-                                                    onClick={vm.handleToggle}
-                                                    disabled={vm.isProcessing}
-                                                    className="h-20 text-lg font-bold rounded-2xl shadow-md bg-slate-800 text-white hover:bg-slate-900 active:scale-[0.98]"
-                                                >
-                                                    {vm.isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2" /> : <Square className="w-5 h-5 mr-2 text-red-500" />}
-                                                    ENCERRAR
-                                                </Button>
-                                            </div>
-                                        )}
-
-                                        {vm.status === 'paused' && (
-                                            <Button
-                                                onClick={vm.handlePauseEnd}
                                                 disabled={vm.isProcessing}
-                                                className="h-20 text-xl font-bold rounded-2xl shadow-md bg-amber-500 text-white hover:bg-amber-600 transition-all active:scale-[0.98]"
+                                                className="h-20 text-lg font-bold rounded-2xl shadow-md bg-slate-800 text-white hover:bg-slate-900 active:scale-[0.98]"
                                             >
-                                                {vm.isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />}
-                                                RETOMAR TRABALHO
+                                                {vm.isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-2" /> : <Square className="w-5 h-5 mr-2 text-red-500" />}
+                                                ENCERRAR
                                             </Button>
-                                        )}
+                                        </div>
+                                    )}
+
+                                    {vm.status === StatusPonto.PAUSADO && (
+                                        <Button
+                                            onClick={vm.handlePauseEnd}
+                                            disabled={vm.isProcessing}
+                                            className="h-20 text-xl font-bold rounded-2xl shadow-md bg-amber-500 text-white hover:bg-amber-600 transition-all active:scale-[0.98]"
+                                        >
+                                            {vm.isProcessing ? <RefreshCw className="animate-spin w-6 h-6 mr-3" /> : <Play className="w-6 h-6 mr-3" />}
+                                            RETOMAR TRABALHO
+                                        </Button>
+                                    )}
                                     </div>
 
                                     <div className="flex items-center justify-center text-slate-500 text-sm font-medium mt-2 bg-slate-100/50 py-3 rounded-2xl border border-slate-200">

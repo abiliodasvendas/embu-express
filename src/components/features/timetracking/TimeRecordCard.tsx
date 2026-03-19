@@ -4,7 +4,8 @@ import { formatMinutes, formatTime, getManagementStatus } from "@/utils/ponto";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
-import { PONTO_STATUS_UI_CONFIG } from "@/constants/ponto";
+import { PONTO_STATUS_UI_CONFIG } from "@/config/ponto-ui";
+import { ManagementStatus } from "@/types/enums";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { Card } from "@/components/ui/card";
@@ -69,7 +70,7 @@ export function TimeRecordCard({
                     <div className="space-y-1">
                         <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Entrada</p>
                         <p className={cn("text-base font-black leading-none", record.entrada_hora ? "text-gray-900" : "text-gray-300")}>
-                            {record.entrada_hora ? formatTime(record.entrada_hora) : (mStatus === 'ABSENT' ? "Faltou" : "Pendente")}
+                            {record.entrada_hora ? formatTime(record.entrada_hora) : (mStatus === ManagementStatus.ABSENT ? "Faltou" : "Pendente")}
                         </p>
                     </div>
                     <div className="space-y-1 text-right">

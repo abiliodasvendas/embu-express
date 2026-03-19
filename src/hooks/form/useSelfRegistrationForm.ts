@@ -8,6 +8,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { SelfRegistrationFormData, selfRegistrationSchema } from "../../schemas/selfRegistrationSchema";
+import { ApiError } from "@/types/api";
+import { Perfil } from "@/types/database";
 
 export function useSelfRegistrationForm() {
   const navigate = useNavigate();
@@ -37,12 +39,12 @@ export function useSelfRegistrationForm() {
       cnh_categoria: "",
       chave_pix: "",
       perfil_id: "",
-      isMotoboyOrFiscal: false,
+      isMotoboyOrFiscal: true,
     },
     mode: "onChange",
   });
 
-  const onSubmit = async (values: SelfRegistrationFormData, roles?: any[]) => {
+  const onSubmit = async (values: SelfRegistrationFormData, roles?: Perfil[]) => {
     setIsLoading(true);
     try {
       // Find role name by id if roles are provided
@@ -61,17 +63,16 @@ export function useSelfRegistrationForm() {
         rg: values.rg,
         role: roleName,
       };
-      // Remove cpfcnpj from payload if not needed by backend, but keeping it doesn't hurt usually
-      // unless strict validation.
 
       // This ensures the public.usuarios record is created first/sequentially
       await authApi.register(payload);
 
       setSuccess(true);
 
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = err as ApiError;
       console.error(error);
-      const message = error.response?.data?.error || error.message || "";
+      const message = error.response?.data?.error || error.response?.data?.message || error.message || "";
 
       // Map background error messages to specific form fields
       if (message.toLowerCase().includes("cpf")) {

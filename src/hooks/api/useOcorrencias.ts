@@ -7,6 +7,7 @@ export function useOcorrencias(filtros?: {
     colaborador_cliente_id?: number;
     data_inicio?: string;
     data_fim?: string;
+    tipo_id?: number;
     order?: string;
     ascending?: boolean;
 }) {

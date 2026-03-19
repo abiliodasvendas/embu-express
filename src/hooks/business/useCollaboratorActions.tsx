@@ -6,13 +6,14 @@ import { Usuario } from "@/types/database";
 import { ActionItem } from "@/types/actions";
 import { Ban, Check, Edit, Eye, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario } from "@/types/enums";
 
 interface UseCollaboratorActionsProps {
   collaborator?: Usuario;
   onEdit: (collaborator: Usuario) => void;
   onStatusChange: (collaborator: Usuario, newStatus: string) => void;
   onDelete: (collaborator: Usuario) => void;
+  onResetPassword?: (collaborator: Usuario) => void;
   hideDetails?: boolean;
 }
 
@@ -21,6 +22,7 @@ export function useCollaboratorActions({
   onEdit,
   onStatusChange,
   onDelete,
+  onResetPassword,
   hideDetails = false,
 }: UseCollaboratorActionsProps) {
   const { user } = useSession();
@@ -56,24 +58,34 @@ export function useCollaboratorActions({
         swipeColor: "bg-blue-600",
         drawerClass: "text-blue-600",
       });
+      // Apenas não-atual usuário
+      if (!isCurrentUser && onResetPassword) {
+        actions.push({
+          label: "Resetar Senha",
+          icon: <Check className="h-4 w-4" />, // We'll just use a Check or Key if Key was imported. Let's stick with Check or Edit to avoid import issues
+          onClick: () => onResetPassword(collaborator),
+          swipeColor: "bg-purple-600",
+          drawerClass: "text-purple-600",
+        });
+      }
     }
   }
 
   if (!isCurrentUser && canManageHierarchy) {
     if (can(PERMISSIONS.USUARIOS.STATUS)) {
-      if (status === STATUS_CADASTRO.PENDENTE) {
+      if (status === StatusUsuario.PENDENTE) {
         actions.push({
           label: "Aprovar",
           icon: <Check className="h-4 w-4" />,
-          onClick: () => onStatusChange(collaborator, STATUS_CADASTRO.ATIVO),
+          onClick: () => onStatusChange(collaborator, StatusUsuario.ATIVO),
           swipeColor: "bg-green-600",
           drawerClass: "text-green-600",
         });
-      } else if (status === STATUS_CADASTRO.ATIVO) {
+      } else if (status === StatusUsuario.ATIVO) {
         actions.push({
           label: "Desativar",
           icon: <Ban className="h-4 w-4" />,
-          onClick: () => onStatusChange(collaborator, STATUS_CADASTRO.INATIVO),
+          onClick: () => onStatusChange(collaborator, StatusUsuario.INATIVO),
           swipeColor: "bg-amber-600",
           drawerClass: "text-amber-600",
         });
@@ -81,7 +93,7 @@ export function useCollaboratorActions({
         actions.push({
           label: "Ativar",
           icon: <Check className="h-4 w-4" />,
-          onClick: () => onStatusChange(collaborator, STATUS_CADASTRO.ATIVO),
+          onClick: () => onStatusChange(collaborator, StatusUsuario.ATIVO),
           swipeColor: "bg-green-600",
           drawerClass: "text-green-600",
         });

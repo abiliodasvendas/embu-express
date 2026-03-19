@@ -2,6 +2,7 @@ import { getMessage } from "@/constants/messages";
 import { financeiroApi } from "@/services/api/financeiro.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ApiError } from "@/types/api";
 
 export function useFinanceiroMutations() {
     const queryClient = useQueryClient();
@@ -13,8 +14,10 @@ export function useFinanceiroMutations() {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
             toast.success(getMessage("financeiro.sucesso.pago"));
         },
-        onError: (error: any) => {
-            toast.error(getMessage("financeiro.erro.registrarPagamento"), { description: error.message });
+        onError: (error: ApiError) => {
+            toast.error(getMessage("financeiro.erro.registrarPagamento"), { 
+                description: error.response?.data?.error || error.message 
+            });
         }
     });
 
@@ -25,8 +28,10 @@ export function useFinanceiroMutations() {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
             toast.success("Adiantamentos confirmados com sucesso!");
         },
-        onError: (error: any) => {
-            toast.error("Erro ao confirmar adiantamento", { description: error.message });
+        onError: (error: ApiError) => {
+            toast.error("Erro ao confirmar adiantamento", { 
+                description: error.response?.data?.error || error.message 
+            });
         }
     });
 
@@ -37,8 +42,10 @@ export function useFinanceiroMutations() {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
             toast.success("Confirmação de adiantamentos removida!");
         },
-        onError: (error: any) => {
-            toast.error("Erro ao remover confirmação", { description: error.message });
+        onError: (error: ApiError) => {
+            toast.error("Erro ao remover confirmação", { 
+                description: error.response?.data?.error || error.message 
+            });
         }
     });
 
@@ -49,8 +56,10 @@ export function useFinanceiroMutations() {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
             toast.success("Pagamento desfeito com sucesso!");
         },
-        onError: (error: any) => {
-            toast.error("Erro ao desfazer pagamento", { description: error.message });
+        onError: (error: ApiError) => {
+            toast.error("Erro ao desfazer pagamento", { 
+                description: error.response?.data?.error || error.message 
+            });
         }
     });
 

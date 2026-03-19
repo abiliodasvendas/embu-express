@@ -14,9 +14,9 @@ export function usePermissions() {
   const isLoading = loadingSession || loadingProfile || (!!user && !profile && !error);
 
   const roleName = profile?.perfil?.nome;
-  const permissoesArray: string[] = useMemo(() => (profile?.perfil as any)?.perfil_permissoes?.map(
-    (pp: any) => pp.permissao?.nome_interno
-  ) || [], [profile]);
+  const permissoesArray: string[] = useMemo(() => profile?.perfil?.perfil_permissoes?.map(
+    pp => pp.permissao?.nome_interno
+  ).filter((p): p is string => !!p) || [], [profile]);
 
   const isSuperAdmin = roleName === ROLES.SUPER_ADMIN;
   const isAdmin = roleName === ROLES.ADMIN;

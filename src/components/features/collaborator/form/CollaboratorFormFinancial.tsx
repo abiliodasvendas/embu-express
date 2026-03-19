@@ -58,7 +58,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                 )} />
                 <FormField name="tipo_chave_pix" control={form.control} render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX</FormLabel>
                         <Select 
                             onValueChange={(val) => {
                                 field.onChange(val);
@@ -87,7 +87,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                     const tipoChavePix = form.watch("tipo_chave_pix");
                     return (
                         <FormItem>
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Chave Pix <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Chave Pix</FormLabel>
                             <FormControl>
                                 <Input
                                     disabled={!tipoChavePix}

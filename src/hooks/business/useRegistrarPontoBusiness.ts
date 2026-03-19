@@ -5,6 +5,7 @@ import { useProfile } from "./useProfile";
 import { useMemo } from "react";
 import { getLocalDate } from "@/utils/date";
 import { useTogglePonto, useIniciarPausa, useFinalizarPausa } from "../api/usePontoMutations";
+import { RegistroPonto, ColaboradorCliente, Pausa } from "@/types/database";
 
 export function useRegistrarPontoBusiness() {
     const { user } = useSession();
@@ -17,7 +18,7 @@ export function useRegistrarPontoBusiness() {
     // Fetch Today's Point Data
     const { data: pontoHoje, isLoading: isLoadingPonto, refetch } = useQuery({
         queryKey: ['ponto-hoje-smart', user?.id],
-        queryFn: async () => {
+        queryFn: async (): Promise<RegistroPonto | null> => {
             if (!user?.id) return null;
             const res = await apiClient.get('/pontos/hoje', {
                 params: { usuarioId: user.id }
@@ -29,7 +30,7 @@ export function useRegistrarPontoBusiness() {
     });
 
     const activeLinks = useMemo(() => {
-        return userProfile?.links?.filter((l: any) => {
+        return (userProfile?.links as ColaboradorCliente[] | undefined)?.filter((l: ColaboradorCliente) => {
             if (!l.data_fim) return true;
             const today = getLocalDate();
             return l.data_fim >= today;
@@ -42,16 +43,16 @@ export function useRegistrarPontoBusiness() {
         if (!pontoHoje) return { count: 0, totalMs: 0, kmTrabalho: 0, kmPausa: 0 };
 
         const allPausas = pontoHoje.pausas || [];
-        const finishedPausas = allPausas.filter((p: any) => p.fim_hora) || [];
+        const finishedPausas = allPausas.filter((p: Pausa) => p.fim_hora) || [];
 
-        const totalPausasMs = finishedPausas.reduce((acc: number, p: any) => {
+        const totalPausasMs = finishedPausas.reduce((acc: number, p: Pausa) => {
             const s = new Date(p.inicio_hora).getTime();
-            const e = new Date(p.fim_hora).getTime();
+            const e = new Date(p.fim_hora!).getTime();
             return acc + (e - s);
         }, 0);
 
-        const kmTrabalho = allPausas.reduce((acc: number, p: any) => acc + (Number(p.distancia_trabalho) || 0), 0) + (Number(pontoHoje.saida_distancia_trabalho) || 0);
-        const kmPausa = allPausas.reduce((acc: number, p: any) => acc + (Number(p.distancia_pausa) || 0), 0);
+        const kmTrabalho = allPausas.reduce((acc: number, p: Pausa) => acc + (Number(p.distancia_trabalho) || 0), 0) + (Number(pontoHoje.saida_distancia_trabalho) || 0);
+        const kmPausa = allPausas.reduce((acc: number, p: Pausa) => acc + (Number(p.distancia_pausa) || 0), 0);
 
         return {
             count: allPausas.length,

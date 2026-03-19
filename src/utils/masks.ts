@@ -1,9 +1,11 @@
 import { PIX_TYPES } from "@/constants/financeiro.constants";
+import { onlyNumbers } from "./string";
+import { moneyToNumber } from "./formatters/currency";
 
 export const phoneMask = (value: string): string => {
   if (!value) return "";
 
-  const numericValue = value.replace(/\D/g, "").slice(0, 11);
+  const numericValue = onlyNumbers(value).slice(0, 11);
 
   if (numericValue.length <= 2) {
     return numericValue;
@@ -23,7 +25,7 @@ export const phoneMask = (value: string): string => {
 export const moneyMask = (value: string): string => {
   if (!value) return '';
 
-  let numericValue = value.replace(/\D/g, '');
+  let numericValue = onlyNumbers(value);
 
   if (numericValue.length === 1) {
     numericValue = '0' + numericValue;
@@ -39,28 +41,19 @@ export const moneyMask = (value: string): string => {
   });
 };
 
-export const moneyToNumber = (value: string): number => {
-  if (!value) return 0;
-
-  const numericString = value
-    .replace(/[R$\s]/g, '')
-    .replace(/\./g, '')
-    .replace(',', '.');
-
-  return parseFloat(numericString) || 0;
-};
+export { moneyToNumber };
 
 export const cepMask = (value: string): string => {
   if (!value) return value;
 
-  const numericValue = value.replace(/\D/g, '');
+  const numericValue = onlyNumbers(value);
 
   return numericValue.replace(/(\d{5})(\d{1,3})/, '$1-$2');
 };
 
 export const cpfMask = (value: string): string => {
   if (!value) return value;
-  const numericValue = value.replace(/\D/g, "").slice(0, 11);
+  const numericValue = onlyNumbers(value).slice(0, 11);
 
   return numericValue
     .replace(/(\d{3})(\d)/, "$1.$2")
@@ -70,7 +63,7 @@ export const cpfMask = (value: string): string => {
 
 export const cnpjMask = (value: string): string => {
   if (!value) return value;
-  const numericValue = value.replace(/\D/g, "").slice(0, 14);
+  const numericValue = onlyNumbers(value).slice(0, 14);
 
   return numericValue
     .replace(/^(\d{2})(\d)/, "$1.$2")
@@ -81,7 +74,7 @@ export const cnpjMask = (value: string): string => {
 
 export const cpfCnpjMask = (value: string): string => {
   if (!value) return value;
-  const numericValue = value.replace(/\D/g, "");
+  const numericValue = onlyNumbers(value);
   return numericValue.length <= 11 ? cpfMask(value) : cnpjMask(value);
 };
 
@@ -100,9 +93,6 @@ export const aplicarMascaraPlaca = (valor: string): string => {
   }
 
   if (v.length > 3) {
-    // Se ainda não temos 5 caracteres, assumimos o hífen preventivamente (padrão mais comum)
-    // Mas se o 4º caractere for digitado e o 5º for letra, o formatador de exibição ou blur limpa.
-    // Para uma máscara fluida, apenas adicionamos o hífen se for padrão antigo completo ou se estivermos digitando números.
     return `${v.slice(0, 3)}-${v.slice(3)}`;
   }
 
@@ -111,7 +101,7 @@ export const aplicarMascaraPlaca = (valor: string): string => {
 
 export const dateMask = (value: string): string => {
   if (!value) return value;
-  const numericValue = value.replace(/\D/g, "").slice(0, 8); // Limit to 8 digits
+  const numericValue = onlyNumbers(value).slice(0, 8); // Limit to 8 digits
 
   return numericValue
     .replace(/(\d{2})(\d)/, "$1/$2") // Add slash after 2nd digit
@@ -120,7 +110,7 @@ export const dateMask = (value: string): string => {
 
 export const rgMask = (value: string): string => {
   if (!value) return value;
-  const numericValue = value.replace(/\D/g, "").slice(0, 9);
+  const numericValue = onlyNumbers(value).slice(0, 9);
 
   return numericValue
     .replace(/(\d{2})(\d)/, "$1.$2")
@@ -130,28 +120,24 @@ export const rgMask = (value: string): string => {
 
 export const kmMask = (value: string | number): string => {
   if (value === undefined || value === null || value === "") return "";
-  // Remove tudo que não for dígito
-  return value.toString().replace(/\D/g, "");
+  return onlyNumbers(value);
 };
 
 export const kmToNumber = (value: string): number => {
   if (!value) return 0;
-  return parseInt(value.replace(/\D/g, ""), 10) || 0;
+  return parseInt(onlyNumbers(value), 10) || 0;
 };
 
 export const formatKm = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return "--";
-  // Apenas o número puro, sem "km" ou formatação de milhar/decimal
   return value.toString();
 };
 
 export const timeMask = (value: string): string => {
   if (!value) return value;
 
-  // Remove tudo que não for dígito e limita a 4 caracteres
-  let numericValue = value.replace(/\D/g, "").slice(0, 4);
+  let numericValue = onlyNumbers(value).slice(0, 4);
 
-  // Validação do primeiro dígito (0, 1 ou 2)
   if (numericValue.length >= 1) {
     const firstDigit = parseInt(numericValue[0]);
     if (firstDigit > 2) {
@@ -159,7 +145,6 @@ export const timeMask = (value: string): string => {
     }
   }
 
-  // Validação do segundo dígito (se primeiro for 2, segundo max 3)
   if (numericValue.length >= 2) {
     const hours = parseInt(numericValue.slice(0, 2));
     if (hours > 23) {
@@ -167,7 +152,6 @@ export const timeMask = (value: string): string => {
     }
   }
 
-  // Validação do terceiro dígito (minutos - max 5)
   if (numericValue.length >= 3) {
     const thirdDigit = parseInt(numericValue[2]);
     if (thirdDigit > 5) {
@@ -179,19 +163,15 @@ export const timeMask = (value: string): string => {
     return numericValue;
   }
 
-  // Adiciona os dois pontos após os primeiros dois dígitos
   return numericValue.replace(/(\d{2})(\d)/, "$1:$2");
 };
+
 export const evpMask = (value: string): string => {
   if (!value) return value;
 
-  // Remove non-alphanumeric
   const cleanValue = value.replace(/[^a-zA-Z0-9]/g, "");
-
-  // Limit to 32 chars
   const limitedValue = cleanValue.slice(0, 32);
 
-  // 8-4-4-4-12 format
   return limitedValue
     .replace(/^([a-zA-Z0-9]{8})([a-zA-Z0-9])/, "$1-$2")
     .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, "$1-$2-$3")

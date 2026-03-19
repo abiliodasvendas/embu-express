@@ -12,9 +12,27 @@ import { RegistroPonto } from "@/types/database";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { formatMinutes } from "@/utils/ponto";
 import { PERMISSIONS } from "@/constants/permissions.enum";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { FilterOptions } from "@/types/enums";
 import { useTimeMirrorBusiness } from "@/hooks/business/useTimeMirrorBusiness";
 import { TimeMirrorDailyCard } from "./TimeMirrorDailyCard";
+ 
+const LABELS = {
+    TOTAL_TRABALHADO: "Total Trabalhado",
+    TOTAL_ESPERADO: "Total Esperado",
+    SALDO_MES: "Saldo do Mês",
+    DATA: "Data",
+    TURNO: "Turno",
+    ENTRADA: "Entrada",
+    SAIDA: "Saída",
+    INTERVALO: "Intervalo",
+    TRABALHADO: "Trabalhado",
+    ESPERADO: "Esperado",
+    SALDO: "Saldo",
+    NENHUM_COLABORADOR: "Nenhum colaborador selecionado",
+    ESCOLHA_COLABORADOR: "Escolha um colaborador acima para visualizar o espelho de ponto.",
+    SEM_REGISTROS: "Sem registros neste mês",
+    SEM_REGISTROS_DESC: "Não foram encontrados pontos batidos para este colaborador no período selecionado."
+};
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -28,7 +46,7 @@ export function TimeMirrorView({
     usuarioId, 
     selectedMonth,
     selectedYear,
-    selectedShift = STATUS_CADASTRO.TODOS,
+    selectedShift = FilterOptions.TODOS,
     hideCollaboratorSelect = false 
 }: TimeMirrorViewProps) {
     const month = selectedMonth || new Date().getMonth() + 1;
@@ -90,8 +108,8 @@ export function TimeMirrorView({
                             <Calendar className="h-8 w-8 text-primary/40" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900">Nenhum colaborador selecionado</h3>
-                            <p className="text-sm text-gray-500 max-w-[280px]">Escolha um colaborador acima para visualizar o espelho de ponto.</p>
+                            <h3 className="font-bold text-gray-900">{LABELS.NENHUM_COLABORADOR}</h3>
+                            <p className="text-sm text-gray-500 max-w-[280px]">{LABELS.ESCOLHA_COLABORADOR}</p>
                         </div>
                     </div>
                 ) : isLoading ? (
@@ -112,7 +130,7 @@ export function TimeMirrorView({
                                                     <Clock className="h-6 w-6 text-blue-600" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Total Trabalhado</p>
+                                                    <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">{LABELS.TOTAL_TRABALHADO}</p>
                                                     <h3 className="text-xl font-black text-blue-900">{formatMinutes(totals.worked)}</h3>
                                                 </div>
                                             </div>
@@ -126,7 +144,7 @@ export function TimeMirrorView({
                                                     <Calendar className="h-6 w-6 text-amber-600" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-amber-600 font-bold uppercase tracking-wider mb-1">Total Esperado</p>
+                                                    <p className="text-xs text-amber-600 font-bold uppercase tracking-wider mb-1">{LABELS.TOTAL_ESPERADO}</p>
                                                     <h3 className="text-xl font-black text-amber-900">{formatMinutes(totals.expected)}</h3>
                                                 </div>
                                             </div>
@@ -149,7 +167,7 @@ export function TimeMirrorView({
                                                     <p className={cn(
                                                         "text-xs font-bold uppercase tracking-wider mb-1",
                                                         totals.balance >= 0 ? "text-emerald-600" : "text-red-600"
-                                                    )}>Saldo do Mês</p>
+                                                    )}>{LABELS.SALDO_MES}</p>
                                                     <h3 className={cn(
                                                         "text-2xl font-black",
                                                         totals.balance >= 0 ? "text-emerald-900" : "text-red-900"
@@ -168,16 +186,16 @@ export function TimeMirrorView({
                                 "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",
                                 canViewAll ? "grid-cols-8" : "grid-cols-4"
                             )}>
-                                <div className="col-span-1">Data</div>
-                                <div className="col-span-1">Turno</div>
-                                <div className="col-span-1">Entrada</div>
-                                <div className="col-span-1 text-right md:text-left">Saída</div>
+                                <div className="col-span-1">{LABELS.DATA}</div>
+                                <div className="col-span-1">{LABELS.TURNO}</div>
+                                <div className="col-span-1">{LABELS.ENTRADA}</div>
+                                <div className="col-span-1 text-right md:text-left">{LABELS.SAIDA}</div>
                                 {canViewAll && (
                                     <>
-                                        <div className="col-span-1 text-center">Intervalo</div>
-                                        <div className="col-span-1 text-center">Trabalhado</div>
-                                        <div className="col-span-1 text-center">Esperado</div>
-                                        <div className="col-span-1 text-right">Saldo</div>
+                                        <div className="col-span-1 text-center">{LABELS.INTERVALO}</div>
+                                        <div className="col-span-1 text-center">{LABELS.TRABALHADO}</div>
+                                        <div className="col-span-1 text-center">{LABELS.ESPERADO}</div>
+                                        <div className="col-span-1 text-right">{LABELS.SALDO}</div>
                                     </>
                                 )}
                             </div>
@@ -197,8 +215,8 @@ export function TimeMirrorView({
                 ) : (
                     <UnifiedEmptyState
                         icon={Calendar}
-                        title="Sem registros neste mês"
-                        description="Não foram encontrados pontos batidos para este colaborador no período selecionado."
+                        title={LABELS.SEM_REGISTROS}
+                        description={LABELS.SEM_REGISTROS_DESC}
                     />
                 )}
             </div>

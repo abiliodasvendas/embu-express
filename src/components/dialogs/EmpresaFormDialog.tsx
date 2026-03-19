@@ -30,8 +30,8 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, FileText, Hash, Loader2, Wand2, X, Zap } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, FieldErrors } from "react-hook-form";
 
 import { EmpresaFormValues, empresaSchema } from "@/schemas/empresaSchema";
 
@@ -51,6 +51,8 @@ export function EmpresaFormDialog({
 
   const isEditing = !!empresaToEdit;
   const isLoading = createEmpresa.isPending || updateEmpresa.isPending;
+
+  const [openSections, setOpenSections] = useState<string[]>(["dados-empresa"]);
 
   const form = useForm<EmpresaFormValues>({
     resolver: zodResolver(empresaSchema),
@@ -103,6 +105,13 @@ export function EmpresaFormDialog({
     }
   };
 
+  const onFormError = (errors: FieldErrors<EmpresaFormValues>) => {
+    console.error("Erro na validação do formulário:", errors);
+    if (Object.keys(errors).length > 0) {
+      setOpenSections(["dados-empresa"]);
+    }
+  };
+
   const onSubmit = async (values: EmpresaFormValues) => {
     try {
       if (isEditing && empresaToEdit) {
@@ -113,11 +122,11 @@ export function EmpresaFormDialog({
       onOpenChange(false);
     } catch (error: any) {
       console.error("Erro ao salvar empresa:", error);
-      const message = error.response?.data?.error || error.message || "";
+      const message = error.response?.data?.message || error.message || "";
+      
       if (message.toLowerCase().includes("cnpj")) {
-        const errorMessage = messages.empresa.erro.cnpjJaExiste;
-        form.setError("cnpj", { message: errorMessage });
-        toast.error(errorMessage);
+        setOpenSections(["dados-empresa"]);
+        form.setError("cnpj", { message: messages.empresa.erro.cnpjJaExiste });
       } else {
         toast.error(isEditing ? messages.empresa.erro.atualizar : messages.empresa.erro.criar, {
           description: message
@@ -130,6 +139,7 @@ export function EmpresaFormDialog({
     <Dialog open={open} onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}>
       <DialogContent className="w-full max-lg p-0 gap-0 h-[100dvh] sm:h-auto sm:max-h-[90vh] bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl" hideCloseButton>
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
+          {/* Header buttons omitted for brevity if they are the same, but I'll keep them */}
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
               type="button"
@@ -170,8 +180,13 @@ export function EmpresaFormDialog({
 
         <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
           <Form {...form}>
-            <form id="empresa-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <Accordion type="multiple" defaultValue={["dados-empresa"]} className="space-y-4">
+            <form id="empresa-form" onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-4">
+              <Accordion 
+                type="multiple" 
+                value={openSections} 
+                onValueChange={setOpenSections}
+                className="space-y-4"
+              >
                 <AccordionItem value="dados-empresa" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                   <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                     <div className="flex items-center gap-2">

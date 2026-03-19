@@ -1,18 +1,19 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
-import { DateNavigation } from "@/components/common/DateNavigation";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { Input } from "@/components/ui/input";
+import { FilterOptions } from "@/types/enums";
 import { useOccurrenceViewModel } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { History } from "lucide-react";
-import { useEffect } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import { OccurrenceDailyItem } from "./OccurrenceDailyItem";
+
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { useEffect } from "react";
 
 interface OccurrenceViewProps {
   usuarioId?: string;
@@ -38,16 +39,18 @@ export function OccurrenceView({
   const vm = useOccurrenceViewModel({
     usuarioId,
     mode,
+    selectedMonth,
+    selectedYear,
     syncWithUrl: !usuarioId,
   });
 
   useEffect(() => {
-    if (selectedMonth && vm.setMonth) vm.setMonth(selectedMonth);
-  }, [selectedMonth, vm.setMonth]);
-
-  useEffect(() => {
-    if (selectedYear && vm.setYear) vm.setYear(selectedYear);
-  }, [selectedYear, vm.setYear]);
+    if (mode === "monthly" && selectedMonth && selectedYear) {
+      const date = new Date(selectedYear, selectedMonth - 1, 1);
+      vm.setStartDate(format(startOfMonth(date), "yyyy-MM-dd"));
+      vm.setEndDate(format(endOfMonth(date), "yyyy-MM-dd"));
+    }
+  }, [mode, selectedMonth, selectedYear, vm.setStartDate, vm.setEndDate]);
 
   const handleDelete = (occurrence: any) => {
     openConfirmationDialog({
@@ -71,17 +74,17 @@ export function OccurrenceView({
         {showFilters && (
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-gray-50/50">
             <CardContent className="p-5">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4 items-end">
                 {!usuarioId && (
                   <div className="md:col-span-2 space-y-2">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Colaborador</label>
                     <Combobox
                       options={[
-                        { value: STATUS_CADASTRO.TODOS, label: "Todos os colaboradores" },
+                        { value: FilterOptions.TODOS, label: "Todos os colaboradores" },
                         ...collaborators.map(c => ({ value: c.id, label: c.nome_completo }))
                       ]}
-                      value={vm.filters.selectedUsuario || STATUS_CADASTRO.TODOS}
-                      onSelect={(val) => vm.setUsuario(val || STATUS_CADASTRO.TODOS)}
+                      value={vm.filters.selectedUsuario || FilterOptions.TODOS}
+                      onSelect={(val) => vm.setUsuario(val || FilterOptions.TODOS)}
                       placeholder="Selecione um colaborador..."
                       searchPlaceholder="Buscar colaborador..."
                       emptyText="Nenhum colaborador encontrado."
@@ -90,14 +93,37 @@ export function OccurrenceView({
                   </div>
                 )}
 
-                <div className={cn("space-y-2", !usuarioId ? "md:col-span-2" : "md:col-span-4")}>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">
-                    {mode === "daily" ? "Data da Ocorrência" : "Período"}
-                  </label>
-                  <DateNavigation
-                    date={vm.localDate}
-                    onNavigate={vm.setLocalDate}
-                    maxDate={null}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Tipo</label>
+                  <Combobox
+                    options={[
+                      { value: FilterOptions.TODOS, label: "Todos os tipos" },
+                      ...vm.tiposOcorrencia.map(t => ({ value: String(t.id), label: t.descricao }))
+                    ]}
+                    value={vm.filters.selectedTipo || FilterOptions.TODOS}
+                    onSelect={(val) => vm.setTipo(val || FilterOptions.TODOS)}
+                    placeholder="Filtrar por tipo..."
+                    className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 hover:bg-white transition-none shadow-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">De</label>
+                  <Input
+                    type="date"
+                    value={vm.startDate}
+                    onChange={(e) => vm.setStartDate(e.target.value)}
+                    className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 shadow-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Até</label>
+                  <Input
+                    type="date"
+                    value={vm.endDate}
+                    onChange={(e) => vm.setEndDate(e.target.value)}
+                    className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium text-gray-700 shadow-none"
                   />
                 </div>
               </div>

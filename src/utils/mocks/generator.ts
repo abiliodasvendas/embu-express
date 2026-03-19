@@ -1,4 +1,4 @@
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario } from "@/types/enums";
 
 // Listas de dados para geração aleatória
 const nomes = [
@@ -176,32 +176,43 @@ export const generateCNPJ = (formatted = true): string => {
 };
 
 /**
- * Gera dados fictícios para um cliente
+ * Gera dados fictícios para um cliente (Simplificado: sem endereço e CNPJ)
  */
 export const generateClientData = () => {
   const empresas = ["Tech", "Global", "Express", "Logistics", "Brasil", "Digital", "Solutions", "Trans", "Cargo", "Flow"];
-  const sufixos = ["Ltda", "S.A.", "EPP", "ME"];
-
   const nomeBase = empresas[randomNumber(0, empresas.length - 1)];
-  const sufixo = sufixos[randomNumber(0, sufixos.length - 1)];
   const complemento = empresas[randomNumber(0, empresas.length - 1)];
 
-  const nomeFantasia = `${nomeBase} ${complemento}`;
-  const razaoSocial = `${nomeFantasia} ${sufixo}`;
+  return {
+    nome_fantasia: `${nomeBase} ${complemento}`,
+    ativo: true,
+  };
+};
 
-  const randomEscala = [0, 1, 2, 3, 4, 5, 6]
+/**
+ * Gera dados fictícios para uma Unidade de Cliente
+ */
+export const generateUnidadeData = (clienteId?: number) => {
+  const nomes = ["Matriz", "Filial 1", "CD 02", "Expedição", "Hub Logístico", "Pátio A", "Estação Central"];
+  const sufixos = ["Ltda", "S.A.", "EPP", "ME"];
+  
+  const nomeUnidade = nomes[randomNumber(0, nomes.length - 1)];
+  const razaoSocial = `${nomeUnidade} Empreendimentos ${sufixos[randomNumber(0, sufixos.length - 1)]}`;
+
+  const randomEscala = [1, 2, 3, 4, 5] // Seg-Sex por padrão no fake
     .sort(() => Math.random() - 0.5)
-    .slice(0, randomNumber(1, 7))
+    .slice(0, randomNumber(3, 5))
     .sort((a, b) => a - b);
 
   return {
-    nome_fantasia: nomeFantasia,
+    cliente_id: clienteId,
+    nome_unidade: nomeUnidade,
     razao_social: razaoSocial,
     cnpj: generateCNPJ(),
     ...generateAddress(),
-    ativo: true,
-    km_contratados: randomNumber(100, 2000),
+    km_contratados: randomNumber(500, 3000),
     escala_semanal: randomEscala,
+    ativo: true,
   };
 };
 
@@ -229,9 +240,20 @@ export const generateEmpresaData = () => {
 };
 
 /**
+ * Gera um RG fictício formatado
+ */
+export const generateRG = (): string => {
+  const n1 = randomNumber(10, 99);
+  const n2 = randomNumber(100, 999);
+  const n3 = randomNumber(100, 999);
+  const d = randomNumber(0, 9);
+  return `${n1}.${n2}.${n3}-${d}`;
+};
+
+/**
  * Gera dados fictícios para um colaborador
  */
-export const generateCollaboratorData = (clienteId?: string | number, empresaId?: string | number) => {
+export const generateCollaboratorData = () => {
   const nomeCompleto = generateName();
 
   return {
@@ -239,52 +261,20 @@ export const generateCollaboratorData = (clienteId?: string | number, empresaId?
     email: generateEmail(nomeCompleto),
     cpf: generateCPF(),
     rg: generateRG(),
-    perfil_id: randomNumber(1, 3), // 1: Admin, 2: Colaborador, 3: Motorista
-    cliente_id: clienteId ? (typeof clienteId === "string" ? parseInt(clienteId) : clienteId) : null,
-    empresa_id: empresaId ? (typeof empresaId === "string" ? parseInt(empresaId) : empresaId) : null,
-    status: STATUS_CADASTRO.ATIVO,
-    turnos: [
-      {
-        hora_inicio: "08:00:00",
-        hora_fim: "12:00:00",
-        valor_contrato: 3500,
-        valor_aluguel: 500,
-        ajuda_custo: 200,
-        valor_bonus: null
-      },
-      {
-        hora_inicio: "13:00:00",
-        hora_fim: "18:00:00",
-        valor_contrato: 3500,
-        valor_aluguel: 500,
-        ajuda_custo: 200,
-        valor_bonus: null
-      }
-    ]
+    data_nascimento: formatDateBR(new Date(1990, 0, 1)), // Padronizado 1990
+    status: StatusUsuario.ATIVO,
+    senha_padrao: true,
   };
 };
 
-
-/**
- * Gera um registro de ponto fictício para o colaborador na data especificada
- */
 /**
  * Gera um registro de ponto fictício para o colaborador na data especificada e turno
  */
 export const generateTimeRecord = (usuarioId: string, date: string, turno?: { hora_inicio: string, hora_fim: string }, scenarioOverride?: number) => {
-  // Cenários: 
-  // 1. Normal
-  // 2. Atraso Leve 
-  // 3. Atraso Grave
-  // 4. Hora Extra (Saída)
-  // 5. Hora Extra Excessiva
-  // 6. Trabalhando Agora
-
   const scenario = scenarioOverride || randomNumber(1, 6);
   let entrada = turno?.hora_inicio || "08:00:00";
   let saida: string | null = turno?.hora_fim || "18:00:00";
 
-  // Variação básica de minutos para parecer natural
   const addMinutes = (time: string, minutes: number) => {
     const [h, m, s] = time.split(":").map(Number);
     const d = new Date();
@@ -293,45 +283,33 @@ export const generateTimeRecord = (usuarioId: string, date: string, turno?: { ho
   };
 
   if (scenario === 1) {
-    // Normal
-    entrada = addMinutes(entrada, randomNumber(-5, 0)); // Chega adiantado ou em ponto
+    entrada = addMinutes(entrada, randomNumber(-5, 0));
     saida = addMinutes(saida!, randomNumber(0, 5));
   } else if (scenario === 2) {
-    // Atraso Leve (6 a 14 min) - Deve dar AMARELO
     entrada = addMinutes(entrada, randomNumber(6, 14));
   } else if (scenario === 3) {
-    // Atraso Grave (> 16 min) - Deve dar VERMELHO
     entrada = addMinutes(entrada, randomNumber(16, 60));
   } else if (scenario === 4) {
-    // Hora Extra (15 to 60 min after end) - Deve dar AMARELO na saida
     saida = addMinutes(saida!, randomNumber(15, 60));
   } else if (scenario === 5) {
-    // HE Excessiva (> 2h) - Deve dar VERMELHO na saida
     saida = addMinutes(saida!, randomNumber(121, 180));
   } else if (scenario === 6) {
-    // Trabalhando
     entrada = addMinutes(entrada, randomNumber(-5, 5));
     saida = null;
   }
 
-  // Converter para ISO String (Data Referencia + Hora)
   const toISO = (time: string | null, forceNextDay: boolean = false) => {
     if (!time) return null;
-
     let finalDate = date;
     if (forceNextDay) {
       const d = new Date(date);
       d.setDate(d.getDate() + 1);
       finalDate = d.toISOString().split('T')[0];
     }
-
     return `${finalDate}T${time}-03:00`;
   };
 
-  // Detectar se virou a noite (Saída menor que Entrada)
-  // Ex: Entrada 19:00, Saída 00:25
   const isOvernight = saida && entrada && saida < entrada;
-
   const entradaKm = randomNumber(10000, 50000);
   const saidaKm = saida ? entradaKm + randomNumber(1, 20) : null;
 
@@ -346,12 +324,11 @@ export const generateTimeRecord = (usuarioId: string, date: string, turno?: { ho
     entrada_long: -46.633308,
     saida_lat: -23.550520,
     saida_long: -46.633308,
-    status_entrada: null, // Backend calcula
-    status_saida: null,   // Backend calcula
+    status_entrada: null,
+    status_saida: null,
     observacao: `Registro gerado automaticamente (Turno ${turno?.hora_inicio || '?'} - Cenário ${scenario})`
   };
 };
-
 
 /**
  * Gera dados fictícios para Moto
@@ -363,7 +340,7 @@ export const generateMotoData = () => {
     moto_modelo: modelos[randomNumber(0, modelos.length - 1)],
     moto_cor: cores[randomNumber(0, cores.length - 1)],
     moto_ano: randomNumber(2015, 2024).toString(),
-    moto_placa: `ABC${randomNumber(1000, 9999).toString().slice(0, 1)}${randomNumber(0, 9)}${randomNumber(0, 9)}${randomNumber(0, 9).toString()}`.slice(0, 7).toUpperCase() // Simple mock, regex in form handles format
+    moto_placa: `ABC${randomNumber(1000, 9999).toString().slice(0, 1)}${randomNumber(0, 9)}${randomNumber(0, 9)}${randomNumber(0, 9).toString()}`.slice(0, 7).toUpperCase()
   };
 };
 
@@ -383,7 +360,6 @@ const formatDateBR = (date: Date): string => {
 export const generateCNHData = () => {
   const validDate = new Date();
   validDate.setFullYear(validDate.getFullYear() + randomNumber(1, 5));
-
   return {
     cnh_registro: randomNumber(10000000000, 99999999999).toString(),
     cnh_vencimento: formatDateBR(validDate),
@@ -396,11 +372,9 @@ export const generateCNHData = () => {
  */
 export const generateSelfRegistrationData = () => {
   const nomeCompleto = generateName();
-  const documento = Math.random() > 0.5 ? generateCPF(false) : generateCNPJ(false); // Unformatted for input usually
   const address = generateAddress();
   const moto = generateMotoData();
   const cnh = generateCNHData();
-
   const birthDate = new Date();
   birthDate.setFullYear(birthDate.getFullYear() - randomNumber(18, 50));
 
@@ -411,47 +385,55 @@ export const generateSelfRegistrationData = () => {
     cnpj: generateCNPJ(true),
     rg: generateRG(),
     data_nascimento: formatDateBR(birthDate),
-    nome_mae: generateName().split(" ").slice(0, 3).join(" "), // Shorter name
-
-    // Address flattened
+    nome_mae: generateName().split(" ").slice(0, 3).join(" "),
     endereco_completo: `${address.logradouro}, ${address.numero} - ${address.bairro}, ${address.cidade} - ${address.estado}, ${address.cep}`,
-
     telefone: generatePhone(),
     telefone_recado: generatePhone(),
-
-    // Moto
     ...moto,
-
-    // CNH
     ...cnh,
-
+    tipo_chave_pix: "CPF",
     chave_pix: generateCPF(true),
-    senha: "Ogaiht+1", // Default mock password
+    senha: "Ogaiht+1",
   };
 };
 
 /**
- * Gera um RG fictício formatado
+ * Gera dados apenas para os campos obrigatórios do Auto Cadastro (Motoboy)
  */
-export const generateRG = (): string => {
-  const n1 = randomNumber(10, 99);
-  const n2 = randomNumber(100, 999);
-  const n3 = randomNumber(100, 999);
-  const d = randomNumber(0, 9);
-  return `${n1}.${n2}.${n3}-${d}`;
+export const generateSelfRegistrationMandatoryData = () => {
+  const nomeCompleto = generateName();
+  const address = generateAddress();
+  const moto = generateMotoData();
+
+  return {
+    nome_completo: nomeCompleto,
+    email: generateEmail(nomeCompleto),
+    cpf: generateCPF(true),
+    telefone: generatePhone(),
+    senha: "Ogaiht+1",
+    endereco_completo: `${address.logradouro}, ${address.numero} - ${address.bairro}, ${address.cidade} - ${address.estado}, ${address.cep}`,
+    nome_mae: generateName().split(" ").slice(0, 3).join(" "),
+    ...moto,
+  };
 };
 
 /**
- * Gera dados fictícios para um turno
+ * Gera dados fictícios para um turno (vínculo) - Agora com Horários por dia
  */
 export const generateTurnData = () => {
-  return {
+  const baseValue = randomNumber(2000, 4500);
+  const horarios = [1, 2, 3, 4, 5].map(dia => ({
+    dia_semana: dia,
     hora_inicio: "08:00",
     hora_fim: "18:00",
-    valor_contrato: 3500,
-    valor_aluguel: Math.random() > 0.5 ? 500 : null,
-    ajuda_custo: Math.random() > 0.5 ? 200 : null,
-    valor_bonus: Math.random() > 0.5 ? 150 : null
+    tolerancia_pausa_min: 60
+  }));
+  return {
+    valor_contrato: baseValue,
+    valor_aluguel: 500,
+    ajuda_custo: 200,
+    valor_bonus: 0,
+    horarios: horarios
   };
 };
 
@@ -465,11 +447,13 @@ export const mockGenerator = {
   cep: generateCEP,
   address: generateAddress,
   client: generateClientData,
+  unidade: generateUnidadeData,
   empresa: generateEmpresaData,
   collaborator: generateCollaboratorData,
   timeRecord: generateTimeRecord,
   moto: generateMotoData,
   cnh: generateCNHData,
   selfRegistration: generateSelfRegistrationData,
+  selfRegistrationMandatory: generateSelfRegistrationMandatoryData,
   turn: generateTurnData
 };

@@ -39,6 +39,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // Normalizar o campo de erro (backend retorna 'message', frontend usava 'error')
+    if (error.response?.data) {
+      const data = error.response.data;
+      if (!data.error && data.message) {
+        data.error = data.message;
+      }
+    }
+
     const originalRequest = error.config;
 
     // Se NÃO houver resposta do servidor (ex: queda de internet, ERR_NETWORK_CHANGED), 

@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/services/api/client";
+import { RegistroPonto, Usuario, Client } from "@/types/database";
 
 export function usePublicClient(uuid?: string) {
     return useQuery({
         queryKey: ["public-client", uuid],
-        queryFn: async () => {
+        queryFn: async (): Promise<Partial<Client> | null> => {
             if (!uuid) return null;
             const { data } = await api.get(`/public/c/${uuid}`);
             return data;
@@ -17,10 +18,10 @@ export function usePublicClient(uuid?: string) {
 export function usePublicCollaborators(uuid?: string) {
     return useQuery({
         queryKey: ["public-collaborators", uuid],
-        queryFn: async () => {
+        queryFn: async (): Promise<Partial<Usuario>[]> => {
             if (!uuid) return [];
             const { data } = await api.get(`/public/c/${uuid}/colaboradores`);
-            return data as any[];
+            return data;
         },
         enabled: !!uuid
     });
@@ -29,12 +30,12 @@ export function usePublicCollaborators(uuid?: string) {
 export function usePublicTimeTracking(uuid?: string, date?: string) {
     return useQuery({
         queryKey: ["public-time-tracking", uuid, date],
-        queryFn: async () => {
+        queryFn: async (): Promise<RegistroPonto[]> => {
             if (!uuid || !date) return [];
             const { data } = await api.get(`/public/c/${uuid}/controle-ponto`, {
                 params: { date }
             });
-            return data as any[];
+            return data;
         },
         enabled: !!uuid && !!date
     });
@@ -43,12 +44,12 @@ export function usePublicTimeTracking(uuid?: string, date?: string) {
 export function usePublicTimeMirror(uuid?: string, usuarioId?: string, mes?: number, ano?: number) {
     return useQuery({
         queryKey: ["public-time-mirror", uuid, usuarioId, mes, ano],
-        queryFn: async () => {
+        queryFn: async (): Promise<RegistroPonto[]> => {
             if (!uuid || !usuarioId || !mes || !ano) return [];
             const { data } = await api.get(`/public/c/${uuid}/espelho-ponto/${usuarioId}`, {
                 params: { mes, ano }
             });
-            return data as any[];
+            return data;
         },
         enabled: !!uuid && !!usuarioId && !!mes && !!ano
     });

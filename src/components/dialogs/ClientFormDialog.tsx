@@ -21,6 +21,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { FieldErrors } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
     Select,
@@ -84,18 +85,7 @@ export function ClientFormDialog({
     resolver: zodResolver(clientSchema),
     defaultValues: {
       nome_fantasia: "",
-      razao_social: "",
-      cnpj: "",
-      cep: "",
-      logradouro: "",
-      numero: "",
-      complemento: "",
-      bairro: "",
-      cidade: "",
-      estado: "",
       ativo: true,
-      km_contratados: undefined as any,
-      escala_semanal: [],
     },
   });
 
@@ -104,59 +94,38 @@ export function ClientFormDialog({
       if (editingClient) {
         form.reset({
           nome_fantasia: editingClient.nome_fantasia,
-          razao_social: editingClient.razao_social || "",
-          cnpj: cnpjMask(editingClient.cnpj || ""),
-          cep: cepMask(editingClient.cep || ""),
-          logradouro: editingClient.logradouro || "",
-          numero: editingClient.numero || "",
-          complemento: editingClient.complemento || "",
-          bairro: editingClient.bairro || "",
-          cidade: editingClient.cidade || "",
-          estado: editingClient.estado || "",
           ativo: editingClient.ativo,
-          km_contratados: editingClient.km_contratados || 0,
-          escala_semanal: editingClient.escala_semanal || [],
         });
-        setOpenAccordionItems(["dados-cliente", "endereco"]);
+        setOpenAccordionItems(["dados-cliente"]);
       } else {
         form.reset({
           nome_fantasia: "",
-          razao_social: "",
-          cnpj: "",
-          cep: "",
-          logradouro: "",
-          numero: "",
-          complemento: "",
-          bairro: "",
-          cidade: "",
-          estado: "",
           ativo: true,
-          km_contratados: undefined as any,
-          escala_semanal: [],
         });
-        setOpenAccordionItems(["dados-cliente", "endereco"]);
+        setOpenAccordionItems(["dados-cliente"]);
       }
     }
   }, [isOpen, editingClient, form]);
 
-  const onFormError = () => {
+  const onFormError = (errors: FieldErrors<ClientFormData>) => {
+    console.error("Erros de validação:", errors);
     toast.error(messages.validacao.formularioComErros);
   };
 
   const handleFillMock = () => {
-    const mockData = mockGenerator.client();
-    form.reset(mockData);
-    setOpenAccordionItems(["dados-cliente", "endereco"]);
+    const data = mockGenerator.client();
+    form.reset({
+      ...data,
+    });
   };
 
   const handleQuickCreate = async () => {
     try {
-      const mockData = mockGenerator.client();
       const clientData = {
-        ...mockData,
+        nome_fantasia: "Cliente Rápido " + Math.floor(Math.random() * 1000),
         ativo: true,
       };
-      await createClient.mutateAsync(clientData as any);
+      await createClient.mutateAsync(clientData);
       toast.success(messages.cliente.sucesso.criado);
       safeCloseDialog(() => onClose());
     } catch (error: any) {
@@ -166,41 +135,24 @@ export function ClientFormDialog({
 
   const onSubmit = async (values: ClientFormData) => {
     try {
-      const data = {
-        nome_fantasia: values.nome_fantasia,
-        razao_social: values.razao_social,
-        cnpj: values.cnpj.replace(/\D/g, ""),
-        ativo: values.ativo,
-        cep: values.cep.replace(/\D/g, ""),
-        logradouro: values.logradouro,
-        numero: values.numero,
-        complemento: values.complemento,
-        bairro: values.bairro,
-        cidade: values.cidade,
-        estado: values.estado,
-        km_contratados: values.km_contratados,
-        escala_semanal: values.escala_semanal,
-      };
-
       if (editingClient) {
-        // @ts-ignore - id is already in editingClient
-        await updateClient.mutateAsync({ id: editingClient.id, ...data, silent: true } as any);
+        await updateClient.mutateAsync({ 
+          id: editingClient.id, 
+          ...values, 
+          silent: true 
+        });
       } else {
-        await createClient.mutateAsync({ ...data, silent: true } as any);
-      }
-      safeCloseDialog(() => onClose());
-    } catch (error: any) {
-      console.error("Erro ao salvar cliente:", error);
-      const message = error.response?.data?.error || error.message || "";
-      if (message.toLowerCase().includes("cnpj")) {
-        const errorMessage = messages.cliente.erro.cnpjJaExiste;
-        form.setError("cnpj", { message: errorMessage });
-        toast.error(errorMessage);
-      } else {
-        toast.error(editingClient ? messages.cliente.erro.atualizar : messages.cliente.erro.criar, {
-          description: message
+        await createClient.mutateAsync({ 
+          ...values, 
+          silent: true 
         });
       }
+      safeCloseDialog(() => onClose());
+      onSuccess?.();
+    } catch (error: any) {
+      console.error("Erro ao salvar cliente:", error);
+      const errorMessage = error.response?.data?.error || error.message || "";
+      toast.error(errorMessage || (editingClient ? messages.cliente.erro.atualizar : messages.cliente.erro.criar));
     }
   };
 
@@ -209,10 +161,9 @@ export function ClientFormDialog({
   return (
     <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
       <DialogContent
-        className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
+        className="w-full max-w-lg p-0 gap-0 bg-gray-50 h-auto flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
-        {/* ... (dialog header not changing) ... */}
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
@@ -225,18 +176,6 @@ export function ClientFormDialog({
             >
               <Wand2 className="h-5 w-5" />
             </Button>
-            {!editingClient && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-                onClick={handleQuickCreate}
-                title="Criação Rápida (Um clique)"
-              >
-                <Zap className="h-5 w-5" />
-              </Button>
-            )}
           </div>
 
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
@@ -252,425 +191,60 @@ export function ClientFormDialog({
           </DialogTitle>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
+        <div className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50/30">
           <Form {...form}>
             <form id="client-form"
               onSubmit={form.handleSubmit(onSubmit, onFormError)}
               className="space-y-4"
             >
-              <Accordion
-                type="multiple"
-                value={openAccordionItems}
-                onValueChange={setOpenAccordionItems}
-                className="w-full"
-              >
-                <AccordionItem value="dados-cliente" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100 mb-4">
-                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-blue-600" />
-                      Dados do Cliente
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="nome_fantasia"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                            Nome Fantasia{" "}
-                            <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Building2 className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                              <Input
-                                placeholder="Ex: Logística ABC"
-                                className={cn(
-                                  "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                  form.formState.errors.nome_fantasia && "border-red-500 focus-visible:ring-red-200"
-                                )}
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <div className="border rounded-2xl px-4 py-6 bg-white shadow-sm border-gray-100 mb-4 space-y-4">
+                <FormField
+                  control={form.control}
+                  name="nome_fantasia"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                        Nome Fantasia{" "}
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Building2 className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
+                          <Input
+                            placeholder="Ex: Logística ABC"
+                            className={cn(
+                              "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                              form.formState.errors.nome_fantasia && "border-red-500 focus-visible:ring-red-200"
+                            )}
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="razao_social"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              Razão Social{" "}
-                              <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <FileText className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                                <Input
-                                  placeholder="Ex: ABC Transportes LTDA"
-                                  className={cn(
-                                    "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                    form.formState.errors.razao_social && "border-red-500 focus-visible:ring-red-200"
-                                  )}
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="cnpj"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              CNPJ <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Hash className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                                <Input
-                                  placeholder="00.000.000/0000-00"
-                                  className={cn(
-                                    "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                    form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200"
-                                  )}
-                                  {...field}
-                                  onChange={(e) => {
-                                    field.onChange(cnpjMask(e.target.value));
-                                    form.trigger("cnpj");
-                                  }}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="km_contratados"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              KM Contratados (por motoboy/mês) <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Zap className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                                <Input
-                                  type="number"
-                                  placeholder="Ex: 100"
-                                  className={cn(
-                                    "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                    form.formState.errors.km_contratados && "border-red-500 focus-visible:ring-red-200"
-                                  )}
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="ativo"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-xl border p-2 px-4 bg-gray-50/50">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                Status Ativo
-                              </FormLabel>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="escala_semanal"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3 p-4 border rounded-xl bg-gray-50/30">
-                          <div className="flex flex-col gap-1">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              Escala Semanal <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <span className="text-xs text-muted-foreground ml-1">
-                              Selecione os dias da semana que compõem a escala base deste cliente.
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap gap-x-6 gap-y-3 ml-1">
-                            {[
-                              { id: 1, label: "Seg" },
-                              { id: 2, label: "Ter" },
-                              { id: 3, label: "Qua" },
-                              { id: 4, label: "Qui" },
-                              { id: 5, label: "Sex" },
-                              { id: 6, label: "Sáb" },
-                              { id: 0, label: "Dom" },
-                            ].map((day) => (
-                              <FormField
-                                key={day.id}
-                                control={form.control}
-                                name="escala_semanal"
-                                render={({ field: checkboxField }) => {
-                                  return (
-                                    <FormItem
-                                      key={day.id}
-                                      className="flex flex-row items-center space-x-2 space-y-0"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={checkboxField.value?.includes(day.id)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? checkboxField.onChange([...checkboxField.value, day.id])
-                                              : checkboxField.onChange(
-                                                checkboxField.value?.filter(
-                                                  (value: number) => value !== day.id
-                                                )
-                                              )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="text-sm font-medium leading-none cursor-pointer">
-                                        {day.label}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="endereco" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-blue-600" />
-                      Endereço
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="cep"
-                        render={({ field }) => (
-                          <div className="md:col-span-2">
-                            <CepInput
-                              field={field}
-                              inputClassName="h-11 rounded-xl bg-gray-50 border-gray-200 focus:border-primary transition-all"
-                              onLoadingChange={setIsCepLoading}
-                            />
-                          </div>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="logradouro"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-4">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              Logradouro <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <MapPin className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                                <Input
-                                  {...field}
-                                  className={cn(
-                                    "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                    form.formState.errors.logradouro && "border-red-500 focus-visible:ring-red-200"
-                                  )}
-                                  disabled={isCepLoading}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="numero"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              Número <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className={cn(
-                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                  form.formState.errors.numero && "border-red-500 focus-visible:ring-red-200"
-                                )}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="complemento"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-4">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Complemento</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className={cn(
-                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                  form.formState.errors.complemento && "border-red-500 focus-visible:ring-red-200"
-                                )}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="bairro"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-3">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              Bairro <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className={cn(
-                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                  form.formState.errors.bairro && "border-red-500 focus-visible:ring-red-200"
-                                )}
-                                disabled={isCepLoading}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="cidade"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              Cidade <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className={cn(
-                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                  form.formState.errors.cidade && "border-red-500 focus-visible:ring-red-200"
-                                )}
-                                disabled={isCepLoading}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="estado"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-1">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                              UF <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger
-                                  className={cn(
-                                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                    form.formState.errors.estado && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2"
-                                  )}
-                                  disabled={isCepLoading}
-                                >
-                                  <SelectValue placeholder="UF" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {[
-                                  "AC",
-                                  "AL",
-                                  "AP",
-                                  "AM",
-                                  "BA",
-                                  "CE",
-                                  "DF",
-                                  "ES",
-                                  "GO",
-                                  "MA",
-                                  "MT",
-                                  "MS",
-                                  "MG",
-                                  "PA",
-                                  "PB",
-                                  "PR",
-                                  "PE",
-                                  "PI",
-                                  "RJ",
-                                  "RN",
-                                  "RS",
-                                  "RO",
-                                  "RR",
-                                  "SC",
-                                  "SP",
-                                  "SE",
-                                  "TO",
-                                ].map((uf) => (
-                                  <SelectItem key={uf} value={uf}>
-                                    {uf}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                <FormField
+                  control={form.control}
+                  name="ativo"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-xl border p-2 px-4 bg-gray-50/50">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                          Status Ativo
+                        </FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </form>
           </Form>
         </div>

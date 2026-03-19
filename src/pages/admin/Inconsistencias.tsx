@@ -24,17 +24,27 @@ export default function Inconsistencias() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <DateNavigation date={vm.date} onNavigate={vm.setDate} />
             
-            <div className="relative w-full md:w-72">
-              <Combobox
-                options={[{ value: "", label: "Todos os Colaboradores" }, ...vm.records.map(r => ({ value: r.usuario?.nome_completo || "", label: r.usuario?.nome_completo || "" }))]}
-                value={vm.searchTerm}
-                onSelect={(val) => vm.setSearchTerm(val || "")}
-                placeholder="Buscar por colaborador..."
-                searchPlaceholder="Digite o nome..."
-                emptyText="Nenhum pendente encontrado."
-                startIcon={<Search className="h-4 w-4 text-gray-400" />}
-                className="h-11 rounded-xl bg-gray-50 border-gray-100 font-medium text-slate-700 shadow-none hover:bg-gray-50 transition-none pl-9"
-              />
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              {vm.hasActiveFilters && (
+                <button
+                  onClick={vm.clearFilters}
+                  className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest px-2"
+                >
+                  Limpar
+                </button>
+              )}
+              <div className="relative w-full md:w-72">
+                <Combobox
+                  options={[{ value: "", label: "Todos os Colaboradores" }, ...vm.records.map(r => ({ value: r.usuario?.nome_completo || "", label: r.usuario?.nome_completo || "" }))]}
+                  value={vm.searchTerm}
+                  onSelect={(val) => vm.setSearchTerm(val || "")}
+                  placeholder="Buscar por colaborador..."
+                  searchPlaceholder="Digite o nome..."
+                  emptyText="Nenhum pendente encontrado."
+                  startIcon={<Search className="h-4 w-4 text-gray-400" />}
+                  className="h-11 rounded-xl bg-gray-50 border-gray-100 font-medium text-slate-700 shadow-none hover:bg-gray-50 transition-none pl-9"
+                />
+              </div>
             </div>
           </div>
         </CardContent>

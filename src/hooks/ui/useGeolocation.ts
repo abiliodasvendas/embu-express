@@ -78,23 +78,22 @@ export function useGeolocation() {
       setLoading(false);
       return data;
 
-    } catch (err: any) {
-      console.error("Geo error:", err);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error("Geo error:", error);
       
-      // Re-verify permission because some browsers return "denied" error instead of "timeout" if GPS is off 
-      // but permission was technically granted before.
       const currentState = await checkPermissionState();
       setPermissionStatus(currentState);
 
       let msg = getMessage('geolocation.erro.desconhecido');
 
       // Check if it's actually a permission denial
-      if (err.message?.includes('denied') || err.message?.includes('Permission') || currentState === 'denied') {
+      if (error.message?.includes('denied') || error.message?.includes('Permission') || currentState === 'denied') {
         msg = getMessage('geolocation.erro.permissaoNegada');
         setPermissionStatus('denied');
-      } else if (err.message?.includes('timeout') || err.code === 3) {
+      } else if (error.message?.includes('timeout') || (error as any).code === 3) {
         msg = getMessage('geolocation.erro.timeout');
-      } else if (err.message?.includes('unavailable') || err.code === 2) {
+      } else if (error.message?.includes('unavailable') || (error as any).code === 2) {
         msg = getMessage('geolocation.erro.indisponivel');
       }
 

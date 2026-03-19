@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { FilterOptions } from "@/types/enums";
 import { meses, anos } from "@/utils/formatters/constants";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
@@ -52,7 +52,7 @@ export function PeriodSelectorToolbar({
     const [isSheetOpen, setIsSheetOpen] = useState(false);
 
     const activeFilterCount = [
-        !hideShiftSelect && selectedShift && selectedShift !== STATUS_CADASTRO.TODOS,
+        !hideShiftSelect && selectedShift && selectedShift !== FilterOptions.TODOS,
         selectedMonth !== (new Date().getMonth() + 1),
         selectedYear !== new Date().getFullYear()
     ].filter(Boolean).length;
@@ -95,7 +95,7 @@ export function PeriodSelectorToolbar({
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
-                            <SelectItem value={STATUS_CADASTRO.TODOS} className="font-medium">Todos os turnos</SelectItem>
+                            <SelectItem value={FilterOptions.TODOS} className="font-medium">Todos os turnos</SelectItem>
                             {availableShifts.map(s => (
                                 <SelectItem key={s} value={s} className="font-medium">{s}</SelectItem>
                             ))}
@@ -115,11 +115,11 @@ export function PeriodSelectorToolbar({
                             <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">Colaborador</label>
                             <Combobox
                                 options={[
-                                    { value: STATUS_CADASTRO.TODOS, label: "Selecionar Colaborador" },
+                                    { value: FilterOptions.TODOS, label: "Selecionar Colaborador" },
                                     ...collaborators.map(c => ({ value: c.id, label: c.nome_completo }))
                                 ]}
-                                value={usuarioId || STATUS_CADASTRO.TODOS}
-                                onSelect={(val) => onUsuarioChange?.(val || STATUS_CADASTRO.TODOS)}
+                                value={usuarioId || FilterOptions.TODOS}
+                                onSelect={(val) => onUsuarioChange?.(val || FilterOptions.TODOS)}
                                 placeholder="Selecionar Colaborador"
                                 className="h-11 rounded-xl bg-gray-50 border-gray-100 font-medium text-slate-700 hover:bg-white transition-all shadow-none"
                             />
@@ -164,7 +164,7 @@ export function PeriodSelectorToolbar({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl">
-                                            <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os Turnos</SelectItem>
+                                            <SelectItem value={FilterOptions.TODOS}>Todos os Turnos</SelectItem>
                                             {availableShifts.map(s => (
                                                 <SelectItem key={s} value={s}>{s}</SelectItem>
                                             ))}

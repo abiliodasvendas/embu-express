@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatMinutes } from "@/utils/ponto";
-import { STATUS_PONTO } from "@/constants/ponto";
+import { StatusVisualPonto } from "@/types/enums";
+import { RelatorioPonto } from "@/types/database";
 
 interface TimeMirrorDailyCardProps {
-    day: any;
+    day: RelatorioPonto;
     canViewAll: boolean;
     isFetchingRecord?: boolean;
     selectedPontoId?: number | null;
@@ -82,13 +83,13 @@ export function TimeMirrorDailyCard({
                         <div>
                             <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Entrada</p>
                             <p className="text-sm font-bold text-gray-700">
-                                {day.entrada_hora ? format(new Date(day.entrada_hora), 'HH:mm') : (day.status_entrada !== STATUS_PONTO.CINZA ? '--:--' : '')}
+                                {day.entrada_hora ? format(new Date(day.entrada_hora), 'HH:mm') : (day.status_entrada !== StatusVisualPonto.CINZA ? '--:--' : '')}
                             </p>
                         </div>
                         <div>
                             <p className="md:hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Saída</p>
                             <p className="text-sm font-bold text-gray-700">
-                                {day.saida_hora ? format(new Date(day.saida_hora), 'HH:mm') : (day.status_saida !== STATUS_PONTO.CINZA ? '--:--' : '')}
+                                {day.saida_hora ? format(new Date(day.saida_hora), 'HH:mm') : (day.status_saida !== StatusVisualPonto.CINZA ? '--:--' : '')}
                             </p>
                         </div>
                     </div>

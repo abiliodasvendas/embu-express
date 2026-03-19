@@ -11,30 +11,36 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteClient, useToggleClientStatus } from "@/hooks/api/useClientMutations";
 import { useClients } from "@/hooks/api/useClients";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
+import { useUnidades } from "@/hooks/api/useUnidades";
+import { useDeleteUnidade, useToggleUnidadeStatus } from "@/hooks/api/useUnidadeMutations";
 import { useClientActions } from "@/hooks/business/useClientActions";
 import { cn } from "@/lib/utils";
-import { Client, ColaboradorCliente } from "@/types/database";
+import { Client, ColaboradorCliente, Unidade } from "@/types/database";
 import { cnpjMask } from "@/utils/masks";
-import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users, Zap, CalendarDays, ExternalLink, Copy, Check, CopyCheck } from "lucide-react";
+import { Building2, ChevronDown, ChevronLeft, MapPin, MoreVertical, User, Users, Zap, CalendarDays, ExternalLink, Copy, CopyCheck, Plus, Edit2, Trash2, MapPinned } from "lucide-react";
 import { WeeklyScale } from "@/components/common/WeeklyScale";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 
 export default function ClientDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [isCopied, setIsCopied] = useState(false);
+    const [isUnidadeDialogOpen, setIsUnidadeDialogOpen] = useState(false);
+    const [editingUnidade, setEditingUnidade] = useState<Unidade | null>(null);
 
-    // Usamos includeId para garantir que o cliente virá mesmo se estiver inativo, caso a query default oculte inativos sem esse parametro.
     const { data: clients, isLoading: isClientLoading } = useClients({ includeId: id });
     const client = clients?.find(c => c.id.toString() === id);
 
-    // Fetching collaborators vinculados a esse cliente
+    const { data: unidades, isLoading: isUnidadesLoading } = useUnidades(Number(id));
     const { data: collaborators, isLoading: isCollabsLoading } = useCollaborators({ cliente_id: id });
 
     const toggleStatus = useToggleClientStatus();
     const deleteClient = useDeleteClient();
+    const deleteUnidade = useDeleteUnidade();
+    const toggleUnidadeStatus = useToggleUnidadeStatus();
+    
     const { openConfirmationDialog, closeConfirmationDialog, openClientFormDialog, setPageTitle } = useLayout();
 
     useEffect(() => {
@@ -47,24 +53,18 @@ export default function ClientDetails() {
         }
     }, [client, isClientLoading, setPageTitle]);
 
-
     const handleToggleStatus = async () => {
         if (!client) return;
         const newStatus = !client.ativo;
-        const confirmMessage = newStatus ? messages.dialogo.ativar.descricao : messages.dialogo.desativar.descricao;
-
+        
         openConfirmationDialog({
             title: newStatus ? "Ativar Cliente" : "Desativar Cliente",
-            description: confirmMessage,
+            description: newStatus ? messages.dialogo.ativar.descricao : messages.dialogo.desativar.descricao,
             confirmText: "Confirmar",
             variant: newStatus ? "success" : "warning",
             onConfirm: async () => {
-                try {
-                    await toggleStatus.mutateAsync({ id: client.id, ativo: newStatus });
-                    closeConfirmationDialog();
-                } catch (error) {
-                    console.error(error);
-                }
+                await toggleStatus.mutateAsync({ id: client.id, ativo: newStatus });
+                closeConfirmationDialog();
             },
         });
     }
@@ -77,13 +77,32 @@ export default function ClientDetails() {
             confirmText: messages.dialogo.remover.botao,
             variant: "destructive",
             onConfirm: async () => {
-                try {
-                    await deleteClient.mutateAsync(client.id);
-                    closeConfirmationDialog();
-                    navigate("/clientes");
-                } catch (error) {
-                    console.error(error);
-                }
+                await deleteClient.mutateAsync(client.id);
+                closeConfirmationDialog();
+                navigate("/clientes");
+            },
+        });
+    }
+
+    const handleEditUnidade = (unidade: Unidade) => {
+        setEditingUnidade(unidade);
+        setIsUnidadeDialogOpen(true);
+    }
+
+    const handleAddUnidade = () => {
+        setEditingUnidade(null);
+        setIsUnidadeDialogOpen(true);
+    }
+
+    const handleDeleteUnidade = (unidade: Unidade) => {
+        openConfirmationDialog({
+            title: "Remover Unidade",
+            description: `Tem certeza que deseja remover a unidade "${unidade.nome_unidade}"?`,
+            confirmText: "Remover",
+            variant: "destructive",
+            onConfirm: async () => {
+                await deleteUnidade.mutateAsync(unidade.id);
+                closeConfirmationDialog();
             },
         });
     }
@@ -116,17 +135,11 @@ export default function ClientDetails() {
         );
     }
 
-    const totalCollaborators = collaborators?.length || 0;
-
     return (
         <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <Button
-                    variant="ghost"
-                    onClick={() => navigate("/clientes")}
-                    className="hover:bg-gray-100 rounded-xl px-2"
-                >
+            {/* Header Toolbar */}
+            <div className="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+                <Button variant="ghost" onClick={() => navigate("/clientes")} className="rounded-xl px-2">
                     <ChevronLeft className="h-5 w-5 mr-1" />
                     Voltar
                 </Button>
@@ -134,7 +147,7 @@ export default function ClientDetails() {
                     {client.public_id && (
                         <Button 
                             variant="outline" 
-                            className="rounded-xl border-blue-100 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 hidden sm:flex items-center gap-2 font-bold shadow-none"
+                            className="rounded-xl border-blue-100 bg-blue-50 text-blue-600 hidden sm:flex items-center gap-2 font-bold shadow-none"
                             onClick={() => window.open(`/public/c/${client.public_id}/controle`, '_blank')}
                         >
                             <ExternalLink className="h-4 w-4" />
@@ -142,17 +155,16 @@ export default function ClientDetails() {
                         </Button>
                     )}
                     <ActionsDropdown actions={actions}>
-                        <Button variant="outline" className="rounded-xl border-gray-200 shadow-sm text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1 px-3">
-                            <span className="hidden sm:inline font-semibold">Ações</span>
-                            <MoreVertical className="h-4 w-4 sm:hidden -mx-1" />
-                            <ChevronDown className="h-4 w-4 hidden sm:block opacity-50 text-gray-500" />
+                        <Button variant="outline" className="rounded-xl border-gray-200">
+                            Ações
+                            <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
                         </Button>
                     </ActionsDropdown>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Profile Info - Left Column */}
+                {/* Administrative Profile Section */}
                 <div className="space-y-6">
                     <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-gradient-to-b from-primary/5 to-white">
                         <CardContent className="pt-8 pb-6 text-center">
@@ -160,89 +172,25 @@ export default function ClientDetails() {
                                 <Building2 className="h-12 w-12 text-white" />
                             </div>
                             <h2 className="text-xl font-bold text-gray-800">{client.nome_fantasia}</h2>
-                            {client.razao_social && (
-                                <p className="text-xs text-muted-foreground mt-1">{client.razao_social}</p>
-                            )}
                             <Badge
                                 variant="secondary"
                                 className={cn(
                                     "mt-3 px-3 py-1 rounded-full font-bold border",
-                                    client.ativo
-                                        ? "bg-green-100 text-green-700 border-green-200"
-                                        : "bg-red-100 text-red-700 border-red-200"
+                                    client.ativo ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"
                                 )}
                             >
-                                {client.ativo ? STATUS.ATIVO : STATUS.INATIVO}
+                                {client.ativo ? "ATIVO" : "INATIVO"}
                             </Badge>
-                        </CardContent>
-                        <CardContent className="border-t border-gray-100 space-y-4 pt-6">
-
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-blue-50 rounded-lg shrink-0">
-                                    <Building2 className="h-4 w-4 text-blue-600" />
-                                </div>
-                                <div className="overflow-hidden">
-                                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">CNPJ</p>
-                                    <p className="text-sm font-medium text-gray-700">{client.cnpj ? cnpjMask(client.cnpj) : 'Não informado'}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-orange-50 rounded-lg shrink-0">
-                                    <MapPin className="h-4 w-4 text-orange-600" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Endereço</p>
-                                    <p className="text-sm font-medium text-gray-700 leading-tight">
-                                        {client.logradouro ? (
-                                            <>
-                                                {client.logradouro}, {client.numero} {client.complemento && ` - ${client.complemento}`} <br />
-                                                {client.bairro}, {client.cidade} - {client.estado}
-                                            </>
-                                        ) : 'Não informado'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
-                                    <Zap className="h-4 w-4 text-emerald-600" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">KM Contratados (Mês)</p>
-                                    <p className="text-sm font-medium text-gray-700">{client.km_contratados || '0'} KM / Motoboy</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-purple-50 rounded-lg shrink-0">
-                                    <CalendarDays className="h-4 w-4 text-purple-600" />
-                                </div>
-                                <div className="w-full">
-                                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-2">Escala Semanal</p>
-                                    <WeeklyScale escala={client.escala_semanal || []} />
-                                </div>
-                            </div>
-
-                            <div className="pt-4 mt-2 border-t border-gray-100 flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <div className="p-1.5 bg-primary/10 rounded-md">
-                                        <Users className="h-4 w-4 text-primary" />
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-600">Total de Colaboradores</span>
-                                </div>
-                                <span className="text-lg font-extrabold text-primary">{totalCollaborators}</span>
-                            </div>
                         </CardContent>
                     </Card>
 
-                    {/* Public Visualization Link */}
+                    {/* Shared Public Link Card */}
                     {client.public_id && (
                         <Card className="border-0 shadow-sm rounded-3xl bg-primary/5 overflow-hidden">
                             <CardHeader className="pb-2 pt-6 px-6">
                                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-primary">
                                     <ExternalLink className="h-4 w-4" />
-                                    Link para o Cliente Acessar
+                                    Link de Acesso Público
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="px-6 pb-6">
@@ -250,120 +198,146 @@ export default function ClientDetails() {
                                     <Input
                                         readOnly
                                         value={`${window.location.origin}/public/c/${client.public_id}`}
-                                        className="h-9 text-[10px] font-medium bg-white rounded-xl border-gray-100"
+                                        className="h-9 text-[10px] font-medium bg-white rounded-xl"
                                     />
                                     <Button
                                         size="icon"
                                         variant="outline"
-                                        className={cn(
-                                            "h-9 w-9 rounded-xl shrink-0 transition-all duration-300",
-                                            isCopied 
-                                                ? "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-300" 
-                                                : "bg-white border-gray-100 hover:bg-primary/10 hover:border-primary/30 text-primary"
-                                        )}
+                                        className="h-9 w-9 rounded-xl shrink-0"
                                         onClick={() => {
                                             navigator.clipboard.writeText(`${window.location.origin}/public/c/${client.public_id}`);
                                             setIsCopied(true);
                                             setTimeout(() => setIsCopied(false), 2000);
                                         }}
                                     >
-                                        {isCopied ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                        {isCopied ? <CopyCheck className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
                                     </Button>
                                 </div>
-                                <Button
-                                    className="w-full mt-4 h-9 rounded-xl text-xs font-bold gap-2"
-                                    onClick={() => window.open(`/public/c/${client.public_id}`, '_blank')}
-                                >
-                                    <ExternalLink className="h-4 w-4" />
-                                    Acessar Link
-                                </Button>
                             </CardContent>
                         </Card>
                     )}
                 </div>
 
-                {/* Linked Collaborators - Right Column */}
+                {/* Units and Collaborators Section */}
                 <div className="lg:col-span-2 space-y-6">
-                    <Card className="border-0 shadow-sm rounded-3xl min-h-[500px] flex flex-col">
+                    {/* Units Section */}
+                    <Card className="border-0 shadow-sm rounded-3xl overflow-hidden">
                         <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8">
                             <div>
                                 <CardTitle className="text-xl flex items-center gap-2">
-                                    <Users className="h-5 w-5 text-primary" />
-                                    Colaboradores Vinculados
+                                    <MapPinned className="h-5 w-5 text-primary" />
+                                    Unidades / Filiais
                                 </CardTitle>
-                                <p className="text-sm text-muted-foreground mt-1">Lista de profissionais designados para este cliente.</p>
+                                <p className="text-sm text-muted-foreground mt-1">Gerencie os pontos operacionais deste cliente.</p>
                             </div>
+                            <Button className="rounded-xl font-bold gap-2" size="sm" onClick={handleAddUnidade}>
+                                <Plus className="h-4 w-4" />
+                                Adicionar Unidade
+                            </Button>
                         </CardHeader>
-                        <CardContent className="p-8 flex-1">
+                        <CardContent className="p-6">
+                            {isUnidadesLoading ? (
+                                <Skeleton className="h-40 w-full rounded-2xl" />
+                            ) : !unidades || unidades.length === 0 ? (
+                                <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+                                    <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                    <p className="text-gray-500 font-medium">Nenhuma unidade cadastrada para este cliente.</p>
+                                    <Button variant="link" onClick={handleAddUnidade} className="mt-2">Cadastrar a primeira unidade agora</Button>
+                                </div>
+                            ) : (
+                                <div className="grid gap-4">
+                                    {unidades.map((unidade) => (
+                                        <div key={unidade.id} className="border border-gray-100 rounded-2xl p-5 hover:bg-gray-50/30 transition-colors">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-gray-800">{unidade.nome_unidade}</h3>
+                                                    <p className="text-xs text-muted-foreground">{cnpjMask(unidade.cnpj)}</p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleEditUnidade(unidade)}>
+                                                        <Edit2 className="h-4 w-4 text-blue-600" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleDeleteUnidade(unidade)}>
+                                                        <Trash2 className="h-4 w-4 text-red-600" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-3">
+                                                    <div className="flex gap-2 items-start">
+                                                        <MapPin className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
+                                                        <p className="text-xs text-gray-600 leading-normal">
+                                                            {unidade.logradouro}, {unidade.numero} {unidade.complemento && ` - ${unidade.complemento}`} <br />
+                                                            {unidade.bairro}, {unidade.cidade} - {unidade.estado}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex gap-2 items-center">
+                                                        <Zap className="h-4 w-4 text-emerald-500 shrink-0" />
+                                                        <p className="text-xs text-gray-600 font-bold">{unidade.km_contratados} KM / Motoboy</p>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <CalendarDays className="h-3.5 w-3.5 text-purple-500" />
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Escala Operacional</span>
+                                                    </div>
+                                                    <WeeklyScale escala={unidade.escala_semanal || []} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Linked Collaborators Section */}
+                    <Card className="border-0 shadow-sm rounded-3xl overflow-hidden">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8">
+                            <CardTitle className="text-xl flex items-center gap-2">
+                                <Users className="h-5 w-5 text-primary" />
+                                Colaboradores Atribuídos
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-8">
                             {isCollabsLoading ? (
-                                <div className="space-y-4">
-                                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
-                                </div>
+                                <Skeleton className="h-24 w-full" />
                             ) : !collaborators || collaborators.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                                    <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-                                        <Users className="h-8 w-8 text-gray-300" />
-                                    </div>
-                                    <h3 className="font-bold text-gray-700">Nenhum colaborador</h3>
-                                    <p className="text-sm text-muted-foreground max-w-xs mx-auto mt-2">
-                                        Nenhum vínculo profissional foi atribuído a este cliente ainda.
-                                    </p>
-                                </div>
+                                <p className="text-center text-gray-500 py-6">Nenhum colaborador vinculado a este cliente.</p>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {collaborators.map((collab) => {
-                                        // Extract only the links specific to this client for display
                                         const clientLinks = collab.links?.filter((l: ColaboradorCliente) => l.cliente_id?.toString() === id) || [];
-
                                         return (
                                             <div
                                                 key={collab.id}
-                                                className="group border border-gray-100 p-5 rounded-2xl hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all relative cursor-pointer"
+                                                className="border border-gray-100 p-4 rounded-2xl hover:border-primary/20 transition-all cursor-pointer bg-white"
                                                 onClick={() => navigate(`/colaboradores/${collab.id}`)}
                                             >
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-2.5 bg-primary/10 shadow-sm border border-primary/20 rounded-xl">
-                                                            <User className="h-5 w-5 text-primary" />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="font-bold text-gray-800 leading-tight">
-                                                                {collab.nome_completo}
-                                                            </h4>
-                                                            <div className="flex gap-2 items-center mt-1">
-                                                                <Badge variant="secondary" className="text-[10px] px-2 py-0 h-4 bg-gray-100 text-gray-600">
-                                                                    {collab.perfil?.nome.toUpperCase()}
-                                                                </Badge>
-                                                                <StatusBadge status={collab.status} className="scale-75 origin-left h-5" />
-                                                            </div>
-                                                        </div>
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="p-2 bg-primary/10 rounded-xl">
+                                                        <User className="h-4 w-4 text-primary" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-gray-800 text-sm leading-tight">{collab.nome_completo}</h4>
+                                                        <StatusBadge status={collab.status} className="scale-75 origin-left" />
                                                     </div>
                                                 </div>
-
-                                                {clientLinks.length > 0 && (
-                                                    <div className="space-y-3 mt-4 border-t border-gray-50 pt-3">
-                                                        {clientLinks.map((link: ColaboradorCliente, idx: number) => (
-                                                            <div key={idx} className="flex flex-col gap-2">
-                                                                <div className="flex justify-between items-center">
-                                                                    <div>
-                                                                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Horário</p>
-                                                                        <div className="flex items-center gap-1.5 mt-0.5">
-                                                                            <span className="text-xs font-bold text-gray-700">
-                                                                                {link.hora_inicio?.substring(0, 5)} — {link.hora_fim?.substring(0, 5)}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="text-right">
-                                                                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Empresa Pg.</p>
-                                                                        <p className="text-xs font-medium text-gray-600 mt-0.5">
-                                                                            {link.empresa?.nome_fantasia || link.empresa?.razao_social || '-'}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
+                                                {clientLinks.map((link: ColaboradorCliente, idx: number) => {
+                                                    const unit = unidades?.find(u => u.id === link.unidade_id);
+                                                    return (
+                                                        <div key={idx} className="bg-gray-50 p-2 rounded-lg mt-2 text-[10px]">
+                                                            <p className="font-bold text-gray-500 mb-1 flex items-center gap-1">
+                                                                <Building2 className="h-3 w-3" />
+                                                                {unit?.nome_unidade || "Sem Unidade"}
+                                                            </p>
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-700 font-bold">{link.hora_inicio?.substring(0, 5)} - {link.hora_fim?.substring(0, 5)}</span>
+                                                                <span className="text-gray-500">{link.empresa?.nome_fantasia || "-"}</span>
                                                             </div>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                        </div>
+                                                    )
+                                                })}
                                             </div>
                                         );
                                     })}
@@ -374,6 +348,12 @@ export default function ClientDetails() {
                 </div>
             </div>
 
+            <UnidadeFormDialog 
+                isOpen={isUnidadeDialogOpen}
+                onClose={() => setIsUnidadeDialogOpen(false)}
+                clienteId={Number(id)}
+                editingUnidade={editingUnidade}
+            />
         </div>
     );
 }

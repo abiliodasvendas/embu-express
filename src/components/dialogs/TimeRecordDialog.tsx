@@ -63,14 +63,18 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
         safeCloseDialog(onClose);
     };
 
+    const isFixingInconsistency = record?.status_saida === "FALTA_SAIDA" || isVirtualId;
+
     useEffect(() => {
         if (isOpen) {
             if (record) {
                 const values = {
                     usuario_id: String(record.usuario_id),
                     data_referencia: format(new Date(record.data_referencia), "yyyy-MM-dd"),
-                    entrada_hora: format(new Date(record.entrada_hora), "HH:mm"),
-                    saida_hora: record.saida_hora ? format(new Date(record.saida_hora), "HH:mm") : "",
+                    entrada_hora: record.entrada_hora ? format(new Date(record.entrada_hora), "HH:mm") : (record.detalhes_calculo?.entrada?.turno_base?.slice(0, 5) || ""),
+                    saida_hora: record.saida_hora 
+                        ? format(new Date(record.saida_hora), "HH:mm") 
+                        : (isFixingInconsistency ? (record.detalhes_calculo?.saida?.turno_base?.slice(0, 5) || "") : ""),
                     entrada_km: record.entrada_km != null ? String(record.entrada_km) : "",
                     saida_km: record.saida_km != null ? String(record.saida_km) : "",
                     colaborador_cliente_id: String(record.colaborador_cliente_id || ""),
@@ -89,7 +93,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
             }
             setOpenCombobox(false);
         }
-    }, [isOpen, record, form]);
+    }, [isOpen, record, form, isFixingInconsistency]);
 
     const onSubmit = async (values: ManualTimeRecordFormValues) => {
         try {
@@ -359,6 +363,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                                                 form.formState.errors.entrada_hora && "border-red-500 focus-visible:ring-red-200"
                                                             )}
                                                             {...field}
+                                                            readOnly={isFixingInconsistency && !!record?.entrada_hora}
                                                             onChange={(e) => field.onChange(timeMask(e.target.value))}
                                                         />
                                                     </div>
@@ -386,6 +391,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                                                 form.formState.errors.entrada_km && "border-red-500 focus-visible:ring-red-200"
                                                             )}
                                                             {...field}
+                                                            readOnly={isFixingInconsistency && record?.entrada_km != null}
                                                             onChange={(e) => field.onChange(kmMask(e.target.value))}
                                                         />
                                                     </div>

@@ -10,7 +10,7 @@ import { ListSkeleton } from "@/components/skeletons";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { FilterOptions } from "@/types/enums";
 import { DateNavigation } from "@/components/common/DateNavigation";
 
 import { useTimeTrackingViewModel } from "@/hooks";
@@ -50,11 +50,11 @@ export default function PublicTimeTracking() {
                             <div className="relative w-full sm:w-64 lg:w-72">
                                 <Combobox
                                     options={[
-                                        { value: STATUS_CADASTRO.TODOS, label: "Todos os Colaboradores" },
+                                        { value: FilterOptions.TODOS, label: "Todos os Colaboradores" },
                                         ...(vm.collaborators || []).map(f => ({ value: f.id.toString(), label: f.nome_completo }))
                                     ]}
-                                    value={vm.selectedUsuario === STATUS_CADASTRO.TODOS ? "" : vm.selectedUsuario}
-                                    onSelect={(val) => vm.setSelectedUsuario(val || STATUS_CADASTRO.TODOS)}
+                                    value={vm.selectedUsuario === FilterOptions.TODOS ? "" : vm.selectedUsuario}
+                                    onSelect={(val) => vm.setSelectedUsuario(val || FilterOptions.TODOS)}
                                     placeholder="Buscar colaborador..."
                                     searchPlaceholder="Digite o nome..."
                                     emptyText="Nenhum colaborador encontrado."
@@ -71,7 +71,7 @@ export default function PublicTimeTracking() {
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl border-gray-100 z-[1001]">
-                                    <SelectItem value={STATUS_CADASTRO.TODOS} className="font-medium">Todos os turnos</SelectItem>
+                                    <SelectItem value={FilterOptions.TODOS} className="font-medium">Todos os turnos</SelectItem>
                                     {vm.uniqueShifts.map((label: string) => (
                                         <SelectItem key={label} value={label} className="font-medium text-gray-600">{label}</SelectItem>
                                     ))}

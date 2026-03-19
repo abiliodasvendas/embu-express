@@ -1,16 +1,29 @@
 import { messages } from "@/constants/messages";
+import { ClientFormData } from "@/schemas/clientSchema";
 import { clienteApi } from "@/services/api/cliente.api";
 import { Client } from "@/types/database";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { onlyNumbers } from "@/utils/string";
+
+import { ApiError } from "@/types/api";
+
+interface CreateClientVariables extends ClientFormData {
+  silent?: boolean;
+}
 
 export function useCreateClient() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Omit<Client, "id" | "created_at" | "updated_at"> & { silent?: boolean }) => {
+    mutationFn: (data: CreateClientVariables) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { silent, ...clientData } = data;
-      return clienteApi.createCliente(clientData);
+      const payload = {
+        ...clientData,
+        cnpj: onlyNumbers(clientData.cnpj),
+        cep: onlyNumbers(clientData.cep),
+      };
+      return clienteApi.createCliente(payload as Partial<Client>);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
@@ -18,19 +31,30 @@ export function useCreateClient() {
         toast.success(messages.cliente.sucesso.criado);
       }
     },
-    onError: (error: any, variables) => {
+    onError: (error: ApiError, variables) => {
       if (!variables.silent) {
-        toast.error(messages.cliente.erro.criar, { description: error.message });
+        toast.error(messages.cliente.erro.criar, { description: error.response?.data?.error || error.message });
       }
     },
   });
 }
 
+interface UpdateClientVariables extends ClientFormData {
+  id: number;
+  silent?: boolean;
+}
+
 export function useUpdateClient() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: Partial<Client> & { id: number }) =>
-      clienteApi.updateCliente(id, data),
+    mutationFn: ({ id, silent, ...data }: UpdateClientVariables) => {
+      const payload = {
+        ...data,
+        cnpj: onlyNumbers(data.cnpj),
+        cep: onlyNumbers(data.cep),
+      };
+      return clienteApi.updateCliente(id, payload as Partial<Client>);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       queryClient.invalidateQueries({ queryKey: ["collaborators"] });
@@ -38,9 +62,9 @@ export function useUpdateClient() {
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
       toast.success(messages.cliente.sucesso.atualizado);
     },
-    onError: (error: any, variables: any) => {
+    onError: (error: ApiError, variables) => {
       if (!variables.silent) {
-        toast.error(messages.cliente.erro.atualizar, { description: error.message });
+        toast.error(messages.cliente.erro.atualizar, { description: error.response?.data?.error || error.message });
       }
     },
   });
@@ -58,8 +82,8 @@ export function useToggleClientStatus() {
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
       toast.success(messages.cliente.sucesso.status);
     },
-    onError: (error: any) => {
-      toast.error(messages.cliente.erro.toggleStatus, { description: error.message });
+    onError: (error: ApiError) => {
+      toast.error(messages.cliente.erro.toggleStatus, { description: error.response?.data?.error || error.message });
     },
   });
 }
@@ -77,8 +101,8 @@ export function useDeleteClient() {
       queryClient.resetQueries({ queryKey: ["active-collaborators-combo"] });
       toast.success(messages.cliente.sucesso.excluido);
     },
-    onError: (error: any) => {
-      toast.error(messages.cliente.erro.excluir, { description: error.message });
+    onError: (error: ApiError) => {
+      toast.error(messages.cliente.erro.excluir, { description: error.response?.data?.error || error.message });
     },
   });
 }

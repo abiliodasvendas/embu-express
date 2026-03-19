@@ -70,24 +70,19 @@ export function FeriadoFormDialog({
 
   const onSubmit = async (values: FeriadoFormValues) => {
     try {
-      const feriadoData = {
-        data: values.data,
-        descricao: values.descricao
-      };
-
       if (isEditing && feriadoToEdit) {
         await updateFeriado.mutateAsync({ 
           id: feriadoToEdit.id, 
-          ...feriadoData
+          ...values
         });
       } else {
-        await createFeriado.mutateAsync(feriadoData);
+        await createFeriado.mutateAsync(values);
       }
       onOpenChange(false);
     } catch (error: any) {
       console.error("Erro ao salvar feriado:", error);
       toast.error(isEditing ? messages.feriado.erro.atualizar : messages.feriado.erro.criar, {
-        description: error.message
+        description: error.response?.data?.message || error.message
       });
     }
   };

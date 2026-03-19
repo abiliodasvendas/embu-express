@@ -1,4 +1,4 @@
-import { STATUS_PONTO } from "@/constants/ponto";
+import { StatusVisualPonto } from "@/types/enums";
 
 export const formatPeriodo = (periodo: string): string => {
   if (periodo === "integral") return "Integral";
@@ -6,6 +6,6 @@ export const formatPeriodo = (periodo: string): string => {
   if (periodo === "tarde") return "Tarde";
   if (periodo === "noite") return "Noite";
 
-  return STATUS_PONTO.PENDENTE;
+  return StatusVisualPonto.PENDENTE;
 };
 

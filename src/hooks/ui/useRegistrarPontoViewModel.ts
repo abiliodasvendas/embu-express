@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { StatusPonto } from "@/types/enums";
 import { useRegistrarPontoBusiness } from "../business/useRegistrarPontoBusiness";
 import { usePermissions } from "../business/usePermissions";
 import { useGeolocation } from "../ui/useGeolocation";
 import { useLayout } from "@/contexts/LayoutContext";
 import { formatKm } from "@/utils/masks";
 import { apiClient } from "@/services/api/client";
+import { ColaboradorCliente, PontoLocation, Pausa } from "@/types/database";
 
 export function useRegistrarPontoViewModel() {
     const business = useRegistrarPontoBusiness();
@@ -43,7 +45,7 @@ export function useRegistrarPontoViewModel() {
                 let bestShift = business.activeLinks[0];
                 let minDiff = Infinity;
 
-                business.activeLinks.forEach((link: any) => {
+                business.activeLinks.forEach((link: ColaboradorCliente) => {
                     if (link.hora_inicio) {
                         const [h, m] = link.hora_inicio.split(':').map(Number);
                         const shiftStartMinutes = h * 60 + m;
@@ -62,7 +64,7 @@ export function useRegistrarPontoViewModel() {
         } else {
             // Priority: if point is active, always use point's client
             if (business.pontoHoje.cliente_id) {
-                const matchedLink = business.activeLinks.find((l: any) => String(l.cliente_id) === String(business.pontoHoje!.cliente_id));
+                const matchedLink = business.activeLinks.find((l: ColaboradorCliente) => String(l.cliente_id) === String(business.pontoHoje!.cliente_id));
                 if (matchedLink) {
                     setSelectedLinkId(matchedLink.id.toString());
                 }
@@ -72,7 +74,7 @@ export function useRegistrarPontoViewModel() {
 
     // Active Shift Object for Display
     useEffect(() => {
-        const link = business.activeLinks.find((l: any) => l.id.toString() === selectedLinkId);
+        const link = business.activeLinks.find((l: ColaboradorCliente) => l.id.toString() === selectedLinkId);
         if (link) {
             setActiveShift({
                 id: link.id.toString(),
@@ -85,15 +87,15 @@ export function useRegistrarPontoViewModel() {
         }
     }, [selectedLinkId, business.activeLinks]);
 
-    const status = useMemo(() => {
-        if (!business.pontoHoje || business.pontoHoje.saida_hora) return 'idle';
-        const openPause = business.pontoHoje.pausas?.find((p: any) => !p.fim_hora);
-        return openPause ? 'paused' : 'working';
+    const status = useMemo((): StatusPonto => {
+        if (!business.pontoHoje || business.pontoHoje.saida_hora) return StatusPonto.AGUARDANDO;
+        const openPause = business.pontoHoje.pausas?.find((p: Pausa) => !p.fim_hora);
+        return openPause ? StatusPonto.PAUSADO : StatusPonto.TRABALHANDO;
     }, [business.pontoHoje]);
 
     // Timer Logic
     useEffect(() => {
-        if (status === 'working') {
+        if (status === StatusPonto.TRABALHANDO) {
             const start = business.pontoHoje?.entrada_hora ? new Date(business.pontoHoje.entrada_hora).getTime() : 0;
             const pauseMs = business.journeyMetrics.totalMs;
 
@@ -115,8 +117,8 @@ export function useRegistrarPontoViewModel() {
                 setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
             }, 1000);
             return () => clearInterval(interval);
-        } else if (status === 'paused') {
-            const openPause = business.pontoHoje?.pausas?.find((p: any) => !p.fim_hora);
+        } else if (status === StatusPonto.PAUSADO) {
+            const openPause = business.pontoHoje?.pausas?.find((p: Pausa) => !p.fim_hora);
             if (openPause) {
                 const entradaIso = business.pontoHoje?.entrada_hora;
                 const start = entradaIso ? new Date(entradaIso).getTime() : 0;
@@ -132,11 +134,11 @@ export function useRegistrarPontoViewModel() {
         }
     }, [status, business.pontoHoje, business.journeyMetrics.totalMs]);
 
-    const executeAction = useCallback(async (actionType: 'toggle' | 'pause-start' | 'pause-end', loc: any, km?: number) => {
+    const executeAction = useCallback(async (actionType: 'toggle' | 'pause-start' | 'pause-end', loc: PontoLocation, km?: number) => {
         setIsProcessing(true);
         try {
             if (actionType === 'toggle') {
-                const link = business.activeLinks.find((l: any) => l.id.toString() === selectedLinkId);
+                const link = business.activeLinks.find((l: ColaboradorCliente) => l.id.toString() === selectedLinkId);
                 await business.togglePonto.mutateAsync({
                     usuario_id: business.user?.id,
                     location: loc,
@@ -151,7 +153,7 @@ export function useRegistrarPontoViewModel() {
                     data: { inicio_loc: loc, inicio_km: km }
                 });
             } else if (actionType === 'pause-end') {
-                const openPause = business.pontoHoje!.pausas?.find((p: any) => !p.fim_hora);
+                const openPause = business.pontoHoje!.pausas?.find((p: Pausa) => !p.fim_hora);
                 await business.finalizarPausa.mutateAsync({
                     pausaId: openPause!.id,
                     data: { fim_loc: loc, fim_km: km }
@@ -183,24 +185,36 @@ export function useRegistrarPontoViewModel() {
                 let description = "Informe o KM da moto.";
                 
                 if (actionType === 'toggle') {
-                    title = status === 'idle' ? "Início de Turno" : "Fim de Turno";
+                    title = status === StatusPonto.AGUARDANDO ? "Início de Turno" : "Fim de Turno";
                 } else if (actionType === 'pause-start') {
                     title = "Início de Pausa";
                 } else if (actionType === 'pause-end') {
                     title = "Retorno de Pausa";
                 }
 
+                const pontoLoc: PontoLocation = {
+                    latitude: loc.latitude,
+                    longitude: loc.longitude,
+                    accuracy: loc.accuracy
+                };
+
                 openMileageDialog({
                     title,
                     description,
                     lastKm,
-                    onConfirm: (km) => executeAction(actionType, loc, km)
+                    onConfirm: (km) => executeAction(actionType, pontoLoc, km)
                 });
                 setIsProcessing(false);
                 return;
             }
 
-            await executeAction(actionType, loc);
+            const pontoLoc: PontoLocation = {
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                accuracy: loc.accuracy
+            };
+
+            await executeAction(actionType, pontoLoc);
         } catch (error) {
             console.error("Action preparation error:", error);
             setIsProcessing(false);

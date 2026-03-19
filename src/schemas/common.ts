@@ -1,15 +1,13 @@
 import { messages } from "@/constants/messages";
 import { isValidCEPFormat, isValidCNPJ, isValidCPF, isValidCpfCnpj } from "@/utils/validators";
 import { z } from "zod";
+import { onlyNumbers } from "@/utils/string";
 
 export const cpfSchema = z.string().min(1, messages.validacao.campoObrigatorio).refine((val) => isValidCPF(val), {
   message: "CPF inválido",
 });
 
-export const cnpjSchema = z.string().optional().refine((val) => {
-  if (!val) return true;
-  return isValidCNPJ(val);
-}, {
+export const cnpjSchema = z.string().min(1, messages.validacao.campoObrigatorio).refine((val) => isValidCNPJ(val), {
   message: "CNPJ inválido",
 });
 
@@ -20,9 +18,22 @@ export const cpfCnpjSchema = z.string().min(1, messages.validacao.campoObrigator
 export const phoneSchema = z
   .string()
   .min(1, messages.validacao.campoObrigatorio)
-  .min(14, "Telefone inválido")
-  .max(15, "Telefone inválido")
-  .transform((val) => val.replace(/\D/g, ""));
+  .refine((val) => {
+    const clean = onlyNumbers(val);
+    return clean.length >= 10 && clean.length <= 11;
+  }, "Telefone inválido")
+  .transform((val) => onlyNumbers(val));
+
+export const optionalPhoneSchema = z
+  .string()
+  .optional()
+  .nullable()
+  .refine((val) => {
+    if (!val) return true;
+    const clean = onlyNumbers(val);
+    return clean.length >= 10; // Basic check for optional phone
+  }, "Telefone inválido")
+  .transform((val) => (val ? onlyNumbers(val) : val));
 
 export const placaSchema = z
   .string()

@@ -1,4 +1,4 @@
-import { FILTER_OPTIONS } from "@/constants/ponto";
+import { FilterOptions } from "@/types/enums";
 import { apiClient } from "@/services/api/client";
 import { RegistroPonto } from "@/types/database";
 import { useQuery } from "@tanstack/react-query";
@@ -20,10 +20,10 @@ export function useTimeRecords({ date, searchTerm, usuarioId, statusEntrada, sta
       const params = new URLSearchParams();
       if (date) params.append("data_referencia", date);
       if (searchTerm) params.append("searchTerm", searchTerm);
-      if (usuarioId && usuarioId !== FILTER_OPTIONS.TODOS) params.append("usuario_id", usuarioId);
-      if (statusEntrada && statusEntrada !== FILTER_OPTIONS.TODOS) params.append("status_entrada", statusEntrada);
-      if (statusSaida && statusSaida !== FILTER_OPTIONS.TODOS) params.append("status_saida", statusSaida);
-      if (clienteId && clienteId !== FILTER_OPTIONS.TODOS) params.append("cliente_id", clienteId);
+      if (usuarioId && usuarioId !== FilterOptions.TODOS) params.append("usuario_id", usuarioId);
+      if (statusEntrada && statusEntrada !== FilterOptions.TODOS) params.append("status_entrada", statusEntrada);
+      if (statusSaida && statusSaida !== FilterOptions.TODOS) params.append("status_saida", statusSaida);
+      if (clienteId && clienteId !== FilterOptions.TODOS) params.append("cliente_id", clienteId);
       if (incluirTodos) params.append("incluir_todos", "true");
 
       const response = await apiClient.get<RegistroPonto[]>(`/pontos?${params.toString()}`);

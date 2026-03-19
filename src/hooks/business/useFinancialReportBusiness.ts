@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { ExtratoMensal } from "@/types/financeiro";
 
 export function useFinancialReportBusiness() {
-  const processReport = (data: any) => {
+  const processReport = (data: ExtratoMensal): ExtratoMensal => {
     return data;
   };
 

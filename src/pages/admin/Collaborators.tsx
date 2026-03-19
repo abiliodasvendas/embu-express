@@ -40,6 +40,8 @@ export function Collaborators() {
                                     empresas={vm.empresas}
                                     selectedEmpresa={vm.selectedEmpresa}
                                     onEmpresaChange={(val) => vm.setSelectedEmpresa(val)}
+                                    hasActiveFilters={vm.hasActiveFilters}
+                                    onClear={vm.clearFilters}
                                 />
                             </div>
 

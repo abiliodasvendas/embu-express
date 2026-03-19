@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useLayout } from '@/contexts/LayoutContext';
-import { useFilters } from './useFilters';
-import { STATUS_CADASTRO } from '@/constants/cadastro';
+import { useSearchFilters, useStatusFilters, useFiltersManager, useBatchFilters } from './useFilters';
+import { StatusUsuario, FilterOptions } from '@/types/enums';
 import { messages } from '@/constants/messages';
 import { 
     useClients,
@@ -19,19 +19,11 @@ export function useClientsViewModel() {
         openClientFormDialog,
     } = useLayout();
 
-    // 1. Filters
-    const {
-        searchTerm,
-        setSearchTerm,
-        selectedStatus = STATUS_CADASTRO.TODOS,
-        setSelectedStatus,
-        setFilters,
-        hasActiveFilters,
-        clearFilters
-    } = useFilters({
-        statusParam: "status",
-        syncWithUrl: true,
-    });
+    // 1. Filters (Modularizado)
+    const { searchTerm, setSearchTerm } = useSearchFilters();
+    const { selectedStatus, setSelectedStatus } = useStatusFilters();
+    const { hasActiveFilters, clearFilters } = useFiltersManager(["search", "status"]);
+    const setFilters = useBatchFilters({ statusParam: "status" });
 
     // 2. Data Query
     const {
@@ -41,9 +33,9 @@ export function useClientsViewModel() {
     } = useClients({
         searchTerm: searchTerm || undefined,
         ativo:
-            selectedStatus === STATUS_CADASTRO.TODOS
+            selectedStatus === FilterOptions.TODOS
                 ? undefined
-                : selectedStatus === STATUS_CADASTRO.ATIVO
+                : selectedStatus === StatusUsuario.ATIVO
                     ? "true"
                     : "false",
     });
@@ -91,7 +83,9 @@ export function useClientsViewModel() {
         });
     }, [deleteClient, openConfirmationDialog, closeConfirmationDialog]);
 
-    const handleApplyFilters = useCallback((newFilters: any) => {
+    const handleApplyFilters = useCallback((newFilters: {
+        status?: string;
+    }) => {
         setFilters(newFilters);
     }, [setFilters]);
 

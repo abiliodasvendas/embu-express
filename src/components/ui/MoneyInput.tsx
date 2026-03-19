@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
+import { onlyNumbers } from "@/utils/string";
 
 interface MoneyInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> {
@@ -28,7 +29,7 @@ export const MoneyInput = React.forwardRef<HTMLInputElement, MoneyInputProps>(
     }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const rawValue = e.target.value.replace(/\D/g, ""); // Keep only numbers
+      const rawValue = onlyNumbers(e.target.value); // Keep only numbers
       const numericValue = Number(rawValue) / 100; // Divide by 100 to get decimals
 
       setDisplayValue(formatCurrency(numericValue));

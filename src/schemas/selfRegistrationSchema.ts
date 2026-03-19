@@ -1,6 +1,7 @@
 import { messages } from "@/constants/messages";
 import { z } from "zod";
-import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
+import { onlyNumbers } from "@/utils/string";
+import { cpfSchema, dateSchema, optionalPhoneSchema, phoneSchema } from "./common";
 import { pixKeyRefinement } from "./pixSchema";
 
 // 1. Schema Base: Campos comuns a todos os perfis
@@ -8,21 +9,22 @@ const commonSchema = z.object({
   nome_completo: z.string().min(3, messages.validacao.campoObrigatorio),
   email: z.string().min(1, messages.validacao.campoObrigatorio).email("E-mail inválido"),
   cpf: cpfSchema,
-  rg: z.string().min(1, messages.validacao.campoObrigatorio),
+  rg: z.string().optional(),
   telefone: phoneSchema,
   senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
 
   // Info Pessoal Estendida
-  data_nascimento: dateSchema(true),
-  nome_mae: z.string().optional(),
-  endereco_completo: z.string().optional(),
+  data_nascimento: dateSchema(false),
+  nome_mae: z.string().min(3, messages.validacao.campoObrigatorio),
+  endereco_completo: z.string().min(5, messages.validacao.campoObrigatorio),
   telefone_recado: z.string().optional().refine((val) => {
     if (!val) return true;
-    return val.length === 15;
+    const clean = onlyNumbers(val);
+    return clean.length >= 10 && clean.length <= 11;
   }, "Telefone inválido"),
 
-  tipo_chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
-  chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
+  tipo_chave_pix: z.string().optional(),
+  chave_pix: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
   isMotoboyOrFiscal: z.boolean().optional().default(false),
 });
@@ -33,39 +35,15 @@ const professionalSchema = z.object({
   cnh_registro: z.string().optional(),
   cnh_vencimento: z.string().optional(),
   cnh_categoria: z.string().optional(),
-  moto_modelo: z.string().optional(),
-  moto_cor: z.string().optional(),
-  moto_ano: z.string().optional(),
-  moto_placa: z.string().optional(),
+  moto_modelo: z.string().min(1, messages.validacao.campoObrigatorio),
+  moto_cor: z.string().min(1, messages.validacao.campoObrigatorio),
+  moto_ano: z.string().min(1, messages.validacao.campoObrigatorio),
+  moto_placa: z.string().min(1, messages.validacao.campoObrigatorio),
   cnpj: z.string().optional(),
   tipo_chave_pix: z.string().optional(),
   chave_pix: z.string().optional(),
 }).superRefine((data, ctx) => {
-  if (data.isMotoboyOrFiscal) {
-    if (!data.cnh_registro) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_registro"] });
-    }
-    if (!data.cnh_vencimento) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_vencimento"] });
-    }
-    if (!data.cnh_categoria) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_categoria"] });
-    }
-    if (!data.moto_modelo) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_modelo"] });
-    }
-    if (!data.moto_cor) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_cor"] });
-    }
-    if (!data.moto_ano) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_ano"] });
-    }
-    if (!data.moto_placa) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_placa"] });
-    }
-  }
-
-  // Validação da Chave PIX centralizada
+  // Validação da Chave PIX centralizada (valida se preenchido)
   pixKeyRefinement(data, ctx);
 });
 

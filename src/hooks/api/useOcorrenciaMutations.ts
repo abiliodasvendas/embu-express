@@ -1,8 +1,10 @@
 import { messages } from "@/constants/messages";
 import { ocorrenciaService } from "@/services/api/ocorrencia.service";
-import { Ocorrencia } from "@/types/database";
+import { Ocorrencia, TipoOcorrencia } from "@/types/database";
 import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+import { ApiError } from "@/types/api";
 
 async function invalidateOccurrenceCache(queryClient: QueryClient, colaboradorId?: string) {
     await queryClient.removeQueries({ queryKey: ["ocorrencias"] });
@@ -30,7 +32,7 @@ export function useCreateOcorrencia() {
             await invalidateOccurrenceCache(queryClient, variables.colaborador_id);
             toast.success(messages.ocorrencia.sucesso.criada);
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(messages.ocorrencia.erro.criar, {
                 description: error.response?.data?.error || error.message
             });
@@ -48,7 +50,7 @@ export function useUpdateOcorrencia() {
             await invalidateOccurrenceCache(queryClient, variables.data?.colaborador_id);
             toast.success(messages.ocorrencia.sucesso.atualizada);
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(messages.ocorrencia.erro.atualizar, {
                 description: error.response?.data?.error || error.message
             });
@@ -65,7 +67,7 @@ export function useDeleteOcorrencia() {
             await invalidateOccurrenceCache(queryClient);
             toast.success(messages.ocorrencia.sucesso.excluida);
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(messages.ocorrencia.erro.excluir, {
                 description: error.response?.data?.error || error.message
             });
@@ -77,12 +79,12 @@ export function useCreateTipoOcorrencia() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (data: any) => ocorrenciaService.createTipoOcorrencia(data),
+        mutationFn: (data: Partial<TipoOcorrencia>) => ocorrenciaService.createTipoOcorrencia(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
             toast.success(messages.ocorrencia.sucesso.tipo.criado);
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(messages.ocorrencia.erro.tipo.criar, {
                 description: error.response?.data?.error || error.message
             });
@@ -94,13 +96,13 @@ export function useUpdateTipoOcorrencia() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, data }: { id: number; data: any }) =>
+        mutationFn: ({ id, data }: { id: number; data: Partial<TipoOcorrencia> }) =>
             ocorrenciaService.updateTipoOcorrencia(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
             toast.success(messages.ocorrencia.sucesso.tipo.atualizado);
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(messages.ocorrencia.erro.tipo.atualizar, {
                 description: error.response?.data?.error || error.message
             });
@@ -117,7 +119,7 @@ export function useDeleteTipoOcorrencia() {
             queryClient.invalidateQueries({ queryKey: ["tipos-ocorrencia"] });
             toast.success(messages.ocorrencia.sucesso.tipo.excluido);
         },
-        onError: (error: any) => {
+        onError: (error: ApiError) => {
             toast.error(messages.ocorrencia.erro.tipo.excluir, {
                 description: error.response?.data?.error || error.message
             });

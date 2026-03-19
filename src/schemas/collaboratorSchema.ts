@@ -1,14 +1,21 @@
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario } from "@/types/enums";
 import { messages } from "@/constants/messages";
 import { z } from "zod";
-import { cpfSchema, dateSchema, phoneSchema, placaSchema } from "./common";
+import { cpfSchema, dateSchema, optionalPhoneSchema, phoneSchema, placaSchema } from "./common";
 import { moneyToNumber } from "@/utils/masks";
 import { pixKeyRefinement } from "./pixSchema";
 
-const optionalMoneySchema = z.string()
+const optionalMoneySchema = z.union([z.string(), z.number()])
   .optional()
-  .refine(val => !val || moneyToNumber(val) > 0, "O valor deve ser maior que zero ou vazio")
-  .transform((val) => val ? moneyToNumber(val) : 0);
+  .refine(val => {
+    if (!val) return true;
+    const num = typeof val === 'number' ? val : moneyToNumber(val);
+    return num >= 0;
+  }, "O valor deve ser maior ou igual a zero ou vazio")
+  .transform((val) => {
+    if (!val) return 0;
+    return typeof val === 'number' ? val : moneyToNumber(val);
+  });
 
 // 1. Schema Base: Campos comuns a todos os perfis
 // Garante que o perfil_id tenha a mensagem "Campo obrigatório" padrão
@@ -17,19 +24,19 @@ const commonSchema = z.object({
   nome_completo: z.string().min(3, messages.validacao.campoObrigatorio),
   email: z.string().min(1, messages.validacao.campoObrigatorio).email("E-mail inválido"),
   cpf: cpfSchema,
-  rg: z.string().min(1, messages.validacao.campoObrigatorio),
-  data_nascimento: dateSchema(true),
+  rg: z.string().optional(),
+  data_nascimento: dateSchema(false),
   nome_mae: z.string().optional(),
   endereco_completo: z.string().optional(),
   telefone: phoneSchema,
   telefone_recado: z.string().optional(),
-  status: z.enum([STATUS_CADASTRO.ATIVO, STATUS_CADASTRO.INATIVO, STATUS_CADASTRO.PENDENTE]).default(STATUS_CADASTRO.PENDENTE),
+  status: z.enum([StatusUsuario.ATIVO, StatusUsuario.INATIVO, StatusUsuario.PENDENTE]).default(StatusUsuario.PENDENTE),
   senha_padrao: z.boolean().optional(),
   data_inicio: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
   isMotoboyOrFiscal: z.boolean().optional().default(false),
-  tipo_chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
-  chave_pix: z.string().min(1, messages.validacao.campoObrigatorio),
+  tipo_chave_pix: z.string().optional(),
+  chave_pix: z.string().optional(),
 });
 
 // 2. Schema Profissional: Condicional baseada no flag isMotoboy (que indica se é perfil profissional como Motoboy ou Fiscal)
@@ -47,31 +54,7 @@ const professionalSchema = z.object({
   tipo_chave_pix: z.string().optional(),
   chave_pix: z.string().optional(),
 }).superRefine((data, ctx) => {
-  if (data.isMotoboyOrFiscal) {
-    if (!data.cnh_registro) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_registro"] });
-    }
-    if (!data.cnh_vencimento) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_vencimento"] });
-    }
-    if (!data.cnh_categoria) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["cnh_categoria"] });
-    }
-    if (!data.moto_modelo) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_modelo"] });
-    }
-    if (!data.moto_cor) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_cor"] });
-    }
-    if (!data.moto_ano) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_ano"] });
-    }
-    if (!data.moto_placa) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.validacao.campoObrigatorio, path: ["moto_placa"] });
-    }
-  }
-
-  // Validação da Chave PIX centralizada
+  // Validação da Chave PIX centralizada (valida se preenchido)
   pixKeyRefinement(data, ctx);
 });
 

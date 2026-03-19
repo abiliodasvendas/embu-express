@@ -3,7 +3,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useCollaborators, useFinancialReportViewModel } from "@/hooks";
 import { useEffect } from "react";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario } from "@/types/enums";
 import { PeriodSelectorToolbar } from "@/components/common/PeriodSelectorToolbar";
 
 export function FinancialReport() {
@@ -14,7 +14,7 @@ export function FinancialReport() {
         setPageTitle(vm.isOnlyPersonal ? "Meu Extrato Financeiro" : "Relatório Financeiro");
     }, [setPageTitle, vm.isOnlyPersonal]);
 
-    const { data: collaborators = [] } = useCollaborators({ status: STATUS_CADASTRO.ATIVO }, { enabled: vm.canViewAll });
+    const { data: collaborators = [] } = useCollaborators({ status: StatusUsuario.ATIVO }, { enabled: vm.canViewAll });
 
     return (
         <div className="space-y-6 pb-24">

@@ -1,21 +1,20 @@
 import { useCallback } from "react";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { FilterOptions } from "@/types/enums";
+import { RegistroPonto, RelatorioPonto } from "@/types/database";
 
 export function useTimeMirrorBusiness() {
-  const getShiftLabel = useCallback((r: any) => {
-    return r.turno_hora_inicio && r.turno_hora_fim
-      ? `${r.turno_hora_inicio.substring(0, 5)} - ${r.turno_hora_fim.substring(0, 5)}`
-      : (r.detalhes_calculo?.entrada?.turno_base 
+  const getShiftLabel = useCallback((r: RegistroPonto) => {
+    return r.detalhes_calculo?.entrada?.turno_base 
           ? `${r.detalhes_calculo.entrada.turno_base.substring(0, 5)} - ${(r.detalhes_calculo.saida?.turno_base || '00:00:00').substring(0, 5)}`
-          : null);
+          : null;
   }, []);
 
-  const processRecords = useCallback((rawReport: any[], selectedShift: string) => {
+  const processRecords = useCallback((rawReport: RelatorioPonto[], selectedShift: string) => {
     if (!rawReport || rawReport.length === 0) {
       return {
-        records: [],
+        records: [] as RelatorioPonto[],
         totals: { worked: 0, expected: 0, balance: 0 },
-        availableShifts: []
+        availableShifts: [] as string[]
       };
     }
     
@@ -25,7 +24,7 @@ export function useTimeMirrorBusiness() {
       if (label) shifts.add(label);
     });
 
-    const filtered = selectedShift === STATUS_CADASTRO.TODOS 
+    const filtered = selectedShift === FilterOptions.TODOS 
       ? rawReport 
       : rawReport.filter(r => getShiftLabel(r) === selectedShift);
 

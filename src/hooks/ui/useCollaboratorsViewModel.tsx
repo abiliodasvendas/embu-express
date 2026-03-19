@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useLayout } from '@/contexts/LayoutContext';
-import { useFilters } from './useFilters';
-import { STATUS_CADASTRO } from '@/constants/cadastro';
+import { useSearchFilters, useStatusFilters, useCategoryFilters, useHierarchyFilters, useFiltersManager, useBatchFilters } from './useFilters';
+import { StatusUsuario, FilterOptions } from '@/types/enums';
 import { messages } from '@/constants/messages';
 import { 
     useCollaborators, 
@@ -25,27 +25,25 @@ export function useCollaboratorsViewModel() {
         openSuccessRegistrationDialog,
     } = useLayout();
 
-    // 1. Filters (Source of Truth for Search/Params)
-    const {
-        searchTerm,
-        setSearchTerm,
-        selectedStatus = STATUS_CADASTRO.TODOS,
-        setSelectedStatus,
-        selectedCategoria: selectedRole = STATUS_CADASTRO.TODOS,
-        setSelectedCategoria: setSelectedRole,
-        selectedCliente: selectedClient = STATUS_CADASTRO.TODOS,
-        setSelectedCliente: setSelectedClient,
-        selectedEmpresa: selectedEmpresa = STATUS_CADASTRO.TODOS,
-        setSelectedEmpresa: setSelectedEmpresa,
-        hasActiveFilters,
-        setFilters,
-        clearFilters
-    } = useFilters({
+    // 1. Filters (Modularizado)
+    const { searchTerm, setSearchTerm } = useSearchFilters();
+    const { selectedStatus, setSelectedStatus } = useStatusFilters("status");
+    const { selectedCategoria: selectedRole, setSelectedCategoria: setSelectedRole } = useCategoryFilters("cargo");
+    const { 
+        selectedCliente: selectedClient, setSelectedCliente: setSelectedClient,
+        selectedEmpresa, setSelectedEmpresa 
+    } = useHierarchyFilters({
+        clienteParam: "cliente",
+        empresaParam: "empresa"
+    });
+
+    const activeParams = ["search", "status", "cargo", "cliente", "empresa"];
+    const { hasActiveFilters, clearFilters } = useFiltersManager(activeParams);
+    const setFilters = useBatchFilters({
         statusParam: "status",
         categoriaParam: "cargo",
         clienteParam: "cliente",
-        empresaParam: "empresa",
-        syncWithUrl: true,
+        empresaParam: "empresa"
     });
 
     // 2. Data Queries
@@ -59,10 +57,10 @@ export function useCollaboratorsViewModel() {
         refetch,
     } = useCollaborators({
         searchTerm: searchTerm || undefined,
-        status: selectedStatus === STATUS_CADASTRO.TODOS ? undefined : selectedStatus,
-        perfil_id: selectedRole === STATUS_CADASTRO.TODOS ? undefined : selectedRole,
-        cliente_id: selectedClient === STATUS_CADASTRO.TODOS ? undefined : selectedClient,
-        empresa_id: selectedEmpresa === STATUS_CADASTRO.TODOS ? undefined : selectedEmpresa,
+        status: selectedStatus === FilterOptions.TODOS ? undefined : selectedStatus,
+        perfil_id: selectedRole === FilterOptions.TODOS ? undefined : selectedRole,
+        cliente_id: selectedClient === FilterOptions.TODOS ? undefined : selectedClient,
+        empresa_id: selectedEmpresa === FilterOptions.TODOS ? undefined : selectedEmpresa,
     });
 
     // 3. Mutations
@@ -99,7 +97,7 @@ export function useCollaboratorsViewModel() {
     }, [deleteCollaborator, openConfirmationDialog, closeConfirmationDialog]);
 
     const handleStatusChange = useCallback((collaborator: Collaborator, newStatus: string) => {
-        const isActivating = newStatus === STATUS_CADASTRO.ATIVO;
+        const isActivating = newStatus === StatusUsuario.ATIVO;
         openConfirmationDialog({
             title: isActivating ? "Ativar Colaborador" : "Desativar Colaborador",
             description: `Tem certeza que deseja ${isActivating ? "ativar" : "desativar"} o colaborador "${collaborator.nome_completo}"?`,
@@ -113,7 +111,7 @@ export function useCollaboratorsViewModel() {
 
                 closeConfirmationDialog();
 
-                if (newStatus === STATUS_CADASTRO.ATIVO) {
+                if (newStatus === StatusUsuario.ATIVO) {
                     setTimeout(() => {
                         openSuccessRegistrationDialog({
                             collaborator: collaborator,
@@ -131,7 +129,12 @@ export function useCollaboratorsViewModel() {
         });
     }, [updateStatus, openConfirmationDialog, closeConfirmationDialog, openSuccessRegistrationDialog]);
 
-    const handleApplyFilters = useCallback((newFilters: any) => {
+    const handleApplyFilters = useCallback((newFilters: {
+        status?: string;
+        categoria?: string;
+        cliente?: string;
+        empresa?: string;
+    }) => {
         setFilters({
             status: newFilters.status,
             categoria: newFilters.categoria,

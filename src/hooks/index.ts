@@ -8,11 +8,27 @@ export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
 export { useRegistrarPontoBusiness } from "./business/useRegistrarPontoBusiness";
 
+// Form Hooks
+export { useCollaboratorForm } from "./form/useCollaboratorForm";
+export { useSelfRegistrationForm } from "./form/useSelfRegistrationForm";
+
 // UI Hooks
 export * from "./ui/useAnimatedNumber";
 export * from "./ui/useDebounce";
 export { safeCloseDialog, useDialogClose } from "./ui/useDialogClose";
-export { useFilters } from "./ui/useFilters";
+export {
+  useFilters,
+  useSearchFilters,
+  useStatusFilters,
+  useCategoryFilters,
+  useDateFilters,
+  useDateRangeFilters,
+  useHierarchyFilters,
+  usePontoFilters,
+  useFiltersManager,
+  useBatchFilters,
+} from "./ui/useFilters";
+export type { UseFiltersOptions, UseFiltersReturn } from "./ui/useFilters";
 export { useLoadingState } from "./ui/useLoadingState";
 export { useTimeTrackingViewModel } from "./ui/useTimeTrackingViewModel";
 export { useTimeMirrorViewModel } from "./ui/useTimeMirrorViewModel";
@@ -26,6 +42,8 @@ export { useClientsViewModel } from "./ui/useClientsViewModel";
 // Embu Express Hooks
 export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClient } from "./api/useClientMutations";
 export { useClients } from "./api/useClients";
+export { useUnidades } from "./api/useUnidades";
+export { useCreateUnidade, useDeleteUnidade, useToggleUnidadeStatus, useUpdateUnidade } from "./api/useUnidadeMutations";
 export {
     useCreateCollaborator, useCreateVinculo, useDeleteCollaborator, useDeleteVinculo, useUpdateCollaborator,
     useUpdateCollaboratorStatus, useUpdateVinculo

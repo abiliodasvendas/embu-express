@@ -29,3 +29,12 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Remove todos os caracteres que não são dígitos de uma string.
+ * Útil para limpar CPFs, CNPJs, CEPs, etc antes de enviar para o backend.
+ */
+export function onlyNumbers(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return "";
+  return value.toString().replace(/\D/g, "");
+}
+

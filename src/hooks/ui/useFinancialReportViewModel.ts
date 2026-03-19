@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useFilters, UseFiltersOptions } from "./useFilters";
+import { useHierarchyFilters, useDateFilters, useFiltersManager, UseFiltersOptions } from "./useFilters";
 import { useFinanceiro } from "@/hooks/api/useFinanceiro";
 import { useFinancialReportBusiness } from "../business/useFinancialReportBusiness";
 import { usePermissions } from "../business/usePermissions";
@@ -14,12 +14,27 @@ export function useFinancialReportViewModel(options: UseFinancialReportViewModel
   const { usuarioId: initialUsuarioId, colaboradorNome, ...filterOptions } = options;
   const { can, profile } = usePermissions();
 
-  const filters = useFilters({
+  const { syncWithUrl = true } = filterOptions;
+
+  const { selectedUsuario, setSelectedUsuario } = useHierarchyFilters({
     usuarioParam: "usuario",
+    syncWithUrl
+  });
+
+  const { selectedMes, setSelectedMes, selectedAno, setSelectedAno } = useDateFilters({
     mesParam: "mes",
     anoParam: "ano",
-    ...filterOptions
+    syncWithUrl
   });
+
+  const manager = useFiltersManager(["usuario", "mes", "ano"], syncWithUrl);
+  
+  const filters = {
+    selectedUsuario, setSelectedUsuario,
+    selectedMes, setSelectedMes,
+    selectedAno, setSelectedAno,
+    ...manager
+  };
 
   const canViewAll = can(PERMISSIONS.FINANCEIRO.EXTRATO);
   const canViewOwn = can(PERMISSIONS.FINANCEIRO.VER_MEU);

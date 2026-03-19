@@ -1,8 +1,10 @@
 import { messages } from "@/constants/messages";
 import { pontoApi } from "@/services/api/ponto.api";
-import { RegistroPonto } from "@/types/database";
+import { RegistroPonto, PontoLocation } from "@/types/database";
 import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+import { ApiError } from "@/types/api";
 
 /**
  * Invalida caches relacionados ao ponto para garantir que o espelho e o financeiro estejam sempre corretos.
@@ -28,7 +30,7 @@ export function useUpdatePonto() {
       await invalidatePontoCache(queryClient, variables.data?.usuario_id);
       toast.success(messages.ponto.sucesso.atualizado);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const message = error.response?.data?.error || error.response?.data?.message || error.message || messages.erro.generico;
       toast.error(messages.ponto.erro.atualizar, {
         description: message,
@@ -46,7 +48,7 @@ export function useCreatePonto() {
       await invalidatePontoCache(queryClient, variables.usuario_id);
       toast.success(messages.ponto.sucesso.criado);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const message = error.response?.data?.error || error.response?.data?.message || error.message || messages.erro.generico;
       toast.error(messages.ponto.erro.criar, {
         description: message,
@@ -64,7 +66,7 @@ export function useDeletePonto() {
       await invalidatePontoCache(queryClient);
       toast.success(messages.ponto.sucesso.excluido);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const message = error.response?.data?.error || error.response?.data?.message || error.message || messages.erro.generico;
       toast.error(messages.ponto.erro.excluir, {
         description: message,
@@ -77,12 +79,12 @@ export function useTogglePonto() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => pontoApi.toggle(data),
+    mutationFn: (data: Parameters<typeof pontoApi.toggle>[0]) => pontoApi.toggle(data),
     onSuccess: async () => {
       await invalidatePontoCache(queryClient);
       toast.success(messages.ponto.sucesso.registrado);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const message = error.response?.data?.error || error.response?.data?.message || error.message || messages.erro.generico;
       toast.error(messages.ponto.erro.registrar, {
         description: message,
@@ -95,13 +97,13 @@ export function useIniciarPausa() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ pontoId, data }: { pontoId: number; data: any }) => 
+    mutationFn: ({ pontoId, data }: { pontoId: number; data: { inicio_hora?: string; inicio_km?: number; inicio_loc?: PontoLocation } }) => 
       pontoApi.iniciarPausa(pontoId, data),
     onSuccess: async () => {
       await invalidatePontoCache(queryClient);
       toast.success(messages.ponto.sucesso.pausaIniciada);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const message = error.response?.data?.error || error.response?.data?.message || error.message || messages.ponto.erro.iniciarPausa;
       toast.error(message);
     },
@@ -112,13 +114,13 @@ export function useFinalizarPausa() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ pausaId, data }: { pausaId: number; data: any }) => 
+    mutationFn: ({ pausaId, data }: { pausaId: number; data: { fim_hora?: string; fim_km?: number; fim_loc?: PontoLocation } }) => 
       pontoApi.finalizarPausa(pausaId, data),
     onSuccess: async () => {
       await invalidatePontoCache(queryClient);
       toast.success(messages.ponto.sucesso.pausaFinalizada);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const message = error.response?.data?.error || error.response?.data?.message || error.message || messages.ponto.erro.finalizarPausa;
       toast.error(message);
     },

@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { messages } from "@/constants/messages";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario, FilterOptions } from "@/types/enums";
 
 interface StatusFilterProps {
   value: string;
@@ -20,10 +20,10 @@ interface StatusFilterProps {
 }
 
 const defaultOptions = [
-  { value: STATUS_CADASTRO.TODOS, label: messages.labels.todos },
-  { value: STATUS_CADASTRO.ATIVO, label: messages.labels.ativo },
-  { value: STATUS_CADASTRO.INATIVO, label: messages.labels.inativo },
-  { value: STATUS_CADASTRO.PENDENTE, label: messages.labels.pendente },
+  { value: FilterOptions.TODOS, label: messages.labels.todos },
+  { value: StatusUsuario.ATIVO, label: messages.labels.ativo },
+  { value: StatusUsuario.INATIVO, label: messages.labels.inativo },
+  { value: StatusUsuario.PENDENTE, label: messages.labels.pendente },
 ];
 
 export function StatusFilter({

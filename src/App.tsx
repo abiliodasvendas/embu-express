@@ -348,7 +348,7 @@ const App = () => {
 
 // Componente auxiliar para redirecionamento inteligente
 const RedirectByRole = () => {
-  const { canViewAdminPanel, canOperate, isLoading } = usePermissions();
+  const { canViewAdminPanel, canOperate, isLoading, roleName } = usePermissions();
 
   if (isLoading) {
     return (

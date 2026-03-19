@@ -1,4 +1,4 @@
-import { Perfil, Usuario, UsuarioTurno } from "@/types/database";
+import { Perfil, Usuario, ColaboradorCliente } from "@/types/database";
 import { apiClient } from "./client";
 
 export const colaboradorApi = {
@@ -8,14 +8,17 @@ export const colaboradorApi = {
   getColaborador: (id: string): Promise<Usuario> =>
     apiClient.get(`/usuarios/${id}`).then(res => res.data),
 
-  createColaborador: (data: Partial<Usuario> & { turnos?: Partial<UsuarioTurno>[] }): Promise<Usuario> =>
+  createColaborador: (data: Partial<Usuario> & { turnos?: Partial<ColaboradorCliente>[] }): Promise<Usuario> =>
     apiClient.post(`/usuarios`, data).then(res => res.data),
 
-  updateColaborador: (id: string, data: Partial<Usuario> & { turnos?: Partial<UsuarioTurno>[] }): Promise<Usuario> =>
+  updateColaborador: (id: string, data: Partial<Usuario> & { turnos?: Partial<ColaboradorCliente>[] }): Promise<Usuario> =>
     apiClient.put(`/usuarios/${id}`, data).then(res => res.data),
 
   updateStatus: (id: string, status: string): Promise<{ status: string }> =>
     apiClient.patch(`/usuarios/${id}/status`, { status }).then(res => res.data),
+
+  resetPassword: (id: string): Promise<{ success: boolean; message: string }> =>
+    apiClient.post(`/usuarios/${id}/reset-password`).then(res => res.data),
 
   deleteColaborador: (id: string): Promise<void> =>
     apiClient.delete(`/usuarios/${id}`).then(res => res.data),
@@ -26,26 +29,13 @@ export const colaboradorApi = {
   listPublicPerfis: (): Promise<Perfil[]> =>
     apiClient.get(`/perfis/publico`).then(res => res.data),
 
-  listTurnos: (usuarioId: string): Promise<UsuarioTurno[]> =>
+  listTurnos: (usuarioId: string): Promise<ColaboradorCliente[]> =>
     apiClient.get(`/usuarios/${usuarioId}/turnos`).then(res => res.data),
 
-  createVinculo: (data: {
-    colaborador_id: string;
-    cliente_id: number;
-    empresa_id: number;
-    hora_inicio: string;
-    hora_fim: string;
-    valor_contrato?: number;
-    valor_aluguel?: number;
-    valor_bonus?: number;
-    ajuda_custo?: number;
-    valor_adiantamento?: number;
-    data_inicio?: string;
-    data_fim?: string;
-  }): Promise<any> =>
+  createVinculo: (data: Partial<ColaboradorCliente>): Promise<ColaboradorCliente> =>
     apiClient.post(`/usuarios/vinculos`, data).then(res => res.data),
 
-  updateVinculo: (id: number, data: any): Promise<any> =>
+  updateVinculo: (id: number, data: Partial<ColaboradorCliente>): Promise<ColaboradorCliente> =>
     apiClient.put(`/usuarios/vinculos/${id}`, data).then(res => res.data),
 
   deleteVinculo: (id: number): Promise<void> =>

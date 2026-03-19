@@ -4,6 +4,7 @@ import { messages } from "@/constants/messages";
 import { cepService } from "@/services/cepService";
 import { cepMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
+import { onlyNumbers } from "@/utils/string";
 import { Loader2, MapPin } from "lucide-react";
 import { useState } from "react";
 import { ControllerRenderProps, FieldPath, FieldValues, useFormContext } from "react-hook-form";
@@ -49,7 +50,7 @@ export function CepInput<T extends FieldValues>({
     const masked = cepMask(value);
     field.onChange(masked);
 
-    const cleanCep = value.replace(/\D/g, "");
+    const cleanCep = onlyNumbers(value);
     if (cleanCep.length === 8) {
       try {
         updateLoading(true);

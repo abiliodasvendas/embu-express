@@ -21,6 +21,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
 import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto } from '@/types/database';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { ForgotPasswordDialog } from "@/components/dialogs/ForgotPasswordDialog";
 
 // --- Interfaces ---
 
@@ -111,6 +112,10 @@ export interface OpenFeriadoFormProps {
   onSuccess?: () => void;
 }
 
+export interface OpenForgotPasswordProps {
+  onSuccess?: () => void;
+}
+
 // --- Context Type ---
 
 interface LayoutContextType {
@@ -173,6 +178,9 @@ interface LayoutContextType {
 
   openPasswordGuardDialog: (props: OpenPasswordGuardProps) => void;
   closePasswordGuardDialog: () => void;
+
+  openForgotPasswordDialog: (props: OpenForgotPasswordProps) => void;
+  closeForgotPasswordDialog: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -309,6 +317,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [passwordGuardDialogState, setPasswordGuardDialogState] = useState<{
     open: boolean;
     props?: OpenPasswordGuardProps;
+  }>({
+    open: false,
+  });
+
+  const [forgotPasswordDialogState, setForgotPasswordDialogState] = useState<{
+    open: boolean;
+    props?: OpenForgotPasswordProps;
   }>({
     open: false,
   });
@@ -501,6 +516,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openForgotPasswordDialog = (props: OpenForgotPasswordProps) => {
+    setForgotPasswordDialogState({ open: true, props });
+  };
+
+  const closeForgotPasswordDialog = () => {
+    closeDialog(() => {
+      setForgotPasswordDialogState((prev) => ({ ...prev, open: false }));
+    });
+  };
+
   return (
     <LayoutContext.Provider value={{
       pageTitle,
@@ -542,7 +567,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openEditarCadastroDialog,
       closeEditarCadastroDialog,
       openPasswordGuardDialog,
-      closePasswordGuardDialog
+      closePasswordGuardDialog,
+      openForgotPasswordDialog,
+      closeForgotPasswordDialog
     }}>
       {children}
 
@@ -736,6 +763,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             passwordGuardDialogState.props?.onSuccess?.();
             closePasswordGuardDialog();
           }}
+        />
+      )}
+
+      {forgotPasswordDialogState.open && (
+        <ForgotPasswordDialog
+          open={true}
+          onOpenChange={(open) => !open && closeForgotPasswordDialog()}
         />
       )}
 

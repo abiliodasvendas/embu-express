@@ -1,28 +1,27 @@
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { sessionManager } from "@/services/sessionManager";
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-    ChevronDown,
-    Lock,
-    LogOut,
-    Menu,
-    UserPen
+  ChevronDown,
+  Lock,
+  LogOut,
+  Menu,
+  UserPen
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -53,7 +52,7 @@ export function AppNavbar() {
     return profile?.nome_completo?.charAt(0)?.toUpperCase();
   }, [profile?.nome_completo]);
 
-  const userFirstName = useMemo(() => {
+  const firstName = useMemo(() => {
     return profile?.nome_completo?.split(" ")[0];
   }, [profile?.nome_completo]);
 
@@ -110,6 +109,11 @@ export function AppNavbar() {
                 <div className="h-10 w-10 rounded-full bg-primary/5 border border-primary/10 text-primary/60 flex items-center justify-center font-semibold uppercase">
                   <span>{userInitial}</span>
                 </div>
+                {firstName && (
+                  <span className="hidden sm:inline-block text-sm font-bold text-slate-700">
+                    {firstName}
+                  </span>
+                )}
                 <ChevronDown className="h-4 w-4 hidden sm:inline text-slate-400" />
               </button>
             </DropdownMenuTrigger>

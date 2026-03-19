@@ -12,7 +12,6 @@ import { Eye, EyeOff, Lock, User, Wand2 } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
-import { ForgotPasswordDialog } from "@/components/dialogs/ForgotPasswordDialog";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,18 +29,22 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 
+// Contexts
+import { useLayout } from "@/contexts/LayoutContext";
+
 // Utils
 import { messages } from "@/constants/messages";
 import { cn } from "@/lib/utils";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
+import { onlyNumbers } from "@/utils/string";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
-  const [showForgotDialog, setShowForgotDialog] = useState(false);
+  const { openForgotPasswordDialog } = useLayout();
 
   const formSchema = z.object({
     cpfcnpj: cpfSchema,
@@ -57,14 +60,14 @@ export default function Login() {
   });
 
   const handleForgotPassword = useCallback(() => {
-    setShowForgotDialog(true);
-  }, []);
+    openForgotPasswordDialog({});
+  }, [openForgotPasswordDialog]);
 
-  const handleLogin = async (data: any) => {
+  const handleLogin = async (data: z.infer<typeof formSchema>) => {
     setLoading(true);
 
     try {
-      const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
+      const cpfcnpjDigits = onlyNumbers(data.cpfcnpj);
 
       // Call Backend Login
       const response = await api.post("/auth/login", {
@@ -88,14 +91,18 @@ export default function Login() {
         navigate("/inicio", { replace: true });
       }
 
-    } catch (error: any) {
-      console.error(error);
-      const msg = error.response?.data?.error || messages.auth.erro.login;
+    } catch (error: unknown) {
+      const axiosError = error as any;
+      const msg = axiosError.response?.data?.message || axiosError.response?.data?.error || messages.auth.erro.login;
 
-      if (msg.includes("Credenciais inválidas") || msg.includes("não encontrado")) {
-        form.setError("root", { message: "CPF ou senha incorretos" });
-      } else if (msg.includes("em análise")) {
-        form.setError("root", { message: "Seu cadastro está em análise. Aguarde a aprovação do administrador." });
+      console.log("Login Error Msg:", msg);
+
+      if (msg.includes("CPF não encontrado")) {
+        form.setError("cpfcnpj", { message: msg });
+      } else if (msg.includes("Senha inválida")) {
+        form.setError("senha", { message: msg });
+      } else if (msg.includes("não foi aprovado") || msg.includes("inativa") || msg.includes("análise")) {
+        form.setError("root", { message: msg });
       } else {
         toast.error("Erro ao entrar", { description: msg });
       }
@@ -257,7 +264,6 @@ export default function Login() {
       </div>
 
       <LoadingOverlay active={refreshing} text="Aguarde..." />
-      <ForgotPasswordDialog open={showForgotDialog} onOpenChange={setShowForgotDialog} />
     </>
   );
 }

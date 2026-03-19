@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { getManagementStatus, ManagementStatus } from '@/utils/ponto';
-import { RegistroPonto, Usuario } from '@/types/database';
+import { getManagementStatus } from '@/utils/ponto';
+import { ManagementStatus } from '@/types/enums';
+import { RegistroPonto, Usuario, ColaboradorCliente } from '@/types/database';
 
 interface UseTimeTrackingBusinessProps {
     records: RegistroPonto[] | undefined;
@@ -24,7 +25,14 @@ export function useTimeTrackingBusiness({ records, date, collaborators }: UseTim
 
     // 2. Calculate KPI counts
     const kpiCounts = useMemo(() => {
-        const counts: Record<string, number> = { ALL: processedRecords.length, LATE: 0, WORKING: 0, DONE: 0, WAITING: 0, ABSENT: 0 };
+        const counts: Record<string, number> = { 
+            [ManagementStatus.ALL]: processedRecords.length, 
+            [ManagementStatus.LATE]: 0, 
+            [ManagementStatus.WORKING]: 0, 
+            [ManagementStatus.DONE]: 0, 
+            [ManagementStatus.WAITING]: 0, 
+            [ManagementStatus.ABSENT]: 0 
+        };
         processedRecords.forEach(r => {
             if (counts[r.mgtStatus] !== undefined) {
                 counts[r.mgtStatus]++;
@@ -48,7 +56,7 @@ export function useTimeTrackingBusiness({ records, date, collaborators }: UseTim
 
         // Supplement with all collaborator links if provided
         collaborators?.forEach(c => {
-            c.links?.forEach((l: any) => {
+            c.links?.forEach((l: ColaboradorCliente) => {
                 if (l.hora_inicio && l.hora_fim) {
                     shifts.add(`${l.hora_inicio.substring(0, 5)} - ${l.hora_fim.substring(0, 5)}`);
                 }

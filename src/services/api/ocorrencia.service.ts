@@ -7,6 +7,7 @@ export const ocorrenciaService = {
         colaborador_cliente_id?: number;
         data_inicio?: string;
         data_fim?: string;
+        tipo_id?: number;
         order?: string;
         ascending?: boolean;
     }) {
@@ -15,6 +16,7 @@ export const ocorrenciaService = {
         if (filtros?.colaborador_cliente_id) params.append("colaborador_cliente_id", filtros.colaborador_cliente_id.toString());
         if (filtros?.data_inicio) params.append("data_inicio", filtros.data_inicio);
         if (filtros?.data_fim) params.append("data_fim", filtros.data_fim);
+        if (filtros?.tipo_id) params.append("tipo_id", filtros.tipo_id.toString());
         if (filtros?.order) params.append("order", filtros.order);
         if (filtros?.ascending !== undefined) params.append("ascending", filtros.ascending.toString());
 

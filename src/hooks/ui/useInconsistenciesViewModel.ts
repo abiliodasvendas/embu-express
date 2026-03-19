@@ -1,16 +1,25 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo } from "react";
+import { useSearchFilters, useFiltersManager } from "./useFilters";
+import { useUrlState } from "./useUrlState";
 import { useTimeRecords } from "@/hooks/api/useTimeRecords";
-import { FILTER_OPTIONS } from "@/constants/ponto";
+import { FilterOptions } from "@/types/enums";
 import { format } from "date-fns";
-import { useFilters } from "./useFilters";
+import { onlyNumbers } from "@/utils/string";
 
 export function useInconsistenciesViewModel() {
-    const [date, setDate] = useState<Date>(new Date());
-    const [searchTerm, setSearchTerm] = useState("");
+    const [date, setDate] = useUrlState<string>({ 
+        key: "date", 
+        defaultValue: format(new Date(), "yyyy-MM-dd") 
+    });
+    
+    const { searchTerm, setSearchTerm } = useSearchFilters();
+    const { hasActiveFilters, clearFilters } = useFiltersManager(["search", "date"]);
+
+    const dateObj = useMemo(() => new Date(date + "T12:00:00"), [date]);
 
     const { data: records = [], isLoading, refetch } = useTimeRecords({
-        date: format(date, "yyyy-MM-dd"),
-        statusSaida: FILTER_OPTIONS.FALTA_SAIDA,
+        date,
+        statusSaida: FilterOptions.FALTA_SAIDA,
         incluirTodos: true
     });
 
@@ -20,21 +29,23 @@ export function useInconsistenciesViewModel() {
         
         return records.filter(r => {
             const name = (r.usuario?.nome_completo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const cpf = (r.usuario?.cpf || "").replace(/\D/g, "");
-            const searchCpf = term.replace(/\D/g, "");
+            const cpf = onlyNumbers(r.usuario?.cpf || "");
+            const searchCpf = onlyNumbers(term);
             
             return name.includes(term) || (searchCpf && cpf.includes(searchCpf));
         });
     }, [records, searchTerm]);
 
     return {
-        date,
-        setDate,
+        date: dateObj,
+        setDate: (d: Date) => setDate(format(d, "yyyy-MM-dd")),
         searchTerm,
         setSearchTerm,
         records,
         filteredRecords,
         isLoading,
-        refetch
+        refetch,
+        hasActiveFilters,
+        clearFilters
     };
 }

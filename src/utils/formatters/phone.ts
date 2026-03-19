@@ -1,5 +1,7 @@
+import { onlyNumbers } from "../string";
+
 export function formatarTelefone(telefone: string): string {
-  const numeros = telefone.replace(/\D/g, "");
+  const numeros = onlyNumbers(telefone);
   if (numeros.length !== 11) return telefone;
 
   const ddd = numeros.slice(0, 2);

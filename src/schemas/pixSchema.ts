@@ -1,5 +1,6 @@
 import { isValidCNPJ, isValidCPF } from "@/utils/validators";
 import { z } from "zod";
+import { onlyNumbers } from "@/utils/string";
 
 export const pixKeyRefinement = (
   data: { tipo_chave_pix?: string | null; chave_pix?: string | null },
@@ -46,7 +47,7 @@ export const pixKeyRefinement = (
       });
     }
   } else if (tipo === "TELEFONE") {
-    const cleaned = valor.replace(/\D/g, "");
+    const cleaned = onlyNumbers(valor);
     if (cleaned.length < 10 || cleaned.length > 11) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

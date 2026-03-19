@@ -12,21 +12,22 @@ const optionalMoneySchema = z.string()
   .refine(val => !val || moneyToNumber(val) > 0, "O valor deve ser maior que zero ou vazio")
   .transform((val) => val ? moneyToNumber(val) : 0);
 
+const horarioSchema = z.object({
+  dia_semana: z.number().min(1).max(7),
+  hora_inicio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida"),
+  hora_fim: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida"),
+  tolerancia_pausa_min: z.number().default(0),
+});
+
 const baseSchema = {
   empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
-  hora_inicio: z.string()
-    .min(1, messages.validacao.campoObrigatorio)
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida (00:00 - 23:59)"),
-  hora_fim: z.string()
-    .min(1, messages.validacao.campoObrigatorio)
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida (00:00 - 23:59)"),
   valor_contrato: moneySchema,
   valor_aluguel: optionalMoneySchema,
   valor_bonus: optionalMoneySchema,
   ajuda_custo: optionalMoneySchema,
   valor_adiantamento: optionalMoneySchema,
   data_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
-  tolerancia_pausa_min: z.string().optional().transform(val => val ? parseInt(val) : 0),
+  horarios: z.array(horarioSchema).min(1, "Configure ao menos um dia de trabalho"),
 };
 
 export const turnSchema = z.discriminatedUnion("isMotoboyOrFiscal", [
@@ -35,12 +36,16 @@ export const turnSchema = z.discriminatedUnion("isMotoboyOrFiscal", [
     isMotoboyOrFiscal: z.literal(true),
     cliente_id: z.string({ required_error: messages.validacao.campoObrigatorio })
       .min(1, messages.validacao.campoObrigatorio),
+    unidade_id: z.string({ required_error: messages.validacao.campoObrigatorio })
+      .min(1, messages.validacao.campoObrigatorio),
   }),
   z.object({
     ...baseSchema,
     isMotoboyOrFiscal: z.literal(false),
     cliente_id: z.string().optional().nullable(),
+    unidade_id: z.string().optional().nullable(),
   }),
 ]);
 
 export type TurnFormData = z.infer<typeof turnSchema>;
+export type TurnFormInput = z.input<typeof turnSchema>;

@@ -13,11 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { Perfil } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
 import { cpfMask, dateMask, phoneMask, rgMask } from "@/utils/masks";
+import { onlyNumbers } from "@/utils/string";
 import { Eye, Mail, MapPin, User, Users } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
@@ -35,7 +36,7 @@ export function CollaboratorFormPersonal({
   } = useFormContext();
 
   const cpfValue = watch("cpf") || "";
-  const cpfDigits = cpfValue.replace(/\D/g, "");
+  const cpfDigits = onlyNumbers(cpfValue);
   const initialPassword = cpfDigits.substring(0, 6);
   const isNewCollaborator = !watch("id");
 
@@ -49,13 +50,13 @@ export function CollaboratorFormPersonal({
           <input type="hidden" {...field} value={field.value || ""} />
         )}
       />
-      {/* Basic Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Mandatory Fields Group */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={control}
           name="nome_completo"
           render={({ field }) => (
-            <FormItem className="md:col-span-2">
+            <FormItem>
               <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 Nome Completo <span className="text-red-500">*</span>
               </FormLabel>
@@ -80,9 +81,92 @@ export function CollaboratorFormPersonal({
 
         <FormField
           control={control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                E-mail <span className="text-red-500">*</span>
+              </FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    placeholder="email@exemplo.com"
+                    className={cn(
+                      "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                      errors.email &&
+                      "border-red-500 focus-visible:ring-red-200",
+                    )}
+                    {...field}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="cpf"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                CPF <span className="text-red-500">*</span>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="000.000.000-00"
+                  className={cn(
+                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                    errors.cpf && "border-red-500 focus-visible:ring-red-200",
+                  )}
+                  {...field}
+                  onChange={(e) => field.onChange(cpfMask(e.target.value))}
+                  maxLength={14}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="telefone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                Telefone / WhatsApp <span className="text-red-500">*</span>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="(11) 99999-9999"
+                  className={cn(
+                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                    errors.telefone &&
+                    "border-red-500 focus-visible:ring-red-200",
+                  )}
+                  {...field}
+                  onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                  maxLength={15}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <div className="h-px bg-gray-100 my-2" />
+
+      {/* Additional Optional Info */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormField
+          control={control}
           name="status"
           render={({ field }) => (
-            <FormItem className="md:col-span-1">
+            <FormItem>
               <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Status <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
@@ -96,11 +180,65 @@ export function CollaboratorFormPersonal({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativo</SelectItem>
-                  <SelectItem value={STATUS_CADASTRO.PENDENTE}>Pendente</SelectItem>
-                  <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativo</SelectItem>
+                  <SelectItem value={StatusUsuario.ATIVO}>Ativo</SelectItem>
+                  <SelectItem value={StatusUsuario.PENDENTE}>Pendente</SelectItem>
+                  <SelectItem value={StatusUsuario.INATIVO}>Inativo</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="data_nascimento"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                Data de Nascimento
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="DD/MM/AAAA"
+                  maxLength={10}
+                  className={cn(
+                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                    errors.data_nascimento &&
+                    "border-red-500 focus-visible:ring-red-200",
+                  )}
+                  {...field}
+                  onChange={(e) => {
+                    const val = dateMask(e.target.value);
+                    field.onChange(val);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="rg"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                RG
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="00.000.000-0"
+                  className={cn(
+                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                    errors.rg && "border-red-500 focus-visible:ring-red-200",
+                  )}
+                  {...field}
+                  onChange={(e) => field.onChange(rgMask(e.target.value))}
+                  maxLength={12}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -135,116 +273,9 @@ export function CollaboratorFormPersonal({
 
         <FormField
           control={control}
-          name="data_nascimento"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                Data de Nascimento <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="DD/MM/AAAA"
-                  maxLength={10}
-                  className={cn(
-                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                    errors.data_nascimento &&
-                    "border-red-500 focus-visible:ring-red-200",
-                  )}
-                  {...field}
-                  onChange={(e) => {
-                    const val = dateMask(e.target.value);
-                    field.onChange(val);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="email"
-          render={({ field }) => (
-            <FormItem className="md:col-span-2">
-              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                E-mail <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="email@exemplo.com"
-                    className={cn(
-                      "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.email &&
-                      "border-red-500 focus-visible:ring-red-200",
-                    )}
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-3">
-          <FormField
-            control={control}
-            name="cpf"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                  CPF <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="000.000.000-00"
-                    className={cn(
-                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.cpf && "border-red-500 focus-visible:ring-red-200",
-                    )}
-                    {...field}
-                    onChange={(e) => field.onChange(cpfMask(e.target.value))}
-                    maxLength={14}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="rg"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                  RG <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="00.000.000-0"
-                    className={cn(
-                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.rg && "border-red-500 focus-visible:ring-red-200",
-                    )}
-                    {...field}
-                    onChange={(e) => field.onChange(rgMask(e.target.value))}
-                    maxLength={12}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={control}
           name="endereco_completo"
           render={({ field }) => (
-            <FormItem className="md:col-span-3">
+            <FormItem className="md:col-span-2">
               <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
                 Endereço Completo
               </FormLabel>
@@ -267,57 +298,29 @@ export function CollaboratorFormPersonal({
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-3">
-          <FormField
-            control={control}
-            name="telefone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                  Telefone / WhatsApp <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="(11) 99999-9999"
-                    className={cn(
-                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.telefone &&
-                      "border-red-500 focus-visible:ring-red-200",
-                    )}
-                    {...field}
-                    onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                    maxLength={15}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="telefone_recado"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Telefone Recado</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="(11) 99999-9999"
-                    className={cn(
-                      "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                      errors.telefone_recado &&
-                      "border-red-500 focus-visible:ring-red-200",
-                    )}
-                    {...field}
-                    onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                    maxLength={15}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
+        <FormField
+          control={control}
+          name="telefone_recado"
+          render={({ field }) => (
+            <FormItem className="md:col-span-1">
+              <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Telefone Recado</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="(11) 99999-9999"
+                  className={cn(
+                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                    errors.telefone_recado &&
+                    "border-red-500 focus-visible:ring-red-200",
+                  )}
+                  {...field}
+                  onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                  maxLength={15}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {(isNewCollaborator || watch("senha_padrao")) && (
           <div className="md:col-span-3 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-center gap-4">
@@ -339,6 +342,7 @@ export function CollaboratorFormPersonal({
           </div>
         )}
       </div>
+
     </div>
   );
 }

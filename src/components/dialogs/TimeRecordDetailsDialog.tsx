@@ -2,7 +2,7 @@ import { Can } from "@/components/auth/Can";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PERMISSIONS } from "@/constants/permissions.enum";
-import { STATUS_PONTO } from "@/constants/ponto";
+import { StatusVisualPonto } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -73,10 +73,10 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                     <span className="text-gray-400">Diferença</span>
                     <span className={cn(
                         "font-bold px-2 py-0.5 rounded-md",
-                        status === STATUS_PONTO.VERDE ? "text-emerald-600 bg-emerald-50" :
-                            status === STATUS_PONTO.AMARELO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-sky-600 bg-sky-50") :
-                                status === STATUS_PONTO.ANTECIPADA ? (type === 'entrada' ? "text-sky-600 bg-sky-50" : "text-orange-600 bg-orange-50") :
-                                    status === STATUS_PONTO.VERMELHO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-indigo-700 bg-indigo-50") :
+                        status === StatusVisualPonto.VERDE ? "text-emerald-600 bg-emerald-50" :
+                            status === StatusVisualPonto.AMARELO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-sky-600 bg-sky-50") :
+                                status === StatusVisualPonto.ANTECIPADA ? (type === 'entrada' ? "text-sky-600 bg-sky-50" : "text-orange-600 bg-orange-50") :
+                                    status === StatusVisualPonto.VERMELHO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-indigo-700 bg-indigo-50") :
                                         "text-gray-600 bg-gray-50"
                     )}>
                         {formatMinutes(diff)}
@@ -113,7 +113,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30 space-y-6">
-                    {record.status_saida === STATUS_PONTO.PENDENTE && (
+                    {record.status_saida === StatusVisualPonto.PENDENTE && (
                         <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
                             <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
                             <div>
@@ -234,33 +234,33 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50 col-span-2">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Saldo Diário</span>
                             <span className={`text-xl font-black ${record.saldo_minutos !== undefined && record.saldo_minutos !== null ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-300"}`}>
-                                {record.entrada_hora && record.saida_hora && record.saldo_minutos !== undefined && record.saldo_minutos !== null ? formatMinutes(record.saldo_minutos) : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
+                                {record.entrada_hora && record.saida_hora && record.saldo_minutos !== undefined && record.saldo_minutos !== null ? formatMinutes(record.saldo_minutos) : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
                             </span>
                         </div>
 
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Trabalhadas</span>
                             <span className="text-lg font-black text-gray-700 font-mono">
-                                {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
+                                {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
                             </span>
                         </div>
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Em Pausa</span>
                             <span className="text-lg font-black text-amber-600 font-mono">
-                                {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_pausa || "--:--") : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
+                                {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_pausa || "--:--") : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
                             </span>
                         </div>
 
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">KM Trabalhado</span>
                             <span className="text-lg font-black text-blue-600 font-mono">
-                                {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_trabalhado !== undefined ? formatKm(record.detalhes_calculo.resumo.km_trabalhado) : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--" : "")}
+                                {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_trabalhado !== undefined ? formatKm(record.detalhes_calculo.resumo.km_trabalhado) : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--" : "")}
                             </span>
                         </div>
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
                             <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">KM em Pausa</span>
                             <span className="text-lg font-black text-amber-600 font-mono">
-                                {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_pausa !== undefined ? formatKm(record.detalhes_calculo.resumo.km_pausa) : (record.status_entrada !== STATUS_PONTO.CINZA && record.entrada_hora && record.saida_hora ? "--" : "")}
+                                {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_pausa !== undefined ? formatKm(record.detalhes_calculo.resumo.km_pausa) : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--" : "")}
                             </span>
                         </div>
                     </div>

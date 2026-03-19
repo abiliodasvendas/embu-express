@@ -1,8 +1,10 @@
+import { onlyNumbers } from "../string";
+
 export function formatarCEP(cep: string): string {
   if (!cep || cep === "") return "";
-  const onlyNumbers = cep.replace(/\D/g, "");
-  if (onlyNumbers.length !== 8) return cep;
-  return onlyNumbers.replace(/(\d{5})(\d{3})/, "$1-$2");
+  const numeros = onlyNumbers(cep);
+  if (numeros.length !== 8) return cep;
+  return numeros.replace(/(\d{5})(\d{3})/, "$1-$2");
 }
 
 export function formatarEnderecoCompleto(object: any): string {

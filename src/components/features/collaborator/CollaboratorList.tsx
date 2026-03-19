@@ -2,7 +2,7 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario } from "@/types/enums";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { Usuario } from "@/types/database";
 import { useNavigate } from "react-router-dom";
@@ -16,8 +16,8 @@ interface CollaboratorListProps {
 
 const getAvatarStyles = (status: string) => {
   switch (status) {
-    case STATUS_CADASTRO.ATIVO: return "bg-green-100 text-green-700";
-    case STATUS_CADASTRO.PENDENTE: return "bg-yellow-100 text-yellow-700";
+    case StatusUsuario.ATIVO: return "bg-green-100 text-green-700";
+    case StatusUsuario.PENDENTE: return "bg-yellow-100 text-yellow-700";
     default: return "bg-gray-100 text-gray-500";
   }
 };
@@ -56,8 +56,10 @@ const CollaboratorMobileItem = ({
               <h3 className="font-bold text-gray-900 text-sm break-words leading-tight">
                 {collaborator.nome_completo}
               </h3>
-              {collaborator.cliente?.nome_fantasia && (
-                <p className="text-[10px] text-gray-400 mt-0.5 break-words">{collaborator.cliente.nome_fantasia}</p>
+              {collaborator.links?.[0]?.cliente?.nome_fantasia && (
+                <p className="text-[10px] text-gray-400 mt-0.5 break-words">
+                  {collaborator.links[0].cliente.nome_fantasia}
+                </p>
               )}
             </div>
           </div>
@@ -111,8 +113,10 @@ const CollaboratorTableRow = ({
             <p className="font-bold text-gray-900 text-sm">
               {collaborator.nome_completo}
             </p>
-            {collaborator.cliente?.nome_fantasia && (
-              <p className="text-[10px] text-gray-400 mt-0.5">{collaborator.cliente.nome_fantasia}</p>
+            {collaborator.links?.[0]?.cliente?.nome_fantasia && (
+              <p className="text-[10px] text-gray-400 mt-0.5">
+                {collaborator.links[0].cliente.nome_fantasia}
+              </p>
             )}
           </div>
         </div>

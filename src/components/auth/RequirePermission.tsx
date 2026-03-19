@@ -45,8 +45,9 @@ export function RequirePermission({ permissions, requireAdminPanel, requireOpera
     }
 
     if (!hasAccess) {
-        // Redirecionamento inteligente
-        if (canViewAdminPanel) return <Navigate to={ROUTES.PRIVATE.CONTROLE_PONTO} replace />;
+        if (canViewAdminPanel) {
+            return <Navigate to={ROUTES.PRIVATE.CONTROLE_PONTO} replace />;
+        }
         return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
     }
 

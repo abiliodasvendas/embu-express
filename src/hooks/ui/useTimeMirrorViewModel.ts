@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { useFilters, UseFiltersOptions } from "./useFilters";
+import { useHierarchyFilters, useDateFilters, usePontoFilters, useFiltersManager, UseFiltersOptions } from "./useFilters";
 import { useTimeMirror } from "@/hooks/api/useTimeMirror";
 import { useTimeMirrorBusiness } from "../business/useTimeMirrorBusiness";
 import { usePermissions } from "../business/usePermissions";
@@ -13,13 +13,33 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
   const { usuarioId: initialUsuarioId, ...filterOptions } = options;
   const { can, profile } = usePermissions();
 
-  const filters = useFilters({
+  const { syncWithUrl = true } = filterOptions;
+
+  const { selectedUsuario, setSelectedUsuario } = useHierarchyFilters({
     usuarioParam: "usuario",
+    syncWithUrl
+  });
+
+  const { selectedMes, setSelectedMes, selectedAno, setSelectedAno } = useDateFilters({
     mesParam: "mes",
     anoParam: "ano",
-    turnoParam: "turno",
-    ...filterOptions
+    syncWithUrl
   });
+
+  const { selectedTurno, setSelectedTurno } = usePontoFilters({
+    turnoParam: "turno",
+    syncWithUrl
+  });
+
+  const manager = useFiltersManager(["usuario", "mes", "ano", "turno"], syncWithUrl);
+  
+  const filters = {
+    selectedUsuario, setSelectedUsuario,
+    selectedMes, setSelectedMes,
+    selectedAno, setSelectedAno,
+    selectedTurno, setSelectedTurno,
+    ...manager
+  };
 
   const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
   const finalUsuarioId = initialUsuarioId || (canViewAll ? (filters.selectedUsuario === 'todos' ? undefined : filters.selectedUsuario) : profile?.id);

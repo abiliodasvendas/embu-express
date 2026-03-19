@@ -8,6 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { aplicarMascaraPlaca, dateMask } from "@/utils/masks";
+import { onlyNumbers } from "@/utils/string";
 import { useFormContext } from "react-hook-form";
 
 export function CollaboratorFormCNH() {
@@ -21,7 +22,7 @@ export function CollaboratorFormCNH() {
                 name="cnh_registro"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH</FormLabel>
                         <FormControl>
                             <Input
                                 className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")}
@@ -37,7 +38,7 @@ export function CollaboratorFormCNH() {
                 name="cnh_vencimento"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento CNH {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento CNH</FormLabel>
                         <FormControl>
                             <Input
                                 placeholder="DD/MM/AAAA"
@@ -56,7 +57,7 @@ export function CollaboratorFormCNH() {
                 name="cnh_categoria"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria</FormLabel>
                         <FormControl>
                             <Input
                                 placeholder="A / AB"
@@ -81,7 +82,7 @@ export function CollaboratorFormMoto() {
         <div className="grid grid-cols-2 gap-4">
             <FormField name="moto_modelo" control={control} render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo</FormLabel>
                     <FormControl>
                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_modelo && "border-red-500 focus-visible:ring-red-200")} {...field} />
                     </FormControl>
@@ -90,7 +91,7 @@ export function CollaboratorFormMoto() {
             )} />
             <FormField name="moto_cor" control={control} render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor</FormLabel>
                     <FormControl>
                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} {...field} />
                     </FormControl>
@@ -99,16 +100,16 @@ export function CollaboratorFormMoto() {
             )} />
             <FormField name="moto_ano" control={control} render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano</FormLabel>
                     <FormControl>
-                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_ano && "border-red-500 focus-visible:ring-red-200")} {...field} maxLength={4} onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 4))} />
+                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_ano && "border-red-500 focus-visible:ring-red-200")} {...field} maxLength={4} onChange={(e) => field.onChange(onlyNumbers(e.target.value).slice(0, 4))} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
             )} />
             <FormField name="moto_placa" control={control} render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa</FormLabel>
                     <FormControl>
                         <Input
                             className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}

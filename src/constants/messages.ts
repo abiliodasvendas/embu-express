@@ -239,17 +239,17 @@ export const messages = {
   dialogo: {
     remover: {
       titulo: "Confirmar Remoção",
-      descricao: "Tem certeza que deseja remover este item? Esta ação não pode ser desfeita.",
+      descricao: "Tem certeza que deseja remover? Esta ação não pode ser desfeita.",
       botao: "Remover",
     },
     desativar: {
       titulo: "Confirmar Desativação",
-      descricao: "Tem certeza que deseja desativar este item?",
+      descricao: "Tem certeza que deseja desativar?",
       botao: "Desativar",
     },
     ativar: {
       titulo: "Confirmar Ativação",
-      descricao: "Deseja ativar este item?",
+      descricao: "Tem certeza que deseja aprovar/ativar?",
       botao: "Ativar",
     },
   },

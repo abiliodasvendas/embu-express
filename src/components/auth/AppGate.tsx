@@ -13,7 +13,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
 
   const isPublic = publicPaths.includes(location.pathname);
 
-  // Enquanto ainda carrega sessão, mostra spinner
+  // Mientras ainda carrega sessão, mostra spinner
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -21,6 +21,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
+
 
   // 🔹 Se não está logado e a rota é pública → libera
   if (!session && isPublic) {

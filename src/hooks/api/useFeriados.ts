@@ -1,49 +1,30 @@
-import { supabase } from "@/integrations/supabase/client";
+import { messages } from "@/constants/messages";
+import { feriadoApi } from "@/services/api/feriado.api";
 import { Feriado } from "@/types/database";
+import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { FeriadoFormValues } from "@/schemas/feriadoSchema";
+import { ApiError } from "@/types/api";
 
 export function useFeriados(ano?: number) {
     return useQuery({
         queryKey: ["feriados", ano],
-        queryFn: async () => {
-            let query = supabase
-                .from("feriados")
-                .select("*")
-                .order("data", { ascending: true });
-
-            if (ano) {
-                query = query
-                    .gte("data", `${ano}-01-01`)
-                    .lte("data", `${ano}-12-31`);
-            }
-
-            const { data, error } = await query;
-            if (error) throw error;
-            return data as Feriado[];
-        },
+        queryFn: () => feriadoApi.listFeriados(ano),
     });
 }
 
 export function useCreateFeriado() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ data, descricao }: { data: string; descricao: string }) => {
-            const { data: created, error } = await supabase
-                .from("feriados")
-                .insert([{ data, descricao }])
-                .select()
-                .single();
-
-            if (error) throw error;
-            return created;
-        },
+        mutationFn: (data: FeriadoFormValues) => feriadoApi.createFeriado(data as { data: string; descricao: string }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["feriados"] });
-            toast.success("Feriado cadastrado com sucesso!");
+            toast.success(messages.feriado.sucesso.criado);
         },
-        onError: (error: any) => {
-            toast.error(error.message || "Erro ao cadastrar feriado");
+        onError: (error: ApiError) => {
+            toast.error(messages.feriado.erro.criar, {
+                description: error.response?.data?.message || error.message,
+            });
         },
     });
 }
@@ -51,21 +32,15 @@ export function useCreateFeriado() {
 export function useDeleteFeriado() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (id: number) => {
-            const { error } = await supabase
-                .from("feriados")
-                .delete()
-                .eq("id", id);
-
-            if (error) throw error;
-            return true;
-        },
+        mutationFn: (id: number) => feriadoApi.deleteFeriado(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["feriados"] });
-            toast.success("Feriado removido!");
+            toast.success(messages.feriado.sucesso.excluido);
         },
-        onError: (error: any) => {
-            toast.error(error.message || "Erro ao remover feriado");
+        onError: (error: ApiError) => {
+            toast.error(messages.feriado.erro.excluir, {
+                description: error.response?.data?.message || error.message,
+            });
         },
     });
 }
@@ -73,23 +48,16 @@ export function useDeleteFeriado() {
 export function useUpdateFeriado() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, data, descricao }: { id: number; data: string; descricao: string }) => {
-            const { data: updated, error } = await supabase
-                .from("feriados")
-                .update({ data, descricao })
-                .eq("id", id)
-                .select()
-                .single();
-
-            if (error) throw error;
-            return updated;
-        },
+        mutationFn: ({ id, ...data }: { id: number } & FeriadoFormValues) => 
+            feriadoApi.updateFeriado(id, data as { data: string; descricao: string }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["feriados"] });
-            toast.success("Feriado atualizado com sucesso!");
+            toast.success(messages.feriado.sucesso.atualizado);
         },
-        onError: (error: any) => {
-            toast.error(error.message || "Erro ao atualizar feriado");
+        onError: (error: ApiError) => {
+            toast.error(messages.feriado.erro.atualizar, {
+                description: error.response?.data?.message || error.message,
+            });
         },
     });
 }

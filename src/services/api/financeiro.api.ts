@@ -1,7 +1,8 @@
+import { ExtratoMensal } from "@/types/financeiro";
 import { apiClient } from "./client";
 
 export const financeiroApi = {
-    getExtratoMensal: (usuarioId: string, mes: number, ano: number): Promise<any> =>
+    getExtratoMensal: (usuarioId: string, mes: number, ano: number): Promise<ExtratoMensal> =>
         apiClient.get(`/financeiro/extrato-mensal/${usuarioId}`, { params: { mes, ano } }).then(res => res.data),
 
     processarPagamento: (usuarioId: string, mes: number, ano: number): Promise<any> =>

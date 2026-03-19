@@ -1,6 +1,8 @@
+import { onlyNumbers } from "@/utils/string";
+
 export const cepService = {
   async buscarEndereco(cep: string) {
-    const cleanCep = cep.replace(/\D/g, "");
+    const cleanCep = onlyNumbers(cep);
     if (cleanCep.length !== 8) return null;
 
     try {

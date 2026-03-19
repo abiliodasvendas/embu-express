@@ -25,7 +25,7 @@ import { Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario, FilterOptions } from "@/types/enums";
 
 interface CollaboratorsToolbarProps {
   searchTerm: string;
@@ -44,6 +44,8 @@ interface CollaboratorsToolbarProps {
   empresas: any[];
   selectedEmpresa: string;
   onEmpresaChange: (value: string) => void;
+  hasActiveFilters?: boolean;
+  onClear?: () => void;
 }
 
 const FilterControls = ({
@@ -83,9 +85,9 @@ const FilterControls = ({
         Cliente
       </Label>
       <Combobox
-        options={[{ value: STATUS_CADASTRO.TODOS, label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
+        options={[{ value: FilterOptions.TODOS, label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
         value={clientValue}
-        onSelect={(val) => onClientChange(val || STATUS_CADASTRO.TODOS)}
+        onSelect={(val) => onClientChange(val || FilterOptions.TODOS)}
         placeholder="Todos os Clientes"
         searchPlaceholder="Buscar cliente..."
         emptyText="Nenhum cliente encontrado."
@@ -102,9 +104,9 @@ const FilterControls = ({
         Empresa
       </Label>
       <Combobox
-        options={[{ value: STATUS_CADASTRO.TODOS, label: "Todas as Empresas" }, ...empresas.map(e => ({ value: e.id.toString(), label: e.nome_fantasia }))]}
+        options={[{ value: FilterOptions.TODOS, label: "Todas as Empresas" }, ...empresas.map(e => ({ value: e.id.toString(), label: e.nome_fantasia }))]}
         value={empresaValue}
-        onSelect={(val) => onEmpresaChange(val || STATUS_CADASTRO.TODOS)}
+        onSelect={(val) => onEmpresaChange(val || FilterOptions.TODOS)}
         placeholder="Todas as Empresas"
         searchPlaceholder="Buscar empresa..."
         emptyText="Nenhuma empresa encontrada."
@@ -130,10 +132,10 @@ const FilterControls = ({
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent className="z-[10001] rounded-xl border-gray-100">
-          <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os Status</SelectItem>
-          <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativos</SelectItem>
-          <SelectItem value={STATUS_CADASTRO.PENDENTE}>Pendentes</SelectItem>
-          <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativos</SelectItem>
+          <SelectItem value={FilterOptions.TODOS}>Todos os Status</SelectItem>
+          <SelectItem value={StatusUsuario.ATIVO}>Ativos</SelectItem>
+          <SelectItem value={StatusUsuario.PENDENTE}>Pendentes</SelectItem>
+          <SelectItem value={StatusUsuario.INATIVO}>Inativos</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -152,7 +154,7 @@ const FilterControls = ({
           <SelectValue placeholder="Cargo" />
         </SelectTrigger>
         <SelectContent className="z-[10001] rounded-xl border-gray-100">
-          <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os Cargos</SelectItem>
+          <SelectItem value={FilterOptions.TODOS}>Todos os Cargos</SelectItem>
           {roles?.map((role: any) => (
             <SelectItem key={role.id} value={role.id.toString()}>
               {getPerfilLabel(role.nome)}
@@ -182,6 +184,8 @@ export function CollaboratorsToolbar({
   empresas,
   selectedEmpresa,
   onEmpresaChange,
+  hasActiveFilters,
+  onClear,
 }: CollaboratorsToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -219,20 +223,24 @@ export function CollaboratorsToolbar({
   }, [isSheetOpen, selectedStatus, selectedRole, selectedClient, selectedEmpresa]);
 
   const hasAdvancedFilters =
-    selectedStatus !== STATUS_CADASTRO.TODOS || selectedRole !== STATUS_CADASTRO.TODOS || selectedClient !== STATUS_CADASTRO.TODOS || selectedEmpresa !== STATUS_CADASTRO.TODOS;
+    selectedStatus !== FilterOptions.TODOS || selectedRole !== FilterOptions.TODOS || selectedClient !== FilterOptions.TODOS || selectedEmpresa !== FilterOptions.TODOS;
   const hasAnyFilter = hasAdvancedFilters || localSearch !== "";
   const selectedCount =
-    (selectedStatus !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedRole !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedClient !== STATUS_CADASTRO.TODOS ? 1 : 0) + (selectedEmpresa !== STATUS_CADASTRO.TODOS ? 1 : 0);
+    (selectedStatus !== FilterOptions.TODOS ? 1 : 0) + (selectedRole !== FilterOptions.TODOS ? 1 : 0) + (selectedClient !== FilterOptions.TODOS ? 1 : 0) + (selectedEmpresa !== FilterOptions.TODOS ? 1 : 0);
 
   const clearFilters = () => {
     setLocalSearch("");
-    onSearchChange("");
-    onApplyFilters({
-      status: STATUS_CADASTRO.TODOS,
-      categoria: STATUS_CADASTRO.TODOS,
-      cliente: STATUS_CADASTRO.TODOS,
-      empresa: STATUS_CADASTRO.TODOS,
-    });
+    if (onClear) {
+      onClear();
+    } else {
+      onSearchChange("");
+      onApplyFilters({
+        status: FilterOptions.TODOS,
+        categoria: FilterOptions.TODOS,
+        cliente: FilterOptions.TODOS,
+        empresa: FilterOptions.TODOS,
+      });
+    }
   };
 
   const applyMobileFilters = () => {
@@ -246,10 +254,10 @@ export function CollaboratorsToolbar({
   };
 
   const clearMobileFilters = () => {
-    setMobileStatus(STATUS_CADASTRO.TODOS);
-    setMobileRole(STATUS_CADASTRO.TODOS);
-    setMobileClient(STATUS_CADASTRO.TODOS);
-    setMobileEmpresa(STATUS_CADASTRO.TODOS);
+    setMobileStatus(FilterOptions.TODOS);
+    setMobileRole(FilterOptions.TODOS);
+    setMobileClient(FilterOptions.TODOS);
+    setMobileEmpresa(FilterOptions.TODOS);
   };
 
   return (

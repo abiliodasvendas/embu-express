@@ -12,25 +12,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { messages } from "@/constants/messages";
 import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
-import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
 import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCollaborator, useDeleteVinculo, useRoles, useTimeMirrorViewModel,
-  useOccurrenceViewModel, useFinancialReportViewModel, useFilters
+  useFinancialReportViewModel, useDateFilters, useFiltersManager
 } from "@/hooks";
-import { useDeleteCollaborator, useUpdateCollaboratorStatus, useUpdateVinculo } from "@/hooks/api/useCollaboratorMutations";
+import { useDeleteCollaborator, useUpdateCollaboratorStatus, useUpdateVinculo, useResetCollaboratorPassword } from "@/hooks/api/useCollaboratorMutations";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
 import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
-import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { onlyNumbers } from "@/utils/string";
+import { format, parseISO } from "date-fns";
 import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, ChevronRight, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-
 
 export default function CollaboratorDetails() {
   const { id } = useParams();
@@ -42,6 +40,7 @@ export default function CollaboratorDetails() {
   const updateVinculo = useUpdateVinculo();
   const updateStatus = useUpdateCollaboratorStatus();
   const deleteCollaborator = useDeleteCollaborator();
+  const resetPassword = useResetCollaboratorPassword();
   const {
     openConfirmationDialog,
     closeConfirmationDialog,
@@ -132,25 +131,53 @@ export default function CollaboratorDetails() {
     });
   };
 
+  const handleResetPassword = async () => {
+    if (!collaborator) return;
+    openConfirmationDialog({
+      title: "Resetar Senha",
+      description: `Tem certeza que deseja resetar a senha deste colaborador? Ela voltará a ser os 6 primeiros dígitos do CPF.`,
+      confirmText: "Resetar Senha",
+      variant: "warning",
+      onConfirm: async () => {
+        try {
+          await resetPassword.mutateAsync(collaborator.id);
+          closeConfirmationDialog();
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
+  };
+
   const actions = useCollaboratorActions({
     collaborator: collaborator as Usuario,
     onEdit: () => openCollaboratorFormDialog({ mode: "edit", editingCollaborator: collaborator as Usuario }),
     onStatusChange: handleToggleStatus,
     onDelete: handleDelete,
+    onResetPassword: handleResetPassword,
     hideDetails: true,
   });
 
-  const filters = useFilters({
+  const { selectedMes, setSelectedMes, selectedAno, setSelectedAno } = useDateFilters({
     mesParam: "mes",
     anoParam: "ano",
   });
 
-  const pontoVm = useTimeMirrorViewModel({ 
-    usuarioId: id, 
+  const { hasActiveFilters: hasDateFilters, clearFilters: clearDateFilters } = useFiltersManager(["mes", "ano"]);
+
+  const filters = {
+    selectedMes, setSelectedMes,
+    selectedAno, setSelectedAno,
+    hasActiveFilters: hasDateFilters,
+    clearFilters: clearDateFilters
+  };
+
+  const pontoVm = useTimeMirrorViewModel({
+    usuarioId: id,
     syncWithUrl: true,
   });
 
-  const financeiroVm = useFinancialReportViewModel({ 
+  const financeiroVm = useFinancialReportViewModel({
     usuarioId: id,
     syncWithUrl: true,
   });
@@ -336,29 +363,29 @@ export default function CollaboratorDetails() {
         </TabsList>
 
         <TabsContent value="dados" forceMount className={cn("space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "dados" && "hidden")}>
-          
-              {collaborator.senha_padrao && (
-                <Alert className="bg-blue-50 border-blue-200 text-blue-800 rounded-3xl shadow-sm border-l-4 border-l-blue-600 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-blue-600 p-2.5 rounded-2xl shadow-md shadow-blue-200">
-                      <Lock className="w-5 h-5 text-white" />
+
+          {collaborator.senha_padrao && (
+            <Alert className="bg-blue-50 border-blue-200 text-blue-800 rounded-3xl shadow-sm border-l-4 border-l-blue-600 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-4">
+                <div className="bg-blue-600 p-2.5 rounded-2xl shadow-md shadow-blue-200">
+                  <Lock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <AlertTitle className="text-xs font-black uppercase tracking-[0.15em] mb-1">
+                    Senha Provisória Ativa
+                  </AlertTitle>
+                  <AlertDescription className="text-sm font-medium opacity-90 leading-relaxed">
+                    Este colaborador ainda utiliza a senha padrão. A senha para o primeiro acesso são os <strong>6 primeiros dígitos do CPF</strong>.
+                    <div className="mt-2 pt-2 border-t border-blue-200/50 flex flex-col gap-0.5">
+                      <p className="text-[11px] font-bold">Login: <span className="font-mono text-xs">{cpfMask(collaborator.cpf)}</span></p>
+                      <p className="text-[11px] font-bold">Senha: <span className="font-mono text-xs text-blue-600">{onlyNumbers(collaborator.cpf).slice(0, 6)}</span></p>
                     </div>
-                    <div>
-                      <AlertTitle className="text-xs font-black uppercase tracking-[0.15em] mb-1">
-                        Senha Provisória Ativa
-                      </AlertTitle>
-                      <AlertDescription className="text-sm font-medium opacity-90 leading-relaxed">
-                        Este colaborador ainda utiliza a senha padrão. A senha para o primeiro acesso são os <strong>6 primeiros dígitos do CPF</strong>.
-                        <div className="mt-2 pt-2 border-t border-blue-200/50 flex flex-col gap-0.5">
-                          <p className="text-[11px] font-bold">Login: <span className="font-mono text-xs">{cpfMask(collaborator.cpf)}</span></p>
-                          <p className="text-[11px] font-bold">Senha: <span className="font-mono text-xs text-blue-600">{collaborator.cpf?.replace(/\D/g, "").slice(0, 6)}</span></p>
-                        </div>
-                      </AlertDescription>
-                    </div>
-                  </div>
-                </Alert>
-              )}
-          
+                  </AlertDescription>
+                </div>
+              </div>
+            </Alert>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Info - Left Column */}
             <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white">
@@ -521,9 +548,9 @@ export default function CollaboratorDetails() {
                 </CardTitle>
               </div>
               <Can I={PERMISSIONS.USUARIOS.EDITAR}>
-                <Button 
-                  onClick={handleAddTurn} 
-                  size="sm" 
+                <Button
+                  onClick={handleAddTurn}
+                  size="sm"
                   className="rounded-2xl h-10 px-4 gap-2 shadow-md shadow-primary/10 font-black uppercase tracking-widest text-[10px] bg-primary hover:bg-primary/90 text-white border-none transition-all active:scale-95"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -591,11 +618,16 @@ export default function CollaboratorDetails() {
 
                         <div className="flex items-center gap-6">
                           <div>
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Horário</p>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <Badge variant="outline" className="bg-white border-primary/20 text-primary font-bold">
-                                {link.hora_inicio?.substring(0, 5)} — {link.hora_fim?.substring(0, 5)}
-                              </Badge>
+                            <div className="flex flex-wrap gap-1 mt-0.5">
+                              {link.horarios && link.horarios.length > 0 ? (
+                                <Badge variant="outline" className="bg-white border-primary/20 text-primary font-bold text-[9px] px-1.5">
+                                  {link.horarios.length} {link.horarios.length === 1 ? 'dia configurado' : 'dias configurados'}
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-red-50 border-red-200 text-red-600 font-bold text-[9px]">
+                                  Sem horário
+                                </Badge>
+                              )}
                             </div>
                           </div>
                           <div>
@@ -671,11 +703,11 @@ export default function CollaboratorDetails() {
                 <div className="h-8 w-[1px] bg-gray-200 hidden sm:block mx-1" />
 
                 <Button
-                  onClick={() => openOccurrenceFormDialog({ 
-                    collaboratorId: id, 
+                  onClick={() => openOccurrenceFormDialog({
+                    collaboratorId: id,
                     onSuccess: () => {
                       financeiroVm.refetch();
-                    } 
+                    }
                   })}
                   className="rounded-2xl h-10 px-4 gap-2 shadow-md shadow-primary/10 font-black uppercase tracking-widest text-[10px] bg-primary hover:bg-primary/90 text-white border-none transition-all active:scale-95"
                   size="sm"
@@ -686,9 +718,9 @@ export default function CollaboratorDetails() {
               </div>
             </CardHeader>
             <CardContent className="px-8 pb-8 pt-6">
-              <OccurrenceView 
-                usuarioId={id} 
-                mode="monthly" 
+              <OccurrenceView
+                usuarioId={id}
+                mode="monthly"
                 selectedMonth={filters.selectedMes}
                 selectedYear={filters.selectedAno}
                 showFilters={false}
@@ -738,8 +770,8 @@ export default function CollaboratorDetails() {
               </div>
             </CardHeader>
             <CardContent className="px-8 pb-8 pt-6">
-              <TimeMirrorView 
-                usuarioId={id} 
+              <TimeMirrorView
+                usuarioId={id}
                 selectedMonth={filters.selectedMes}
                 selectedYear={filters.selectedAno}
               />
@@ -787,8 +819,8 @@ export default function CollaboratorDetails() {
               </div>
             </CardHeader>
             <CardContent className="px-8 pb-8 pt-6">
-              <FinancialReportView 
-                usuarioId={id} 
+              <FinancialReportView
+                usuarioId={id}
                 colaboradorNome={collaborator?.nome_completo}
                 selectedMonth={filters.selectedMes}
                 selectedYear={filters.selectedAno}

@@ -1,8 +1,12 @@
 import { messages } from "@/constants/messages";
+import { collaboratorSchema, CollaboratorFormData } from "@/schemas/collaboratorSchema";
 import { colaboradorApi } from "@/services/api/colaborador.api";
 import { formatDateToISO } from "@/utils/date";
 import { toast } from "@/utils/notifications/toast";
 import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Usuario, ColaboradorCliente } from "@/types/database";
+
+import { ApiError } from "@/types/api";
 
 /**
  * Invalida caches de colaborador de forma robusta.
@@ -23,10 +27,14 @@ async function invalidateCollaboratorCache(queryClient: QueryClient, id?: string
   }
 }
 
+interface CreateCollaboratorVariables extends CollaboratorFormData {
+  silent?: boolean;
+}
+
 export function useCreateCollaborator() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: any & { silent?: boolean }) => {
+    mutationFn: (data: CreateCollaboratorVariables) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { silent, isMotoboyOrFiscal, ...collaboratorData } = data;
 
@@ -34,10 +42,11 @@ export function useCreateCollaborator() {
         ...collaboratorData,
         data_nascimento: formatDateToISO(collaboratorData.data_nascimento),
         cnh_vencimento: formatDateToISO(collaboratorData.cnh_vencimento),
-        data_inicio: formatDateToISO(collaboratorData.data_inicio),
+        // Certificar que perfil_id é number
+        perfil_id: typeof collaboratorData.perfil_id === 'string' ? parseInt(collaboratorData.perfil_id) : (collaboratorData.perfil_id as number)
       };
 
-      return colaboradorApi.createColaborador(payload);
+      return colaboradorApi.createColaborador(payload as Partial<Usuario>);
     },
     onSuccess: async (_, variables) => {
       await invalidateCollaboratorCache(queryClient);
@@ -45,7 +54,7 @@ export function useCreateCollaborator() {
         toast.success(messages.colaborador.sucesso.criado);
       }
     },
-    onError: (error: any, variables) => {
+    onError: (error: Error, variables) => {
       if (!variables.silent) {
         toast.error(messages.colaborador.erro.criar, {
           description: error.message,
@@ -55,17 +64,23 @@ export function useCreateCollaborator() {
   });
 }
 
+interface UpdateCollaboratorVariables extends CollaboratorFormData {
+  id: string;
+  silent?: boolean;
+}
+
 export function useUpdateCollaborator() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, isMotoboyOrFiscal, silent, ...data }: any) => {
+    mutationFn: ({ id, isMotoboyOrFiscal, silent, ...data }: UpdateCollaboratorVariables) => {
       const payload = {
         ...data,
         data_nascimento: formatDateToISO(data.data_nascimento),
         cnh_vencimento: formatDateToISO(data.cnh_vencimento),
-        data_inicio: formatDateToISO(data.data_inicio),
+        // Certificar que perfil_id é number
+        perfil_id: typeof data.perfil_id === 'string' ? parseInt(data.perfil_id) : (data.perfil_id as number)
       };
-      return colaboradorApi.updateColaborador(id, payload);
+      return colaboradorApi.updateColaborador(id, payload as Partial<Usuario>);
     },
     onSuccess: async (_, variables) => {
       await invalidateCollaboratorCache(queryClient, variables.id);
@@ -74,7 +89,7 @@ export function useUpdateCollaborator() {
         toast.success(messages.colaborador.sucesso.atualizado);
       }
     },
-    onError: (error: any, variables) => {
+    onError: (error: Error, variables) => {
       if (!variables.silent) {
         toast.error(messages.colaborador.erro.atualizar, {
           description: error.message,
@@ -93,9 +108,25 @@ export function useUpdateCollaboratorStatus() {
       await invalidateCollaboratorCache(queryClient, variables.id);
       toast.success(messages.colaborador.sucesso.status);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(messages.colaborador.erro.toggleStatus, {
-        description: error.message,
+        description: error.response?.data?.error || error.message,
+      });
+    },
+  });
+}
+
+export function useResetCollaboratorPassword() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => colaboradorApi.resetPassword(id),
+    onSuccess: async (_, id) => {
+      await invalidateCollaboratorCache(queryClient, id);
+      toast.success("Senha resetada com sucesso para o padrão");
+    },
+    onError: (error: ApiError) => {
+      toast.error("Erro ao resetar senha", {
+        description: error.response?.data?.error || error.message,
       });
     },
   });
@@ -110,9 +141,9 @@ export function useDeleteCollaborator() {
       queryClient.invalidateQueries({ queryKey: ["time-records"] });
       toast.success(messages.colaborador.sucesso.excluido);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(messages.colaborador.erro.excluir, {
-        description: error.message,
+        description: error.response?.data?.error || error.message,
       });
     },
   });
@@ -121,14 +152,14 @@ export function useDeleteCollaborator() {
 export function useCreateVinculo() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) => colaboradorApi.createVinculo(data),
+    mutationFn: (data: Partial<ColaboradorCliente>) => colaboradorApi.createVinculo(data),
     onSuccess: async (_, variables) => {
       await invalidateCollaboratorCache(queryClient, variables.colaborador_id);
       toast.success(messages.vinculo.sucesso.criado);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(messages.vinculo.erro.criar, {
-        description: error.message,
+        description: error.response?.data?.error || error.message,
       });
     },
   });
@@ -137,14 +168,14 @@ export function useCreateVinculo() {
 export function useUpdateVinculo() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, silent, ...data }: any) => colaboradorApi.updateVinculo(id, data),
+    mutationFn: ({ id, silent: _, ...data }: { id: number; silent?: boolean } & Partial<ColaboradorCliente>) => colaboradorApi.updateVinculo(id, data),
     onSuccess: async (_, variables) => {
       await invalidateCollaboratorCache(queryClient, variables.colaborador_id);
       toast.success(messages.vinculo.sucesso.atualizado);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(messages.vinculo.erro.atualizar, {
-        description: error.message,
+        description: error.response?.data?.error || error.message,
       });
     },
   });
@@ -158,9 +189,9 @@ export function useDeleteVinculo() {
       await invalidateCollaboratorCache(queryClient);
       toast.success(messages.vinculo.sucesso.excluido);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(messages.vinculo.erro.excluir, {
-        description: error.message,
+        description: error.response?.data?.error || error.message,
       });
     },
   });

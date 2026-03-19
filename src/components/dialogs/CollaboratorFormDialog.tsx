@@ -19,7 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { FieldErrors } from "react-hook-form";
 import {
   Select,
   SelectContent,
@@ -29,11 +29,11 @@ import {
 } from "@/components/ui/select";
 import { messages } from "@/constants/messages";
 import { ROLES } from "@/constants/permissions.enum";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario } from "@/types/enums";
 import { PIX_TYPES } from "@/constants/financeiro.constants";
 import { cn } from "@/lib/utils";
 import { useCreateCollaborator, useEmpresas, useLayout, useRoles, useUpdateCollaborator } from "@/hooks";
-import { useCollaboratorForm } from "@/hooks/ui/useCollaboratorForm";
+import { useCollaboratorForm } from "@/hooks/form/useCollaboratorForm";
 import { CollaboratorFormData, CollaboratorFormValues, collaboratorSchema } from "@/schemas/collaboratorSchema";
 import { Perfil, Usuario } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -82,7 +82,7 @@ export function CollaboratorFormDialog({
   useEffect(() => {
     if (roles && open && perfilIdWatch) {
       const selectedRole = roles.find(r => r.id.toString() === perfilIdWatch);
-      const isProfissional = 
+      const isProfissional =
         selectedRole?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase() ||
         selectedRole?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase();
 
@@ -102,9 +102,17 @@ export function CollaboratorFormDialog({
     }
   }, [perfilIdWatch, roles, form, open, collaboratorToEdit]);
 
-  const onFormError = (errors: any) => {
+  const onFormError = (errors: FieldErrors<CollaboratorFormValues>) => {
+    console.error("Erros de validação:", errors);
     toast.error(messages.validacao.formularioComErros);
-    setOpenSections(["personal", "cnh", "moto", "financial"]);
+    // Garantir que as seções com erro fiquem abertas
+    const sectionsWithError = new Set<string>();
+    if (errors.nome_completo || errors.email || errors.cpf || errors.rg || errors.data_nascimento) sectionsWithError.add("personal");
+    if (errors.cnh_registro || errors.cnh_vencimento || errors.cnh_categoria) sectionsWithError.add("cnh");
+    if (errors.moto_modelo || errors.moto_cor || errors.moto_ano || errors.moto_placa) sectionsWithError.add("moto");
+    if (errors.cnpj || errors.valor_mei || errors.tipo_chave_pix || errors.chave_pix) sectionsWithError.add("financial");
+
+    setOpenSections(prev => Array.from(new Set([...prev, ...Array.from(sectionsWithError)])));
   };
 
   /* Helper to convert DD/MM/YYYY to YYYY-MM-DD */
@@ -126,23 +134,15 @@ export function CollaboratorFormDialog({
       form.setValue("perfil_id", motoboyRole.id.toString() as any);
       form.setValue("isMotoboyOrFiscal", true);
     }
-    form.setValue("status", STATUS_CADASTRO.ATIVO);
+    form.setValue("status", StatusUsuario.ATIVO);
 
     // Personal
     form.setValue("nome_completo", mockData.nome_completo);
     form.setValue("email", mockData.email);
     form.setValue("cpf", cpfMask(mockData.cpf));
     form.setValue("rg", mockGenerator.rg());
+    form.setValue("data_nascimento", mockData.data_nascimento);
 
-    // Fix: Format Date of Birth as DD/MM/YYYY for the mask
-    const birthDate = new Date();
-    birthDate.setFullYear(birthDate.getFullYear() - 25);
-    const day = birthDate.getDate().toString().padStart(2, '0');
-    const month = (birthDate.getMonth() + 1).toString().padStart(2, '0');
-    const year = birthDate.getFullYear();
-    form.setValue("data_nascimento", `${day}/${month}/${year}`);
-
-    form.setValue("data_inicio", getLocalDate());
     form.setValue("nome_mae", mockGenerator.name());
     form.setValue("telefone", phoneMask(mockGenerator.phone()));
     form.setValue("telefone_recado", phoneMask(mockGenerator.phone()));
@@ -157,7 +157,7 @@ export function CollaboratorFormDialog({
     form.setValue("moto_placa", aplicarMascaraPlaca(moto.moto_placa));
 
     form.setValue("cnh_registro", cnh.cnh_registro);
-    form.setValue("cnh_vencimento", cnh.cnh_vencimento); // Already DD/MM/YYYY from mock
+    form.setValue("cnh_vencimento", cnh.cnh_vencimento);
     form.setValue("cnh_categoria", cnh.cnh_categoria);
 
     // Financial
@@ -166,35 +166,23 @@ export function CollaboratorFormDialog({
     form.setValue("chave_pix", cpfMask(mockGenerator.cpf()));
   };
 
-  const onSubmit = async (values: CollaboratorFormValues) => {
+  const onSubmit = async (values: CollaboratorFormData) => {
     try {
-      // O zodResolver já validou, mas o .parse nos dá os dados transformados 
-      // (ex: valor_mei de string para number) com a tipagem correta de CollaboratorFormData.
-      const data = collaboratorSchema.parse(values) as CollaboratorFormData;
-
-      // Formatação de datas para o padrão do banco (YYYY-MM-DD)
-      const payload = {
-        ...data,
-        data_nascimento: parseDateBr(data.data_nascimento) || data.data_nascimento,
-        cnh_vencimento: data.cnh_vencimento ? (parseDateBr(data.cnh_vencimento) || data.cnh_vencimento) : null,
-        perfil_id: parseInt(data.perfil_id)
-      };
-
       if (collaboratorToEdit) {
-        await updateCollaborator.mutateAsync({ 
-          id: collaboratorToEdit.id, 
-          ...payload, 
-          silent: true 
-        } as any);
-        
-        onSuccess?.();
+        const result = await updateCollaborator.mutateAsync({
+          id: collaboratorToEdit.id,
+          ...values,
+          silent: true
+        });
+
+        onSuccess?.(result);
         safeCloseDialog(onClose);
       } else {
-        const result = await createCollaborator.mutateAsync({ 
-          ...payload, 
-          silent: true 
-        } as any);
-        
+        const result = await createCollaborator.mutateAsync({
+          ...values,
+          silent: true
+        });
+
         onSuccess?.(result);
         safeCloseDialog(() => {
           onClose();
@@ -205,31 +193,30 @@ export function CollaboratorFormDialog({
       }
     } catch (error: any) {
       console.error("Erro ao salvar colaborador:", error);
-      const message = error.response?.data?.error || error.message || "";
-      const messageLower = message.toLowerCase();
 
-      // Mapeamento de erros do backend para campos do formulário
-      const errorMappings: Record<string, { field: keyof CollaboratorFormValues; section: string }> = {
+      const errorMessage = error.response?.data?.error || error.message || "";
+      const errorMsgLower = errorMessage.toLowerCase();
+
+      // Mapeamento de erros comuns do backend para campos do formulário
+      const errorFieldMapping: Record<string, { field: keyof CollaboratorFormValues; section: string }> = {
         "cpf": { field: "cpf", section: "personal" },
         "email": { field: "email", section: "personal" },
         "e-mail": { field: "email", section: "personal" },
-        "cnpj": { field: "cnpj", section: "personal" },
+        "cnpj": { field: "cnpj", section: "financial" },
         "chave_pix": { field: "chave_pix", section: "financial" },
+        "chave pix": { field: "chave_pix", section: "financial" },
+        "rg": { field: "rg", section: "personal" }
       };
 
-      const matchedError = Object.entries(errorMappings).find(([key]) => messageLower.includes(key));
+      const matchedError = Object.entries(errorFieldMapping).find(([key]) => errorMsgLower.includes(key));
 
       if (matchedError) {
-        const [key, { field, section }] = matchedError;
-        let errorMessage = messages.usuario.erro[key as keyof typeof messages.usuario.erro] || message;
-        
-        if (key === "chave_pix") errorMessage = "Esta chave PIX já está em uso";
-        
-        form.setError(field, { message: errorMessage as string });
-        toast.error(errorMessage as string);
+        const [, { field, section }] = matchedError;
+        form.setError(field, { message: errorMessage });
+        toast.error(errorMessage);
         setOpenSections(prev => prev.includes(section) ? prev : [...prev, section]);
       } else {
-        toast.error(message || messages.erro.salvar);
+        toast.error(errorMessage || messages.erro.salvar);
       }
     }
   };

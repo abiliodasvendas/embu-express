@@ -1,6 +1,8 @@
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { FilterOptions } from "@/types/enums";
+import { useUrlState } from "./useUrlState";
+export { useUrlState };
 
 export interface UseFiltersOptions {
   searchParam?: string;
@@ -20,292 +22,180 @@ export interface UseFiltersOptions {
 
 export interface UseFiltersReturn {
   searchTerm: string;
-  setSearchTerm: (value: string) => void;
+  setSearchTerm: (val: string | null | undefined) => void;
   selectedStatus: string;
-  setSelectedStatus: (value: string) => void;
-  selectedPeriodo?: string;
-  setSelectedPeriodo?: (value: string) => void;
-  selectedMes?: number;
-  setSelectedMes?: (value: number) => void;
-  selectedAno?: number;
-  setSelectedAno?: (value: number) => void;
-  selectedCategoria?: string;
-  setSelectedCategoria?: (value: string) => void;
-  selectedCliente?: string;
-  setSelectedCliente?: (value: string) => void;
-  selectedEmpresa?: string;
-  setSelectedEmpresa?: (value: string) => void;
-  selectedUsuario?: string;
-  setSelectedUsuario?: (value: string) => void;
-  selectedStatusEntrada?: string;
-  setSelectedStatusEntrada?: (value: string) => void;
-  selectedStatusSaida?: string;
-  setSelectedStatusSaida?: (value: string) => void;
-  selectedTurno?: string;
-  setSelectedTurno?: (value: string) => void;
-  onClear: () => void;
-  onApply?: () => void;
-  clearFilters: () => void;
-  setFilters: (newFilters: {
-    searchTerm?: string;
-    status?: string;
-    periodo?: string;
-    mes?: number;
-    ano?: number;
-    categoria?: string;
-    cliente?: string;
-    empresa?: string;
-    usuario?: string;
-    statusEntrada?: string;
-    statusSaida?: string;
-    turno?: string;
-  }) => void;
+  setSelectedStatus: (val: string | null | undefined) => void;
+  selectedMes: number;
+  setSelectedMes: (val: number | null | undefined) => void;
+  selectedAno: number;
+  setSelectedAno: (val: number | null | undefined) => void;
+  selectedCategoria: string;
+  setSelectedCategoria: (val: string | null | undefined) => void;
+  selectedCliente: string;
+  setSelectedCliente: (val: string | null | undefined) => void;
+  selectedEmpresa: string;
+  setSelectedEmpresa: (val: string | null | undefined) => void;
+  selectedUsuario: string;
+  setSelectedUsuario: (val: string | null | undefined) => void;
+  selectedStatusEntrada: string;
+  setSelectedStatusEntrada: (val: string | null | undefined) => void;
+  selectedStatusSaida: string;
+  setSelectedStatusSaida: (val: string | null | undefined) => void;
+  selectedTurno: string;
+  setSelectedTurno: (val: string | null | undefined) => void;
   hasActiveFilters: boolean;
+  clearFilters: () => void;
+  onClear: () => void;
+  setFilters: (filters: any) => void;
 }
 
-export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
-  const {
-    searchParam = "search",
-    statusParam = "status",
-    periodoParam = "periodo",
-    mesParam,
-    anoParam,
-    categoriaParam,
-    clienteParam,
-    empresaParam,
-    usuarioParam,
-    statusEntradaParam,
-    statusSaidaParam,
-    turnoParam,
-    syncWithUrl = true,
-  } = options;
+// 1. Hook para Busca
+export function useSearchFilters(param = "search", syncWithUrl = true) {
+  const [searchTerm, setSearchTerm] = useUrlState<string>({ key: param, defaultValue: "", syncWithUrl });
+  return { searchTerm, setSearchTerm };
+}
 
+// 2. Hook para Status Simples
+export function useStatusFilters(param = "status", syncWithUrl = true) {
+  const [selectedStatus, setSelectedStatus] = useUrlState<string>({ key: param, defaultValue: FilterOptions.TODOS, syncWithUrl });
+  return { selectedStatus, setSelectedStatus };
+}
+
+// 2.1 Hook para Categoria/Cargo
+export function useCategoryFilters(param = "categoria", syncWithUrl = true) {
+  const [selectedCategoria, setSelectedCategoria] = useUrlState<string>({ key: param, defaultValue: FilterOptions.TODOS, syncWithUrl });
+  return { selectedCategoria, setSelectedCategoria };
+}
+
+// 3. Hook para Datas/Meses
+export function useDateFilters(options: { mesParam?: string; anoParam?: string; syncWithUrl?: boolean } = {}) {
+  const { mesParam = "mes", anoParam = "ano", syncWithUrl = true } = options;
+  const [selectedMes, setSelectedMes] = useUrlState<number>({ key: mesParam, defaultValue: new Date().getMonth() + 1, syncWithUrl: !!mesParam && syncWithUrl });
+  const [selectedAno, setSelectedAno] = useUrlState<number>({ key: anoParam, defaultValue: new Date().getFullYear(), syncWithUrl: !!anoParam && syncWithUrl });
+  return { selectedMes, setSelectedMes, selectedAno, setSelectedAno };
+}
+
+// 3.1 Hook para Período (Date Range)
+export function useDateRangeFilters(options: { startParam?: string; endParam?: string; syncWithUrl?: boolean } = {}) {
+  const { startParam = "data_inicio", endParam = "data_fim", syncWithUrl = true } = options;
+  const today = new Date().toISOString().split("T")[0];
+  const [startDate, setStartDate] = useUrlState<string>({ key: startParam, defaultValue: today, syncWithUrl });
+  const [endDate, setEndDate] = useUrlState<string>({ key: endParam, defaultValue: today, syncWithUrl });
+  return { startDate, setStartDate, endDate, setEndDate };
+}
+
+// 4. Hook para Hierarquia (Empresa, Cliente, Usuário)
+export function useHierarchyFilters(options: { empresaParam?: string; clienteParam?: string; usuarioParam?: string; syncWithUrl?: boolean } = {}) {
+  const { empresaParam, clienteParam, usuarioParam, syncWithUrl = true } = options;
+  const [selectedEmpresa, setSelectedEmpresa] = useUrlState<string>({ key: empresaParam || "emp_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!empresaParam && syncWithUrl });
+  const [selectedCliente, setSelectedCliente] = useUrlState<string>({ key: clienteParam || "cli_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!clienteParam && syncWithUrl });
+  const [selectedUsuario, setSelectedUsuario] = useUrlState<string>({ key: usuarioParam || "usr_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!usuarioParam && syncWithUrl });
+  return { selectedEmpresa, setSelectedEmpresa, selectedCliente, setSelectedCliente, selectedUsuario, setSelectedUsuario };
+}
+
+// 5. Hook para Filtros Específicos de Ponto
+export function usePontoFilters(options: { statusEntradaParam?: string; statusSaidaParam?: string; turnoParam?: string; syncWithUrl?: boolean } = {}) {
+  const { statusEntradaParam, statusSaidaParam, turnoParam, syncWithUrl = true } = options;
+  const [selectedStatusEntrada, setSelectedStatusEntrada] = useUrlState<string>({ key: statusEntradaParam || "stIn_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!statusEntradaParam && syncWithUrl });
+  const [selectedStatusSaida, setSelectedStatusSaida] = useUrlState<string>({ key: statusSaidaParam || "stOut_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!statusSaidaParam && syncWithUrl });
+  const [selectedTurno, setSelectedTurno] = useUrlState<string>({ key: turnoParam || "tur_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!turnoParam && syncWithUrl });
+  return { selectedStatusEntrada, setSelectedStatusEntrada, selectedStatusSaida, setSelectedStatusSaida, selectedTurno, setSelectedTurno };
+}
+
+// 6. Hook para Gestão Geral de Limpeza e Utilitários
+export function useFiltersManager(allParams: (string | undefined)[], syncWithUrl = true) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Mapeamento de nomes de parâmetros (incluindo padrões)
-  const paramNames = useMemo(() => ({
-    searchTerm: searchParam,
-    status: statusParam,
-    periodo: periodoParam,
-    mes: mesParam,
-    ano: anoParam,
-    categoria: categoriaParam,
-    cliente: clienteParam,
-    empresa: empresaParam,
-    usuario: usuarioParam,
-    statusEntrada: statusEntradaParam,
-    statusSaida: statusSaidaParam,
-    turno: turnoParam,
-  }), [
-    searchParam, statusParam, periodoParam, mesParam, anoParam, categoriaParam,
-    clienteParam, empresaParam, usuarioParam, statusEntradaParam, statusSaidaParam, turnoParam
-  ]);
-
-  const [internalState, setInternalState] = useState<{
-    searchTerm: string;
-    status: string;
-    periodo: string;
-    mes: number;
-    ano: number;
-    categoria: string;
-    cliente: string;
-    empresa: string;
-    usuario: string;
-    statusEntrada: string;
-    statusSaida: string;
-    turno: string;
-  }>({
-    searchTerm: "",
-    status: STATUS_CADASTRO.TODOS,
-    periodo: STATUS_CADASTRO.TODOS,
-    mes: new Date().getMonth() + 1,
-    ano: new Date().getFullYear(),
-    categoria: STATUS_CADASTRO.TODOS,
-    cliente: STATUS_CADASTRO.TODOS,
-    empresa: STATUS_CADASTRO.TODOS,
-    usuario: STATUS_CADASTRO.TODOS,
-    statusEntrada: STATUS_CADASTRO.TODOS,
-    statusSaida: STATUS_CADASTRO.TODOS,
-    turno: STATUS_CADASTRO.TODOS,
-  });
-
-  const getValue = (param: string | undefined, internalKey: keyof typeof internalState, defaultValue: any) => {
-    if (syncWithUrl && param) {
-      return searchParams.get(param) ?? defaultValue;
-    }
-    return internalState[internalKey];
-  };
-
-  const getNumberValue = (param: string | undefined, internalKey: keyof typeof internalState, defaultValue: number) => {
-    if (syncWithUrl && param) {
-      const val = searchParams.get(param);
-      return val ? parseInt(val) : defaultValue;
-    }
-    return internalState[internalKey] as number;
-  };
-
-  const searchTerm = getValue(searchParam, "searchTerm", "");
-  const selectedStatus = getValue(statusParam, "status", STATUS_CADASTRO.TODOS);
-  const selectedPeriodo = getValue(periodoParam, "periodo", STATUS_CADASTRO.TODOS);
-  const selectedMes = getNumberValue(mesParam, "mes", new Date().getMonth() + 1);
-  const selectedAno = getNumberValue(anoParam, "ano", new Date().getFullYear());
-  const selectedCategoria = getValue(categoriaParam, "categoria", STATUS_CADASTRO.TODOS);
-  const selectedCliente = getValue(clienteParam, "cliente", STATUS_CADASTRO.TODOS);
-  const selectedEmpresa = getValue(empresaParam, "empresa", STATUS_CADASTRO.TODOS);
-  const selectedUsuario = getValue(usuarioParam, "usuario", STATUS_CADASTRO.TODOS);
-  const selectedStatusEntrada = getValue(statusEntradaParam, "statusEntrada", STATUS_CADASTRO.TODOS);
-  const selectedStatusSaida = getValue(statusSaidaParam, "statusSaida", STATUS_CADASTRO.TODOS);
-  const selectedTurno = getValue(turnoParam, "turno", STATUS_CADASTRO.TODOS);
-
-  const updateState = useCallback((key: keyof typeof internalState, value: any, param?: string) => {
-    if (syncWithUrl && param) {
-      const stringValue = String(value);
-      const isDefault = value === STATUS_CADASTRO.TODOS || value === "todas" || value === undefined || value === null;
-
-      setSearchParams((prev) => {
-        const currentValue = prev.get(param);
-        
-        if (isDefault) {
-          if (currentValue === null) return prev;
-          const newParams = new URLSearchParams(prev);
-          newParams.delete(param);
-          return newParams;
-        } 
-        
-        if (currentValue === stringValue) return prev;
-        
-        const newParams = new URLSearchParams(prev);
-        newParams.set(param, stringValue);
-        return newParams;
-      }, { replace: true });
-    } else {
-      setInternalState(prev => {
-        if (prev[key] === value) return prev;
-        return { ...prev, [key]: value };
-      });
-    }
-  }, [syncWithUrl, setSearchParams]);
-
-  const setSearchTerm = useCallback((v: string) => updateState("searchTerm", v, searchParam), [updateState, searchParam]);
-  const setSelectedStatus = useCallback((v: string) => updateState("status", v, statusParam), [updateState, statusParam]);
-  const setSelectedPeriodo = useCallback((v: string) => updateState("periodo", v, periodoParam), [updateState, periodoParam]);
-  const setSelectedMes = useCallback((v: number) => updateState("mes", v, mesParam), [updateState, mesParam]);
-  const setSelectedAno = useCallback((v: number) => updateState("ano", v, anoParam), [updateState, anoParam]);
-  const setSelectedCategoria = useCallback((v: string) => updateState("categoria", v, categoriaParam), [updateState, categoriaParam]);
-  const setSelectedCliente = useCallback((v: string) => updateState("cliente", v, clienteParam), [updateState, clienteParam]);
-  const setSelectedEmpresa = useCallback((v: string) => updateState("empresa", v, empresaParam), [updateState, empresaParam]);
-  const setSelectedUsuario = useCallback((v: string) => updateState("usuario", v, usuarioParam), [updateState, usuarioParam]);
-  const setSelectedStatusEntrada = useCallback((v: string) => updateState("statusEntrada", v, statusEntradaParam), [updateState, statusEntradaParam]);
-  const setSelectedStatusSaida = useCallback((v: string) => updateState("statusSaida", v, statusSaidaParam), [updateState, statusSaidaParam]);
-  const setSelectedTurno = useCallback((v: string) => updateState("turno", v, turnoParam), [updateState, turnoParam]);
-
   const clearFilters = useCallback(() => {
-    if (syncWithUrl) {
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        if (searchParam) newParams.delete(searchParam);
-        if (statusParam) newParams.delete(statusParam);
-        if (periodoParam) newParams.delete(periodoParam);
-        if (mesParam) newParams.delete(mesParam);
-        if (anoParam) newParams.delete(anoParam);
-        if (categoriaParam) newParams.delete(categoriaParam);
-        if (clienteParam) newParams.delete(clienteParam);
-        if (empresaParam) newParams.delete(empresaParam);
-        if (usuarioParam) newParams.delete(usuarioParam);
-        if (statusEntradaParam) newParams.delete(statusEntradaParam);
-        if (statusSaidaParam) newParams.delete(statusSaidaParam);
-        if (turnoParam) newParams.delete(turnoParam);
-        return newParams;
-      }, { replace: true });
-    } else {
-      setInternalState({
-        searchTerm: "",
-        status: STATUS_CADASTRO.TODOS,
-        periodo: STATUS_CADASTRO.TODOS,
-        mes: new Date().getMonth() + 1,
-        ano: new Date().getFullYear(),
-        categoria: STATUS_CADASTRO.TODOS,
-        cliente: STATUS_CADASTRO.TODOS,
-        empresa: STATUS_CADASTRO.TODOS,
-        usuario: STATUS_CADASTRO.TODOS,
-        statusEntrada: STATUS_CADASTRO.TODOS,
-        statusSaida: STATUS_CADASTRO.TODOS,
-        turno: STATUS_CADASTRO.TODOS,
-      });
-    }
-  }, [
-    syncWithUrl, searchParam, statusParam, periodoParam, mesParam, anoParam, categoriaParam,
-    clienteParam, empresaParam, usuarioParam, statusEntradaParam, statusSaidaParam, turnoParam, setSearchParams
-  ]);
-
-  const setFilters = useCallback((newFilters: Parameters<UseFiltersReturn["setFilters"]>[0]) => {
-    if (syncWithUrl) {
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        Object.entries(newFilters).forEach(([key, value]) => {
-          const param = (paramNames as any)[key];
-          if (param) {
-            const isDefault = value === undefined || value === null || value === STATUS_CADASTRO.TODOS || value === "todas" || value === "";
-            if (!isDefault) {
-              newParams.set(param, String(value));
-            } else {
-              newParams.delete(param);
-            }
-          }
-        });
-        return newParams;
-      }, { replace: true });
-    } else {
-      setInternalState(prev => ({ ...prev, ...newFilters }));
-    }
-  }, [syncWithUrl, setSearchParams, options]);
+    if (!syncWithUrl) return;
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      allParams.forEach(p => { if (p) newParams.delete(p); });
+      return newParams;
+    }, { replace: true });
+  }, [allParams, syncWithUrl, setSearchParams]);
 
   const hasActiveFilters = useMemo(() => {
-    if (syncWithUrl) {
-      return Object.values(paramNames).some(k => k && searchParams.has(k));
-    }
-    // Only check fields that have an associated parameter name configured
-    return Object.entries(internalState).some(([key, v]) => {
-      const paramName = (paramNames as any)[key];
-      if (!paramName) return false;
-      return v !== STATUS_CADASTRO.TODOS && v !== "todas" && v !== "";
-    });
-  }, [syncWithUrl, searchParams, internalState, paramNames]);
+    return allParams.some(p => p && searchParams.has(p));
+  }, [allParams, searchParams]);
 
-  return useMemo(() => ({
-    searchTerm,
-    setSearchTerm,
-    selectedStatus,
-    setSelectedStatus,
-    selectedPeriodo,
-    setSelectedPeriodo,
-    selectedMes,
-    setSelectedMes,
-    selectedAno,
-    setSelectedAno,
-    selectedCategoria,
-    setSelectedCategoria,
-    selectedCliente,
-    setSelectedCliente,
-    selectedEmpresa,
-    setSelectedEmpresa,
-    selectedUsuario,
-    setSelectedUsuario,
-    selectedStatusEntrada,
-    setSelectedStatusEntrada,
-    selectedStatusSaida,
-    setSelectedStatusSaida,
-    selectedTurno,
-    setSelectedTurno,
-    onClear: clearFilters,
-    clearFilters,
-    setFilters,
-    hasActiveFilters,
-  }), [
-    searchTerm, setSearchTerm, selectedStatus, setSelectedStatus, selectedPeriodo, setSelectedPeriodo,
-    selectedMes, setSelectedMes, selectedAno, setSelectedAno, selectedCategoria, setSelectedCategoria,
-    selectedCliente, setSelectedCliente, selectedEmpresa, setSelectedEmpresa, selectedUsuario, setSelectedUsuario,
-    selectedStatusEntrada, setSelectedStatusEntrada, selectedStatusSaida, setSelectedStatusSaida,
-    selectedTurno, setSelectedTurno, clearFilters, setFilters, hasActiveFilters
-  ]);
+  return { clearFilters, hasActiveFilters };
+}
+
+// 7. Hook para Atualização em Lote (Batch)
+export function useBatchFilters(options: UseFiltersOptions) {
+  const [, setSearchParams] = useSearchParams();
+
+  const setFilters = useCallback((newFilters: Record<string, string | number | boolean | null | undefined>) => {
+    if (!options.syncWithUrl) return;
+
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      
+      const map: Record<string, string | undefined> = {
+          searchTerm: options.searchParam || "search",
+          status: options.statusParam || "status",
+          periodo: options.periodoParam || "periodo",
+          mes: options.mesParam,
+          ano: options.anoParam,
+          categoria: options.categoriaParam,
+          cliente: options.clienteParam,
+          empresa: options.empresaParam,
+          usuario: options.usuarioParam,
+          usuarioId: options.usuarioParam,
+          clienteId: options.clienteParam,
+          statusEntrada: options.statusEntradaParam,
+          statusSaida: options.statusSaidaParam,
+          turno: options.turnoParam
+      };
+
+      Object.entries(newFilters).forEach(([key, value]) => {
+        const paramKey = map[key];
+        if (paramKey) {
+            if (value === undefined || value === null || value === FilterOptions.TODOS || value === "") {
+                newParams.delete(paramKey);
+            } else {
+                newParams.set(paramKey, String(value));
+            }
+        }
+      });
+      
+      return newParams;
+    }, { replace: true });
+  }, [options, setSearchParams]);
+
+  return setFilters;
+}
+
+// MANTENDO useFilters como a FACADE principal para não quebrar código legado imediatamente
+export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
+  const search = useSearchFilters(options.searchParam, options.syncWithUrl);
+  const status = useStatusFilters(options.statusParam, options.syncWithUrl);
+  const categoria = useCategoryFilters(options.categoriaParam, options.syncWithUrl);
+  const dates = useDateFilters({ mesParam: options.mesParam, anoParam: options.anoParam, syncWithUrl: options.syncWithUrl });
+  const hierarchy = useHierarchyFilters({ empresaParam: options.empresaParam, clienteParam: options.clienteParam, usuarioParam: options.usuarioParam, syncWithUrl: options.syncWithUrl });
+  const ponto = usePontoFilters({ statusEntradaParam: options.statusEntradaParam, statusSaidaParam: options.statusSaidaParam, turnoParam: options.turnoParam, syncWithUrl: options.syncWithUrl });
+  
+  const allParams = [
+      options.searchParam || "search", options.statusParam || "status", options.periodoParam || "periodo",
+      options.mesParam, options.anoParam, options.categoriaParam || "categoria",
+      options.clienteParam, options.empresaParam, options.usuarioParam,
+      options.statusEntradaParam, options.statusSaidaParam, options.turnoParam
+  ];
+  
+  const manager = useFiltersManager(allParams, options.syncWithUrl);
+  const setFilters = useBatchFilters(options);
+
+  return {
+    ...search,
+    ...status,
+    ...categoria,
+    ...dates,
+    ...hierarchy,
+    ...ponto,
+    clearFilters: manager.clearFilters,
+    onClear: manager.clearFilters,
+    hasActiveFilters: manager.hasActiveFilters,
+    setFilters
+  };
 }

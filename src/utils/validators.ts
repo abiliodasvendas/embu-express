@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { onlyNumbers } from "./string";
 
 export function isValidCPF(cpf: string): boolean {
-  const cleaned = cpf.replace(/\D/g, "");
+  const cleaned = onlyNumbers(cpf);
   if (cleaned.length !== 11) return false;
   if (/^(\d)\1{10}$/.test(cleaned)) return false;
 
@@ -19,7 +20,7 @@ export function isValidCPF(cpf: string): boolean {
 }
 
 export function isValidCNPJ(cnpj: string): boolean {
-  const cleaned = cnpj.replace(/\D/g, "");
+  const cleaned = onlyNumbers(cnpj);
   if (cleaned.length !== 14) return false;
   if (/^(\d)\1{13}$/.test(cleaned)) return false;
 
@@ -49,7 +50,7 @@ export function isValidCNPJ(cnpj: string): boolean {
 }
 
 export function isValidCpfCnpj(value: string): boolean {
-  const cleaned = value.replace(/\D/g, "");
+  const cleaned = onlyNumbers(value);
   if (cleaned.length === 11) return isValidCPF(cleaned);
   if (cleaned.length === 14) return isValidCNPJ(cleaned);
   return false;
@@ -68,7 +69,7 @@ export function isValidCEPFormat(cep: string | undefined | null): boolean {
  */
 export function isValidPhoneFormat(phone: string | undefined | null): boolean {
   if (!phone) return false;
-  const cleaned = phone.replace(/\D/g, "");
+  const cleaned = onlyNumbers(phone);
   return cleaned.length === 11;
 }
 

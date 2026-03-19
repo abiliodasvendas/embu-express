@@ -1,4 +1,4 @@
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario } from "@/types/enums";
 import { Usuario } from "@/types/database";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { cnpjMask, cpfMask, phoneMask, rgMask } from "@/utils/masks";
@@ -22,7 +22,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
       cpf: "",
       perfil_id: "",
       isMotoboyOrFiscal: false,
-      status: STATUS_CADASTRO.PENDENTE,
+      status: StatusUsuario.PENDENTE,
       senha_padrao: true,
       rg: "",
       data_nascimento: "",
@@ -30,7 +30,6 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
       endereco_completo: "",
       telefone: "",
       telefone_recado: "",
-      data_inicio: "",
       cnh_registro: "",
       cnh_vencimento: "",
       cnh_categoria: "",
@@ -55,7 +54,7 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           cpf: cpfMask(collaboratorToEdit.cpf),
           perfil_id: collaboratorToEdit.perfil_id.toString(),
           isMotoboyOrFiscal: false, // Updated later by useEffect in Dialog
-          status: collaboratorToEdit.status || STATUS_CADASTRO.ATIVO,
+          status: collaboratorToEdit.status || StatusUsuario.ATIVO,
           senha_padrao: !!collaboratorToEdit.senha_padrao,
           rg: collaboratorToEdit.rg ? rgMask(collaboratorToEdit.rg) : "",
           data_nascimento: collaboratorToEdit.data_nascimento ? formatDateToBR(collaboratorToEdit.data_nascimento) : "",
@@ -63,7 +62,6 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           endereco_completo: collaboratorToEdit.endereco_completo || "",
           telefone: collaboratorToEdit.telefone ? phoneMask(collaboratorToEdit.telefone) : "",
           telefone_recado: collaboratorToEdit.telefone_recado ? phoneMask(collaboratorToEdit.telefone_recado) : "",
-          data_inicio: collaboratorToEdit.data_inicio || "",
 
           cnh_registro: collaboratorToEdit.cnh_registro || "",
           cnh_vencimento: collaboratorToEdit.cnh_vencimento ? formatDateToBR(collaboratorToEdit.cnh_vencimento) : "",
@@ -85,14 +83,13 @@ export function useCollaboratorForm({ open, collaboratorToEdit }: UseCollaborato
           cpf: "",
           perfil_id: "",
           isMotoboyOrFiscal: false,
-          status: STATUS_CADASTRO.PENDENTE,
+          status: StatusUsuario.PENDENTE,
           rg: "",
           data_nascimento: "",
           nome_mae: "",
           endereco_completo: "",
           telefone: "",
           telefone_recado: "",
-          data_inicio: "",
           cnh_registro: "",
           cnh_vencimento: "",
           cnh_categoria: "",

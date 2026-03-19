@@ -47,7 +47,7 @@ export function Occurrences() {
                 </div>
             </div>
 
-            <OccurrenceView mode="daily" />
+            <OccurrenceView />
         </div>
     );
 }

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useRoles } from "@/hooks";
-import { useSelfRegistrationForm } from "@/hooks/ui/useSelfRegistrationForm";
+import { useSelfRegistrationForm } from "@/hooks/form/useSelfRegistrationForm";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { ROLES } from "@/constants/permissions.enum";
 import { ArrowLeft, CheckCircle2, UserPlus, Wand2 } from "lucide-react";
@@ -54,39 +54,68 @@ export default function SelfRegistration() {
             Voltar
           </Button>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              const mockData = mockGenerator.selfRegistration();
-              const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
+          <div className="absolute top-6 right-6 flex items-center gap-2">
+            {/* Botão Parcial */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                form.reset();
+                const mockData = mockGenerator.selfRegistrationMandatory();
+                const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
 
-              Object.keys(mockData).forEach((key) => {
-                // @ts-ignore
-                form.setValue(key, mockData[key]);
-              });
+                Object.keys(mockData).forEach((key) => {
+                  // @ts-ignore
+                  form.setValue(key, mockData[key], { shouldValidate: true });
+                });
 
-              if (motoboyRole) {
-                form.setValue("perfil_id", motoboyRole.id.toString());
-                form.setValue("isMotoboyOrFiscal", true);
-              }
-            }}
-            className="absolute top-6 right-6 w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
-            title="Preencher Mock"
-          >
-            <Wand2 className="h-5 w-5" />
-          </Button>
+                if (motoboyRole) {
+                  form.setValue("perfil_id", motoboyRole.id.toString());
+                  form.setValue("isMotoboyOrFiscal", true);
+                }
+              }}
+              className="w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
+              title="Preenchimento Parcial (Obrigatórios)"
+            >
+              <Wand2 className="h-4 w-4 opacity-60" />
+            </Button>
+
+            {/* Botão Completo */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const mockData = mockGenerator.selfRegistration();
+                const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
+
+                Object.keys(mockData).forEach((key) => {
+                  // @ts-ignore
+                  form.setValue(key, mockData[key], { shouldValidate: true });
+                });
+
+                if (motoboyRole) {
+                  form.setValue("perfil_id", motoboyRole.id.toString());
+                  form.setValue("isMotoboyOrFiscal", true);
+                }
+              }}
+              className="w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
+              title="Preenchimento Completo"
+            >
+              <Wand2 className="h-5 w-5" />
+            </Button>
+          </div>
 
           <div className="mx-auto bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-3 backdrop-blur-sm shadow-inner">
             <UserPlus className="w-6 h-6 text-white" />
           </div>
 
           <CardTitle className="text-2xl font-black text-white uppercase tracking-tight">
-            Solicitação de Cadastro
+            Cadastro de Motoboy
           </CardTitle>
           <p className="text-blue-100 text-sm mt-2 opacity-90 max-w-xs mx-auto">
-            Escolha seu cargo e preencha seus dados para solicitar acesso à plataforma.
+            Preencha seus dados abaixo para solicitar sua parceria com a plataforma.
           </p>
         </div>
 

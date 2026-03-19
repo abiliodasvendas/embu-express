@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useFilters } from './useFilters';
+import { useSearchFilters, usePontoFilters, useHierarchyFilters, useFiltersManager, useBatchFilters } from './useFilters';
 import { useTimeTrackingBusiness } from '../business/useTimeTrackingBusiness';
-import { STATUS_PONTO, FILTER_OPTIONS } from '@/constants/ponto';
-import { ManagementStatus } from '@/utils/ponto';
-import { RegistroPonto, Usuario } from '@/types/database';
+import { getManagementStatus } from "@/utils/ponto";
+import { FilterOptions, ManagementStatus, StatusVisualPonto } from '@/types/enums';
+import { RegistroPonto, Usuario, ColaboradorCliente } from '@/types/database';
 import { useLayout } from '@/contexts/LayoutContext';
 import { useCreatePonto, useUpdatePonto, useDeletePonto } from '../api/usePontoMutations';
 import { format } from 'date-fns';
@@ -48,7 +48,7 @@ export function useTimeTrackingViewModel({
     const { data: publicCollabs } = usePublicCollaborators(uuid);
 
     const records = uuid ? (publicRecords || []) : (externalRecords || adminRecords);
-    const collaborators = uuid ? publicCollabs : externalCollaborators;
+    const collaborators = uuid ? (publicCollabs as Usuario[]) : externalCollaborators;
     const isLoading = uuid ? isPublicLoading : isAdminLoading;
     const refetch = uuid ? refetchPublic : refetchAdmin;
 
@@ -64,24 +64,33 @@ export function useTimeTrackingViewModel({
         collaborators
     });
 
-    // 4. Filters State
-    const {
-        searchTerm,
-        setSearchTerm,
-        selectedStatusEntrada = FILTER_OPTIONS.TODOS,
-        setSelectedStatusEntrada,
-        selectedStatusSaida = FILTER_OPTIONS.TODOS,
-        setSelectedStatusSaida,
-        selectedUsuario = FILTER_OPTIONS.TODOS,
-        setSelectedUsuario,
-        selectedCliente = FILTER_OPTIONS.TODOS,
-        setSelectedCliente,
-        selectedTurno = FILTER_OPTIONS.TODOS,
-        setSelectedTurno,
-        hasActiveFilters: hasActiveFiltersFromUrl,
-        setFilters,
-        clearFilters
-    } = useFilters({
+    // 4. Filters State (Modularizado)
+    const { searchTerm, setSearchTerm } = useSearchFilters("search", syncWithUrl);
+    
+    const { 
+        selectedStatusEntrada, setSelectedStatusEntrada, 
+        selectedStatusSaida, setSelectedStatusSaida, 
+        selectedTurno, setSelectedTurno 
+    } = usePontoFilters({
+        statusEntradaParam: "status_entrada",
+        statusSaidaParam: "status_saida",
+        turnoParam: "turno",
+        syncWithUrl
+    });
+
+    const { 
+        selectedUsuario, setSelectedUsuario, 
+        selectedCliente, setSelectedCliente 
+    } = useHierarchyFilters({
+        usuarioParam: "usuario",
+        clienteParam: "cliente",
+        syncWithUrl
+    });
+
+    const activeParams = ["search", "status_entrada", "status_saida", "usuario", "cliente", "turno"];
+    const { hasActiveFilters: hasActiveFiltersFromUrl, clearFilters } = useFiltersManager(activeParams, syncWithUrl);
+    
+    const setFilters = useBatchFilters({
         statusEntradaParam: "status_entrada",
         statusSaidaParam: "status_saida",
         usuarioParam: "usuario",
@@ -129,33 +138,33 @@ export function useTimeTrackingViewModel({
                 if (!name.includes(search)) return false;
             }
 
-            if (selectedUsuario !== FILTER_OPTIONS.TODOS && record.usuario_id?.toString() !== selectedUsuario) {
+            if (selectedUsuario !== FilterOptions.TODOS && record.usuario_id?.toString() !== selectedUsuario) {
                 return false;
             }
 
-            if (selectedCliente !== FILTER_OPTIONS.TODOS) {
-                const hasClient = record.usuario?.links?.some((l: any) => l.cliente_id?.toString() === selectedCliente);
+            if (selectedCliente !== FilterOptions.TODOS) {
+                const hasClient = record.usuario?.links?.some((l: ColaboradorCliente) => l.cliente_id?.toString() === selectedCliente);
                 if (!hasClient) return false;
             }
 
-            if (selectedTurno !== FILTER_OPTIONS.TODOS) {
-                const recordShifts = record.usuario?.links?.map((l: any) => 
+            if (selectedTurno !== FilterOptions.TODOS) {
+                const recordShifts = record.usuario?.links?.map((l: ColaboradorCliente) => 
                     `${l.hora_inicio?.substring(0, 5)} - ${l.hora_fim?.substring(0, 5)}`
                 ) || [];
                 if (!recordShifts.includes(selectedTurno)) return false;
             }
 
-            if (selectedStatusEntrada !== FILTER_OPTIONS.TODOS) {
-                if (selectedStatusEntrada === FILTER_OPTIONS.INICIOU && record.status_entrada !== STATUS_PONTO.VERDE) return false;
-                if (selectedStatusEntrada === FILTER_OPTIONS.NAO_INICIOU && record.status_entrada === STATUS_PONTO.VERDE) return false;
-                if (selectedStatusEntrada === FILTER_OPTIONS.EM_ATRASO && record.mgtStatus !== 'LATE') return false;
-                if (selectedStatusEntrada === FILTER_OPTIONS.AGUARDANDO && record.mgtStatus !== 'WAITING') return false;
+            if (selectedStatusEntrada !== FilterOptions.TODOS) {
+                if (selectedStatusEntrada === FilterOptions.INICIOU && record.status_entrada !== StatusVisualPonto.VERDE) return false;
+                if (selectedStatusEntrada === FilterOptions.NAO_INICIOU && record.status_entrada === StatusVisualPonto.VERDE) return false;
+                if (selectedStatusEntrada === FilterOptions.EM_ATRASO && record.mgtStatus !== ManagementStatus.LATE) return false;
+                if (selectedStatusEntrada === FilterOptions.AGUARDANDO && record.mgtStatus !== ManagementStatus.WAITING) return false;
             }
 
-            if (selectedStatusSaida !== FILTER_OPTIONS.TODOS) {
-                if (selectedStatusSaida === FILTER_OPTIONS.TRABALHANDO && record.mgtStatus !== 'WORKING') return false;
-                if (selectedStatusSaida === FILTER_OPTIONS.CONCLUIU && record.mgtStatus !== 'DONE') return false;
-                if (selectedStatusSaida === FILTER_OPTIONS.FALTA_SAIDA && record.mgtStatus !== 'ABSENT') return false;
+            if (selectedStatusSaida !== FilterOptions.TODOS) {
+                if (selectedStatusSaida === FilterOptions.TRABALHANDO && record.mgtStatus !== ManagementStatus.WORKING) return false;
+                if (selectedStatusSaida === FilterOptions.CONCLUIU && record.mgtStatus !== ManagementStatus.DONE) return false;
+                if (selectedStatusSaida === FilterOptions.FALTA_SAIDA && record.mgtStatus !== ManagementStatus.ABSENT) return false;
             }
 
             if (activeKpiFilter && record.mgtStatus !== activeKpiFilter) return false;
@@ -165,7 +174,14 @@ export function useTimeTrackingViewModel({
     }, [processedRecords, searchTerm, selectedUsuario, selectedCliente, selectedTurno, selectedStatusEntrada, selectedStatusSaida, activeKpiFilter]);
 
     const dynamicKpiCounts = useMemo(() => {
-        const counts: Record<string, number> = { ALL: filteredRecords.length, LATE: 0, WORKING: 0, DONE: 0, WAITING: 0, ABSENT: 0 };
+        const counts: Record<string, number> = { 
+            [ManagementStatus.ALL]: filteredRecords.length, 
+            [ManagementStatus.LATE]: 0, 
+            [ManagementStatus.WORKING]: 0, 
+            [ManagementStatus.DONE]: 0, 
+            [ManagementStatus.WAITING]: 0, 
+            [ManagementStatus.ABSENT]: 0 
+        };
         filteredRecords.forEach(r => {
             if (counts[r.mgtStatus] !== undefined) {
                 counts[r.mgtStatus]++;
@@ -182,11 +198,11 @@ export function useTimeTrackingViewModel({
             selectedUsuario,
             selectedCliente,
             selectedTurno
-        ].filter(v => v && v !== FILTER_OPTIONS.TODOS).length;
+        ].filter(v => v && v !== FilterOptions.TODOS).length;
     }, [searchTerm, selectedStatusEntrada, selectedStatusSaida, selectedUsuario, selectedCliente, selectedTurno]);
 
-    const handleKpiClick = (status: ManagementStatus | 'ALL') => {
-        if (status === 'ALL') {
+    const handleKpiClick = (status: ManagementStatus) => {
+        if (status === ManagementStatus.ALL) {
             setActiveKpiFilter(null);
         } else {
             setActiveKpiFilter(prev => prev === status ? null : status);

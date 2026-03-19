@@ -1,51 +1,51 @@
-import { STATUS_PONTO } from "@/constants/ponto";
+import { StatusVisualPonto, FilterOptions, ManagementStatus } from "@/types/enums";
 import { format, isAfter, startOfToday, addDays } from "date-fns";
+import { RegistroPonto } from '@/types/database';
 
-export type ManagementStatus = 'LATE' | 'WORKING' | 'DONE' | 'WAITING' | 'ABSENT';
+// removido local type ManagementStatus em favor do enum
 
 export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida') => {
     if (!status) return type === 'saida' ? "Trabalhando" : "Pendente";
 
     switch (status) {
-        case STATUS_PONTO.VERDE: return "No Horário";
-        case STATUS_PONTO.AMARELO: return type === 'entrada' ? "Atraso" : "Hora Extra";
-        case STATUS_PONTO.ANTECIPADA: return type === 'entrada' ? "Antecipada" : "Antecipada";
-        case STATUS_PONTO.VERMELHO: return type === 'entrada' ? "Atraso Crítico" : "HE Excessiva";
-        case STATUS_PONTO.CINZA: return "Aguardando";
-        case STATUS_PONTO.EM_ANDAMENTO: return "Trabalhando";
-        case STATUS_PONTO.PENDENTE: return "Falta de Saída";
-        case 'AUSENTE': return "Ausente";
-        case 'iniciou': return "Iniciou";
-        case 'concluiu': return "Concluiu";
-        case 'trabalhando': return "Trabalhando";
+        case StatusVisualPonto.VERDE: return "No Horário";
+        case StatusVisualPonto.AMARELO: return type === 'entrada' ? "Atraso" : "Hora Extra";
+        case StatusVisualPonto.ANTECIPADA: return type === 'entrada' ? "Antecipada" : "Antecipada";
+        case StatusVisualPonto.VERMELHO: return type === 'entrada' ? "Atraso Crítico" : "HE Excessiva";
+        case StatusVisualPonto.CINZA: return "Aguardando";
+        case StatusVisualPonto.EM_ANDAMENTO: return "Trabalhando";
+        case StatusVisualPonto.PENDENTE: return "Falta de Saída";
+        case StatusVisualPonto.AUSENTE: return "Ausente";
+        case FilterOptions.INICIOU: return "Iniciou";
+        case FilterOptions.CONCLUIU: return "Concluiu";
+        case FilterOptions.TRABALHANDO: return "Trabalhando";
         default: return status;
     }
 };
 
 export const getStatusColorClass = (status: string | null, type?: 'entrada' | 'saida') => {
     switch (status) {
-        case STATUS_PONTO.VERDE: return "bg-emerald-100 text-emerald-700 border-emerald-200";
-        case STATUS_PONTO.AMARELO:
+        case StatusVisualPonto.VERDE: return "bg-emerald-100 text-emerald-700 border-emerald-200";
+        case StatusVisualPonto.AMARELO:
             return type === 'saida'
                 ? "bg-sky-100 text-sky-700 border-sky-200" // Hora Extra (Blue)
                 : "bg-amber-100 text-amber-700 border-amber-200"; // Atraso (Amber/Yellow/Orange)
-        case STATUS_PONTO.ANTECIPADA:
+        case StatusVisualPonto.ANTECIPADA:
             return type === 'entrada'
                 ? "bg-sky-100 text-sky-700 border-sky-200" // Entrada Antecipada (Blue)
                 : "bg-orange-100 text-orange-700 border-orange-200"; // Saída Antecipada (Orange)
-        case STATUS_PONTO.VERMELHO:
+        case StatusVisualPonto.VERMELHO:
             return type === 'entrada'
                 ? "bg-rose-100 text-rose-700 border-rose-200" // Atraso Crítico
                 : "bg-indigo-900/10 text-indigo-800 border-indigo-200"; // HE Excessiva (Dark Blue)
-        case 'AUSENTE':
-        case STATUS_PONTO.AUSENTE:
+        case StatusVisualPonto.AUSENTE:
             return "bg-rose-50 text-rose-700 border-rose-100"; // Ausente (Rose tone for both)
-        case STATUS_PONTO.CINZA:
+        case StatusVisualPonto.CINZA:
             return "bg-gray-100 text-gray-500 border-gray-200";
-        case STATUS_PONTO.EM_ANDAMENTO: return "bg-blue-50 text-blue-600 border-blue-100";
-        case 'iniciou': return "bg-sky-50 text-sky-600 border-sky-100";
-        case 'concluiu': return "bg-indigo-50 text-indigo-700 border-indigo-100";
-        case STATUS_PONTO.PENDENTE: return "bg-orange-50 text-orange-600 border-orange-100";
+        case StatusVisualPonto.EM_ANDAMENTO: return "bg-blue-50 text-blue-600 border-blue-100";
+        case FilterOptions.INICIOU: return "bg-sky-50 text-sky-600 border-sky-100";
+        case FilterOptions.CONCLUIU: return "bg-indigo-50 text-indigo-700 border-indigo-100";
+        case StatusVisualPonto.PENDENTE: return "bg-orange-50 text-orange-600 border-orange-100";
         default: return "bg-gray-100 text-gray-500 border-gray-200";
     }
 };
@@ -81,20 +81,20 @@ export const formatMinutes = (minutes: number, showSign: boolean = false) => {
  * Determines the management status of a time record
  * Used for KPI filtering and status badges (Internal/Public)
  */
-export const getManagementStatus = (record: any, dateReference: Date): ManagementStatus => {
+export const getManagementStatus = (record: RegistroPonto, dateReference: Date): ManagementStatus => {
     const isToday = format(dateReference, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
     const isPast = !isToday && dateReference < startOfToday();
 
     // 1. Finalizado
-    if (record.saida_hora) return 'DONE';
+    if (record.saida_hora) return ManagementStatus.DONE;
 
     // 2. Trabalhando (Se tem entrada mas não tem saída)
-    if (record.entrada_hora) return 'WORKING';
+    if (record.entrada_hora) return ManagementStatus.WORKING;
 
     // 3. Se não tem entrada:
     if (!record.entrada_hora) {
         // Se for data passada -> Faltou
-        if (isPast) return 'ABSENT';
+        if (isPast) return ManagementStatus.ABSENT;
 
         // Se for hoje
         if (isToday) {
@@ -102,7 +102,7 @@ export const getManagementStatus = (record: any, dateReference: Date): Managemen
                 const now = new Date();
                 
                 // Horário esperado de entrada
-                const [hIn, mIn] = record.detalhes_calculo.entrada.turno_base.split(':').map(Number);
+                const [hIn, mIn] = (record.detalhes_calculo.entrada.turno_base || "00:00:00").split(':').map(Number);
                 const shiftStart = new Date(dateReference);
                 shiftStart.setHours(hIn, mIn, 0, 0);
 
@@ -117,16 +117,16 @@ export const getManagementStatus = (record: any, dateReference: Date): Managemen
                 }
 
                 // Se já passou do horário de FIM do turno e ele nunca entrou -> Faltou
-                if (isAfter(now, shiftEnd)) return 'ABSENT';
+                if (isAfter(now, shiftEnd)) return ManagementStatus.ABSENT;
 
                 // Se já passou do horário de INÍCIO do turno e ele não entrou -> Atrasado
-                if (isAfter(now, shiftStart)) return 'LATE';
+                if (isAfter(now, shiftStart)) return ManagementStatus.LATE;
             }
             
             // Se o turno ainda não começou (ex: agora é 10h e o turno é às 18h)
-            return 'WAITING';
+            return ManagementStatus.WAITING;
         }
     }
 
-    return 'WAITING';
+    return ManagementStatus.WAITING;
 };

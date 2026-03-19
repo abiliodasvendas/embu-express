@@ -31,6 +31,8 @@ export default function Clients() {
                                     onStatusChange={vm.setSelectedStatus}
                                     onRegister={vm.handleRegister}
                                     onApplyFilters={vm.handleApplyFilters}
+                                    hasActiveFilters={vm.hasActiveFilters}
+                                    onClear={vm.clearFilters}
                                 />
                             </div>
 

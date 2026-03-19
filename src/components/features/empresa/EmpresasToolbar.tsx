@@ -30,7 +30,7 @@ import * as React from "react";
 import { useState } from "react";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario, FilterOptions } from "@/types/enums";
 
 interface EmpresasToolbarProps {
   searchTerm: string;
@@ -40,6 +40,7 @@ interface EmpresasToolbarProps {
   onRegister: () => void;
   onApplyFilters: (filters: { status?: string }) => void;
   hasActiveFilters?: boolean;
+  onClear?: () => void;
 }
 
 const FilterContent = ({
@@ -66,9 +67,9 @@ const FilterContent = ({
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent className="z-[10001] rounded-xl border-gray-100">
-          <SelectItem value={STATUS_CADASTRO.TODOS}>Todos os Status</SelectItem>
-          <SelectItem value={STATUS_CADASTRO.ATIVO}>Ativos</SelectItem>
-          <SelectItem value={STATUS_CADASTRO.INATIVO}>Inativos</SelectItem>
+          <SelectItem value={FilterOptions.TODOS}>Todos os Status</SelectItem>
+          <SelectItem value={StatusUsuario.ATIVO}>Ativos</SelectItem>
+          <SelectItem value={StatusUsuario.INATIVO}>Inativos</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -84,6 +85,7 @@ export function EmpresasToolbar({
   onRegister,
   onApplyFilters,
   hasActiveFilters,
+  onClear,
 }: EmpresasToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -111,13 +113,17 @@ export function EmpresasToolbar({
   }, [isSheetOpen, selectedStatus]);
 
   // Calculate filter states
-  const hasAdvancedFilters = selectedStatus !== STATUS_CADASTRO.TODOS;
+  const hasAdvancedFilters = selectedStatus !== FilterOptions.TODOS;
   const hasAnyFilter = hasAdvancedFilters || searchTerm !== "";
 
   const clearFilters = () => {
     setLocalSearch("");
-    onSearchChange("");
-    onApplyFilters({ status: STATUS_CADASTRO.TODOS });
+    if (onClear) {
+      onClear();
+    } else {
+      onSearchChange("");
+      onApplyFilters({ status: FilterOptions.TODOS });
+    }
   };
 
   const applyMobileFilters = () => {
@@ -126,7 +132,7 @@ export function EmpresasToolbar({
   };
 
   const clearMobileFilters = () => {
-    setMobileStatus(STATUS_CADASTRO.TODOS);
+    setMobileStatus(FilterOptions.TODOS);
   };
 
   return (
@@ -216,7 +222,7 @@ export function EmpresasToolbar({
                 <FilterButton
                   hasActiveFilters={hasAdvancedFilters}
                   isMobile={isMobile}
-                  selectedCount={selectedStatus !== STATUS_CADASTRO.TODOS ? 1 : 0}
+                  selectedCount={selectedStatus !== FilterOptions.TODOS ? 1 : 0}
                 />
               </PopoverTrigger>
               <PopoverContent

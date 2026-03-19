@@ -26,6 +26,7 @@ import { SelfRegistrationFormData } from "@/schemas/selfRegistrationSchema";
 import { Perfil } from "@/types/database";
 import { getPerfilLabel } from "@/utils/formatters";
 import { aplicarMascaraPlaca, cnpjMask, cpfMask, dateMask, pixMask, phoneMask, rgMask } from "@/utils/masks";
+import { onlyNumbers } from "@/utils/string";
 import { PIX_TYPES } from "@/constants/financeiro.constants";
 import { Briefcase, CreditCard, DollarSign, Eye, EyeOff, Mail, MapPin, User, UserPlus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -39,84 +40,21 @@ interface SelfRegistrationFormProps {
 
 export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistrationFormProps) {
     const [showPassword, setShowPassword] = useState(false);
-    const [expandedItems, setExpandedItems] = useState<string[]>(["dados-pessoais", "dados-financeiros"]);
+    const [expandedItems, setExpandedItems] = useState<string[]>(["dados-pessoais", "cnh", "moto", "dados-financeiros"]);
 
     const perfilId = form.watch("perfil_id");
 
     useEffect(() => {
-        if (!roles || !perfilId) return;
-        const selectedRole = roles.find(r => r.id.toString() === perfilId);
-        if (selectedRole) {
-            const isProfissional = 
-                selectedRole.nome === ROLES.MOTOBOY ||
-                selectedRole.nome === ROLES.FISCAL;
-
-            form.setValue("isMotoboyOrFiscal", isProfissional);
-
-            if (isProfissional) {
-                setExpandedItems(["dados-pessoais", "cnh", "moto", "dados-financeiros"]);
-            } else {
-                // Limpar campos profissionais ao trocar para perfil que não seja profissional
-                form.setValue("cnh_registro", "");
-                form.setValue("cnh_vencimento", "");
-                form.setValue("cnh_categoria", "");
-                form.setValue("moto_modelo", "");
-                form.setValue("moto_placa", "");
-                form.setValue("moto_cor", "");
-                form.setValue("moto_ano", "");
-            }
+        if (!roles) return;
+        const motoboyRole = roles.find(r => r.nome === ROLES.MOTOBOY);
+        if (motoboyRole) {
+            form.setValue("perfil_id", motoboyRole.id.toString());
+            form.setValue("isMotoboyOrFiscal", true);
         }
-    }, [perfilId, roles, form]);
-
-    const isMotoboyOrFiscal = form.watch("isMotoboyOrFiscal");
+    }, [roles, form]);
 
     return (
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* 0. SELEÇÃO DE CARGO */}
-            <div className="bg-white border border-blue-100 rounded-2xl p-5 shadow-sm mb-2">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
-                        <UserPlus className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h3 className="text-base font-bold text-gray-800 leading-none">Perfil do Colaborador</h3>
-                        <p className="text-xs text-gray-500 mt-1">Selecione o cargo para liberar o formulário</p>
-                    </div>
-                </div>
-
-                <FormField
-                    control={form.control}
-                    name="perfil_id"
-                    render={({ field }) => (
-                        <FormItem className="w-full">
-                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                Cargo / Permissão <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                    <SelectTrigger
-                                        className={cn(
-                                            "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                            form.formState.errors.perfil_id && "border-red-500 focus:ring-red-200 ring-offset-0 focus:ring-2",
-                                        )}
-                                    >
-                                        <SelectValue placeholder="Selecione o cargo" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="rounded-xl shadow-xl">
-                                    {roles?.map((role: Perfil) => (
-                                        <SelectItem key={role.id} value={role.id.toString()} className="h-10 rounded-lg cursor-pointer">
-                                            {getPerfilLabel(role.nome)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            </div>
-
             {perfilId ? (
                 <div className="animate-in fade-in slide-in-from-top-4 duration-500">
                     <Accordion
@@ -134,60 +72,25 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                     <span className="text-base">Dados Pessoais & Acesso</span>
                                 </div>
                             </AccordionTrigger>
-                            <AccordionContent className="pt-2 pb-6 px-1 space-y-4 border-t border-gray-50/50">
-                                <FormField
-                                    control={form.control}
-                                    name="nome_completo"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome Completo <span className="text-red-500">*</span></FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <User className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
-                                                    <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors", form.formState.errors.nome_completo && "border-red-500 focus-visible:ring-red-200")} placeholder="Seu nome completo" {...field} />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage className="ml-1" />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="nome_mae"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome da Mãe</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Users className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
-                                                    <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors", form.formState.errors.nome_mae && "border-red-500 focus-visible:ring-red-200")} placeholder="Nome completo da mãe" {...field} />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage className="ml-1" />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <AccordionContent className="pt-2 pb-6 px-1 border-t border-gray-50/50">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="data_nascimento"
+                                        name="nome_completo"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Data de Nascimento <span className="text-red-500">*</span></FormLabel>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome Completo <span className="text-red-500">*</span></FormLabel>
                                                 <FormControl>
-                                                    <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                                        placeholder="DD/MM/AAAA"
-                                                        maxLength={10}
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(dateMask(e.target.value))}
-                                                    />
+                                                    <div className="relative">
+                                                        <User className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+                                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors", form.formState.errors.nome_completo && "border-red-500 focus-visible:ring-red-200")} placeholder="Seu nome completo" {...field} />
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage className="ml-1" />
                                             </FormItem>
                                         )}
                                     />
+
                                     <FormField
                                         control={form.control}
                                         name="email"
@@ -204,9 +107,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             </FormItem>
                                         )}
                                     />
-                                </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
                                         name="cpf"
@@ -225,44 +126,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             </FormItem>
                                         )}
                                     />
-                                    <FormField
-                                        control={form.control}
-                                        name="rg"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">RG <span className="text-red-500">*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                                        placeholder="00.000.000-0"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(rgMask(e.target.value))}
-                                                        maxLength={12}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage className="ml-1" />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
 
-                                <FormField
-                                    control={form.control}
-                                    name="endereco_completo"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Endereço com CEP</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <MapPin className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
-                                                    <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors", form.formState.errors.endereco_completo && "border-red-500 focus-visible:ring-red-200")} placeholder="Rua, Número, Bairro, Cidade - CEP" {...field} />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage className="ml-1" />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
                                         name="telefone"
@@ -281,32 +145,12 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             </FormItem>
                                         )}
                                     />
-                                    <FormField
-                                        control={form.control}
-                                        name="telefone_recado"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Telefone Recado</FormLabel>
-                                                <FormControl>
-                                                    <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                                        placeholder="(11) 99999-9999"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                                                        maxLength={15}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
 
-                                <div className="grid grid-cols-1 gap-4">
                                     <FormField
                                         control={form.control}
                                         name="senha"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="md:col-span-2">
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Senha de Acesso <span className="text-red-500">*</span></FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
@@ -331,69 +175,102 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             </FormItem>
                                         )}
                                     />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="endereco_completo"
+                                        render={({ field }) => (
+                                            <FormItem className="md:col-span-2">
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Endereço com CEP <span className="text-red-500">*</span></FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <MapPin className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+                                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors", form.formState.errors.endereco_completo && "border-red-500 focus-visible:ring-red-200")} placeholder="Rua, Número, Bairro, Cidade - CEP" {...field} />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage className="ml-1" />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="nome_mae"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome da Mãe <span className="text-red-500">*</span></FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <Users className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+                                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white pl-12 transition-colors", form.formState.errors.nome_mae && "border-red-500 focus-visible:ring-red-200")} placeholder="Nome completo da mãe" {...field} />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage className="ml-1" />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="rg"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">RG</FormLabel>
+                                                <FormControl>
+                                                    <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                                        placeholder="00.000.000-0"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(rgMask(e.target.value))}
+                                                        maxLength={12}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage className="ml-1" />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="data_nascimento"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Data de Nascimento</FormLabel>
+                                                <FormControl>
+                                                    <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                                        placeholder="DD/MM/AAAA"
+                                                        maxLength={10}
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(dateMask(e.target.value))}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage className="ml-1" />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="telefone_recado"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Telefone Recado</FormLabel>
+                                                <FormControl>
+                                                    <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                                        placeholder="(11) 99999-9999"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(phoneMask(e.target.value))}
+                                                        maxLength={15}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
 
-                        {/* 2. SEÇÃO DE DADOS DA CNH */}
-                        <AccordionItem value="cnh" className="border rounded-2xl bg-white shadow-sm px-4 overflow-hidden border-gray-100">
-                                <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                                    <div className="flex items-center gap-2">
-                                        <CreditCard className="w-4 h-4 text-blue-600" />
-                                        <span className="text-base">Dados da CNH</span>
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="pt-2 pb-6 px-1 space-y-4 border-t border-gray-50/50">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="cnh_registro"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
-                                                    <FormControl>
-                                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")} placeholder="Nº Registro" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage className="ml-1" />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="cnh_vencimento"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
-                                                    <FormControl>
-                                                        <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                                                            placeholder="DD/MM/AAAA"
-                                                            maxLength={10}
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(dateMask(e.target.value))}
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="cnh_categoria"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
-                                                    <FormControl>
-                                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", form.formState.errors.cnh_categoria && "border-red-500 focus-visible:ring-red-200")} placeholder="Ex: A, AB" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage className="ml-1" />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-
-                        {/* 3. SEÇÃO DE DADOS DA MOTO */}
+                        {/* 2. SEÇÃO DE DADOS DA MOTO */}
                         <AccordionItem value="moto" className="border rounded-2xl bg-white shadow-sm px-4 overflow-hidden border-gray-100">
                                 <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
                                     <div className="flex items-center gap-2">
@@ -408,7 +285,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_modelo"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo da Moto {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo da Moto <span className="text-red-500">*</span></FormLabel>
                                                     <FormControl>
                                                         <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors" placeholder="Ex: CG 160" {...field} />
                                                     </FormControl>
@@ -421,7 +298,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_placa"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa <span className="text-red-500">*</span></FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", form.formState.errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}
@@ -442,7 +319,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_cor"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor <span className="text-red-500">*</span></FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} placeholder="Ex: Preta" {...field} />
                                                     </FormControl>
@@ -455,16 +332,74 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             name="moto_ano"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano {isMotoboyOrFiscal && <span className="text-red-500">*</span>}</FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano <span className="text-red-500">*</span></FormLabel>
                                                     <FormControl>
                                                         <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.moto_ano && "border-red-500 focus-visible:ring-red-200")}
                                                             placeholder="Ex: 2024"
                                                             {...field}
                                                             maxLength={4}
-                                                            onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                                            onChange={(e) => field.onChange(onlyNumbers(e.target.value).slice(0, 4))}
                                                         />
                                                     </FormControl>
                                                     <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+
+                        {/* 3. SEÇÃO DE DADOS DA CNH */}
+                        <AccordionItem value="cnh" className="border rounded-2xl bg-white shadow-sm px-4 overflow-hidden border-gray-100">
+                                <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                                    <div className="flex items-center gap-2">
+                                        <CreditCard className="w-4 h-4 text-blue-600" />
+                                        <span className="text-base">Dados da CNH</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="pt-2 pb-6 px-1 space-y-4 border-t border-gray-50/50">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="cnh_registro"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH</FormLabel>
+                                                    <FormControl>
+                                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")} placeholder="Nº Registro" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage className="ml-1" />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="cnh_vencimento"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Vencimento</FormLabel>
+                                                    <FormControl>
+                                                        <Input className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                                            placeholder="DD/MM/AAAA"
+                                                            maxLength={10}
+                                                            {...field}
+                                                            onChange={(e) => field.onChange(dateMask(e.target.value))}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="cnh_categoria"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Categoria</FormLabel>
+                                                    <FormControl>
+                                                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", form.formState.errors.cnh_categoria && "border-red-500 focus-visible:ring-red-200")} placeholder="Ex: A, AB" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage className="ml-1" />
                                                 </FormItem>
                                             )}
                                         />
@@ -487,7 +422,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                         control={form.control}
                                         name="cnpj"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="md:col-span-2">
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">CNPJ (MEI)</FormLabel>
                                                 <FormControl>
                                                     <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200")}
@@ -506,7 +441,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                         name="tipo_chave_pix"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX <span className="text-red-500">*</span></FormLabel>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX</FormLabel>
                                                 <Select 
                                                     onValueChange={(val) => {
                                                         field.onChange(val);
@@ -539,7 +474,7 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                                             const tipoChavePix = form.watch("tipo_chave_pix");
                                             return (
                                                 <FormItem>
-                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Chave Pix <span className="text-red-500">*</span></FormLabel>
+                                                    <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Chave Pix</FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             disabled={!tipoChavePix}
@@ -572,11 +507,9 @@ export function SelfRegistrationForm({ form, onSubmit, roles }: SelfRegistration
                     </Button>
                 </div>
             ) : (
-                <div className="py-16 text-center space-y-4 opacity-40">
-                    <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                        <Briefcase className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-500 font-medium">Selecione um cargo para visualizar o restante do formulário.</p>
+                <div className="py-24 text-center space-y-4">
+                    <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto" />
+                    <p className="text-gray-400 font-medium animate-pulse">Carregando formulário...</p>
                 </div>
             )}
         </form>

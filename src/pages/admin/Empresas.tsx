@@ -5,7 +5,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { STATUS_CADASTRO } from "@/constants/cadastro";
+import { StatusUsuario, FilterOptions } from "@/types/enums";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -14,7 +14,7 @@ import {
     useToggleEmpresaStatus,
 } from "@/hooks/api/useEmpresaMutations";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
-import { useFilters } from "@/hooks/ui/useFilters";
+import { useSearchFilters, useStatusFilters, useFiltersManager } from "@/hooks/ui/useFilters";
 import { Empresa } from "@/types/database";
 import { Building2 } from "lucide-react"; // Using Building2 for Empresas icon
 import { useCallback, useEffect, useState } from "react";
@@ -22,23 +22,15 @@ import { useCallback, useEffect, useState } from "react";
 export function Empresas() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEmpresaFormDialog } = useLayout();
 
-  const {
-    searchTerm,
-    setSearchTerm,
-    selectedStatus = STATUS_CADASTRO.TODOS,
-    setSelectedStatus,
-    setFilters,
-    hasActiveFilters,
-  } = useFilters({
-    syncWithUrl: true,
-    statusParam: "status",
-  });
+  const { searchTerm, setSearchTerm } = useSearchFilters();
+  const { selectedStatus, setSelectedStatus } = useStatusFilters();
+  const { hasActiveFilters, clearFilters } = useFiltersManager(["search", "status"]);
 
   const [isQuickCreateLoading, setIsQuickCreateLoading] = useState(false);
 
   const { data: empresas = [], isLoading, refetch } = useEmpresas({
     searchTerm: searchTerm || undefined,
-    ativo: selectedStatus === STATUS_CADASTRO.TODOS ? undefined : selectedStatus === STATUS_CADASTRO.ATIVO ? "true" : "false",
+    ativo: selectedStatus === FilterOptions.TODOS ? undefined : (selectedStatus === StatusUsuario.ATIVO ? "true" : "false"),
   });
 
   const createEmpresa = useCreateEmpresa();
@@ -114,8 +106,9 @@ export function Empresas() {
                   selectedStatus={selectedStatus}
                   onStatusChange={setSelectedStatus}
                   onRegister={handleRegister}
-                  onApplyFilters={(filters) => setFilters(filters)}
+                  onApplyFilters={(f) => f.status && setSelectedStatus(f.status)}
                   hasActiveFilters={hasActiveFilters}
+                  onClear={clearFilters}
                 />
               </div>
 

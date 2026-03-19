@@ -59,7 +59,7 @@ const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
 import { queryClient } from "@/services/queryClient";
 
-import { LayoutProvider } from "@/contexts/LayoutContext";
+import { LayoutProvider } from "@/contexts/LayoutProvider";
 
 const App = () => {
   const [updating, setUpdating] = useState(false);

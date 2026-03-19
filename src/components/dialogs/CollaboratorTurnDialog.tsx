@@ -365,9 +365,6 @@ export function CollaboratorTurnDialog({
             <DialogTitle className="text-2xl font-bold text-white tracking-tight text-center">
               {turnToEdit ? "Editar Turno" : "Novo Turno"}
             </DialogTitle>
-            <DialogDescription className="text-blue-100 text-sm mt-1 opacity-90 text-center">
-              Configure os dias, horários e finanças contratuais.
-            </DialogDescription>
           </div>
         </div>
 

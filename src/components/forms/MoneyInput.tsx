@@ -39,14 +39,13 @@ export function MoneyInput<T extends FieldValues>({
             {...field}
             placeholder={placeholder}
             type="text"
-            className={cn(inputClassName, "pl-11")}
+            className={inputClassName}
             disabled={disabled}
             onChange={(e) => {
               field.onChange(moneyMask(e.target.value));
             }}
             aria-invalid={!!error}
           />
-          <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600/50 group-focus-within:text-emerald-600 transition-colors pointer-events-none z-10" />
         </div>
       </FormControl>
       <FormMessage />

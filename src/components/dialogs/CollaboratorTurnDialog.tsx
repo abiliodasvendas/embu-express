@@ -132,6 +132,7 @@ import { getLocalDate } from "@/utils/date";
 import { ROLES } from "@/constants/permissions.enum";
 import { TurnFormData, TurnFormInput, turnSchema } from "@/schemas/turnSchema";
 import { mockGenerator } from "@/utils/mocks/generator";
+import { Label } from "@/components/ui/label";
 
 interface CollaboratorTurnDialogProps {
   open: boolean;
@@ -187,9 +188,15 @@ export function CollaboratorTurnDialog({
 
   useEffect(() => {
     if (open) {
+      const isMOrF = !!(
+        collaborator?.perfil?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase() ||
+        collaborator?.perfil?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase()
+      );
+
       if (turnToEdit) {
         form.reset({
           cliente_id: turnToEdit.cliente_id?.toString() || "",
+          unidade_id: turnToEdit.unidade_id?.toString() || "",
           empresa_id: turnToEdit.empresa_id.toString(),
           valor_contrato: formatCurrency(turnToEdit.valor_contrato || 0),
           valor_aluguel: formatCurrency(turnToEdit.valor_aluguel || 0),
@@ -197,20 +204,15 @@ export function CollaboratorTurnDialog({
           ajuda_custo: formatCurrency(turnToEdit.ajuda_custo || 0),
           valor_adiantamento: formatCurrency(turnToEdit.valor_adiantamento || 0),
           data_inicio: turnToEdit.data_inicio || getLocalDate(),
-          unidade_id: turnToEdit.unidade_id?.toString() || "",
-          isMotoboyOrFiscal: collaborator?.perfil?.nome === ROLES.MOTOBOY || collaborator?.perfil?.nome === ROLES.FISCAL,
+          isMotoboyOrFiscal: isMOrF,
           horarios: turnToEdit.horarios?.map(h => ({
             dia_semana: h.dia_semana,
-            hora_inicio: h.hora_inicio.substring(0, 5),
-            hora_fim: h.hora_fim.substring(0, 5),
-            tolerancia_pausa_min: h.tolerancia_pausa_min,
+            hora_inicio: (h.hora_inicio || "").substring(0, 5),
+            hora_fim: (h.hora_fim || "").substring(0, 5),
+            tolerancia_pausa_min: Number(h.tolerancia_pausa_min) || 0,
           })) || [],
         });
       } else {
-        const isMOrF = !!(
-          collaborator?.perfil?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase() ||
-          collaborator?.perfil?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase()
-        );
         form.reset({
           cliente_id: "",
           unidade_id: "",
@@ -220,7 +222,7 @@ export function CollaboratorTurnDialog({
           valor_bonus: "" as any,
           ajuda_custo: "" as any,
           valor_adiantamento: "" as any,
-          data_inicio: "",
+          data_inicio: getLocalDate(),
           isMotoboyOrFiscal: isMOrF,
           horarios: [],
         });
@@ -228,8 +230,7 @@ export function CollaboratorTurnDialog({
     } else {
       form.reset();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, turnToEdit]);
+  }, [open, turnToEdit, collaborator]);
 
   const handleFillMagic = () => {
     const data = mockGenerator.turn();
@@ -269,8 +270,14 @@ export function CollaboratorTurnDialog({
       if (updated.length !== current.length) {
         form.setValue("horarios", updated);
       }
+    } else if (!selectedUnidadeId && !turnToEdit && open) {
+      // Se desmarcar a unidade em modo novo turno, garante que limpa horários
+      const current = form.getValues("horarios");
+      if (current && current.length > 0) {
+        form.setValue("horarios", [], { shouldValidate: true });
+      }
     }
-  }, [selectedUnidadeId, selectedUnidade, clientScale, form]);
+  }, [selectedUnidadeId, selectedUnidade, clientScale, form, turnToEdit, open]);
 
   const onSubmit = async (values: TurnFormInput) => {
     try {
@@ -308,16 +315,18 @@ export function CollaboratorTurnDialog({
   ];
 
   const toggleDia = useCallback((dia: number, checked: boolean) => {
+    if (!selectedUnidadeId && !turnToEdit) return;
+
     const current = form.getValues("horarios") || [];
     if (checked) {
       form.setValue("horarios", [
         ...current,
-        { dia_semana: dia, hora_inicio: "", hora_fim: "", tolerancia_pausa_min: 0 }
+        { dia_semana: dia, hora_inicio: "", hora_fim: "", tolerancia_pausa_min: "" as any }
       ], { shouldValidate: true, shouldDirty: true });
     } else {
       form.setValue("horarios", current.filter(h => h.dia_semana !== dia), { shouldValidate: true, shouldDirty: true });
     }
-  }, [form]);
+  }, [form, selectedUnidadeId, turnToEdit]);
 
   const isSubmitting = createVinculo.isPending || updateVinculo.isPending;
 
@@ -486,65 +495,78 @@ export function CollaboratorTurnDialog({
                   </div>
                   <div className={cn(
                     "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 relative transition-all duration-300",
-                    !selectedUnidadeId && "opacity-40 grayscale pointer-events-none select-none"
+                    !selectedUnidadeId && !turnToEdit && "opacity-40 grayscale pointer-events-none select-none"
                   )}>
                     {diasSemana.map((dia) => {
                       const isClosed = !clientScale.includes(dia.id);
-                      const config = (watchedHorarios || []).find(h => h.dia_semana === dia.id);
-                      const index = (watchedHorarios || []).findIndex(h => h.dia_semana === dia.id);
+                      const config = (watchedHorarios || []).find((h: any) => h.dia_semana === dia.id);
+                      const index = (watchedHorarios || []).findIndex((h: any) => h.dia_semana === dia.id);
                       const isWorking = !!config;
 
                       return (
-                        <label
+                        <div
                           key={dia.id}
                           className={cn(
                             "flex flex-col gap-3 p-4 border rounded-3xl transition-all duration-300 relative overflow-hidden group items-start",
-                            isClosed ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+                            isClosed ? "opacity-50" : "cursor-pointer",
                             isWorking
                               ? "bg-white border-blue-200 shadow-[0_2px_12px_-4px_rgba(59,130,246,0.15)] hover:border-blue-400 hover:shadow-lg"
-                              : "bg-gray-100/50 border-gray-100 hover:bg-white hover:border-blue-200 hover:shadow-md"
+                              : "bg-gray-100/50 border-gray-100 hover:bg-white hover:border-blue-200 hover:shadow-md",
+                            isWorking && form.formState.errors.horarios?.[index] && "border-red-300 bg-red-50/20"
                           )}
+                          onClick={() => !isClosed && toggleDia(dia.id, !isWorking)}
                         >
                           <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-4">
-                              <div className="relative flex items-center h-6">
-                                <input
-                                  type="checkbox"
+                              <div className="relative flex items-center h-6" onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
                                   id={`dia-${dia.id}`}
                                   checked={isWorking}
+                                  onCheckedChange={(val) => !isClosed && toggleDia(dia.id, !!val)}
                                   disabled={isClosed}
-                                  onChange={(e) => toggleDia(dia.id, e.target.checked)}
                                   className={cn(
-                                    "w-5 h-5 rounded-md border-gray-300 accent-blue-600 focus:ring-blue-500 transition-all cursor-pointer disabled:cursor-not-allowed",
-                                    isWorking ? "shadow-md" : ""
+                                    "h-5 w-5 rounded-lg border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 transition-all pointer-events-auto",
+                                    isWorking && (form.formState.errors.horarios as any)?.[index] && "border-red-500"
                                   )}
                                 />
                               </div>
                               <div className="flex flex-col">
-                                <span
+                                <Label
+                                  htmlFor={`dia-${dia.id}`}
                                   className={cn(
-                                    "text-base transition-colors",
+                                    "text-base transition-colors cursor-pointer",
                                     isWorking ? "text-gray-900 font-extrabold" : "text-gray-500 font-bold",
                                     isClosed && "line-through opacity-70"
                                   )}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!isClosed) toggleDia(dia.id, !isWorking);
+                                  }}
                                 >
                                   {dia.label}
-                                </span>
-                                {!isWorking && !isClosed && (
+                                </Label>
+                                {isWorking && (form.formState.errors.horarios as any)?.[index] ? (
+                                  <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider mt-0.5 animate-pulse">Preencha os horários</span>
+                                ) : !isWorking && !isClosed ? (
                                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-0.5">Clique para ativar</span>
-                                )}
-                                {isClosed && (
+                                ) : isClosed && (
                                   <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider mt-0.5">Fechado cliente</span>
                                 )}
                               </div>
                             </div>
 
                             {isWorking && (
-                              <div className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border border-blue-100">
-                                Trabalha
+                              <div className={cn(
+                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border transition-all",
+                                (form.formState.errors.horarios as any)?.[index]
+                                  ? "bg-red-500 text-white border-red-600 animate-bounce"
+                                  : "bg-blue-50 text-blue-600 border-blue-100"
+                              )}>
+                                {(form.formState.errors.horarios as any)?.[index] ? "Incompleto" : "Trabalha"}
                               </div>
                             )}
-                            {isClosed && selectedUnidadeId && (
+                            {isClosed && (selectedUnidadeId || turnToEdit) && (
                               <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border border-red-100">
                                 Unidade Fechada
                               </div>
@@ -557,10 +579,18 @@ export function CollaboratorTurnDialog({
                               onClick={(e) => e.preventDefault()} // stop default label behavior for child clicks
                             >
                               <div className="space-y-1.5 flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider pl-1">Início</span>
+                                <span className={cn(
+                                  "text-[10px] font-bold uppercase tracking-wider pl-1",
+                                  (form.formState.errors.horarios as any)?.[index]?.hora_inicio ? "text-red-500" : "text-gray-500"
+                                )}>Início <span className="text-red-500">*</span></span>
                                 <Input
                                   placeholder="00:00"
-                                  className="h-10 text-sm font-mono text-center rounded-xl bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                                  className={cn(
+                                    "h-10 text-sm font-mono text-center rounded-xl transition-all",
+                                    (form.formState.errors.horarios as any)?.[index]?.hora_inicio
+                                      ? "bg-red-50 border-red-300 focus:ring-red-500/20"
+                                      : "bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                                  )}
                                   value={config.hora_inicio}
                                   onClick={(e) => e.stopPropagation()}
                                   onChange={(e) => {
@@ -574,10 +604,18 @@ export function CollaboratorTurnDialog({
                                 />
                               </div>
                               <div className="space-y-1.5 flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider pl-1">Fim</span>
+                                <span className={cn(
+                                  "text-[10px] font-bold uppercase tracking-wider pl-1",
+                                  (form.formState.errors.horarios as any)?.[index]?.hora_fim ? "text-red-500" : "text-gray-500"
+                                )}>Fim <span className="text-red-500">*</span></span>
                                 <Input
                                   placeholder="00:00"
-                                  className="h-10 text-sm font-mono text-center rounded-xl bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                                  className={cn(
+                                    "h-10 text-sm font-mono text-center rounded-xl transition-all",
+                                    (form.formState.errors.horarios as any)?.[index]?.hora_fim
+                                      ? "bg-red-50 border-red-300 focus:ring-red-500/20"
+                                      : "bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                                  )}
                                   value={config.hora_fim}
                                   onClick={(e) => e.stopPropagation()}
                                   onChange={(e) => {
@@ -591,18 +629,25 @@ export function CollaboratorTurnDialog({
                                 />
                               </div>
                               <div className="space-y-1.5 flex flex-col relative">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider pl-1">Pausa</span>
+                                <span className={cn(
+                                  "text-[10px] font-bold uppercase tracking-wider pl-1",
+                                  (form.formState.errors.horarios as any)?.[index]?.tolerancia_pausa_min ? "text-red-500" : "text-gray-500"
+                                )}>Pausa <span className="text-red-500">*</span></span>
                                 <div className="relative" onClick={(e) => e.stopPropagation()}>
                                   <Input
-                                    type="number"
                                     placeholder="Ex: 60"
-                                    className="h-10 text-sm font-mono text-center pl-2 pr-8 rounded-xl bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
-                                    value={config.tolerancia_pausa_min}
+                                    className={cn(
+                                      "h-10 text-sm font-mono text-center pl-2 pr-8 rounded-xl transition-all",
+                                      (form.formState.errors.horarios as any)?.[index]?.tolerancia_pausa_min
+                                        ? "bg-red-50 border-red-300 focus:ring-red-500/20"
+                                        : "bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                                    )}
+                                    value={String(config.tolerancia_pausa_min ?? "")}
                                     onChange={(e) => {
                                       const current = form.getValues("horarios") || [];
                                       const newHorarios = [...current];
                                       if (newHorarios[index]) {
-                                        newHorarios[index].tolerancia_pausa_min = parseInt(e.target.value) || 0;
+                                        newHorarios[index].tolerancia_pausa_min = e.target.value;
                                         form.setValue("horarios", newHorarios, { shouldValidate: true, shouldDirty: true });
                                       }
                                     }}
@@ -612,11 +657,11 @@ export function CollaboratorTurnDialog({
                               </div>
                             </div>
                           )}
-                        </label>
+                        </div>
                       );
                     })}
                   </div>
-                  {form.formState.errors.horarios && (
+                  {form.formState.errors.horarios?.message && (
                     <p className="text-sm font-medium text-red-500 mt-2 bg-red-50 p-3 rounded-xl border border-red-100 flex items-center gap-2">
                       <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>
                       {form.formState.errors.horarios.message}
@@ -661,7 +706,7 @@ export function CollaboratorTurnDialog({
                             label="Salário Base Mensal"
                             required={true}
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                            inputClassName="pl-12 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
+                            inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
                         )}
                       />
@@ -676,7 +721,7 @@ export function CollaboratorTurnDialog({
                             field={field}
                             label="Bônus Zero Falta"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                            inputClassName="pl-12 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
+                            inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
                         )}
                       />
@@ -688,7 +733,7 @@ export function CollaboratorTurnDialog({
                             field={field}
                             label="Aluguel Veículo (Mensal)"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                            inputClassName="pl-12 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
+                            inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
                         )}
                       />
@@ -700,7 +745,7 @@ export function CollaboratorTurnDialog({
                             field={field}
                             label="Ajuda de Custo Diária"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                            inputClassName="pl-12 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
+                            inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
                         )}
                       />
@@ -724,11 +769,11 @@ export function CollaboratorTurnDialog({
                           field={field}
                           label="Adiantamento"
                           labelClassName="text-red-900 font-bold ml-1 text-xs uppercase tracking-wider"
-                          inputClassName="pl-12 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-red-100 focus:bg-white focus:ring-2 focus:ring-red-500/20 transition-all font-medium text-red-900"
+                          inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-red-100 focus:bg-white focus:ring-2 focus:ring-red-500/20 transition-all font-medium text-red-900"
                         />
                       )}
                     />
-                    <p className="text-xs text-red-600/70 ml-1 font-medium leading-relaxed max-w-[90%]">
+                    <p className="text-xs text-gray-400 ml-1 font-medium leading-relaxed max-w-[90%]">
                       Este valor será incluído e descontado após a confirmação do adiantamento no fechamento financeiro.
                     </p>
                   </div>

@@ -160,7 +160,6 @@ export function OccurrenceTypesDialog({
                     <DialogTitle className="text-xl font-bold text-white">
                         Gerenciar Tipos
                     </DialogTitle>
-                    <p className="text-xs text-white/70 mt-1">Configure os tipos de ocorrência e seus valores padrão</p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">

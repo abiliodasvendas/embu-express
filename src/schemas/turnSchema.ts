@@ -14,9 +14,13 @@ const optionalMoneySchema = z.string()
 
 const horarioSchema = z.object({
   dia_semana: z.number().min(1).max(7),
-  hora_inicio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida"),
-  hora_fim: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida"),
-  tolerancia_pausa_min: z.number().default(0),
+  hora_inicio: z.string().min(1, messages.validacao.campoObrigatorio).regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida"),
+  hora_fim: z.string().min(1, messages.validacao.campoObrigatorio).regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida"),
+  tolerancia_pausa_min: z.preprocess((val) => {
+    if (val === "" || val === undefined || val === null) return undefined;
+    return Number(val);
+  }, z.number({ required_error: messages.validacao.campoObrigatorio })
+    .min(0, messages.validacao.campoObrigatorio)),
 });
 
 const baseSchema = {

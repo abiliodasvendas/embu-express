@@ -16,6 +16,7 @@ interface TimeRecordCardProps {
     onDetails?: (r: RegistroPonto) => void;
     actions?: any[];
     showActions?: boolean;
+    showClient?: boolean;
 }
 
 export function TimeRecordCard({
@@ -23,17 +24,18 @@ export function TimeRecordCard({
     date,
     onDetails,
     actions = [],
-    showActions = true
+    showActions = true,
+    showClient = false
 }: TimeRecordCardProps) {
     const mStatus = getManagementStatus(record, date);
     const config = PONTO_STATUS_UI_CONFIG[mStatus];
 
     const cardContent = (
         <Card
-            onClick={() => onDetails?.(record)}
+            onClick={() => showActions && onDetails?.(record)}
             className={cn(
-                "bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-all hover:shadow-md hover:border-blue-100 flex h-full relative",
-                onDetails && "cursor-pointer"
+                "bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-all flex h-full relative",
+                showActions && onDetails ? "cursor-pointer hover:shadow-md hover:border-blue-100" : "cursor-default"
             )}
         >
             {/* Sidebar de Status - Estilo Premium Absoluto */}
@@ -51,9 +53,16 @@ export function TimeRecordCard({
                         </Avatar>
                         <div className="min-w-0">
                             <h3 className="font-bold text-gray-900 leading-tight line-clamp-1">{record.usuario?.nome_completo}</h3>
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mt-0.5">
-                                Turno: {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--:--"} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--:--"}
-                            </p>
+                            <div className="flex flex-col gap-0.5 mt-0.5">
+                                {showClient && record.cliente?.nome_fantasia && (
+                                    <p className="text-[10px] font-bold text-primary/70 uppercase tracking-wide">
+                                        Cliente: {record.cliente.nome_fantasia}
+                                    </p>
+                                )}
+                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+                                    Turno: {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--:--"} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--:--"}
+                                </p>
+                            </div>
                         </div>
                     </div>
 

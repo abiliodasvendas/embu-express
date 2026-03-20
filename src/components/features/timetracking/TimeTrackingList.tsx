@@ -4,23 +4,30 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { RegistroPonto } from "@/types/database";
 import { FilterX } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { ManagementStatus } from "@/types/enums";
+import { getManagementStatus } from "@/utils/ponto";
+import { Card } from "@/components/ui/card";
 
 import { TimeRecordCard } from "./TimeRecordCard";
 
 interface TimeTrackingListProps {
   records: RegistroPonto[];
   date: Date;
+  showClient?: boolean;
+  showActions?: boolean;
 }
 
 interface TimeTrackingItemProps {
   record: RegistroPonto;
   date: Date;
+  showClient?: boolean;
+  showActions?: boolean;
   onDetails: (record: RegistroPonto) => void;
   onEdit: (record: RegistroPonto) => void;
   onDelete: (record: RegistroPonto) => void;
 }
 
-function TimeTrackingItem({ record, date, onDetails, onEdit, onDelete }: TimeTrackingItemProps) {
+function TimeTrackingItem({ record, date, showClient, showActions = true, onDetails, onEdit, onDelete }: TimeTrackingItemProps) {
   const actions = useTimeRecordActions({
     record,
     onDetails,
@@ -29,16 +36,20 @@ function TimeTrackingItem({ record, date, onDetails, onEdit, onDelete }: TimeTra
   });
 
   return (
-    <TimeRecordCard
-      record={record}
-      date={date}
-      onDetails={onDetails}
-      actions={actions}
-    />
+    <Card className="h-full border shadow-none bg-white rounded-2xl relative">
+       <TimeRecordCard
+        record={record}
+        date={date}
+        onDetails={onDetails}
+        actions={showActions ? actions : []}
+        showActions={showActions}
+        showClient={showClient}
+      />
+    </Card>
   );
 }
 
-export function TimeTrackingList({ records, date }: TimeTrackingListProps) {
+export function TimeTrackingList({ records, date, showClient = false, showActions = true }: TimeTrackingListProps) {
   const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { mutateAsync: deletePonto } = useDeletePonto();
 
@@ -77,18 +88,54 @@ export function TimeTrackingList({ records, date }: TimeTrackingListProps) {
     );
   }
 
+  const grouped = records.reduce((acc, record) => {
+    const status = getManagementStatus(record, date);
+    if (!acc[status]) acc[status] = [];
+    acc[status].push(record);
+    return acc;
+  }, {} as Record<string, RegistroPonto[]>);
+
+  const statusOrder = [
+    { key: ManagementStatus.LATE, label: "Atrasados" },
+    { key: ManagementStatus.ABSENT, label: "Falta" },
+    { key: ManagementStatus.WORKING, label: "Trabalhando" },
+    { key: ManagementStatus.WAITING, label: "Aguardando Início" },
+    { key: ManagementStatus.DONE, label: "Finalizado" }
+  ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {records.map((record) => (
-        <TimeTrackingItem
-          key={record.id}
-          record={record}
-          date={date}
-          onDetails={openDetails}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      ))}
+    <div className="space-y-12">
+      {statusOrder.map(({ key, label }) => {
+        const groupRecords = grouped[key] || [];
+
+        return (
+          <div key={key} className="space-y-4">
+            <div className="flex items-center gap-3 px-2">
+              <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest">
+                {label} ({groupRecords.length})
+              </h3>
+              <div className="h-px bg-gray-100 flex-1" />
+            </div>
+            
+            {groupRecords.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {groupRecords.map((record) => (
+                    <TimeTrackingItem
+                    key={record.id}
+                    record={record}
+                    date={date}
+                    showClient={showClient}
+                    showActions={showActions}
+                    onDetails={openDetails}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    />
+                ))}
+                </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -75,13 +75,6 @@ export default function TimeTracking() {
                     className="pt-2"
                 />
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2 pt-2">
-                        <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            Colaboradores ({vm.filteredRecords.length})
-                        </h2>
-                    </div>
-
                     {vm.isLoading ? (
                         <ListSkeleton />
                     ) : vm.filteredRecords.length === 0 ? (
@@ -94,6 +87,7 @@ export default function TimeTracking() {
                         <TimeTrackingList
                             records={vm.filteredRecords}
                             date={vm.date}
+                            showClient={true}
                         />
                     )}
                 </div>

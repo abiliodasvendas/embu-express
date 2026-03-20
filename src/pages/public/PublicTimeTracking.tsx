@@ -87,14 +87,6 @@ export default function PublicTimeTracking() {
                     onFilterClick={vm.handleKpiClick}
                 />
 
-                {/* List Header */}
-                <div className="flex items-center justify-between px-2 pt-2">
-                    <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Colaboradores ({vm.filteredRecords.length})
-                    </h2>
-                </div>
-
                 {/* List Container - Responsivo Grid/Lista */}
                 {vm.isLoading ? (
                     <ListSkeleton />
@@ -108,6 +100,7 @@ export default function PublicTimeTracking() {
                     <TimeTrackingList
                         records={vm.filteredRecords}
                         date={vm.date}
+                        showActions={false}
                     />
                 )}
             </div>

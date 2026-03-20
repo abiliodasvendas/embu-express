@@ -35,7 +35,7 @@ export function CollaboratorCard({
         >
             {/* Top row: Avatar + info + badge */}
             <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-full bg-primary/5 flex items-center justify-center text-sm font-extrabold text-primary shrink-0 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                <div className="w-11 h-11 rounded-full bg-primary/5 flex items-center justify-center text-sm font-extrabold text-primary shrink-0 group-hover:bg-primary/10 transition-colors duration-300">
                     {name.substring(0, 1).toUpperCase()}
                 </div>
                 <div className="flex-grow min-w-0">

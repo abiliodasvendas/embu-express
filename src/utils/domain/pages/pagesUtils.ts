@@ -1,8 +1,9 @@
+import { MENU_CATEGORIES, MenuCategory } from "@/constants/menu.constants";
 import { PermissionKey, PERMISSIONS } from "@/constants/permissions.enum";
 import { ROUTES } from "@/constants/routes";
-import { MENU_CATEGORIES, MenuCategory } from "@/constants/menu.constants";
 import {
     AlertCircle,
+    AlertTriangle,
     Banknote,
     Briefcase,
     Building,
@@ -10,8 +11,7 @@ import {
     FileText,
     Home,
     Settings,
-    Users,
-    AlertTriangle
+    Users
 } from "lucide-react";
 
 export interface PageItem {
@@ -62,6 +62,12 @@ export const pagesItems: PageItem[] = [
         category: MENU_CATEGORIES.PONTO
     },
     {
+        title: "Clientes",
+        href: ROUTES.PRIVATE.CLIENTES,
+        icon: Briefcase,
+        permissionKey: PERMISSIONS.CLIENTES.VER,
+    },
+    {
         title: "Relatório Financeiro",
         href: ROUTES.PRIVATE.RELATORIO_FINANCEIRO,
         icon: Banknote,
@@ -72,12 +78,6 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.OCORRENCIAS,
         icon: AlertCircle,
         permissionKey: PERMISSIONS.OCORRENCIAS.VER,
-    },
-    {
-        title: "Clientes",
-        href: ROUTES.PRIVATE.CLIENTES,
-        icon: Briefcase,
-        permissionKey: PERMISSIONS.CLIENTES.VER,
     },
     {
         title: "Empresas",

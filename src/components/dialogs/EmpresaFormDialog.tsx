@@ -31,7 +31,7 @@ import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, FileText, Hash, Loader2, Wand2, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm, FieldErrors } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 
 import { EmpresaFormValues, empresaSchema } from "@/schemas/empresaSchema";
 
@@ -106,7 +106,6 @@ export function EmpresaFormDialog({
   };
 
   const onFormError = (errors: FieldErrors<EmpresaFormValues>) => {
-    console.error("Erro na validação do formulário:", errors);
     if (Object.keys(errors).length > 0) {
       setOpenSections(["dados-empresa"]);
     }
@@ -121,7 +120,6 @@ export function EmpresaFormDialog({
       }
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Erro ao salvar empresa:", error);
       const message = error.response?.data?.message || error.message || "";
       
       if (message.toLowerCase().includes("cnpj")) {
@@ -226,7 +224,7 @@ export function EmpresaFormDialog({
                       name="razao_social"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Razão Social</FormLabel>
+                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Razão Social <span className="text-red-500">*</span></FormLabel>
                           <FormControl>
                             <div className="relative">
                               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -250,7 +248,7 @@ export function EmpresaFormDialog({
                       name="cnpj"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">CNPJ</FormLabel>
+                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">CNPJ <span className="text-red-500">*</span></FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

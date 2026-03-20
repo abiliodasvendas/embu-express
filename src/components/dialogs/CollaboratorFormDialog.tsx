@@ -19,7 +19,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { FieldErrors } from "react-hook-form";
 import {
   Select,
   SelectContent,
@@ -27,15 +26,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PIX_TYPES } from "@/constants/financeiro.constants";
 import { messages } from "@/constants/messages";
 import { ROLES } from "@/constants/permissions.enum";
-import { StatusUsuario } from "@/types/enums";
-import { PIX_TYPES } from "@/constants/financeiro.constants";
-import { cn } from "@/lib/utils";
 import { useCreateCollaborator, useEmpresas, useLayout, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/form/useCollaboratorForm";
-import { CollaboratorFormData, CollaboratorFormValues, collaboratorSchema } from "@/schemas/collaboratorSchema";
+import { cn } from "@/lib/utils";
+import { CollaboratorFormData, CollaboratorFormValues } from "@/schemas/collaboratorSchema";
 import { Perfil, Usuario } from "@/types/database";
+import { StatusUsuario } from "@/types/enums";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { getPerfilLabel } from "@/utils/formatters";
 import { aplicarMascaraPlaca, cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
@@ -43,7 +42,7 @@ import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { Briefcase, CreditCard, DollarSign, Loader2, User, UserPlus, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getLocalDate } from "@/utils/date";
+import { FieldErrors } from "react-hook-form";
 import { CollaboratorFormFinancial } from "../features/collaborator/form/CollaboratorFormFinancial";
 import { CollaboratorFormPersonal } from "../features/collaborator/form/CollaboratorFormPersonal";
 import { CollaboratorFormCNH, CollaboratorFormMoto } from "../features/collaborator/form/CollaboratorFormProfessional";
@@ -103,7 +102,6 @@ export function CollaboratorFormDialog({
   }, [perfilIdWatch, roles, form, open, collaboratorToEdit]);
 
   const onFormError = (errors: FieldErrors<CollaboratorFormValues>) => {
-    console.error("Erros de validação:", errors);
     toast.error(messages.validacao.formularioComErros);
     // Garantir que as seções com erro fiquem abertas
     const sectionsWithError = new Set<string>();
@@ -192,8 +190,6 @@ export function CollaboratorFormDialog({
         });
       }
     } catch (error: any) {
-      console.error("Erro ao salvar colaborador:", error);
-
       const errorMessage = error.response?.data?.error || error.message || "";
       const errorMsgLower = errorMessage.toLowerCase();
 

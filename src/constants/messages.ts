@@ -398,6 +398,7 @@ export const messages = {
   ocorrencia: {
     erro: {
       carregar: "Erro ao carregar ocorrências.",
+      salvar: "Erro ao salvar ocorrência.",
       criar: "Erro ao registrar ocorrência.",
       atualizar: "Erro ao atualizar ocorrência.",
       excluir: "Erro ao remover ocorrência.",
@@ -425,11 +426,13 @@ export const messages = {
       criar: "Erro ao criar turno.",
       atualizar: "Erro ao atualizar turno.",
       excluir: "Erro ao remover turno.",
+      encerrar: "Erro ao encerrar turno.",
     },
     sucesso: {
       criado: "Turno criado com sucesso!",
       atualizado: "Turno atualizado com sucesso!",
       excluido: "Turno removido com sucesso!",
+      encerrar: "Turno encerrado com sucesso!",
     },
   },
   // ========== GEOLOCALIZAÇÃO ==========

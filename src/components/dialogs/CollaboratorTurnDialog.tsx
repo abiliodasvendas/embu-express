@@ -1,5 +1,6 @@
 import { MoneyInput } from "@/components/forms/MoneyInput";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -96,17 +97,15 @@ import {
 
 
 
-  DialogTitle,
-  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -116,23 +115,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useCollaborator, useCreateVinculo, useEmpresas, useUpdateVinculo, useUnidades } from "@/hooks";
+import { useCollaborator, useCreateVinculo, useEmpresas, useUnidades, useUpdateVinculo } from "@/hooks";
 import { useClientSelection } from "@/hooks/ui/useClientSelection";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente } from "@/types/database";
+import { getLocalDate } from "@/utils/date";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { timeMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Briefcase, CalendarDays, Clock, DollarSign, Loader2, Plane, Wand2, X } from "lucide-react";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { Briefcase, CalendarDays, Clock, DollarSign, Loader2, Wand2, X } from "lucide-react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { getLocalDate } from "@/utils/date";
 
+import { Label } from "@/components/ui/label";
+import { messages } from "@/constants/messages";
 import { ROLES } from "@/constants/permissions.enum";
 import { TurnFormData, TurnFormInput, turnSchema } from "@/schemas/turnSchema";
 import { mockGenerator } from "@/utils/mocks/generator";
-import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface CollaboratorTurnDialogProps {
   open: boolean;
@@ -299,8 +299,9 @@ export function CollaboratorTurnDialog({
       }
       onSuccess?.();
       onOpenChange(false);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || error.message || "";
+      toast.error(errorMessage || (turnToEdit ? messages.cliente.erro.atualizar : messages.cliente.erro.criar));
     }
   };
 

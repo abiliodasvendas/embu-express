@@ -70,17 +70,12 @@ export function PasswordGuardDialog({ open, onSuccess }: PasswordGuardDialogProp
         await sessionManager.refreshToken();
       }
 
-      toast.success("Senha definida com sucesso!", {
-        description: "Agora você já pode acessar o sistema com sua nova senha.",
-      });
+      toast.success(messages.auth.sucesso.senhaRedefinida);
 
       onSuccess();
     } catch (err: any) {
-      console.error(err);
       const msg = err.response?.data?.error || messages.erro.atualizar;
-      toast.error("Erro ao definir senha", {
-        description: msg,
-      });
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

@@ -21,6 +21,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { messages } from "@/constants/messages";
 import { PROTECTED_ROLES_NAMES } from "@/constants/permissions.enum";
 import { useCreatePerfil, usePermissoes, useUpdatePerfil } from "@/hooks/api/usePerfis";
 import { cn } from "@/lib/utils";
@@ -98,18 +99,17 @@ export function PerfilFormDialog({
                         permissoes: values.permissoes,
                     },
                 });
-                toast.success("Perfil atualizado com sucesso");
+                toast.success(messages.sucesso.atualizar);
             } else {
                 await createPerfil.mutateAsync({
                     nome: values.nome,
                     descricao: values.descricao,
                     permissoes: values.permissoes,
                 });
-                toast.success("Perfil criado com sucesso");
+                toast.success(messages.sucesso.salvar);
             }
             onOpenChange(false);
         } catch (error: any) {
-            console.error("Erro ao salvar perfil:", error);
             const message = error.message || "";
             if (message.toLowerCase().includes("perfis_nome_key") || message.toLowerCase().includes("nome já existe")) {
                 form.setError("nome", { message: "Já existe um perfil com este nome." });

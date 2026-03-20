@@ -32,6 +32,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Pencil, Plus, Settings, Trash2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const tipoOcorrenciaSchema = z.object({
@@ -124,7 +125,8 @@ export function OccurrenceTypesDialog({
             }
             handleCancel();
         } catch (error) {
-            console.error(error);
+            const errorMessage = error.response?.data?.error || error.message || "";
+            toast.error(errorMessage || "Erro ao salvar tipo de ocorrência");
         }
     };
 

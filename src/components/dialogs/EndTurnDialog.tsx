@@ -1,15 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { messages } from "@/constants/messages";
 import { useUpdateVinculo } from "@/hooks";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { CalendarOff, Loader2, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface EndTurnDialogProps {
   open: boolean;
@@ -41,11 +43,12 @@ export function EndTurnDialog({
         data_fim: dataFim,
         silent: true,
       });
+      toast.success(messages.vinculo.sucesso.encerrar);
       onSuccess?.();
       onOpenChange(false);
       setDataFim("");
     } catch (error) {
-      console.error(error);
+      toast.error(messages.vinculo.erro.encerrar, { description: error.response?.data?.message || error.message });
     }
   };
 

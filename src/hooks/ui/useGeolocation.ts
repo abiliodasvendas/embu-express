@@ -1,8 +1,8 @@
+import { getMessage } from '@/constants/messages';
+import { GeolocationPermissionState, LocationData } from '@/types/geolocation';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 import { useCallback, useState } from 'react';
-import { getMessage } from '@/constants/messages';
-import { LocationData, GeolocationPermissionState } from '@/types/geolocation';
 
 export function useGeolocation() {
   const [location, setLocation] = useState<LocationData | null>(null);
@@ -80,7 +80,6 @@ export function useGeolocation() {
 
     } catch (err: unknown) {
       const error = err as Error;
-      console.error("Geo error:", error);
       
       const currentState = await checkPermissionState();
       setPermissionStatus(currentState);

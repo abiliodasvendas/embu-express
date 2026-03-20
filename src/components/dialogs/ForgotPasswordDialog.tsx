@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { api } from "@/services/api/client";
@@ -51,7 +51,6 @@ export function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialo
       onOpenChange(false);
       form.reset();
     } catch (error: any) {
-      console.error(error);
       const msg = error.response?.data?.error || "Erro ao solicitar recuperação.";
       toast.error("Erro", { description: msg });
     } finally {

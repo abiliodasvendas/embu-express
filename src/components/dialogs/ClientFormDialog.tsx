@@ -13,7 +13,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { FieldErrors } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
@@ -21,7 +20,6 @@ import { useCreateClient, useUpdateClient } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Client } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { cepMask, cnpjMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,7 +30,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { ClientFormData, clientSchema } from "@/schemas/clientSchema";
@@ -91,7 +89,6 @@ export function ClientFormDialog({
   }, [isOpen, editingClient, form]);
 
   const onFormError = (errors: FieldErrors<ClientFormData>) => {
-    console.error("Erros de validação:", errors);
     toast.error(messages.validacao.formularioComErros);
   };
 
@@ -136,7 +133,6 @@ export function ClientFormDialog({
       safeCloseDialog(() => onClose());
       onSuccess?.();
     } catch (error: any) {
-      console.error("Erro ao salvar cliente:", error);
       const errorMessage = error.response?.data?.error || error.message || "";
       toast.error(errorMessage || (editingClient ? messages.cliente.erro.atualizar : messages.cliente.erro.criar));
     }

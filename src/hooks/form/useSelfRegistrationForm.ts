@@ -1,6 +1,8 @@
 import { messages } from "@/constants/messages";
 import { ROLES } from "@/constants/permissions.enum";
 import { authApi } from "@/services/api/auth.api";
+import { ApiError } from "@/types/api";
+import { Perfil } from "@/types/database";
 import { formatDateToISO } from "@/utils/date";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,8 +10,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { SelfRegistrationFormData, selfRegistrationSchema } from "../../schemas/selfRegistrationSchema";
-import { ApiError } from "@/types/api";
-import { Perfil } from "@/types/database";
 
 export function useSelfRegistrationForm() {
   const navigate = useNavigate();
@@ -71,7 +71,6 @@ export function useSelfRegistrationForm() {
 
     } catch (err: unknown) {
       const error = err as ApiError;
-      console.error(error);
       const message = error.response?.data?.error || error.response?.data?.message || error.message || "";
 
       // Map background error messages to specific form fields

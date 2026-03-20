@@ -1,5 +1,5 @@
-import { CepInput } from "@/components/forms";
 import { WeeklyScaleSelection } from "@/components/common/WeeklyScaleSelection";
+import { CepInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,20 +16,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { messages } from "@/constants/messages";
 import { useCreateUnidade, useUpdateUnidade } from "@/hooks/api/useUnidadeMutations";
 import { cn } from "@/lib/utils";
+import { UnidadeFormData, unidadeSchema } from "@/schemas/unidadeSchema";
 import { Unidade } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { formatarCEP } from "@/utils/formatters";
 import { cnpjMask } from "@/utils/masks";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -43,10 +39,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm, FieldErrors } from "react-hook-form";
-import { UnidadeFormData, unidadeSchema } from "@/schemas/unidadeSchema";
-import { mockGenerator } from "@/utils/mocks/generator";
-import { formatarCEP } from "@/utils/formatters";
+import { FieldErrors, useForm } from "react-hook-form";
 
 interface UnidadeFormDialogProps {
   isOpen: boolean;
@@ -129,7 +122,6 @@ export function UnidadeFormDialog({
   }, [isOpen, editingUnidade, clienteId, form]);
 
   const onFormError = (errors: FieldErrors<UnidadeFormData>) => {
-    console.error("Erros de validação:", errors);
     toast.error(messages.validacao.formularioComErros);
   };
 
@@ -157,7 +149,6 @@ export function UnidadeFormDialog({
       safeCloseDialog(() => onClose());
       onSuccess?.();
     } catch (error: any) {
-      console.error("Erro ao salvar unidade:", error);
       const errorMessage = error.response?.data?.error || error.message || "";
       toast.error(errorMessage || "Erro ao salvar unidade");
     }

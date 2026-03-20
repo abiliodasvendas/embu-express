@@ -25,17 +25,19 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
+import { messages } from "@/constants/messages";
 import { useCollaborator, useCollaborators } from "@/hooks/api/useCollaborators";
 import { useCreateOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
 import { cn } from "@/lib/utils";
-import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
 import { OccurrenceFormData, occurrenceSchema } from "@/schemas/occurrenceSchema";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2, Wand2, X } from "lucide-react";
-import { mockGenerator } from "@/utils/mocks/generator";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 interface OccurrenceFormDialogProps {
     open: boolean;
@@ -102,7 +104,7 @@ export function OccurrenceFormDialog({
             onSuccess?.();
             form.reset();
         } catch (error) {
-            console.error(error);
+            toast.error(messages.ocorrencia.erro.salvar, { description: error.response?.data?.message || error.message });
         }
     };
 

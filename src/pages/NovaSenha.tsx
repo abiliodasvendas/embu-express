@@ -3,8 +3,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
-import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Third-party
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -77,7 +77,6 @@ export default function NovaSenha() {
       setTimeout(() => navigate(ROUTES.PUBLIC.ROOT, { replace: true }), 1200);
     } catch (err: any) {
       setLoading(false);
-      console.error(err);
       const msg = err.response?.data?.error || messages.erro.atualizar;
       toast.error("Erro ao definir senha", {
         description: msg,

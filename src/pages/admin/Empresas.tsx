@@ -5,19 +5,20 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { StatusUsuario, FilterOptions } from "@/types/enums";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateEmpresa,
-    useDeleteEmpresa,
-    useToggleEmpresaStatus,
+  useCreateEmpresa,
+  useDeleteEmpresa,
+  useToggleEmpresaStatus,
 } from "@/hooks/api/useEmpresaMutations";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
-import { useSearchFilters, useStatusFilters, useFiltersManager } from "@/hooks/ui/useFilters";
+import { useFiltersManager, useSearchFilters, useStatusFilters } from "@/hooks/ui/useFilters";
 import { Empresa } from "@/types/database";
+import { FilterOptions, StatusUsuario } from "@/types/enums";
 import { Building2 } from "lucide-react"; // Using Building2 for Empresas icon
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export function Empresas() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEmpresaFormDialog } = useLayout();
@@ -85,7 +86,7 @@ export function Empresas() {
           });
           closeConfirmationDialog();
         } catch (error) {
-          console.error(error);
+          toast.error(messages.erro.atualizar);
         }
       },
     });

@@ -1,9 +1,9 @@
 import { Can } from "@/components/auth/Can";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
+import { OccurrenceView } from "@/components/features/ocorrencias/OccurrenceView";
 import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { OccurrenceView } from "@/components/features/ocorrencias/OccurrenceView";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,10 +15,14 @@ import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCollaborator, useDeleteVinculo, useRoles, useTimeMirrorViewModel,
-  useFinancialReportViewModel, useDateFilters, useFiltersManager
+  useCollaborator,
+  useDateFilters,
+  useDeleteVinculo,
+  useFiltersManager,
+  useFinancialReportViewModel,
+  useRoles, useTimeMirrorViewModel
 } from "@/hooks";
-import { useDeleteCollaborator, useUpdateCollaboratorStatus, useUpdateVinculo, useResetCollaboratorPassword } from "@/hooks/api/useCollaboratorMutations";
+import { useDeleteCollaborator, useResetCollaboratorPassword, useUpdateCollaboratorStatus, useUpdateVinculo } from "@/hooks/api/useCollaboratorMutations";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
@@ -26,9 +30,10 @@ import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
 import { onlyNumbers } from "@/utils/string";
 import { format, parseISO } from "date-fns";
-import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, ChevronRight, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function CollaboratorDetails() {
   const { id } = useParams();
@@ -106,7 +111,7 @@ export default function CollaboratorDetails() {
             }, 300);
           }
         } catch (error) {
-          console.error(error);
+          toast.error(messages.erro.atualizar);
         }
       },
     });
@@ -125,7 +130,7 @@ export default function CollaboratorDetails() {
           closeConfirmationDialog();
           navigate("/colaboradores");
         } catch (error) {
-          console.error(error);
+          toast.error(messages.erro.excluir);
         }
       },
     });
@@ -143,7 +148,7 @@ export default function CollaboratorDetails() {
           await resetPassword.mutateAsync(collaborator.id);
           closeConfirmationDialog();
         } catch (error) {
-          console.error(error);
+          toast.error(messages.erro.atualizar);
         }
       },
     });
@@ -229,7 +234,7 @@ export default function CollaboratorDetails() {
           await deleteVinculo.mutateAsync({ id: turnId, colaboradorId: id! });
           closeConfirmationDialog();
         } catch (error) {
-          console.error(error);
+          toast.error(messages.erro.excluir);
         }
       },
     });
@@ -259,7 +264,7 @@ export default function CollaboratorDetails() {
           });
           closeConfirmationDialog();
         } catch (error) {
-          console.error(error);
+          toast.error(messages.erro.atualizar);
         }
       },
     });

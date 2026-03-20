@@ -10,17 +10,17 @@ import { useActiveCollaborators } from "@/hooks";
 import { useCreatePonto, useUpdatePonto } from "@/hooks/api/usePontoMutations";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
-import { kmMask, kmToNumber, timeMask, formatKm } from "@/utils/masks";
 import { ManualTimeRecordFormValues, manualTimeRecordSchema } from "@/schemas/pontoSchema";
+import { RegistroPonto } from "@/types/database";
+import { kmMask, kmToNumber, timeMask } from "@/utils/masks";
 import { TimeRules } from "@/utils/timeRules";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, Clock, Loader2, User, X, Gauge, PlusCircle, Edit2, Building2, Save } from "lucide-react";
+import { AlertCircle, Building2, Calendar as CalendarIcon, Check, ChevronsUpDown, Clock, Edit2, Gauge, Loader2, PlusCircle, Save, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { RegistroPonto } from "@/types/database";
 
 interface TimeRecordDialogProps {
     isOpen: boolean;
@@ -129,7 +129,8 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
 
             handleClose();
         } catch (error) {
-            console.error("Erro ao processar registro:", error);
+            const errorMessage = error.response?.data?.error || error.message || "";
+            toast.error(errorMessage || "Erro ao processar registro");
         }
     };
 

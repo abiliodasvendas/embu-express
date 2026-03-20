@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
@@ -80,7 +80,6 @@ export function FeriadoFormDialog({
       }
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Erro ao salvar feriado:", error);
       toast.error(isEditing ? messages.feriado.erro.atualizar : messages.feriado.erro.criar, {
         description: error.response?.data?.message || error.message
       });

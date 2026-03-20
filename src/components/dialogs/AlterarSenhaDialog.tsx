@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
@@ -80,7 +80,6 @@ export default function AlterarSenhaDialog({
       await sessionManager.signOut();
       window.location.href = "/login";
     } catch (err: any) {
-      console.error(err);
       const msg = err.response?.data?.error || messages.erro.operacao;
       toast.error("Erro ao alterar senha", {
         description: msg === "Senha atual incorreta." ? messages.auth.erro.senhaIncorreta : msg,

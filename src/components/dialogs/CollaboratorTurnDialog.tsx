@@ -796,7 +796,7 @@ export function CollaboratorTurnDialog({
                       render={({ field }) => (
                         <FormItem className="relative z-10">
                           <FormLabel className="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider">
-                            Data de Início (Cálculo Pro-rata){" "}
+                            Data de Início {" "}
                             <span className="text-red-500">*</span>
                           </FormLabel>
                           <FormControl>
@@ -818,7 +818,7 @@ export function CollaboratorTurnDialog({
                         render={({ field }) => (
                           <MoneyInput
                             field={field}
-                            label="Salário Base Mensal"
+                            label="Salário Base"
                             required={true}
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
                             inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
@@ -846,7 +846,7 @@ export function CollaboratorTurnDialog({
                         render={({ field }) => (
                           <MoneyInput
                             field={field}
-                            label="Aluguel Veículo (Mensal)"
+                            label="Aluguel Veículo"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
                             inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
@@ -858,7 +858,7 @@ export function CollaboratorTurnDialog({
                         render={({ field }) => (
                           <MoneyInput
                             field={field}
-                            label="Ajuda de Custo Diária"
+                            label="Ajuda de Custo"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
                             inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />

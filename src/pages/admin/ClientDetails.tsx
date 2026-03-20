@@ -1,16 +1,17 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
+import { CollaboratorCard } from "@/components/common/CollaboratorCard";
+import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { CollaboratorsListDialog } from "@/components/dialogs/CollaboratorsListDialog";
+import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
-import { UnitsListDialog } from "@/components/dialogs/UnitsListDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteClient,
-    useToggleClientStatus,
+  useDeleteClient,
+  useToggleClientStatus,
 } from "@/hooks/api/useClientMutations";
 import { useClients } from "@/hooks/api/useClients";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
@@ -21,23 +22,25 @@ import { cn } from "@/lib/utils";
 import { Client, ColaboradorCliente, Unidade } from "@/types/database";
 import { DIAS_SEMANA } from "@/utils/formatters/constants";
 import { cnpjMask } from "@/utils/masks";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-    ArrowUpRight,
-    Building2,
-    CheckCircle2,
-    ChevronDown,
-    Copy,
-    CopyCheck,
-    Edit2,
-    ExternalLink,
-    Link2,
-    MapPin,
-    MapPinned,
-    Plus,
-    Trash2,
-    Users,
-    XCircle,
-    Zap,
+  Building2,
+  CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  CopyCheck,
+  Edit2,
+  ExternalLink,
+  Link2,
+  MapPin,
+  MapPinned,
+  Plus,
+  Trash2,
+  Users,
+  XCircle,
+  Zap
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -47,9 +50,14 @@ export default function ClientDetails() {
   const navigate = useNavigate();
   const [isCopied, setIsCopied] = useState(false);
   const [isUnidadeDialogOpen, setIsUnidadeDialogOpen] = useState(false);
-  const [isUnitsListOpen, setIsUnitsListOpen] = useState(false);
-  const [isCollabsListOpen, setIsCollabsListOpen] = useState(false);
   const [editingUnidade, setEditingUnidade] = useState<Unidade | null>(null);
+  
+  // Pagination states
+  const [unitPage, setUnitPage] = useState(1);
+  const unitsPerPage = 5;
+  const [collabPage, setCollabPage] = useState(1);
+  const collabsPerPage = 4;
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
 
@@ -76,24 +84,32 @@ export default function ClientDetails() {
     setPageTitle,
   } = useLayout();
 
-  // Stats calculations
+  // Optimized collaborators mapping for pagination
+  const flattenedCollaborators = useMemo(() => {
+    if (!collaborators) return [];
+    return collaborators.flatMap((collab) => {
+      const clientLinks =
+        collab.links?.filter(
+          (l: ColaboradorCliente) => l.cliente_id?.toString() === id,
+        ) || [];
+      return clientLinks.map((link: ColaboradorCliente, linkIdx: number) => ({
+        ...collab,
+        link,
+        uniqueKey: `${collab.id}-${linkIdx}`
+      }));
+    });
+  }, [collaborators, id]);
+
   const stats = useMemo(() => {
     const totalUnits = unidades?.length || 0;
-    const totalVinculos =
-      collaborators?.reduce((acc, curr) => {
-        const links =
-          curr.links?.filter(
-            (l: ColaboradorCliente) => l.cliente_id?.toString() === id,
-          ) || [];
-        return acc + links.length;
-      }, 0) || 0;
+    const totalVinculos = flattenedCollaborators.length;
 
     return { totalUnits, totalVinculos };
-  }, [unidades, collaborators, id]);
+  }, [unidades, flattenedCollaborators]);
 
   useEffect(() => {
     if (client) {
-      setPageTitle(client.nome_fantasia);
+      setPageTitle("Cliente");
     } else if (!isClientLoading) {
       setPageTitle("Cliente não encontrado");
     }
@@ -240,16 +256,7 @@ export default function ClientDetails() {
               <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
                 {client.nome_fantasia}
               </h1>
-              <span
-                className={cn(
-                  "text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider",
-                  client.ativo
-                    ? "bg-green-100 text-green-700"
-                    : "bg-rose-100 text-rose-700",
-                )}
-              >
-                {client.ativo ? "Ativo" : "Inativo"}
-              </span>
+              <StatusBadge status={client.ativo} className="text-xs uppercase tracking-wider" />
             </div>
           </div>
 
@@ -409,16 +416,6 @@ export default function ClientDetails() {
                 <h3 className="text-xl font-extrabold text-gray-900">
                   Unidades / Filiais
                 </h3>
-                {unidades && unidades.length > 0 && (
-                <button
-                  type="button"
-                  className="flex items-center gap-1 text-primary font-bold text-sm hover:underline"
-                  onClick={() => setIsUnitsListOpen(true)}
-                >
-                  Ver todas
-                  <ArrowUpRight className="h-3.5 w-3.5" />
-                </button>
-                )}
               </div>
 
               {isUnidadesLoading ? (
@@ -446,81 +443,113 @@ export default function ClientDetails() {
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4">
-                  {unidades.map((unidade) => (
-                    <div
-                      key={unidade.id}
-                      className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow group"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                        {/* Left: Icon + Info */}
-                        <div className="flex gap-4">
-                          <div className="mt-1 shrink-0">
-                            <MapPinned className="h-7 w-7 text-[#136dec]" />
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
-                                {unidade.nome_unidade}
-                              </h4>
-                              <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-all duration-300">
-                                <button
-                                  type="button"
-                                  className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
-                                  onClick={() => handleEditUnidade(unidade)}
-                                >
-                                  <Edit2 className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
-                                  onClick={() => handleDeleteUnidade(unidade)}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
+                <div className="flex flex-col gap-6">
+                  <div className="relative overflow-hidden min-h-[400px]">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={unitPage}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-col gap-4"
+                      >
+                        {unidades?.slice((unitPage - 1) * unitsPerPage, unitPage * unitsPerPage).map((unidade) => (
+                          <div
+                            key={unidade.id}
+                            className="bg-white px-8 py-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow group cursor-pointer relative"
+                            onClick={() => navigate(`/clientes/${id}/unidades/${unidade.id}`)}
+                          >
+                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                              {/* Left: Icon + Info */}
+                              <div className="flex gap-4">
+                                <div className="mt-1 shrink-0">
+                                  <div className="p-2.5 bg-[#136dec]/5 rounded-xl group-hover:bg-[#136dec]/10 transition-colors">
+                                    <MapPinned className="h-6 w-6 text-[#136dec]" />
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <h4 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
+                                      {unidade.nome_unidade}
+                                    </h4>
+                                    <StatusBadge status={unidade.ativo} className="text-[10px] uppercase tracking-wider h-5" />
+                                    <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-all duration-300">
+                                      <button
+                                        type="button"
+                                        className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleEditUnidade(unidade);
+                                        }}
+                                      >
+                                        <Edit2 className="h-3.5 w-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteUnidade(unidade);
+                                        }}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-gray-500">
+                                    CNPJ: {cnpjMask(unidade.cnpj)}
+                                  </p>
+                                  <p className="text-sm text-gray-500 max-w-md capitalize">
+                                    {unidade.logradouro.toLowerCase()}, {unidade.numero}
+                                    {unidade.complemento && ` - ${unidade.complemento}`}.
+                                    {' '}{unidade.bairro.toLowerCase()}, {unidade.cidade.toLowerCase()} - {unidade.estado}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Right: KM Badge + Scale */}
+                              <div className="flex flex-col items-end gap-3 shrink-0">
+                                <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
+                                  <Zap className="h-4 w-4 text-primary" />
+                                  <span className="text-xs font-semibold text-gray-900">
+                                    {unidade.km_contratados || 0} KM / Mês
+                                  </span>
+                                </div>
+                                <ScaleIndicators activeDays={unidade.escala_semanal || []} />
                               </div>
                             </div>
-                            <p className="text-sm text-gray-500">
-                              CNPJ: {cnpjMask(unidade.cnpj)}
-                            </p>
-                            <p className="text-sm text-gray-500 max-w-md capitalize">
-                              {unidade.logradouro.toLowerCase()}, {unidade.numero}
-                              {unidade.complemento && ` - ${unidade.complemento}`}.
-                              {' '}{unidade.bairro.toLowerCase()}, {unidade.cidade.toLowerCase()} - {unidade.estado}
-                            </p>
                           </div>
-                        </div>
+                        ))}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
 
-                        {/* Right: KM Badge + Scale */}
-                        <div className="flex flex-col items-end gap-3 shrink-0">
-                          <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
-                            <Zap className="h-4 w-4 text-primary" />
-                            <span className="text-xs font-bold text-gray-900">
-                              {unidade.km_contratados || 0} KM / Motoboy
-                            </span>
-                          </div>
-                          <div className="flex gap-1.5">
-                            {DIAS_SEMANA.map((day) => {
-                              const isActive = unidade.escala_semanal?.includes(day.id);
-                              return (
-                                <div
-                                  key={day.id}
-                                  className={cn(
-                                    "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold",
-                                    isActive
-                                      ? "bg-primary text-white"
-                                      : "bg-gray-100 text-gray-400",
-                                  )}
-                                >
-                                  {day.label.substring(0, 1)}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
+                  {unidades && unidades.length > unitsPerPage && (
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <p className="text-sm text-gray-500 font-medium">
+                        Página {unitPage} de {Math.ceil(unidades.length / unitsPerPage)}
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={unitPage === 1}
+                          onClick={(e) => { e.stopPropagation(); setUnitPage(prev => Math.max(1, prev - 1)); }}
+                          className="p-2 rounded-xl border border-gray-200 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                        >
+                          <ChevronLeft className="h-5 w-5 text-gray-600" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={unitPage >= Math.ceil(unidades.length / unitsPerPage)}
+                          onClick={(e) => { e.stopPropagation(); setUnitPage(prev => prev + 1); }}
+                          className="p-2 rounded-xl border border-gray-200 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                        >
+                          <ChevronRight className="h-5 w-5 text-gray-600" />
+                        </button>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </section>
@@ -529,18 +558,8 @@ export default function ClientDetails() {
             <section className="flex flex-col gap-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-extrabold text-gray-900">
-                  Colaboradores Designados
+                  Colaboradores
                 </h3>
-                {collaborators && collaborators.length > 0 && (
-                <button
-                  type="button"
-                  className="flex items-center gap-1 text-primary font-bold text-sm hover:underline"
-                  onClick={() => setIsCollabsListOpen(true)}
-                >
-                  Ver Todos
-                  <ArrowUpRight className="h-3.5 w-3.5" />
-                </button>
-                )}
               </div>
 
               {isCollabsLoading ? (
@@ -548,86 +567,76 @@ export default function ClientDetails() {
                   <Skeleton className="h-20 rounded-xl" />
                   <Skeleton className="h-20 rounded-xl" />
                 </div>
-              ) : !collaborators || collaborators.length === 0 ? (
+              ) : flattenedCollaborators.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-200">
                   <p className="text-gray-400 font-bold">
                     Nenhum colaborador/turno vinculado a este cliente.
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {collaborators.flatMap((collab) => {
-                    const clientLinks =
-                      collab.links?.filter(
-                        (l: ColaboradorCliente) =>
-                          l.cliente_id?.toString() === id,
-                      ) || [];
-                    return clientLinks.map(
-                      (link: ColaboradorCliente, linkIdx: number) => {
-                        const unit = unidades?.find(
-                          (u) => u.id === link.unidade_id,
-                        );
-                        const shiftDays =
-                          link.horarios?.map((h: any) => h.dia_semana) || [];
-                        const unitDays = unit?.escala_semanal || [
-                          1, 2, 3, 4, 5, 6, 0,
-                        ];
+                <div className="flex flex-col gap-6">
+                  <div className="relative overflow-hidden min-h-[300px]">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={collabPage}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                      >
+                        {flattenedCollaborators.slice((collabPage - 1) * collabsPerPage, collabPage * collabsPerPage).map((collab) => {
+                          const unit = unidades?.find(
+                            (u) => u.id === collab.link.unidade_id,
+                          );
+                          const shiftDays = collab.link.horarios?.map((h: any) => h.dia_semana) || [];
+                          const unitDays = unit?.escala_semanal || [1, 2, 3, 4, 5, 6, 0];
+                          const shiftInterval = collab.link.horarios?.[0]
+                            ? `${collab.link.horarios[0].hora_inicio.substring(0, 5)} - ${collab.link.horarios[0].hora_fim.substring(0, 5)}`
+                            : "S/ Horário";
 
-                        return (
-                          <div
-                            key={`${collab.id}-${linkIdx}`}
-                            className="bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer"
-                            onClick={() =>
-                              navigate(`/colaboradores/${collab.id}`)
-                            }
-                          >
-                            {/* Top row: avatar + name + status */}
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-600 shrink-0">
-                                {collab.nome_completo.charAt(0)}
-                              </div>
-                              <div className="flex-grow min-w-0">
-                                <h5 className="text-sm font-bold text-gray-900">
-                                  {collab.nome_completo}
-                                </h5>
-                                <p className="text-xs text-gray-500">
-                                  {unit?.nome_unidade || 'S/ Unidade'} • Escala{' '}
-                                  {link.horarios?.[0]?.hora_inicio?.substring(0, 5) || '—'}h-
-                                  {link.horarios?.[0]?.hora_fim?.substring(0, 5) || '—'}h
-                                </p>
-                              </div>
-                              <StatusBadge
-                                status={collab.status}
-                                className="shrink-0 text-[10px]"
-                              />
-                            </div>
-                            {/* Scale row */}
-                            <div className="flex items-center gap-1.5 pt-2 border-t border-gray-50">
-                              {DIAS_SEMANA.filter((day) =>
-                                unitDays.includes(day.id),
-                              ).map((day) => {
-                                const isActiveInShift = shiftDays.includes(day.id);
-                                return (
-                                  <div
-                                    key={day.id}
-                                    title={day.label}
-                                    className={cn(
-                                      "w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold",
-                                      isActiveInShift
-                                        ? "bg-primary text-white"
-                                        : "bg-gray-100 text-gray-400",
-                                    )}
-                                  >
-                                    {day.label.substring(0, 1)}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      },
-                    );
-                  })}
+                          return (
+                            <CollaboratorCard
+                              key={collab.uniqueKey}
+                              name={collab.nome_completo}
+                              status={collab.status}
+                              unitName={unit?.nome_unidade}
+                              shiftInterval={shiftInterval}
+                              shiftDays={shiftDays}
+                              unitDays={unitDays}
+                              onClick={() => navigate(`/colaboradores/${collab.id}`)}
+                            />
+                          );
+                        })}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+
+                  {flattenedCollaborators.length > collabsPerPage && (
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <p className="text-sm text-gray-500 font-medium">
+                        Página {collabPage} de {Math.ceil(flattenedCollaborators.length / collabsPerPage)}
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={collabPage === 1}
+                          onClick={(e) => { e.stopPropagation(); setCollabPage(prev => Math.max(1, prev - 1)); }}
+                          className="p-2 rounded-xl border border-gray-200 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                        >
+                          <ChevronLeft className="h-5 w-5 text-gray-600" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={collabPage >= Math.ceil(flattenedCollaborators.length / collabsPerPage)}
+                          onClick={(e) => { e.stopPropagation(); setCollabPage(prev => prev + 1); }}
+                          className="p-2 rounded-xl border border-gray-200 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                        >
+                          <ChevronRight className="h-5 w-5 text-gray-600" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </section>
@@ -641,24 +650,6 @@ export default function ClientDetails() {
         onClose={() => setIsUnidadeDialogOpen(false)}
         clienteId={Number(id)}
         editingUnidade={editingUnidade}
-      />
-
-      <CollaboratorsListDialog
-        open={isCollabsListOpen}
-        onOpenChange={setIsCollabsListOpen}
-        collaborators={collaborators || []}
-        unidades={unidades || []}
-        clientId={id || ""}
-      />
-
-      <UnitsListDialog
-        open={isUnitsListOpen}
-        onOpenChange={setIsUnitsListOpen}
-        unidades={unidades || []}
-        onNavigate={(unidadeId) => {
-          setIsUnitsListOpen(false);
-          navigate(`/clientes/${id}/unidades/${unidadeId}`);
-        }}
       />
     </div>
   );

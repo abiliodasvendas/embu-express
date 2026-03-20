@@ -1,3 +1,4 @@
+import { StatusBadge } from "@/components/common/StatusBadge";
 import {
   Dialog,
   DialogContent,
@@ -13,10 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, User, Building2, Clock } from "lucide-react";
+import { Unidade, Usuario } from "@/types/database";
+import { Building2, Clock, Search, User } from "lucide-react";
 import { useState } from "react";
-import { Usuario, ColaboradorCliente, Unidade } from "@/types/database";
-import { StatusBadge } from "@/components/common/StatusBadge";
 
 interface CollaboratorsListDialogProps {
   open: boolean;
@@ -86,7 +86,7 @@ export function CollaboratorsListDialog({
                 {filteredLinks.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="h-40 text-center text-muted-foreground">
-                      Nenhum turno encontrado para os critérios de busca.
+                      Nenhum colaborador/turno encontrado para os critérios de busca.
                     </TableCell>
                   </TableRow>
                 ) : (

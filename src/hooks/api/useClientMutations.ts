@@ -4,7 +4,6 @@ import { clienteApi } from "@/services/api/cliente.api";
 import { Client } from "@/types/database";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { onlyNumbers } from "@/utils/string";
 
 import { ApiError } from "@/types/api";
 
@@ -19,9 +18,7 @@ export function useCreateClient() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { silent, ...clientData } = data;
       const payload = {
-        ...clientData,
-        cnpj: onlyNumbers(clientData.cnpj),
-        cep: onlyNumbers(clientData.cep),
+        ...clientData
       };
       return clienteApi.createCliente(payload as Partial<Client>);
     },
@@ -49,14 +46,14 @@ export function useUpdateClient() {
   return useMutation({
     mutationFn: ({ id, silent, ...data }: UpdateClientVariables) => {
       const payload = {
-        ...data,
-        cnpj: onlyNumbers(data.cnpj),
-        cep: onlyNumbers(data.cep),
+        ...data
       };
       return clienteApi.updateCliente(id, payload as Partial<Client>);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["unidades"] });
+      queryClient.invalidateQueries({ queryKey: ["unidade"] });
       queryClient.invalidateQueries({ queryKey: ["collaborators"] });
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
@@ -77,6 +74,8 @@ export function useToggleClientStatus() {
       clienteApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["unidades"] });
+      queryClient.invalidateQueries({ queryKey: ["unidade"] });
       queryClient.invalidateQueries({ queryKey: ["collaborators"] });
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
       queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });

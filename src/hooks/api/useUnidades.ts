@@ -12,3 +12,15 @@ export function useUnidades(clienteId?: number, options?: { enabled?: boolean })
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
+
+export function useUnidade(id?: number | string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["unidade", id],
+    queryFn: () => {
+      if (!id) return null;
+      return unidadeApi.getUnidade(Number(id));
+    },
+    enabled: !!id && (options?.enabled ?? true),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}

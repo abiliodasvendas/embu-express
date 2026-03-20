@@ -7,22 +7,18 @@ interface UseTimeRecordsParams {
   date: string; // YYYY-MM-DD
   searchTerm?: string;
   usuarioId?: string;
-  statusEntrada?: string;
-  statusSaida?: string;
   clienteId?: string;
   incluirTodos?: boolean;
 }
 
-export function useTimeRecords({ date, searchTerm, usuarioId, statusEntrada, statusSaida, clienteId, incluirTodos }: UseTimeRecordsParams) {
+export function useTimeRecords({ date, searchTerm, usuarioId, clienteId, incluirTodos }: UseTimeRecordsParams) {
   return useQuery({
-    queryKey: ["time-records", date, searchTerm, usuarioId, statusEntrada, statusSaida, clienteId, incluirTodos],
+    queryKey: ["time-records", date, searchTerm, usuarioId, clienteId, incluirTodos],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (date) params.append("data_referencia", date);
       if (searchTerm) params.append("searchTerm", searchTerm);
       if (usuarioId && usuarioId !== FilterOptions.TODOS) params.append("usuario_id", usuarioId);
-      if (statusEntrada && statusEntrada !== FilterOptions.TODOS) params.append("status_entrada", statusEntrada);
-      if (statusSaida && statusSaida !== FilterOptions.TODOS) params.append("status_saida", statusSaida);
       if (clienteId && clienteId !== FilterOptions.TODOS) params.append("cliente_id", clienteId);
       if (incluirTodos) params.append("incluir_todos", "true");
 

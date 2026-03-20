@@ -1,18 +1,12 @@
-import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { usePublicTimeTracking, usePublicCollaborators } from "@/hooks/api/usePublicClient";
-import { format } from "date-fns";
-import { FilterX, Users, Timer, Search } from "lucide-react";
+import { FilterX, Timer, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ListSkeleton } from "@/components/skeletons";
-import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { cn } from "@/lib/utils";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { FilterOptions } from "@/types/enums";
 import { DateNavigation } from "@/components/common/DateNavigation";
-
 import { useTimeTrackingViewModel } from "@/hooks";
 import { TimeTrackingList } from "@/components/features/timetracking/TimeTrackingList";
 import { TimeTrackingKpiFilters } from "@/components/features/timetracking/TimeTrackingKpiFilters";
@@ -87,22 +81,18 @@ export default function PublicTimeTracking() {
                     onFilterClick={vm.handleKpiClick}
                 />
 
-                {/* List Container - Responsivo Grid/Lista */}
-                {vm.isLoading ? (
-                    <ListSkeleton />
-                ) : vm.filteredRecords.length === 0 ? (
-                    <UnifiedEmptyState
-                        icon={FilterX}
-                        title="Nenhum registro encontrado"
-                        description="Não há registros de ponto para os filtros selecionados nesta data."
-                    />
-                ) : (
-                    <TimeTrackingList
-                        records={vm.filteredRecords}
-                        date={vm.date}
-                        showActions={false}
-                    />
-                )}
+                {/* List Container */}
+                <div className="space-y-4">
+                    {vm.isLoading ? (
+                        <ListSkeleton />
+                    ) : (
+                        <TimeTrackingList
+                            records={vm.filteredRecords}
+                            date={vm.date}
+                            showActions={false}
+                        />
+                    )}
+                </div>
             </div>
         </PullToRefreshWrapper>
     );

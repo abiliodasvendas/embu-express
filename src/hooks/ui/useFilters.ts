@@ -14,8 +14,6 @@ export interface UseFiltersOptions {
   clienteParam?: string;
   empresaParam?: string;
   usuarioParam?: string;
-  statusEntradaParam?: string;
-  statusSaidaParam?: string;
   turnoParam?: string;
   syncWithUrl?: boolean;
 }
@@ -37,10 +35,6 @@ export interface UseFiltersReturn {
   setSelectedEmpresa: (val: string | null | undefined) => void;
   selectedUsuario: string;
   setSelectedUsuario: (val: string | null | undefined) => void;
-  selectedStatusEntrada: string;
-  setSelectedStatusEntrada: (val: string | null | undefined) => void;
-  selectedStatusSaida: string;
-  setSelectedStatusSaida: (val: string | null | undefined) => void;
   selectedTurno: string;
   setSelectedTurno: (val: string | null | undefined) => void;
   hasActiveFilters: boolean;
@@ -94,12 +88,10 @@ export function useHierarchyFilters(options: { empresaParam?: string; clientePar
 }
 
 // 5. Hook para Filtros Específicos de Ponto
-export function usePontoFilters(options: { statusEntradaParam?: string; statusSaidaParam?: string; turnoParam?: string; syncWithUrl?: boolean } = {}) {
-  const { statusEntradaParam, statusSaidaParam, turnoParam, syncWithUrl = true } = options;
-  const [selectedStatusEntrada, setSelectedStatusEntrada] = useUrlState<string>({ key: statusEntradaParam || "stIn_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!statusEntradaParam && syncWithUrl });
-  const [selectedStatusSaida, setSelectedStatusSaida] = useUrlState<string>({ key: statusSaidaParam || "stOut_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!statusSaidaParam && syncWithUrl });
+export function usePontoFilters(options: { turnoParam?: string; syncWithUrl?: boolean } = {}) {
+  const { turnoParam, syncWithUrl = true } = options;
   const [selectedTurno, setSelectedTurno] = useUrlState<string>({ key: turnoParam || "tur_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!turnoParam && syncWithUrl });
-  return { selectedStatusEntrada, setSelectedStatusEntrada, selectedStatusSaida, setSelectedStatusSaida, selectedTurno, setSelectedTurno };
+  return { selectedTurno, setSelectedTurno };
 }
 
 // 6. Hook para Gestão Geral de Limpeza e Utilitários
@@ -144,8 +136,6 @@ export function useBatchFilters(options: UseFiltersOptions) {
           usuario: options.usuarioParam,
           usuarioId: options.usuarioParam,
           clienteId: options.clienteParam,
-          statusEntrada: options.statusEntradaParam,
-          statusSaida: options.statusSaidaParam,
           turno: options.turnoParam
       };
 
@@ -174,13 +164,13 @@ export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const categoria = useCategoryFilters(options.categoriaParam, options.syncWithUrl);
   const dates = useDateFilters({ mesParam: options.mesParam, anoParam: options.anoParam, syncWithUrl: options.syncWithUrl });
   const hierarchy = useHierarchyFilters({ empresaParam: options.empresaParam, clienteParam: options.clienteParam, usuarioParam: options.usuarioParam, syncWithUrl: options.syncWithUrl });
-  const ponto = usePontoFilters({ statusEntradaParam: options.statusEntradaParam, statusSaidaParam: options.statusSaidaParam, turnoParam: options.turnoParam, syncWithUrl: options.syncWithUrl });
+  const ponto = usePontoFilters({ turnoParam: options.turnoParam, syncWithUrl: options.syncWithUrl });
   
   const allParams = [
       options.searchParam || "search", options.statusParam || "status", options.periodoParam || "periodo",
       options.mesParam, options.anoParam, options.categoriaParam || "categoria",
       options.clienteParam, options.empresaParam, options.usuarioParam,
-      options.statusEntradaParam, options.statusSaidaParam, options.turnoParam
+      options.turnoParam
   ];
   
   const manager = useFiltersManager(allParams, options.syncWithUrl);

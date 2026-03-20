@@ -1,14 +1,14 @@
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatMinutes, formatTime, getManagementStatus } from "@/utils/ponto";
-import { Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { RegistroPonto } from "@/types/database";
-import { PONTO_STATUS_UI_CONFIG } from "@/config/ponto-ui";
-import { ManagementStatus } from "@/types/enums";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { PONTO_STATUS_UI_CONFIG } from "@/config/ponto-ui";
+import { cn } from "@/lib/utils";
+import { RegistroPonto } from "@/types/database";
+import { ManagementStatus } from "@/types/enums";
+import { formatMinutes, formatTime, getManagementStatus } from "@/utils/ponto";
+import { Clock } from "lucide-react";
 
 interface TimeRecordCardProps {
     record: RegistroPonto;
@@ -55,8 +55,8 @@ export function TimeRecordCard({
                             <h3 className="font-bold text-gray-900 leading-tight line-clamp-1">{record.usuario?.nome_completo}</h3>
                             <div className="flex flex-col gap-0.5 mt-0.5">
                                 {showClient && record.cliente?.nome_fantasia && (
-                                    <p className="text-[10px] font-bold text-primary/70 uppercase tracking-wide">
-                                        Cliente: {record.cliente.nome_fantasia}
+                                    <p className="text-[10px] font-semibold text-gray-900 uppercase tracking-wide">
+                                        {record.cliente.nome_fantasia}
                                     </p>
                                 )}
                                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">

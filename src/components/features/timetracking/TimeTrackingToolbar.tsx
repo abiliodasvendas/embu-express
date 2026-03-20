@@ -23,12 +23,11 @@ import {
   SheetTitle,
   SheetTrigger
 } from "@/components/ui/sheet";
-import { StatusVisualPonto, FilterOptions } from "@/types/enums";
+import { FilterOptions } from "@/types/enums";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { cn } from "@/lib/utils";
-import { getStatusLabel } from "@/utils/ponto";
 import { Plus, Search, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 
@@ -38,8 +37,6 @@ interface TimeTrackingToolbarProps {
   date: Date;
   onDateChange: (date: Date) => void;
   filters: {
-    statusEntrada: string;
-    statusSaida: string;
     usuarioId: string;
     clienteId: string;
     turno: string;
@@ -48,7 +45,9 @@ interface TimeTrackingToolbarProps {
   onRegister: () => void;
   collaborators: any[];
   clients: any[];
+  uniqueShifts: string[];
   onApplyFilters: (filters: any) => void;
+  onClearFilters: () => void;
   hasActiveFilters?: boolean;
 }
 
@@ -58,34 +57,22 @@ export function TimeTrackingToolbar({
   date,
   onDateChange,
   filters,
-  onFiltersChange, // Live update for Desktop
+  onFiltersChange,
   onRegister,
   collaborators,
   clients,
+  uniqueShifts,
   onApplyFilters,
-  hasActiveFilters // Passed from hook
+  onClearFilters,
+  hasActiveFilters
 }: TimeTrackingToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const uniqueShifts = useMemo(() => {
-    const shiftsSet = new Set<string>();
-    collaborators.forEach(collab => {
-      collab.links?.forEach((link: any) => {
-        if (link.hora_inicio && link.hora_fim) {
-          const label = `${link.hora_inicio.substring(0, 5)} - ${link.hora_fim.substring(0, 5)}`;
-          shiftsSet.add(label);
-        }
-      });
-    });
-    return Array.from(shiftsSet).sort();
-  }, [collaborators]);
 
   // Local state for Mobile Filter Sheet
   const [sheetFilters, setSheetFilters] = useState(filters);
   const [sheetSearch, setSheetSearch] = useState(searchTerm);
 
-  // Reset sheet state when opening
   const handleSheetOpenChange = (open: boolean) => {
     setIsSheetOpen(open);
     if (open) {
@@ -95,11 +82,8 @@ export function TimeTrackingToolbar({
   };
 
   const handleApply = () => {
-    // Batch apply
     onApplyFilters({
       searchTerm: sheetSearch,
-      statusEntrada: sheetFilters.statusEntrada,
-      statusSaida: sheetFilters.statusSaida,
       usuarioId: sheetFilters.usuarioId,
       clienteId: sheetFilters.clienteId,
       turno: sheetFilters.turno
@@ -108,18 +92,8 @@ export function TimeTrackingToolbar({
   };
 
   const clearFilters = () => {
-    onSearchChange("");
-    onApplyFilters({
-      statusEntrada: FilterOptions.TODOS,
-      statusSaida: FilterOptions.TODOS,
-      usuarioId: FilterOptions.TODOS,
-      clienteId: FilterOptions.TODOS,
-      turno: FilterOptions.TODOS,
-    });
-    // Also clear local sheet state to keep it in sync
+    onClearFilters();
     setSheetFilters({
-      statusEntrada: FilterOptions.TODOS,
-      statusSaida: FilterOptions.TODOS,
       usuarioId: FilterOptions.TODOS,
       clienteId: FilterOptions.TODOS,
       turno: FilterOptions.TODOS
@@ -130,24 +104,12 @@ export function TimeTrackingToolbar({
   const clearSheetFilters = () => {
     setSheetFilters(prev => ({
       ...prev,
-      statusEntrada: FilterOptions.TODOS,
-      statusSaida: FilterOptions.TODOS,
       clienteId: FilterOptions.TODOS,
       turno: FilterOptions.TODOS
-      // usuarioId is preserved
     }));
   };
 
-  // Determine which values to use (Desktop = props, Mobile Sheet = local)
-  // Actually, Desktop uses the same inputs?
-  // Use a helper to render inputs that switches based on context.
-
-  // Blue Dot logic: use hasActiveFilters prop from hook if available, else calc
-  const showIndicator = hasActiveFilters;
-
   const selectedCount = [
-    filters.statusEntrada,
-    filters.statusSaida,
     filters.usuarioId,
     filters.clienteId,
     filters.turno,
@@ -155,17 +117,7 @@ export function TimeTrackingToolbar({
   ].filter((v) => v && v !== FilterOptions.TODOS && v !== "").length;
 
   const FilterContent = ({ isSheet = false }) => {
-    // If isSheet, use setSheetFilters/sheetSearch. Else uses onFiltersChange/onSearchChange
-
-    // const currentSearch = isSheet ? sheetSearch : searchTerm; // searchTerm no longer used for Client
     const currentFilters = isSheet ? sheetFilters : filters;
-
-    /*
-    const updateSearch = (val: string) => {
-        if (isSheet) setSheetSearch(val);
-        else onSearchChange(val);
-    };
-    */
 
     const updateFilter = (key: string, val: string) => {
       if (isSheet) setSheetFilters(prev => ({ ...prev, [key]: val }));
@@ -174,7 +126,6 @@ export function TimeTrackingToolbar({
 
     return (
       <div className={cn("space-y-6", isSheet ? "px-6 pb-6" : "p-4")}>
-
         <div className="space-y-2">
           <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Cliente</Label>
           <Combobox
@@ -192,72 +143,23 @@ export function TimeTrackingToolbar({
           />
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Turno</Label>
-          <Select value={currentFilters.turno} onValueChange={(v) => updateFilter("turno", v)}>
-            <SelectTrigger className={cn(
-              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600",
-              isSheet && "h-12 bg-white"
-            )}>
-              <div className="flex items-center">
+        {/* Turno is moved to top row on Desktop, but kept in Sheet for Mobile */}
+        {isSheet && (
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Turno</Label>
+            <Select value={currentFilters.turno} onValueChange={(v) => updateFilter("turno", v)}>
+              <SelectTrigger className="h-12 bg-white rounded-xl border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600">
                 <SelectValue placeholder="Todos os Turnos" />
-              </div>
-            </SelectTrigger>
-            <SelectContent className="z-[10001]">
-              <SelectItem value={FilterOptions.TODOS}>Todos os Turnos</SelectItem>
-              {uniqueShifts.map(shift => (
-                <SelectItem key={shift} value={shift}>{shift}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Status Entrada</Label>
-          <Select value={currentFilters.statusEntrada} onValueChange={(v) => updateFilter("statusEntrada", v)}>
-            <SelectTrigger className={cn(
-              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600",
-              isSheet && "h-12 bg-white"
-            )}>
-              <div className="flex items-center">
-                <SelectValue placeholder="Status Entrada" />
-              </div>
-            </SelectTrigger>
-            <SelectContent className="z-[10001]">
-              <SelectItem value={FilterOptions.TODOS}>Todos os Status</SelectItem>
-              <SelectItem value={FilterOptions.INICIOU}>Iniciou (Batido)</SelectItem>
-              <SelectItem value={FilterOptions.NAO_INICIOU}>Não Iniciou (Geral)</SelectItem>
-              <SelectItem value={FilterOptions.EM_ATRASO}>Em Atraso (Sem Ponto)</SelectItem>
-              <SelectItem value={FilterOptions.AGUARDANDO}>Aguardando Turno</SelectItem>
-              <SelectItem value={StatusVisualPonto.ANTECIPADA}>Antecipada</SelectItem>
-              <SelectItem value={StatusVisualPonto.AUSENTE}>Faltou (Dia Todo)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Status Saída</Label>
-          <Select value={currentFilters.statusSaida} onValueChange={(v) => updateFilter("statusSaida", v)}>
-            <SelectTrigger className={cn(
-              "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600",
-              isSheet && "h-12 bg-white"
-            )}>
-              <div className="flex items-center">
-                <SelectValue placeholder="Status Saída" />
-              </div>
-            </SelectTrigger>
-            <SelectContent className="z-[10001]">
-              <SelectItem value={FilterOptions.TODOS}>Todos os Status</SelectItem>
-              <SelectItem value={FilterOptions.TRABALHANDO}>Trabalhando</SelectItem>
-              <SelectItem value={FilterOptions.CONCLUIU}>Concluiu</SelectItem>
-              <SelectItem value={FilterOptions.FALTA_SAIDA}>{getStatusLabel(StatusVisualPonto.PENDENTE, 'saida')}</SelectItem>
-              <SelectItem value={StatusVisualPonto.AMARELO}>Hora Extra</SelectItem>
-              <SelectItem value={StatusVisualPonto.VERMELHO}>HE Excessiva</SelectItem>
-              <SelectItem value={StatusVisualPonto.ANTECIPADA}>{getStatusLabel(StatusVisualPonto.ANTECIPADA, 'saida')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
+              </SelectTrigger>
+              <SelectContent className="z-[10001]">
+                <SelectItem value={FilterOptions.TODOS}>Todos os Turnos</SelectItem>
+                {uniqueShifts.map(shift => (
+                  <SelectItem key={shift} value={shift}>{shift}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
     );
   };
@@ -265,7 +167,6 @@ export function TimeTrackingToolbar({
   return (
     <div className="flex flex-col space-y-6 mb-6">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* 1. Date Navigation */}
         <DateNavigation date={date} onNavigate={onDateChange} />
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
@@ -295,6 +196,20 @@ export function TimeTrackingToolbar({
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            {!isMobile && (
+              <Select value={filters.turno} onValueChange={(v) => onFiltersChange("turno", v)}>
+                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600 w-[160px] shrink-0">
+                  <SelectValue placeholder="Todos os Turnos" />
+                </SelectTrigger>
+                <SelectContent className="z-[10001]">
+                  <SelectItem value={FilterOptions.TODOS}>Todos os Turnos</SelectItem>
+                  {uniqueShifts.map(shift => (
+                    <SelectItem key={shift} value={shift}>{shift}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
             {!isMobile && (
               <Popover>
                 <PopoverTrigger asChild>

@@ -3,7 +3,6 @@ import { useTimeRecordActions } from "@/hooks/business/useTimeRecordActions";
 import { useLayout } from "@/contexts/LayoutContext";
 import { RegistroPonto } from "@/types/database";
 import { FilterX } from "lucide-react";
-import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ManagementStatus } from "@/types/enums";
 import { getManagementStatus } from "@/utils/ponto";
 import { Card } from "@/components/ui/card";
@@ -78,23 +77,6 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
     });
   };
 
-  if (records.length === 0) {
-    return (
-      <UnifiedEmptyState
-        icon={FilterX}
-        title="Nenhum registro encontrado"
-        description="Não há registros de ponto para os filtros selecionados nesta data."
-      />
-    );
-  }
-
-  const grouped = records.reduce((acc, record) => {
-    const status = getManagementStatus(record, date);
-    if (!acc[status]) acc[status] = [];
-    acc[status].push(record);
-    return acc;
-  }, {} as Record<string, RegistroPonto[]>);
-
   const statusOrder = [
     { key: ManagementStatus.LATE, label: "Atrasados" },
     { key: ManagementStatus.ABSENT, label: "Falta" },
@@ -102,6 +84,14 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
     { key: ManagementStatus.WAITING, label: "Aguardando Início" },
     { key: ManagementStatus.DONE, label: "Finalizado" }
   ];
+
+  // Group records using the pre-calculated mgtStatus
+  const grouped = records.reduce((acc, record: any) => {
+    const status = record.mgtStatus || getManagementStatus(record, date);
+    if (!acc[status]) acc[status] = [];
+    acc[status].push(record);
+    return acc;
+  }, {} as Record<string, RegistroPonto[]>);
 
   return (
     <div className="space-y-12">

@@ -68,12 +68,8 @@ export function useTimeTrackingViewModel({
     const { searchTerm, setSearchTerm } = useSearchFilters("search", syncWithUrl);
     
     const { 
-        selectedStatusEntrada, setSelectedStatusEntrada, 
-        selectedStatusSaida, setSelectedStatusSaida, 
         selectedTurno, setSelectedTurno 
     } = usePontoFilters({
-        statusEntradaParam: "status_entrada",
-        statusSaidaParam: "status_saida",
         turnoParam: "turno",
         syncWithUrl
     });
@@ -87,12 +83,10 @@ export function useTimeTrackingViewModel({
         syncWithUrl
     });
 
-    const activeParams = ["search", "status_entrada", "status_saida", "usuario", "cliente", "turno"];
+    const activeParams = ["search", "usuario", "cliente", "turno"];
     const { hasActiveFilters: hasActiveFiltersFromUrl, clearFilters } = useFiltersManager(activeParams, syncWithUrl);
     
     const setFilters = useBatchFilters({
-        statusEntradaParam: "status_entrada",
-        statusSaidaParam: "status_saida",
         usuarioParam: "usuario",
         clienteParam: "cliente",
         turnoParam: "turno",
@@ -129,8 +123,9 @@ export function useTimeTrackingViewModel({
         });
     }, [handleEdit, handleDelete, openTimeRecordDetailsDialog]);
 
-    // 6. Apply Ultimate Filtering
-    const filteredRecords = useMemo(() => {
+    // 6. Apply Ultimate Filtering Strategy
+    // Stage 1: Filter by general criteria (Search, Client, Shift, User)
+    const baseFilteredRecords = useMemo(() => {
         return processedRecords.filter(record => {
             if (searchTerm) {
                 const search = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -152,52 +147,42 @@ export function useTimeTrackingViewModel({
                 if (shiftStr !== selectedTurno) return false;
             }
 
-            if (selectedStatusEntrada !== FilterOptions.TODOS) {
-                if (selectedStatusEntrada === FilterOptions.INICIOU && record.status_entrada !== StatusVisualPonto.VERDE) return false;
-                if (selectedStatusEntrada === FilterOptions.NAO_INICIOU && record.status_entrada === StatusVisualPonto.VERDE) return false;
-                if (selectedStatusEntrada === FilterOptions.EM_ATRASO && record.mgtStatus !== ManagementStatus.LATE) return false;
-                if (selectedStatusEntrada === FilterOptions.AGUARDANDO && record.mgtStatus !== ManagementStatus.WAITING) return false;
-            }
-
-            if (selectedStatusSaida !== FilterOptions.TODOS) {
-                if (selectedStatusSaida === FilterOptions.TRABALHANDO && record.mgtStatus !== ManagementStatus.WORKING) return false;
-                if (selectedStatusSaida === FilterOptions.CONCLUIU && record.mgtStatus !== ManagementStatus.DONE) return false;
-                if (selectedStatusSaida === FilterOptions.FALTA_SAIDA && record.mgtStatus !== ManagementStatus.ABSENT) return false;
-            }
-
-            if (activeKpiFilter && record.mgtStatus !== activeKpiFilter) return false;
-
             return true;
         });
-    }, [processedRecords, searchTerm, selectedUsuario, selectedCliente, selectedTurno, selectedStatusEntrada, selectedStatusSaida, activeKpiFilter]);
+    }, [processedRecords, searchTerm, selectedUsuario, selectedCliente, selectedTurno]);
 
+    // Stage 2: Calculate KPI counts based on Stage 1 (Independent of active KPI filter)
     const dynamicKpiCounts = useMemo(() => {
         const counts: Record<string, number> = { 
-            [ManagementStatus.ALL]: filteredRecords.length, 
+            [ManagementStatus.ALL]: baseFilteredRecords.length, 
             [ManagementStatus.LATE]: 0, 
             [ManagementStatus.WORKING]: 0, 
             [ManagementStatus.DONE]: 0, 
             [ManagementStatus.WAITING]: 0, 
             [ManagementStatus.ABSENT]: 0 
         };
-        filteredRecords.forEach(r => {
+        baseFilteredRecords.forEach(r => {
             if (counts[r.mgtStatus] !== undefined) {
                 counts[r.mgtStatus]++;
             }
         });
         return counts;
-    }, [filteredRecords]);
+    }, [baseFilteredRecords]);
+
+    // Stage 3: Final list further filtered by Active KPI card
+    const filteredRecords = useMemo(() => {
+        if (!activeKpiFilter) return baseFilteredRecords;
+        return baseFilteredRecords.filter(r => r.mgtStatus === activeKpiFilter);
+    }, [baseFilteredRecords, activeKpiFilter]);
 
     const activeFiltersCount = useMemo(() => {
         return [
             searchTerm,
-            selectedStatusEntrada,
-            selectedStatusSaida,
             selectedUsuario,
             selectedCliente,
             selectedTurno
         ].filter(v => v && v !== FilterOptions.TODOS).length;
-    }, [searchTerm, selectedStatusEntrada, selectedStatusSaida, selectedUsuario, selectedCliente, selectedTurno]);
+    }, [searchTerm, selectedUsuario, selectedCliente, selectedTurno]);
 
     const handleKpiClick = (status: ManagementStatus) => {
         if (status === ManagementStatus.ALL) {
@@ -227,8 +212,6 @@ export function useTimeTrackingViewModel({
         isActionLoading: createRecord.isPending || updateRecord.isPending || deleteRecord.isPending,
         searchTerm,
         activeKpiFilter,
-        selectedStatusEntrada,
-        selectedStatusSaida,
         selectedUsuario,
         selectedCliente,
         selectedTurno,
@@ -237,8 +220,6 @@ export function useTimeTrackingViewModel({
         // Handlers
         setDate,
         setSearchTerm,
-        setSelectedStatusEntrada,
-        setSelectedStatusSaida,
         setSelectedUsuario,
         setSelectedCliente,
         setSelectedTurno,

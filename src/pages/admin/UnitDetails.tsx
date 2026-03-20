@@ -376,7 +376,7 @@ export default function UnitDetails() {
                     <Users className="h-8 w-8 text-gray-200" />
                   </div>
                   <h4 className="text-lg font-bold text-gray-800">
-                    Nenhum colaborador designado
+                    Nenhum colaborador vinculado
                   </h4>
                   <p className="text-gray-400 mt-2 max-w-xs mx-auto text-sm">
                     Vincule colaboradores a esta unidade através da tela de

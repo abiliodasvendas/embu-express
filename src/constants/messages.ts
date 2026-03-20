@@ -125,7 +125,7 @@ export const messages = {
       faltas: "Faltas",
       rodagemKm: "Rodagem (KM)",
       saldoAtual: "Saldo Atual",
-      horasPerdidas: "Horas Perdidas",
+      totalEmHoras: "Total em Horas",
       diasAtuados: "Dias Atuados",
       saldoKm: "Saldo KM",
       data: "Data",

@@ -14,8 +14,10 @@ export interface PontoDiarioRelatorio {
     saida_hora: string | null;
     shift_entrada: string | null;
     shift_saida: string | null;
-    km_inicio: number | null;
-    km_fim: number | null;
+    entrada_km?: number | null;
+    saida_km?: number | null;
+    km_rodado: number;
+    unidade_nome: string | null;
 }
 
 export interface EspelhoPontoMensal {

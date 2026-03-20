@@ -193,7 +193,11 @@ export function PeriodSelectorToolbar({
                                        )}
                                    </Button>
                                 </SheetTrigger>
-                                <SheetContent side="bottom" className="rounded-t-[32px] border-t-0 bg-white p-0 overflow-hidden">
+                                <SheetContent 
+                                    side="bottom" 
+                                    className="rounded-t-[32px] border-t-0 bg-white p-0 overflow-hidden"
+                                    onOpenAutoFocus={(e) => e.preventDefault()}
+                                >
                                     <SheetHeader className="px-6 pt-6 pb-2 text-left">
                                         <SheetTitle className="text-xl font-black text-slate-800">{title}</SheetTitle>
                                         <SheetDescription>Ajuste o mês e turno para visualizar os dados.</SheetDescription>

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/services/api/client";
 import { RegistroPonto, Usuario, Client } from "@/types/database";
+import { EspelhoPontoMensal } from "@/types/ponto-relatorio";
 
 export function usePublicClient(uuid?: string) {
     return useQuery({
@@ -44,7 +45,7 @@ export function usePublicTimeTracking(uuid?: string, date?: string) {
 export function usePublicTimeMirror(uuid?: string, usuarioId?: string, mes?: number, ano?: number) {
     return useQuery({
         queryKey: ["public-time-mirror", uuid, usuarioId, mes, ano],
-        queryFn: async (): Promise<RegistroPonto[]> => {
+        queryFn: async (): Promise<EspelhoPontoMensal[]> => {
             if (!uuid || !usuarioId || !mes || !ano) return [];
             const { data } = await api.get(`/public/c/${uuid}/espelho-ponto/${usuarioId}`, {
                 params: { mes, ano }

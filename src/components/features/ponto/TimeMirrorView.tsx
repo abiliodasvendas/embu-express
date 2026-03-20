@@ -1,21 +1,21 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { Badge } from "@/components/ui/badge";
 import { ListSkeleton } from "@/components/skeletons";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useTimeMirror } from "@/hooks/api/useTimeMirror";
-import { cn } from "@/lib/utils";
-import { Calendar, Clock, TrendingDown, TrendingUp, Gauge, MapPin } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useLayout } from "@/contexts/LayoutContext";
-import { useTimeRecord } from "@/hooks/api/useTimeRecord";
-import { useDeletePonto } from "@/hooks/api/usePontoMutations";
-import { RegistroPonto } from "@/types/database";
-import { usePermissions } from "@/hooks/business/usePermissions";
-import { formatMinutes } from "@/utils/ponto";
+import { getMessage, messages } from "@/constants/messages";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useDeletePonto } from "@/hooks/api/usePontoMutations";
+import { useTimeMirror } from "@/hooks/api/useTimeMirror";
+import { useTimeRecord } from "@/hooks/api/useTimeRecord";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { cn } from "@/lib/utils";
+import { RegistroPonto } from "@/types/database";
 import { FilterOptions } from "@/types/enums";
 import { PontoDiarioRelatorio } from "@/types/ponto-relatorio";
-import { getMessage, messages } from "@/constants/messages";
+import { formatMinutes } from "@/utils/ponto";
+import { Calendar, Clock, Gauge, MapPin, TrendingDown } from "lucide-react";
+import { useEffect, useState } from "react";
 import { TimeMirrorDailyCard } from "./TimeMirrorDailyCard";
 
 interface TimeMirrorViewProps {
@@ -154,7 +154,7 @@ export function TimeMirrorView({
                         </div>
                         <div className="p-4 flex items-center justify-between bg-gray-50/50">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.horasPerdidas}</p>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.totalEmHoras}</p>
                                 <p className="text-lg font-black text-rose-600">
                                     {formatMinutes(kpis.horas_faltas)}
                                 </p>
@@ -180,8 +180,8 @@ export function TimeMirrorView({
                         <div className="p-4 flex items-center justify-between bg-gray-50/50">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.saldoKm}</p>
-                                <p className={cn("text-lg font-black", kpis.km_saldo >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                                    {kpis.km_saldo >= 0 ? `+${kpis.km_saldo}` : kpis.km_saldo} km
+                                <p className={cn("text-lg font-black", kpis.km_saldo <= 0 ? "text-emerald-600" : "text-rose-600")}>
+                                    {kpis.km_saldo <= 0 ? `+${Math.abs(kpis.km_saldo)}` : `-${kpis.km_saldo}`} km
                                 </p>
                             </div>
                             <div className="p-2 bg-slate-100 rounded-2xl">

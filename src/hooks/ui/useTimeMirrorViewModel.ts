@@ -1,17 +1,20 @@
 import { useMemo } from "react";
 import { useHierarchyFilters, useDateFilters, usePontoFilters, useFiltersManager, UseFiltersOptions } from "./useFilters";
 import { useTimeMirror } from "@/hooks/api/useTimeMirror";
+import { usePublicTimeMirror, usePublicCollaborators } from "@/hooks/api/usePublicClient";
 import { usePermissions } from "../business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { FilterOptions } from "@/types/enums";
 import { EspelhoPontoMensal } from "@/types/ponto-relatorio";
+import { Usuario } from "@/types/database";
 
 interface UseTimeMirrorViewModelOptions extends UseFiltersOptions {
   usuarioId?: string;
+  uuid?: string;
 }
 
 export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = {}) {
-  const { usuarioId: initialUsuarioId, ...filterOptions } = options;
+  const { usuarioId: initialUsuarioId, uuid, ...filterOptions } = options;
   const { can, profile } = usePermissions();
 
   const { syncWithUrl = true } = filterOptions;
@@ -42,14 +45,30 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
     ...manager
   };
 
-  const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
+  const { data: publicCollabs = [] } = usePublicCollaborators(uuid);
+  const collaborators = uuid ? (publicCollabs as Usuario[]) : undefined;
+
+  const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER) || !!uuid;
   const finalUsuarioId = initialUsuarioId || (canViewAll ? (filters.selectedUsuario === 'todos' ? undefined : filters.selectedUsuario) : profile?.id);
 
-  const { data: reportData = [], isLoading, refetch } = useTimeMirror(
+  // Admin Fetch
+  const { data: adminReportData = [], isLoading: isAdminLoading, refetch: refetchAdmin } = useTimeMirror(
+    !uuid ? (finalUsuarioId || undefined) : undefined,
+    filters.selectedMes,
+    filters.selectedAno
+  );
+
+  // Public Fetch
+  const { data: publicReportData = [], isLoading: isPublicLoading, refetch: refetchPublic } = usePublicTimeMirror(
+    uuid,
     finalUsuarioId || undefined,
     filters.selectedMes,
     filters.selectedAno
   );
+
+  const reportData = uuid ? publicReportData : adminReportData;
+  const isLoading = uuid ? isPublicLoading : isAdminLoading;
+  const refetch = uuid ? refetchPublic : refetchAdmin;
 
   // Seleciona o relatório do turno ativo
   const activeReport = useMemo(() => {
@@ -82,6 +101,7 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
     availableShifts,
     reportData, // Expor tudo se a view quiser gerenciar multiplos
     activeReport,
+    collaborators,
     isLoading,
     canViewAll,
     usuarioId: finalUsuarioId,
@@ -93,6 +113,6 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
     setShift: filters.setSelectedTurno,
     setUsuario: filters.setSelectedUsuario
   }), [
-    filters, activeReport, reportData, availableShifts, isLoading, canViewAll, finalUsuarioId, refetch
+    filters, activeReport, reportData, availableShifts, collaborators, isLoading, canViewAll, finalUsuarioId, refetch
   ]);
 }

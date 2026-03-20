@@ -63,12 +63,12 @@ export function TimeMirrorDailyCard({
 
             <CardContent className="p-4 md:py-3 md:px-6">
                 <div className={cn(
-                    "grid items-center gap-4",
-                    canViewAll ? "grid-cols-10" : "grid-cols-5",
+                    "grid gap-y-4 gap-x-2 md:gap-4 items-center",
+                    canViewAll ? "grid-cols-2 md:grid-cols-10" : "grid-cols-2 md:grid-cols-5",
                     isFuture && "opacity-60"
                 )}>
                     {/* Date & Client */}
-                    <div className="flex items-center gap-3 col-span-1 md:col-span-2">
+                    <div className="flex items-center gap-3 col-span-2 md:col-span-2">
                         <div className={cn(
                             "h-10 w-10 rounded-xl transition-colors flex flex-col items-center justify-center shrink-0",
                             isLack ? "bg-red-50" : isWorked ? "bg-emerald-50" : "bg-gray-50"
@@ -91,7 +91,7 @@ export function TimeMirrorDailyCard({
                                 {day.cliente_nome || (isNotVigente ? messages.ponto.labels.foraVigencia : messages.ponto.labels.semEscala)}
                             </h4>
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                                {labelStatus}
+                                {day.unidade_nome || labelStatus}
                             </p>
                         </div>
                     </div>
@@ -140,8 +140,8 @@ export function TimeMirrorDailyCard({
                             {/* KM Percorrido */}
                             <div className="text-center">
                                 <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{messages.ponto.labels.kmRodado}</p>
-                                <p className={cn("text-sm font-bold", (day.km_fim && day.km_inicio) ? "text-gray-700" : "text-gray-300")}>
-                                    {(day.km_fim && day.km_inicio) ? `${day.km_fim - day.km_inicio}km` : '---'}
+                                <p className={cn("text-sm font-bold", day.km_rodado > 0 ? "text-gray-700" : "text-gray-300")}>
+                                    {day.km_rodado > 0 ? `${day.km_rodado}km` : '---'}
                                 </p>
                             </div>
 
@@ -162,7 +162,7 @@ export function TimeMirrorDailyCard({
                             </div>
 
                             {/* Saldo Diário */}
-                            <div className="text-right col-span-1 md:col-span-1">
+                            <div className="text-right col-span-1 md:col-span-2">
                                 <p className="md:hidden text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{messages.ponto.labels.saldo}</p>
                                 {(isWorked || isLack) && (
                                     <Badge

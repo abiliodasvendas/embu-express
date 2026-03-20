@@ -44,8 +44,8 @@ export default function RegistrarPonto() {
                     bg: "bg-amber-50 border-amber-100",
                     text: "text-amber-700",
                     accent: "text-amber-600",
-                    timer: "text-amber-700 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]",
-                    badge: "bg-amber-500 text-white"
+                    timer: "text-amber-700 drop-shadow-[0_0_15px_rgba(245,158,11,0.2)]",
+                    badge: "bg-amber-100 text-amber-700 border border-amber-200"
                 };
             default:
                 return {
@@ -223,9 +223,13 @@ export default function RegistrarPonto() {
                             className="flex flex-col gap-6 py-4"
                         >
                             {/* Bloco Superior: Status, Timer e Cliente */}
-                            <Card className={`rounded-[3rem] border-none shadow-2xl overflow-hidden relative transition-all duration-700 ${colors.bg} ring-1 ring-black/5`}>
-                                <div className="absolute top-0 right-0 p-4 opacity-10">
-                                    <RefreshCw className={`w-24 h-24 ${vm.status === StatusPonto.TRABALHANDO ? 'animate-[spin_10s_linear_infinite]' : ''}`} />
+                            <Card className={`rounded-[3rem] border-none shadow-2xl overflow-hidden relative transition-all duration-700 ${colors.bg} ring-1 ring-black/5 ${vm.status === StatusPonto.PAUSADO ? 'shadow-amber-900/5' : ''}`}>
+                                <div className="absolute top-0 right-0 p-4 opacity-5">
+                                    {vm.status === StatusPonto.PAUSADO ? (
+                                        <Pause className="w-24 h-24 text-amber-900" />
+                                    ) : (
+                                        <RefreshCw className={`w-24 h-24 ${vm.status === StatusPonto.TRABALHANDO ? 'animate-[spin_10s_linear_infinite]' : ''}`} />
+                                    )}
                                 </div>
 
                                 <CardContent className="p-8 flex flex-col items-center justify-center text-center relative z-10">
@@ -235,7 +239,7 @@ export default function RegistrarPonto() {
 
                                     <div className="mb-2">
                                         <h3 className={`text-xl font-black ${colors.text} leading-tight`}>{vm.activeShift?.nome}</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{vm.activeShift?.horario || 'Horário Flexível'}</p>
+                                        <p className={`text-[10px] font-black ${vm.status === StatusPonto.PAUSADO ? 'text-amber-400' : 'text-slate-400'} uppercase tracking-[0.15em]`}>{vm.activeShift?.horario || 'Horário Flexível'}</p>
                                     </div>
 
                                     <div className={`text-5xl sm:text-7xl font-black font-mono tracking-tighter tabular-nums ${colors.timer} my-4`}>

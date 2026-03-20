@@ -444,7 +444,7 @@ export default function ClientDetails() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-6">
-                  <div className="relative overflow-hidden min-h-[400px]">
+                  <div className="relative overflow-hidden">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={unitPage}
@@ -575,7 +575,7 @@ export default function ClientDetails() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-6">
-                  <div className="relative overflow-hidden min-h-[300px]">
+                  <div className="relative overflow-hidden">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={collabPage}

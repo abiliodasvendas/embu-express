@@ -14,6 +14,7 @@ import {
 import {
   FINANCEIRO_STATUS,
   LANCAMENTO_TIPO,
+  CALENDARIO_STATUS,
 } from "@/constants/financeiro.constants";
 import { getMessage } from "@/constants/messages";
 import { PERMISSIONS } from "@/constants/permissions.enum";
@@ -79,9 +80,9 @@ export function FinancialReportView({
     refetch,
   } = useFinanceiro(usuarioId || undefined, selectedMonth, selectedYear);
 
-  const { 
-    handlePaymentMutation, 
-    confirmarAdiantamentoMutation, 
+  const {
+    handlePaymentMutation,
+    confirmarAdiantamentoMutation,
     desconfirmarAdiantamentoMutation,
     desfazerPagamentoMutation
   } = useFinanceiroMutations();
@@ -203,13 +204,13 @@ export function FinancialReportView({
                         className="rounded-2xl border-blue-600 text-blue-600 hover:bg-blue-50 font-bold h-11 px-6 shadow-sm transition-all"
                         disabled={confirmarAdiantamentoMutation.isPending}
                         onClick={() => {
-                          const valorTotalAdiantamento = extrato.totais?.total_adiantamento ?? 
+                          const valorTotalAdiantamento = extrato.totais?.total_adiantamento ??
                             extrato.resumo_por_cliente?.reduce((acc: number, r: ResumoClienteFinanceiro) => acc + Number(r.valores_fixos?.adiantamento_config || 0), 0) ?? 0;
 
                           openConfirmationDialog({
-                            title: "Confirmar Adiantamento",
-                            description: `Deseja confirmar o pagamento do adiantamento no valor de ${formatCurrency(valorTotalAdiantamento)}? Ao confirmar, este valor será descontado automaticamente do fechamento final.`,
-                            confirmText: "Confirmar",
+                            title: getMessage("financeiro.confirmacao.adiantamento.titulo"),
+                            description: `${getMessage("financeiro.confirmacao.adiantamento.descricao")} (${formatCurrency(valorTotalAdiantamento)})`,
+                            confirmText: getMessage("financeiro.confirmacao.adiantamento.botao"),
                             onConfirm: async () => {
                               await confirmarAdiantamentoMutation.mutateAsync({
                                 usuarioId,
@@ -222,7 +223,7 @@ export function FinancialReportView({
                         }}
                       >
                         <Wallet className="h-4 w-4 mr-2" />
-                        Confirmar Adiantamento
+                        {getMessage("financeiro.confirmacao.adiantamento.botao")}
                       </Button>
                     ) : (
                       <Button
@@ -231,9 +232,9 @@ export function FinancialReportView({
                         disabled={desconfirmarAdiantamentoMutation.isPending}
                         onClick={() => {
                           openConfirmationDialog({
-                            title: "Desfazer Adiantamento",
-                            description: "Deseja remover a confirmação do adiantamento? O valor não será mais descontado do fechamento deste mês.",
-                            confirmText: "Remover",
+                            title: getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo"),
+                            description: getMessage("financeiro.confirmacao.desfazer_adiantamento.descricao"),
+                            confirmText: getMessage("financeiro.confirmacao.desfazer_adiantamento.botao"),
                             variant: "destructive",
                             onConfirm: async () => {
                               await desconfirmarAdiantamentoMutation.mutateAsync({
@@ -247,7 +248,7 @@ export function FinancialReportView({
                         }}
                       >
                         <X className="h-4 w-4 mr-2" />
-                        Desfazer Adiantamento
+                        {getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo")}
                       </Button>
                     )}
 
@@ -285,9 +286,9 @@ export function FinancialReportView({
                       disabled={desfazerPagamentoMutation.isPending}
                       onClick={() => {
                         openConfirmationDialog({
-                          title: "Reabrir Fechamento",
-                          description: "Atenção: ao reabrir o fechamento, ele voltará a ser um rascunho. Importante: os valores serão recalculados com base nas informações atuais do cadastro do colaborador (como valor de contrato e bônus), o que pode alterar o resultado final. Deseja continuar?",
-                          confirmText: "Sim, Reabrir",
+                          title: getMessage("financeiro.confirmacao.reabrir.titulo"),
+                          description: getMessage("financeiro.confirmacao.reabrir.descricao"),
+                          confirmText: getMessage("financeiro.confirmacao.reabrir.botao"),
                           variant: "destructive",
                           onConfirm: async () => {
                             await desfazerPagamentoMutation.mutateAsync({
@@ -338,13 +339,13 @@ export function FinancialReportView({
                   <Calendar className="h-20 w-20" />
                 </div>
                 <CardContent className="p-8 relative z-10">
-                  <p className="text-emerald-100/70 uppercase font-black tracking-widest text-[10px] mb-3">
+                  <p className="text-indigo-100/70 uppercase font-black tracking-widest text-[10px] mb-3">
                     Total de Turnos
                   </p>
                   <h2 className="text-2xl font-black mb-1">
                     {formatCurrency(extrato.totais?.total_turnos || 0)}
                   </h2>
-                  <p className="text-[10px] text-emerald-100/60 font-medium">
+                  <p className="text-[10px] text-indigo-100/60 font-medium">
                     Soma dos turnos (contrato + ocorrências)
                   </p>
                 </CardContent>
@@ -362,7 +363,7 @@ export function FinancialReportView({
                   <h2 className="text-2xl font-black mb-1">
                     {formatCurrency(
                       (extrato.totais?.total_avulso || 0) +
-                        (extrato.totais?.total_mei || 0),
+                      (extrato.totais?.total_mei || 0),
                     )}
                   </h2>
                   <p className="text-[10px] text-indigo-100/60 font-medium">
@@ -397,33 +398,45 @@ export function FinancialReportView({
                           {resumo.nome_fantasia}
                         </h4>
                         <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                          {resumo.dias_ativos_no_mes < resumo.dias_base_mes && (
+                          {resumo.dias_trabalhados < resumo.dias_base_mes && (
                             <Badge
                               variant="secondary"
                               className="bg-blue-50 text-blue-600 hover:bg-blue-50 text-[10px] font-bold px-2.5 py-0.5 rounded-lg border-blue-100"
                             >
-                              {getMessage("financeiro.labels.criterioProRata")}
+                              Pagamento Proporcional {(() => {
+                                const dtIni = resumo.data_inicio ? new Date(resumo.data_inicio + 'T12:00:00') : null;
+                                const dtFim = resumo.data_fim ? new Date(resumo.data_fim + 'T12:00:00') : null;
+                                if (dtIni && dtIni.getUTCMonth() + 1 === selectedMonth && dtIni.getUTCFullYear() === selectedYear) return "(Início)";
+                                if (dtFim && dtFim.getUTCMonth() + 1 === selectedMonth && dtFim.getUTCFullYear() === selectedYear) return "(Término)";
+                                return "(Faltas)";
+                              })()}
                             </Badge>
                           )}
-                          {resumo.dias_ativos_no_mes < resumo.dias_base_mes && resumo.valores_fixos?.bonus_config > 0 && (
+                          {resumo.dias_trabalhados < resumo.dias_base_mes && resumo.valores_fixos?.bonus_config > 0 && (
                             <Badge
                               variant="secondary"
                               className="bg-amber-50 text-amber-600 hover:bg-amber-50 text-[10px] font-bold px-2.5 py-0.5 rounded-lg border-amber-100"
                             >
-                              Bônus não aplicado
+                              Sem bônus (Escala não atingida)
                             </Badge>
                           )}
                           {(resumo.data_inicio || resumo.data_fim) && (
                             <p className="text-[11px] text-gray-400 font-bold">
-                              {resumo.data_inicio
-                                ? `Início: ${resumo.data_inicio.split("-").reverse().join("/")}`
-                                : ""}
-                              {resumo.data_inicio && resumo.data_fim
-                                ? " · "
-                                : ""}
-                              {resumo.data_fim
-                                ? `Término: ${resumo.data_fim.split("-").reverse().join("/")}`
-                                : ""}
+                              {resumo.data_inicio && 
+                               new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
+                               new Date(resumo.data_inicio + 'T12:00:00').getUTCFullYear() === selectedYear &&
+                               `Início: ${resumo.data_inicio.split("-").reverse().join("/")}`
+                              }
+                              {resumo.data_inicio && resumo.data_fim && 
+                               new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
+                               new Date(resumo.data_fim + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
+                               " · "
+                              }
+                              {resumo.data_fim && 
+                               new Date(resumo.data_fim + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
+                               new Date(resumo.data_fim + 'T12:00:00').getUTCFullYear() === selectedYear &&
+                               `Término: ${resumo.data_fim.split("-").reverse().join("/")}`
+                              }
                             </p>
                           )}
                         </div>
@@ -449,33 +462,53 @@ export function FinancialReportView({
                             <span className="text-gray-400 font-black uppercase tracking-widest text-[10px]">
                               Período de Atuação
                             </span>
-                            <div className="flex items-center gap-4">
-                              <span className="text-xs font-bold text-gray-500">
-                                Base {resumo.dias_base_mes} dias
-                              </span>
-                              <Badge className="bg-blue-600 text-white font-black px-3 py-1 rounded-xl text-[11px] shadow-sm">
-                                {resumo.dias_ativos_no_mes} dias ativos
-                              </Badge>
+                            <div className="flex flex-wrap items-center gap-4">
+                              <div className="flex items-center gap-1.5 grayscale opacity-50">
+                                <span className="text-[9px] font-bold">Base Mês:</span>
+                                <Badge variant="outline" className="text-[10px] font-black h-5 px-1.5 opacity-60">
+                                  {resumo.dias_base_mes}d
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[9px] font-bold text-gray-500">Meta Turno:</span>
+                                <Badge variant="secondary" className="bg-gray-100 text-[10px] font-black h-5 px-1.5">
+                                  {resumo.dias_esperados_turno}d
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[9px] font-bold text-blue-600">Trabalhados:</span>
+                                <Badge className="bg-blue-600 text-white font-black h-5 px-1.5 shadow-sm text-[10px]">
+                                  {resumo.dias_trabalhados}d
+                                </Badge>
+                              </div>
                             </div>
                           </div>
-                          {resumo.datas_ativas &&
-                            resumo.datas_ativas.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                {resumo.datas_ativas.map(
-                                  (dateString: string) => {
-                                    const [, , day] = dateString.split("-");
-                                    return (
-                                      <div
-                                        key={dateString}
-                                        className="h-8 w-10 flex items-center justify-center rounded-lg bg-gray-50 border border-gray-100 text-[11px] font-bold text-gray-600 shadow-sm"
-                                      >
-                                        {day}
-                                      </div>
-                                    );
-                                  },
+
+                          <div className="flex flex-wrap justify-center sm:justify-start gap-2.5 mt-4 p-3 bg-white rounded-2xl border border-gray-100 shadow-inner">
+                            {resumo.calendario_visual?.map((dia) => (
+                              <div
+                                key={dia.data}
+                                title={`${dia.dia_semana_longo}, ${dia.data_br} - ${dia.status}`}
+                                className={cn(
+                                  "h-12 w-10 flex flex-col items-center justify-center rounded-xl transition-all border shadow-sm shrink-0",
+                                  dia.status === CALENDARIO_STATUS.TRABALHADO && "bg-emerald-500 text-white border-emerald-600 scale-105 z-10",
+                                  dia.status === CALENDARIO_STATUS.FALTA && "bg-red-500 text-white border-red-600 shadow-red-200/50",
+                                  dia.status === CALENDARIO_STATUS.FUTURO && "bg-gray-50 text-gray-300 border-gray-100 border-dashed opacity-50",
+                                  dia.status === CALENDARIO_STATUS.NAO_VIGENTE && "bg-gray-100/50 text-gray-200 border-transparent opacity-30"
                                 )}
+                              >
+                                <span className={cn(
+                                  "text-[7px] font-black leading-none mb-0.5 opacity-70 uppercase tracking-tighter",
+                                  (dia.status === CALENDARIO_STATUS.TRABALHADO || dia.status === CALENDARIO_STATUS.FALTA) ? "text-white" : "text-gray-400"
+                                )}>
+                                  {dia.dia_semana_curto}
+                                </span>
+                                <span className="text-[11px] font-black leading-none">
+                                  {dia.dia}
+                                </span>
                               </div>
-                            )}
+                            ))}
+                          </div>
                         </div>
 
                         {/* Composição do Contrato */}
@@ -544,7 +577,7 @@ export function FinancialReportView({
                           </div>
                           <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center px-2">
                             <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                                Base mensal (Cheio)
+                              Base mensal (Cheio)
                             </span>
                             <span className="text-lg font-black text-gray-400 line-through opacity-40">
                               {formatCurrency(resumo.saldo_fixo_original)}
@@ -556,9 +589,9 @@ export function FinancialReportView({
                             </span>
                             <span className="text-lg font-black text-blue-600">
                               {formatCurrency(
-                                (resumo.saldo_fixo_original /
+                                ((resumo.saldo_fixo_original - (resumo.valores_fixos.bonus_config || 0)) /
                                   resumo.dias_base_mes) *
-                                  resumo.dias_ativos_no_mes,
+                                resumo.dias_trabalhados + (resumo.valores_fixos.bonus || 0),
                               )}
                             </span>
                           </div>
@@ -583,7 +616,7 @@ export function FinancialReportView({
                               .filter(
                                 (o) =>
                                   o.colaborador_cliente_id ===
-                                    resumo.id_vinculo && o.impacto_financeiro,
+                                  resumo.id_vinculo && o.impacto_financeiro,
                               )
                               .map((occ, oIdx) => (
                                 <div
@@ -601,7 +634,7 @@ export function FinancialReportView({
                                       )}
                                     >
                                       {occ.tipo_lancamento ===
-                                      LANCAMENTO_TIPO.ENTRADA ? (
+                                        LANCAMENTO_TIPO.ENTRADA ? (
                                         <ArrowUpCircle className="h-5 w-5" />
                                       ) : (
                                         <ArrowDownCircle className="h-5 w-5" />
@@ -630,7 +663,7 @@ export function FinancialReportView({
                                     )}
                                   >
                                     {occ.tipo_lancamento ===
-                                    LANCAMENTO_TIPO.ENTRADA
+                                      LANCAMENTO_TIPO.ENTRADA
                                       ? "+"
                                       : "-"}{" "}
                                     {formatCurrency(occ.valor)}
@@ -654,12 +687,12 @@ export function FinancialReportView({
                                 >
                                   {resumo.creditos_ocorrencia -
                                     resumo.debitos_ocorrencia >=
-                                  0
+                                    0
                                     ? "+"
                                     : ""}
                                   {formatCurrency(
                                     resumo.creditos_ocorrencia -
-                                      resumo.debitos_ocorrencia,
+                                    resumo.debitos_ocorrencia,
                                   )}
                                 </p>
                               </div>
@@ -686,129 +719,129 @@ export function FinancialReportView({
                 (extrato.ocorrencias as Ocorrencia[]).filter(
                   (o) => !o.colaborador_cliente_id && o.impacto_financeiro,
                 ).length > 0) && (
-                <div className="mt-12 space-y-6">
-                  <div className="flex items-center gap-3 ml-2">
-                    <div className="h-1 w-8 bg-indigo-600 rounded-full" />
-                    <h3 className="text-xl font-black text-gray-800 tracking-tight">
-                      Ocorrências Avulsas
-                    </h3>
-                  </div>
-                  <Card className="border-none shadow-lg rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 transition-all hover:shadow-xl group">
-                    <CardContent className="p-10">
-                      <div className="space-y-4">
-                        {/* MEI Integrado (se houver valor) */}
-                        {extrato.totais?.total_mei > 0 && (
-                          <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ">
-                            <div className="flex items-center gap-4">
-                              <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/occ:scale-110 bg-emerald-50 text-emerald-600">
-                                <ArrowUpCircle className="h-5 w-5" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-black text-gray-800 tracking-tight">
-                                  MEI Consolidado
-                                </p>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase">
-                                  Pro-Rata do Período
-                                </p>
-                              </div>
-                            </div>
-                            <span className="text-sm font-black text-emerald-600">
-                              + {formatCurrency(extrato.totais.total_mei)}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Ocorrências Avulsas */}
-                        {(extrato.ocorrencias as Ocorrencia[])
-                          .filter(
-                            (o) =>
-                              !o.colaborador_cliente_id && o.impacto_financeiro,
-                          )
-                          .map((occ, oIdx: number) => (
-                            <div
-                              key={oIdx}
-                              className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ"
-                            >
+                  <div className="mt-12 space-y-6">
+                    <div className="flex items-center gap-3 ml-2">
+                      <div className="h-1 w-8 bg-indigo-600 rounded-full" />
+                      <h3 className="text-xl font-black text-gray-800 tracking-tight">
+                        Ocorrências Avulsas
+                      </h3>
+                    </div>
+                    <Card className="border-none shadow-lg rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 transition-all hover:shadow-xl group">
+                      <CardContent className="p-10">
+                        <div className="space-y-4">
+                          {/* MEI Integrado (se houver valor) */}
+                          {extrato.totais?.total_mei > 0 && (
+                            <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ">
                               <div className="flex items-center gap-4">
-                                <div
-                                  className={cn(
-                                    "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/occ:scale-110",
-                                    occ.tipo_lancamento ===
-                                      LANCAMENTO_TIPO.ENTRADA
-                                      ? "bg-emerald-50 text-emerald-600"
-                                      : "bg-red-50 text-red-600",
-                                  )}
-                                >
-                                  {occ.tipo_lancamento ===
-                                  LANCAMENTO_TIPO.ENTRADA ? (
-                                    <ArrowUpCircle className="h-5 w-5" />
-                                  ) : (
-                                    <ArrowDownCircle className="h-5 w-5" />
-                                  )}
+                                <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/occ:scale-110 bg-emerald-50 text-emerald-600">
+                                  <ArrowUpCircle className="h-5 w-5" />
                                 </div>
                                 <div>
                                   <p className="text-sm font-black text-gray-800 tracking-tight">
-                                    {occ.tipo?.descricao}
+                                    MEI Consolidado
                                   </p>
                                   <p className="text-[10px] text-gray-400 font-bold uppercase">
-                                    {format(
-                                      new Date(occ.data_ocorrencia),
-                                      "PPP",
-                                      { locale: ptBR },
-                                    )}
+                                    Pro-Rata do Período
                                   </p>
                                 </div>
                               </div>
-                              <span
-                                className={cn(
-                                  "text-sm font-black",
-                                  occ.tipo_lancamento ===
-                                    LANCAMENTO_TIPO.ENTRADA
-                                    ? "text-emerald-600"
-                                    : "text-red-500",
-                                )}
-                              >
-                                {occ.tipo_lancamento ===
-                                LANCAMENTO_TIPO.ENTRADA
-                                  ? "+"
-                                  : "-"}{" "}
-                                {formatCurrency(occ.valor)}
+                              <span className="text-sm font-black text-emerald-600">
+                                + {formatCurrency(extrato.totais.total_mei)}
                               </span>
                             </div>
-                          ))}
+                          )}
 
-                        <div className="pt-4 border-t border-gray-100 mt-2">
-                          <div className="flex items-center justify-between px-2">
-                            <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                              Saldo Total Avulso
-                            </span>
-                            <p
-                              className={cn(
-                                "text-lg font-black",
-                                (extrato.totais?.total_avulso || 0) +
+                          {/* Ocorrências Avulsas */}
+                          {(extrato.ocorrencias as Ocorrencia[])
+                            .filter(
+                              (o) =>
+                                !o.colaborador_cliente_id && o.impacto_financeiro,
+                            )
+                            .map((occ, oIdx: number) => (
+                              <div
+                                key={oIdx}
+                                className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ"
+                              >
+                                <div className="flex items-center gap-4">
+                                  <div
+                                    className={cn(
+                                      "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/occ:scale-110",
+                                      occ.tipo_lancamento ===
+                                        LANCAMENTO_TIPO.ENTRADA
+                                        ? "bg-emerald-50 text-emerald-600"
+                                        : "bg-red-50 text-red-600",
+                                    )}
+                                  >
+                                    {occ.tipo_lancamento ===
+                                      LANCAMENTO_TIPO.ENTRADA ? (
+                                      <ArrowUpCircle className="h-5 w-5" />
+                                    ) : (
+                                      <ArrowDownCircle className="h-5 w-5" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-black text-gray-800 tracking-tight">
+                                      {occ.tipo?.descricao}
+                                    </p>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase">
+                                      {format(
+                                        new Date(occ.data_ocorrencia),
+                                        "PPP",
+                                        { locale: ptBR },
+                                      )}
+                                    </p>
+                                  </div>
+                                </div>
+                                <span
+                                  className={cn(
+                                    "text-sm font-black",
+                                    occ.tipo_lancamento ===
+                                      LANCAMENTO_TIPO.ENTRADA
+                                      ? "text-emerald-600"
+                                      : "text-red-500",
+                                  )}
+                                >
+                                  {occ.tipo_lancamento ===
+                                    LANCAMENTO_TIPO.ENTRADA
+                                    ? "+"
+                                    : "-"}{" "}
+                                  {formatCurrency(occ.valor)}
+                                </span>
+                              </div>
+                            ))}
+
+                          <div className="pt-4 border-t border-gray-100 mt-2">
+                            <div className="flex items-center justify-between px-2">
+                              <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                                Saldo Total Avulso
+                              </span>
+                              <p
+                                className={cn(
+                                  "text-lg font-black",
+                                  (extrato.totais?.total_avulso || 0) +
+                                    (extrato.totais?.total_mei || 0) >=
+                                    0
+                                    ? "text-blue-600"
+                                    : "text-red-600",
+                                )}
+                              >
+                                {(extrato.totais?.total_avulso || 0) +
                                   (extrato.totais?.total_mei || 0) >=
                                   0
-                                  ? "text-blue-600"
-                                  : "text-red-600",
-                              )}
-                            >
-                              {(extrato.totais?.total_avulso || 0) +
-                                (extrato.totais?.total_mei || 0) >=
-                              0
-                                ? "+"
-                                : ""}
-                              {formatCurrency(
-                                (extrato.totais?.total_avulso || 0) +
+                                  ? "+"
+                                  : ""}
+                                {formatCurrency(
+                                  (extrato.totais?.total_avulso || 0) +
                                   (extrato.totais?.total_mei || 0),
-                              )}
-                            </p>
+                                )}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
             </div>
           </div>
         ) : (

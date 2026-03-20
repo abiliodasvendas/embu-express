@@ -80,6 +80,73 @@ export const messages = {
       criado: "Registro criado com sucesso!",
       excluido: "Registro excluído com sucesso!",
     },
+    labels: {
+      nenhumColaborador: "Nenhum colaborador selecionado",
+      escolhaColaborador: "Escolha um colaborador acima para visualizar o espelho de ponto.",
+      semRegistros: "Sem registros neste mês",
+      semRegistrosDesc: "Não foram encontrados pontos nem escala configurada para este colaborador no período selecionado.",
+      carregandoDados: "Carregando dados...",
+      buscandoLocalizacao: "Buscando localização...",
+      localizacaoRequerida: "Localização Requerida",
+      localizacaoNegada: "A permissão de localização foi negada. Precisamos do GPS para validar seu registro.",
+      localizacaoSinalFraco: "Sinal de GPS indisponível ou fraco. Verifique se o GPS está ativo e ao ar livre.",
+      localizacaoAguardando: "Aguardando sinal de GPS para liberar o registro com segurança.",
+      abrirConfiguracoes: "Abrir Configurações",
+      tentarNovamente: "Tentar Novamente",
+      vinculosNaoEncontrados: "Vínculos não encontrados",
+      semTurnosAtivos: "Não identificamos turnos ativos no seu perfil. Entre em contato com seu gestor.",
+      atualizarDados: "Atualizar Dados",
+      aguardandoInicio: "Aguardando Início",
+      emServico: "Em Serviço",
+      emPausa: "Em Pausa",
+      configuracaoTurno: "Configuração do Turno",
+      selecioneTurno: "Selecione o Turno",
+      vinculoAtivo: "Vínculo Ativo",
+      registrandoTempoReal: "Registrando em tempo real",
+      iniciarTurno: "INICIAR TURNO",
+      pausa: "PAUSA",
+      encerrarTurno: "ENCERRAR TURNO",
+      encerrar: "Encerrar",
+      retomarTrabalho: "RETOMAR TRABALHO",
+      localizacaoAtiva: "Localização Ativa",
+      localizacaoPendente: "Localização Pendente",
+      ativa: "Ativa",
+      indisponivel: "Indisponível",
+      obtendo: "Obtendo...",
+      semEscala: "Sem escala hoje",
+      entrada: "Entrada",
+      pausas: "Pausas",
+      kmTotal: "KM Total",
+      kmServico: "KM em Serviço",
+      kmPausa: "KM em Pausa",
+      detalhesPonto: "Detalhes do Ponto",
+      jornadaMensal: "Jornada Mensal",
+      faltas: "Faltas",
+      rodagemKm: "Rodagem (KM)",
+      saldoAtual: "Saldo Atual",
+      horasPerdidas: "Horas Perdidas",
+      diasAtuados: "Dias Atuados",
+      saldoKm: "Saldo KM",
+      data: "Data",
+      status: "Status",
+      saida: "Saída",
+      saldoDia: "Saldo Dia",
+      efetivo: "Efetivo",
+      carga: "Carga",
+      foraVigencia: "Fora de Vigência",
+      referenciaPrefix: "Ref:",
+      kmRodado: "KM Rodado",
+      saldo: "Saldo",
+      ok: "OK",
+      off: "OFF",
+      futuro: "FUTURO",
+      trabalhado: "Trabalhado",
+      falta: "Falta",
+      naoVigente: "Não Vigente",
+      dataFutura: "Data Futura",
+      escalado: "Escalado",
+      vazio: "---"
+    }
   },
 
   // ========== AUTENTICAÇÃO ==========
@@ -275,7 +342,41 @@ export const messages = {
       titulo: "Finalizar Fechamento",
       descricao: "Você está finalizando este fechamento e marcando-o como pago. Os valores atuais serão salvos de forma permanente para este mês. Deseja continuar?",
       botao: "Finalizar e Pagar",
+      adiantamento: {
+        titulo: "Confirmar Adiantamento",
+        descricao: "Deseja confirmar o pagamento do adiantamento? Ao confirmar, este valor será descontado automaticamente do fechamento final.",
+        botao: "Confirmar",
+      },
+      desfazer_adiantamento: {
+        titulo: "Desfazer Adiantamento",
+        descricao: "Deseja remover a confirmação do adiantamento? O valor não será mais descontado do fechamento deste mês.",
+        botao: "Remover",
+      },
+      reabrir: {
+        titulo: "Reabrir Fechamento",
+        descricao: "Atenção: ao reabrir o fechamento, ele voltará a ser um rascunho. Importante: os valores serão recalculados com base nas informações atuais do cadastro do colaborador (como valor de contrato e bônus), o que pode alterar o resultado final. Deseja continuar?",
+        botao: "Sim, Reabrir",
+      }
     },
+    calendario: {
+      labels: {
+        trabalhado: "Trabalhado",
+        falta: "Falta Detectada",
+        futuro: "Futuro",
+        naoVigente: "Off",
+        escalado: "Escalado",
+        semEscala: "Sem Escala",
+        foraVigencia: "Fora de Vigência",
+      },
+      ui: {
+        entrada: "Entrada",
+        saida: "Saída",
+        carga: "Carga",
+        saldo: "Saldo",
+        km_rodado: "KM Rodado",
+        referencia: "Ref:",
+      }
+    }
   },
 
   // ========== FERIADOS ==========
@@ -358,6 +459,7 @@ export type MessageKey =
   | `colaborador.sucesso.${keyof typeof messages.colaborador.sucesso}`
   | `ponto.erro.${keyof typeof messages.ponto.erro}`
   | `ponto.sucesso.${keyof typeof messages.ponto.sucesso}`
+  | `ponto.labels.${keyof typeof messages.ponto.labels}`
   | `auth.erro.${keyof typeof messages.auth.erro}`
   | `auth.sucesso.${keyof typeof messages.auth.sucesso}`
   | `auth.info.${keyof typeof messages.auth.info}`

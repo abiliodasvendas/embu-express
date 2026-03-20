@@ -1,4 +1,5 @@
 import { RegistroPonto, Pausa, PontoLocation } from "@/types/database";
+import { EspelhoPontoMensal } from "@/types/ponto-relatorio";
 import { apiClient } from "./client";
 
 export const pontoApi = {
@@ -25,6 +26,9 @@ export const pontoApi = {
 
   getRelatorioMensal: (usuarioId: string, mes: number, ano: number): Promise<RegistroPonto[]> =>
     apiClient.get(`/pontos/relatorio-mensal/${usuarioId}`, { params: { mes, ano } }).then(res => res.data),
+
+  getEspelhoPonto: (usuarioId: string, mes: number, ano: number): Promise<EspelhoPontoMensal[]> =>
+    apiClient.get(`/pontos/espelho-ponto/${usuarioId}`, { params: { mes, ano } }).then(res => res.data),
 
   getById: (id: number): Promise<RegistroPonto> =>
     apiClient.get(`/pontos/${id}`).then(res => res.data),

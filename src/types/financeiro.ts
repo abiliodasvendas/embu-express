@@ -1,6 +1,8 @@
 export interface ResumoClienteFinanceiro {
     cliente_id: number;
     nome_fantasia?: string;
+    unidade_id?: number;
+    nome_unidade?: string;
     id_vinculo: number;
     saldo_fixo_original: number;
     valores_fixos: {
@@ -13,8 +15,17 @@ export interface ResumoClienteFinanceiro {
         adiantamento_config: number;
     };
     dias_base_mes: number;
-    dias_ativos_no_mes: number;
-    datas_ativas: string[];
+    dias_esperados_turno: number;
+    dias_trabalhados: number;
+    calendario_visual: Array<{
+        data: string;
+        data_br: string;
+        dia: number;
+        dia_semana_curto: string;
+        dia_semana_longo: string;
+        status: 'TRABALHADO' | 'FALTA' | 'NAO_VIGENTE' | 'FUTURO';
+        is_dia_escala: boolean;
+    }>;
     data_inicio: string | null;
     data_fim: string | null;
     creditos_ocorrencia: number;
@@ -26,8 +37,8 @@ export interface MeiConsolidado {
     valor_original: number;
     valor_calculado: number;
     dias_base: number;
-    dias_ativos: number;
-    datas_ativas: string[];
+    dias_trabalhados: number;
+    datas_trabalhadas: string[];
 }
 
 export interface OcorrenciasAvulsas {

@@ -14,7 +14,7 @@ export function FinancialReport() {
         setPageTitle(vm.isOnlyPersonal ? "Meu Extrato Financeiro" : "Relatório Financeiro");
     }, [setPageTitle, vm.isOnlyPersonal]);
 
-    const { data: collaborators = [] } = useCollaborators({ status: StatusUsuario.ATIVO }, { enabled: vm.canViewAll });
+    const { data: collaborators = [] } = useCollaborators({}, { enabled: vm.canViewAll });
 
     return (
         <div className="space-y-6 pb-24">

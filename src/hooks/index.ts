@@ -1,7 +1,6 @@
 // Business hooks
 export { usePermissions } from "./business/usePermissions";
 export { useTimeTrackingBusiness } from "./business/useTimeTrackingBusiness";
-export { useTimeMirrorBusiness } from "./business/useTimeMirrorBusiness";
 export { useOccurrenceBusiness } from "./business/useOccurrenceBusiness";
 export { useFinancialReportBusiness } from "./business/useFinancialReportBusiness";
 export { useProfile } from "./business/useProfile";

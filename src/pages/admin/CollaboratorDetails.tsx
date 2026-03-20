@@ -226,7 +226,7 @@ export default function CollaboratorDetails() {
       variant: "destructive",
       onConfirm: async () => {
         try {
-          await deleteVinculo.mutateAsync(turnId);
+          await deleteVinculo.mutateAsync({ id: turnId, colaboradorId: id! });
           closeConfirmationDialog();
         } catch (error) {
           console.error(error);

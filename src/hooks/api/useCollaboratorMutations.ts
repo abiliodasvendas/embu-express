@@ -184,9 +184,9 @@ export function useUpdateVinculo() {
 export function useDeleteVinculo() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => colaboradorApi.deleteVinculo(id),
-    onSuccess: async () => {
-      await invalidateCollaboratorCache(queryClient);
+    mutationFn: ({ id }: { id: number; colaboradorId: string }) => colaboradorApi.deleteVinculo(id),
+    onSuccess: async (_, variables) => {
+      await invalidateCollaboratorCache(queryClient, variables.colaboradorId);
       toast.success(messages.vinculo.sucesso.excluido);
     },
     onError: (error: ApiError) => {

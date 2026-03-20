@@ -203,7 +203,7 @@ export function CollaboratorTurnDialog({
           valor_bonus: formatCurrency(turnToEdit.valor_bonus || 0),
           ajuda_custo: formatCurrency(turnToEdit.ajuda_custo || 0),
           valor_adiantamento: formatCurrency(turnToEdit.valor_adiantamento || 0),
-          data_inicio: turnToEdit.data_inicio || getLocalDate(),
+          data_inicio: turnToEdit.data_inicio || null,
           isMotoboyOrFiscal: isMOrF,
           horarios: turnToEdit.horarios?.map(h => ({
             dia_semana: h.dia_semana,
@@ -222,7 +222,7 @@ export function CollaboratorTurnDialog({
           valor_bonus: "" as any,
           ajuda_custo: "" as any,
           valor_adiantamento: "" as any,
-          data_inicio: getLocalDate(),
+          data_inicio: null,
           isMotoboyOrFiscal: isMOrF,
           horarios: [],
         });
@@ -305,13 +305,13 @@ export function CollaboratorTurnDialog({
   };
 
   const diasSemana = [
+    { id: 0, label: "Domingo" },
     { id: 1, label: "Segunda-feira" },
     { id: 2, label: "Terça-feira" },
     { id: 3, label: "Quarta-feira" },
     { id: 4, label: "Quinta-feira" },
     { id: 5, label: "Sexta-feira" },
     { id: 6, label: "Sábado" },
-    { id: 7, label: "Domingo" },
   ];
 
   const toggleDia = useCallback((dia: number, checked: boolean) => {

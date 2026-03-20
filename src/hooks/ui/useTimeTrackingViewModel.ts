@@ -148,10 +148,8 @@ export function useTimeTrackingViewModel({
             }
 
             if (selectedTurno !== FilterOptions.TODOS) {
-                const recordShifts = record.usuario?.links?.map((l: ColaboradorCliente) => 
-                    `${l.hora_inicio?.substring(0, 5)} - ${l.hora_fim?.substring(0, 5)}`
-                ) || [];
-                if (!recordShifts.includes(selectedTurno)) return false;
+                const shiftStr = `${record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5)} - ${record.detalhes_calculo?.saida?.turno_base?.substring(0, 5)}`;
+                if (shiftStr !== selectedTurno) return false;
             }
 
             if (selectedStatusEntrada !== FilterOptions.TODOS) {

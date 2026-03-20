@@ -6,7 +6,7 @@ import { LocationData, GeolocationPermissionState } from '@/types/geolocation';
 
 export function useGeolocation() {
   const [location, setLocation] = useState<LocationData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<GeolocationPermissionState>('unknown');
   

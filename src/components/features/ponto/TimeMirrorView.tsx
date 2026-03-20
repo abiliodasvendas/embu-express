@@ -1,10 +1,11 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { Badge } from "@/components/ui/badge";
 import { ListSkeleton } from "@/components/skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTimeMirror } from "@/hooks/api/useTimeMirror";
 import { cn } from "@/lib/utils";
-import { Calendar, Clock, TrendingDown, TrendingUp } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { Calendar, Clock, TrendingDown, TrendingUp, Gauge, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useTimeRecord } from "@/hooks/api/useTimeRecord";
 import { useDeletePonto } from "@/hooks/api/usePontoMutations";
@@ -13,26 +14,9 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { formatMinutes } from "@/utils/ponto";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { FilterOptions } from "@/types/enums";
-import { useTimeMirrorBusiness } from "@/hooks/business/useTimeMirrorBusiness";
+import { PontoDiarioRelatorio } from "@/types/ponto-relatorio";
+import { getMessage, messages } from "@/constants/messages";
 import { TimeMirrorDailyCard } from "./TimeMirrorDailyCard";
- 
-const LABELS = {
-    TOTAL_TRABALHADO: "Total Trabalhado",
-    TOTAL_ESPERADO: "Total Esperado",
-    SALDO_MES: "Saldo do Mês",
-    DATA: "Data",
-    TURNO: "Turno",
-    ENTRADA: "Entrada",
-    SAIDA: "Saída",
-    INTERVALO: "Intervalo",
-    TRABALHADO: "Trabalhado",
-    ESPERADO: "Esperado",
-    SALDO: "Saldo",
-    NENHUM_COLABORADOR: "Nenhum colaborador selecionado",
-    ESCOLHA_COLABORADOR: "Escolha um colaborador acima para visualizar o espelho de ponto.",
-    SEM_REGISTROS: "Sem registros neste mês",
-    SEM_REGISTROS_DESC: "Não foram encontrados pontos batidos para este colaborador no período selecionado."
-};
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -42,27 +26,25 @@ interface TimeMirrorViewProps {
     hideCollaboratorSelect?: boolean;
 }
 
-export function TimeMirrorView({ 
-    usuarioId, 
+export function TimeMirrorView({
+    usuarioId,
     selectedMonth,
     selectedYear,
     selectedShift = FilterOptions.TODOS,
-    hideCollaboratorSelect = false 
 }: TimeMirrorViewProps) {
     const month = selectedMonth || new Date().getMonth() + 1;
     const year = selectedYear || new Date().getFullYear();
 
-    const { data: rawReport = [], isLoading, refetch } = useTimeMirror(
+    const { data: reportData = [], isLoading } = useTimeMirror(
         usuarioId || undefined,
         month,
         year
     );
 
-    const { processRecords } = useTimeMirrorBusiness();
-    
-    const { records: report, totals } = useMemo(() => 
-        processRecords(rawReport, selectedShift), 
-    [rawReport, selectedShift, processRecords]);
+    // Filtrar pelo turno selecionado (se não for "TODOS")
+    const activeReport = selectedShift === FilterOptions.TODOS
+        ? reportData[0] // Por padrão pegamos o primeiro se for todos, ou deveríamos somar? O usuário geralmente vê um por vez.
+        : reportData.find(r => r.shift_id === Number(selectedShift)) || reportData[0];
 
     const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
     const { mutateAsync: deletePonto } = useDeletePonto();
@@ -100,125 +82,148 @@ export function TimeMirrorView({
     const { can } = usePermissions();
     const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
 
+    if (!usuarioId) {
+        return (
+            <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="p-4 bg-primary/5 rounded-full">
+                    <Calendar className="h-8 w-8 text-primary/40" />
+                </div>
+                <div>
+                    <h3 className="font-bold text-gray-900">{getMessage("ponto.labels.nenhumColaborador")}</h3>
+                    <p className="text-sm text-gray-500 max-w-[280px]">{getMessage("ponto.labels.escolhaColaborador")}</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (isLoading) return <ListSkeleton />;
+
+    if (!activeReport) {
+        return (
+            <UnifiedEmptyState
+                icon={Calendar}
+                title={getMessage("ponto.labels.semRegistros")}
+                description={getMessage("ponto.labels.semRegistrosDesc")}
+            />
+        );
+    }
+
+    const { kpis, calendario } = activeReport;
+    const hourBalance = kpis.horas_trabalhadas - kpis.horas_esperadas;
+
     return (
         <div className="space-y-6">
-                {!usuarioId ? (
-                    <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
-                        <div className="p-4 bg-primary/5 rounded-full">
-                            <Calendar className="h-8 w-8 text-primary/40" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-gray-900">{LABELS.NENHUM_COLABORADOR}</h3>
-                            <p className="text-sm text-gray-500 max-w-[280px]">{LABELS.ESCOLHA_COLABORADOR}</p>
-                        </div>
-                    </div>
-                ) : isLoading ? (
-                    <ListSkeleton />
-                ) : report.length > 0 ? (
-                    <>
-                        {/* Summary Cards */}
-                        <div className={cn(
-                            "grid gap-4",
-                            canViewAll ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"
-                        )}>
-                            {canViewAll && (
-                                <>
-                                    <Card className="border-none shadow-sm rounded-3xl bg-blue-50/50">
-                                        <CardContent className="p-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-3 bg-blue-100 rounded-2xl">
-                                                    <Clock className="h-6 w-6 text-blue-600" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">{LABELS.TOTAL_TRABALHADO}</p>
-                                                    <h3 className="text-xl font-black text-blue-900">{formatMinutes(totals.worked)}</h3>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card className="border-none shadow-sm rounded-3xl bg-amber-50/50">
-                                        <CardContent className="p-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-3 bg-amber-100 rounded-2xl">
-                                                    <Calendar className="h-6 w-6 text-amber-600" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-amber-600 font-bold uppercase tracking-wider mb-1">{LABELS.TOTAL_ESPERADO}</p>
-                                                    <h3 className="text-xl font-black text-amber-900">{formatMinutes(totals.expected)}</h3>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card className={cn(
-                                        "border-none shadow-sm rounded-3xl",
-                                        totals.balance >= 0 ? "bg-emerald-50/50" : "bg-red-50/50"
-                                    )}>
-                                        <CardContent className="p-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className={cn(
-                                                    "p-3 rounded-2xl",
-                                                    totals.balance >= 0 ? "bg-emerald-100" : "bg-red-100"
-                                                )}>
-                                                    {totals.balance >= 0 ? <TrendingUp className="h-6 w-6 text-emerald-600" /> : <TrendingDown className="h-6 w-6 text-red-600" />}
-                                                </div>
-                                                <div>
-                                                    <p className={cn(
-                                                        "text-xs font-bold uppercase tracking-wider mb-1",
-                                                        totals.balance >= 0 ? "text-emerald-600" : "text-red-600"
-                                                    )}>{LABELS.SALDO_MES}</p>
-                                                    <h3 className={cn(
-                                                        "text-2xl font-black",
-                                                        totals.balance >= 0 ? "text-emerald-900" : "text-red-900"
-                                                    )}>{formatMinutes(totals.balance)}</h3>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </>
-                            )}
-                        </div>
-
-                        {/* Daily Logs */}
-                        <div className="grid gap-3">
-                            <div className={cn(
-                                "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",
-                                canViewAll ? "grid-cols-8" : "grid-cols-4"
-                            )}>
-                                <div className="col-span-1">{LABELS.DATA}</div>
-                                <div className="col-span-1">{LABELS.TURNO}</div>
-                                <div className="col-span-1">{LABELS.ENTRADA}</div>
-                                <div className="col-span-1 text-right md:text-left">{LABELS.SAIDA}</div>
-                                {canViewAll && (
-                                    <>
-                                        <div className="col-span-1 text-center">{LABELS.INTERVALO}</div>
-                                        <div className="col-span-1 text-center">{LABELS.TRABALHADO}</div>
-                                        <div className="col-span-1 text-center">{LABELS.ESPERADO}</div>
-                                        <div className="col-span-1 text-right">{LABELS.SALDO}</div>
-                                    </>
-                                )}
+            {/* KPI Section - Premium & Consolidated */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* 1. Jornada de Trabalho (Meta vs Realizado) */}
+                <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden border border-gray-100">
+                    <CardContent className="p-0">
+                        <div className="bg-blue-600 p-4 text-white">
+                            <div className="flex items-center justify-between mb-2">
+                                <Clock className="h-5 w-5 opacity-80" />
+                                <Badge className="bg-blue-500/30 text-white border-blue-400/50 text-[10px] font-bold uppercase">{messages.ponto.labels.jornadaMensal}</Badge>
                             </div>
-
-                            {report.map((day, idx) => (
-                                <TimeMirrorDailyCard
-                                    key={idx}
-                                    day={day}
-                                    canViewAll={canViewAll}
-                                    isFetchingRecord={isFetchingRecord}
-                                    selectedPontoId={selectedPontoId}
-                                    onClick={(id) => setSelectedPontoId(id)}
-                                />
-                            ))}
+                            <h3 className="text-3xl font-black">{formatMinutes(kpis.horas_trabalhadas)}</h3>
+                            <p className="text-xs text-blue-100 font-medium opacity-80">Realizado de {formatMinutes(kpis.horas_esperadas)} planejadas</p>
                         </div>
-                    </>
-                ) : (
-                    <UnifiedEmptyState
-                        icon={Calendar}
-                        title={LABELS.SEM_REGISTROS}
-                        description={LABELS.SEM_REGISTROS_DESC}
-                    />
-                )}
+                        <div className="p-4 flex items-center justify-between bg-gray-50/50">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.saldoAtual}</p>
+                                <p className={cn("text-lg font-black", hourBalance >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                                    {formatMinutes(hourBalance, true)}
+                                </p>
+                            </div>
+                            <div className="text-right space-y-1">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.diasAtuados}</p>
+                                <p className="text-lg font-black text-gray-700">{kpis.dias_trabalhados} / {kpis.dias_meta_turno}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 2. Assiduidade (Faltas) */}
+                <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden border border-gray-100">
+                    <CardContent className="p-0">
+                        <div className="bg-rose-600 p-4 text-white">
+                            <div className="flex items-center justify-between mb-2">
+                                <TrendingDown className="h-5 w-5 opacity-80" />
+                                <Badge className="bg-rose-500/30 text-white border-rose-400/50 text-[10px] font-bold uppercase">{messages.ponto.labels.faltas}</Badge>
+                            </div>
+                            <h3 className="text-3xl font-black">{kpis.dias_faltas}</h3>
+                            <p className="text-xs text-rose-100 font-medium opacity-80">Faltas detectadas</p>
+                        </div>
+                        <div className="p-4 flex items-center justify-between bg-gray-50/50">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.horasPerdidas}</p>
+                                <p className="text-lg font-black text-rose-600">
+                                    {formatMinutes(kpis.horas_faltas)}
+                                </p>
+                            </div>
+                            <div className="p-2 bg-rose-100 rounded-2xl">
+                                <Calendar className="h-5 w-5 text-rose-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 3. Desempenho (KM) */}
+                <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden border border-gray-100">
+                    <CardContent className="p-0">
+                        <div className="bg-slate-800 p-4 text-white">
+                            <div className="flex items-center justify-between mb-2">
+                                <Gauge className="h-5 w-5 opacity-80" />
+                                <Badge className="bg-slate-700 text-white border-slate-600 text-[10px] font-bold uppercase">{messages.ponto.labels.rodagemKm}</Badge>
+                            </div>
+                            <h3 className="text-3xl font-black">{kpis.km_realizado} <span className="text-sm font-normal text-slate-400">km</span></h3>
+                            <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Contratado: {kpis.km_contratado} km</p>
+                        </div>
+                        <div className="p-4 flex items-center justify-between bg-gray-50/50">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.saldoKm}</p>
+                                <p className={cn("text-lg font-black", kpis.km_saldo >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                                    {kpis.km_saldo >= 0 ? `+${kpis.km_saldo}` : kpis.km_saldo} km
+                                </p>
+                            </div>
+                            <div className="p-2 bg-slate-100 rounded-2xl">
+                                <MapPin className="h-5 w-5 text-slate-800" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
+
+            {/* Daily Logs */}
+            <div className="grid gap-3">
+                {/* Header da Listagem Desktop */}
+                <div className={cn(
+                    "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",
+                    canViewAll ? "grid-cols-10" : "grid-cols-5"
+                )}>
+                    <div className="col-span-2">{messages.ponto.labels.data} / CLIENTE</div>
+                    <div className="col-span-1">{messages.ponto.labels.status}</div>
+                    <div className="col-span-1">{messages.ponto.labels.entrada}</div>
+                    <div className="col-span-1">{messages.ponto.labels.saida}</div>
+                    {canViewAll && (
+                        <>
+                            <div className="col-span-1 text-center">{messages.ponto.labels.kmTotal}</div>
+                            <div className="col-span-1 text-center">{messages.ponto.labels.efetivo}</div>
+                            <div className="col-span-1 text-center">{messages.ponto.labels.carga}</div>
+                            <div className="col-span-2 text-right">{messages.ponto.labels.saldoDia}</div>
+                        </>
+                    )}
+                </div>
+
+                {calendario.map((day: PontoDiarioRelatorio, idx) => (
+                    <TimeMirrorDailyCard
+                        key={idx}
+                        day={day}
+                        canViewAll={canViewAll}
+                        isFetchingRecord={isFetchingRecord}
+                        selectedPontoId={selectedPontoId}
+                        onClick={(id) => setSelectedPontoId(id)}
+                    />
+                ))}
+            </div>
+        </div>
     );
 }

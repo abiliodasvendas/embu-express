@@ -46,6 +46,7 @@ import { useEffect, useState } from "react";
 import { useForm, FieldErrors } from "react-hook-form";
 import { UnidadeFormData, unidadeSchema } from "@/schemas/unidadeSchema";
 import { mockGenerator } from "@/utils/mocks/generator";
+import { formatarCEP } from "@/utils/formatters";
 
 interface UnidadeFormDialogProps {
   isOpen: boolean;
@@ -95,7 +96,7 @@ export function UnidadeFormDialog({
           nome_unidade: editingUnidade.nome_unidade,
           razao_social: editingUnidade.razao_social,
           cnpj: cnpjMask(editingUnidade.cnpj),
-          cep: editingUnidade.cep,
+          cep: formatarCEP(editingUnidade.cep),
           logradouro: editingUnidade.logradouro,
           numero: editingUnidade.numero,
           complemento: editingUnidade.complemento || "",

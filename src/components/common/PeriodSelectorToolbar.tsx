@@ -23,7 +23,7 @@ interface PeriodSelectorToolbarProps {
     selectedMonth: number;
     selectedYear: number;
     selectedShift?: string;
-    availableShifts?: string[];
+    availableShifts?: (string | { id: string | number; label: string })[];
     onUsuarioChange?: (val: string) => void;
     onMonthChange: (val: number) => void;
     onYearChange: (val: number) => void;
@@ -96,9 +96,11 @@ export function PeriodSelectorToolbar({
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
                             <SelectItem value={FilterOptions.TODOS} className="font-medium">Todos os turnos</SelectItem>
-                            {availableShifts.map(s => (
-                                <SelectItem key={s} value={s} className="font-medium">{s}</SelectItem>
-                            ))}
+                            {availableShifts.map((s, idx) => {
+                                const val = typeof s === 'string' ? s : String(s.id);
+                                const label = typeof s === 'string' ? s : s.label;
+                                return <SelectItem key={val || idx} value={val}>{label}</SelectItem>
+                            })}
                         </SelectContent>
                     </Select>
                 </div>
@@ -165,9 +167,11 @@ export function PeriodSelectorToolbar({
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl">
                                             <SelectItem value={FilterOptions.TODOS}>Todos os Turnos</SelectItem>
-                                            {availableShifts.map(s => (
-                                                <SelectItem key={s} value={s}>{s}</SelectItem>
-                                            ))}
+                                            {availableShifts.map((s, idx) => {
+                                                const val = typeof s === 'string' ? s : String(s.id);
+                                                const label = typeof s === 'string' ? s : s.label;
+                                                return <SelectItem key={val || idx} value={val}>{label}</SelectItem>
+                                            })}
                                         </SelectContent>
                                     </Select>
                                 </div>

@@ -9,7 +9,7 @@ import { RegistroPonto, ColaboradorCliente, Pausa } from "@/types/database";
 
 export function useRegistrarPontoBusiness() {
     const { user } = useSession();
-    const { profile: userProfile } = useProfile(user?.id);
+    const { profile: userProfile, isLoading: isLoadingProfile } = useProfile(user?.id);
 
     const togglePonto = useTogglePonto();
     const iniciarPausa = useIniciarPausa();
@@ -54,17 +54,21 @@ export function useRegistrarPontoBusiness() {
         const kmTrabalho = allPausas.reduce((acc: number, p: Pausa) => acc + (Number(p.distancia_trabalho) || 0), 0) + (Number(pontoHoje.saida_distancia_trabalho) || 0);
         const kmPausa = allPausas.reduce((acc: number, p: Pausa) => acc + (Number(p.distancia_pausa) || 0), 0);
 
+        const entradaKm = Number(pontoHoje.entrada_km || 0);
+
         return {
             count: allPausas.length,
             totalMs: totalPausasMs,
             kmTrabalho,
-            kmPausa
+            kmPausa,
+            entradaKm
         };
     }, [pontoHoje]);
 
     return {
         user,
         userProfile,
+        isLoadingProfile,
         pontoHoje,
         isLoadingPonto,
         activeLinks,

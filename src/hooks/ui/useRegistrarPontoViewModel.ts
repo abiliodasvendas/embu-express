@@ -25,86 +25,101 @@ export function useRegistrarPontoViewModel() {
         escala_semanal?: number[];
     } | null>(null);
 
-    // Initial selectedLinkId based on proximity or existing point
+    // Auto-fetch location on mount
     useEffect(() => {
-        if (!business.pontoHoje) {
-            if (selectedLinkId) return; // Keep current user selection
-            
-            // Proximity based selection
-            if (business.activeLinks.length > 0) {
-                const now = new Date();
-                const formatter = new Intl.DateTimeFormat('pt-BR', {
-                    timeZone: 'America/Sao_Paulo',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    hour12: false
-                });
-                const parts = formatter.format(now).split(':');
-                const nowMinutes = Number(parts[0]) * 60 + Number(parts[1]);
+        geo.requestLocation();
+    }, []);
 
-                let bestShift = business.activeLinks[0];
-                let minDiff = Infinity;
+    const [isInitialized, setIsInitialized] = useState(false);
 
-                business.activeLinks.forEach((link: ColaboradorCliente) => {
-                    if (link.hora_inicio) {
-                        const [h, m] = link.hora_inicio.split(':').map(Number);
-                        const shiftStartMinutes = h * 60 + m;
-                        const diff = Math.abs(nowMinutes - shiftStartMinutes);
-                        if (diff < minDiff) {
-                            minDiff = diff;
-                            bestShift = link;
-                        }
-                    }
-                });
+    // Initial selectedLinkId: Auto-select only if there's exactly one link and data is NOT loading
+    useEffect(() => {
+        if (business.isLoadingProfile || business.isLoadingPonto) return;
 
-                if (bestShift) {
-                    setSelectedLinkId(bestShift.id.toString());
+        const pontoRef = Array.isArray(business.pontoHoje) ? business.pontoHoje[0] : business.pontoHoje;
+        const hasActivePoint = pontoRef && !pontoRef.saida_hora;
+        const linksCount = business.activeLinks?.length || 0;
+
+        if (!hasActivePoint && linksCount > 0) {
+            // Se já inicializamos e o usuário já tem uma seleção válida, não interferimos mais
+            if (isInitialized && selectedLinkId) {
+                const isValid = business.activeLinks.some(l => l?.id?.toString() === selectedLinkId);
+                if (isValid) return;
+            }
+
+            if (linksCount === 1) {
+                const firstId = business.activeLinks[0]?.id?.toString();
+                if (firstId && firstId !== selectedLinkId) {
+                    setSelectedLinkId(firstId);
+                }
+            } else if (!isInitialized || !selectedLinkId) {
+                // Se tem múltiplos e ainda não inicializamos ou não tem seleção, garante vazio (placeholder)
+                setSelectedLinkId("");
+            }
+            setIsInitialized(true);
+        } else if (hasActivePoint) {
+            if (pontoRef?.cliente_id) {
+                const matchedLinkId = business.activeLinks?.find((l: ColaboradorCliente) => String(l.cliente_id) === String(pontoRef.cliente_id))?.id?.toString();
+                if (matchedLinkId && matchedLinkId !== selectedLinkId) {
+                    setSelectedLinkId(matchedLinkId);
                 }
             }
-        } else {
-            // Priority: if point is active, always use point's client
-            if (business.pontoHoje.cliente_id) {
-                const matchedLink = business.activeLinks.find((l: ColaboradorCliente) => String(l.cliente_id) === String(business.pontoHoje!.cliente_id));
-                if (matchedLink) {
-                    setSelectedLinkId(matchedLink.id.toString());
-                }
-            }
+            setIsInitialized(true);
         }
-    }, [business.pontoHoje, business.activeLinks, selectedLinkId]);
+    }, [business.pontoHoje, business.activeLinks, business.isLoadingProfile, business.isLoadingPonto, selectedLinkId, isInitialized]);
 
     // Active Shift Object for Display
     useEffect(() => {
         const link = business.activeLinks.find((l: ColaboradorCliente) => l.id.toString() === selectedLinkId);
         if (link) {
+            const dayOfWeek = new Date().getDay();
+            const todaySchedule = link.horarios?.find((h: any) => h.dia_semana === dayOfWeek);
+
             setActiveShift({
                 id: link.id.toString(),
                 nome: link.cliente?.nome_fantasia || "Turno Selecionado",
-                horario: link.hora_inicio && link.hora_fim ?
-                    `${link.hora_inicio.slice(0, 5)} - ${link.hora_fim.slice(0, 5)}` : undefined,
+                horario: todaySchedule?.hora_inicio && todaySchedule?.hora_fim ?
+                    `${todaySchedule.hora_inicio.slice(0, 5)} - ${todaySchedule.hora_fim.slice(0, 5)}` : (link.cliente?.ativo ? "Sem Escala Hoje" : undefined),
                 empresa: link.empresa?.nome_fantasia,
-                escala_semanal: link.cliente?.escala_semanal
+                escala_semanal: link.horarios?.map((h: any) => h.dia_semana)
             });
         }
     }, [selectedLinkId, business.activeLinks]);
 
     const status = useMemo((): StatusPonto => {
-        if (!business.pontoHoje || business.pontoHoje.saida_hora) return StatusPonto.AGUARDANDO;
+        // Garantir que temos um registro válido e não uma lista vazia ou null
+        const hasActivePoint = business.pontoHoje && 
+                             !Array.isArray(business.pontoHoje) && 
+                             business.pontoHoje.id && 
+                             !business.pontoHoje.saida_hora;
+
+        if (!hasActivePoint) return StatusPonto.AGUARDANDO;
+
         const openPause = business.pontoHoje.pausas?.find((p: Pausa) => !p.fim_hora);
         return openPause ? StatusPonto.PAUSADO : StatusPonto.TRABALHANDO;
     }, [business.pontoHoje]);
 
+    // Robust Date Normalization for Multi-platform support
+    const parseDate = useCallback((dateStr?: string) => {
+        if (!dateStr) return 0;
+        // Fix for non-T ISO formats (SQLite/Postgres sometimes return 'YYYY-MM-DD HH:MM:SS')
+        const normalized = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+        const date = new Date(normalized);
+        return date.getTime();
+    }, []);
+
     // Timer Logic
     useEffect(() => {
         if (status === StatusPonto.TRABALHANDO) {
-            const start = business.pontoHoje?.entrada_hora ? new Date(business.pontoHoje.entrada_hora).getTime() : 0;
+            const start = parseDate(business.pontoHoje?.entrada_hora);
             const pauseMs = business.journeyMetrics.totalMs;
 
             if (!start || isNaN(start)) {
-                setTimer("00:00:00");
+                setTimer("--:--:--");
                 return;
             }
 
-            const interval = setInterval(() => {
+            const updateTimer = () => {
                 const now = Date.now();
                 const diff = (now - start) - pauseMs;
                 if (diff < 0) {
@@ -115,24 +130,31 @@ export function useRegistrarPontoViewModel() {
                 const m = Math.floor((diff % 3600000) / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
                 setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-            }, 1000);
+            };
+
+            updateTimer(); // Executa imediatamente para evitar o "salto" de 0s
+            const interval = setInterval(updateTimer, 1000);
             return () => clearInterval(interval);
         } else if (status === StatusPonto.PAUSADO) {
             const openPause = business.pontoHoje?.pausas?.find((p: Pausa) => !p.fim_hora);
             if (openPause) {
-                const entradaIso = business.pontoHoje?.entrada_hora;
-                const start = entradaIso ? new Date(entradaIso).getTime() : 0;
-                const pauseStart = new Date(openPause.inicio_hora).getTime();
+                const start = parseDate(business.pontoHoje?.entrada_hora);
+                const pauseStart = parseDate(openPause.inicio_hora);
                 const diff = (pauseStart - start) - business.journeyMetrics.totalMs;
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+                
+                if (diff < 0) {
+                    setTimer("00:00:00");
+                } else {
+                    const h = Math.floor(diff / 3600000);
+                    const m = Math.floor((diff % 3600000) / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+                }
             }
         } else {
-            setTimer("00:00:00");
+            setTimer("--:--:--");
         }
-    }, [status, business.pontoHoje, business.journeyMetrics.totalMs]);
+    }, [status, business.pontoHoje, business.journeyMetrics.totalMs, parseDate]);
 
     const executeAction = useCallback(async (actionType: 'toggle' | 'pause-start' | 'pause-end', loc: PontoLocation, km?: number) => {
         setIsProcessing(true);
@@ -183,7 +205,7 @@ export function useRegistrarPontoViewModel() {
                 const lastKm = lastKmData.data?.km || 0;
                 let title = "Início de Turno";
                 let description = "Informe o KM da moto.";
-                
+
                 if (actionType === 'toggle') {
                     title = status === StatusPonto.AGUARDANDO ? "Início de Turno" : "Fim de Turno";
                 } else if (actionType === 'pause-start') {
@@ -239,7 +261,7 @@ export function useRegistrarPontoViewModel() {
         geo,
         business,
         isMotoboyOrFiscal,
-        
+
         // Actions
         handleToggle: () => handleAction('toggle'),
         handlePauseStart: () => handleAction('pause-start'),

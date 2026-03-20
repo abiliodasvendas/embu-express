@@ -41,11 +41,10 @@ export function useTimeTrackingBusiness({ records, date, collaborators }: UseTim
         return counts;
     }, [processedRecords]);
 
-    // 3. Extract unique shifts from collaborators for filtering
+    // 3. Extract unique shifts from records for filtering (based on scheduled shift for THAT day)
     const uniqueShifts = useMemo(() => {
         const shifts = new Set<string>();
         
-        // Try to get from records first (active shifts today)
         processedRecords.forEach(r => {
             const entryShift = r.detalhes_calculo?.entrada?.turno_base;
             const exitShift = r.detalhes_calculo?.saida?.turno_base;
@@ -54,17 +53,8 @@ export function useTimeTrackingBusiness({ records, date, collaborators }: UseTim
             }
         });
 
-        // Supplement with all collaborator links if provided
-        collaborators?.forEach(c => {
-            c.links?.forEach((l: ColaboradorCliente) => {
-                if (l.hora_inicio && l.hora_fim) {
-                    shifts.add(`${l.hora_inicio.substring(0, 5)} - ${l.hora_fim.substring(0, 5)}`);
-                }
-            });
-        });
-
         return Array.from(shifts).sort();
-    }, [processedRecords, collaborators]);
+    }, [processedRecords]);
 
     return {
         processedRecords,

@@ -7,6 +7,7 @@ interface ScaleIndicatorsProps {
     className?: string;
     itemClassName?: string;
     size?: "sm" | "md";
+    variant?: "normal" | "condensed";
 }
 
 /**
@@ -19,8 +20,12 @@ export function ScaleIndicators({
     className,
     itemClassName,
     size = "sm",
+    variant = "normal",
 }: ScaleIndicatorsProps) {
-    const sizeClasses = size === "sm" ? "w-7 h-7 text-[10px]" : "w-8 h-8 text-[11px]";
+    const isCondensed = variant === "condensed";
+    const sizeClasses = isCondensed 
+        ? "w-6 h-6 text-[9px]" 
+        : size === "sm" ? "w-7 h-7 text-[10px]" : "w-8 h-8 text-[11px]";
 
     return (
         <div className={cn("flex items-center gap-1.5", className)}>
@@ -35,7 +40,9 @@ export function ScaleIndicators({
                                 "rounded-full flex items-center justify-center font-bold transition-all duration-300",
                                 sizeClasses,
                                 isActive
-                                    ? "bg-primary text-white shadow-sm shadow-primary/20"
+                                    ? isCondensed 
+                                        ? "bg-primary/80 text-white"
+                                        : "bg-primary text-white shadow-sm shadow-primary/20"
                                     : "bg-gray-50 text-gray-300",
                                 itemClassName
                             )}

@@ -11,6 +11,7 @@ interface CollaboratorCardProps {
     shiftDays: number[];
     unitDays: number[];
     showUnit?: boolean;
+    variant?: "normal" | "condensed";
     onClick?: () => void;
 }
 
@@ -26,6 +27,7 @@ export function CollaboratorCard({
     shiftDays,
     unitDays,
     showUnit = true,
+    variant = "normal",
     onClick,
 }: CollaboratorCardProps) {
     return (
@@ -59,6 +61,7 @@ export function CollaboratorCard({
                 <ScaleIndicators
                     activeDays={shiftDays}
                     availableDays={unitDays}
+                    variant={variant}
                 />
             </div>
         </div>

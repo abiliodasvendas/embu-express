@@ -604,6 +604,7 @@ export default function ClientDetails() {
                               shiftInterval={shiftInterval}
                               shiftDays={shiftDays}
                               unitDays={unitDays}
+                              variant="condensed"
                               onClick={() => navigate(`/colaboradores/${collab.id}`)}
                             />
                           );

@@ -412,6 +412,7 @@ export default function UnitDetails() {
                         shiftDays={shiftDays}
                         unitDays={unit.escala_semanal || []}
                         showUnit={false}
+                        variant="condensed"
                         onClick={() => navigate(`/colaboradores/${collab.id}`)}
                       />
                     );

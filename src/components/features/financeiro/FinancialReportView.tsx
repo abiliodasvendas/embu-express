@@ -367,7 +367,7 @@ export function FinancialReportView({
                     )}
                   </h2>
                   <p className="text-[10px] text-indigo-100/60 font-medium">
-                    Lançamentos avulsos + MEI consolidado
+                    Lançamentos avulsos + MEI proporcional
                   </p>
                 </CardContent>
               </Card>
@@ -744,10 +744,10 @@ export function FinancialReportView({
                                 </div>
                                 <div>
                                   <p className="text-sm font-black text-gray-800 tracking-tight">
-                                    MEI Consolidado
+                                    MEI
                                   </p>
                                   <p className="text-[10px] text-gray-400 font-bold uppercase">
-                                    Pro-Rata do Período
+                                    Valor Proporcional
                                   </p>
                                 </div>
                               </div>

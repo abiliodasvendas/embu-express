@@ -10,6 +10,7 @@ export const messages = {
     carregar: "Erro ao carregar dados.",
     salvar: "Erro ao salvar dados.",
     excluir: "Erro ao excluir.",
+    cadastrar: "Erro ao cadastrar."
     atualizar: "Erro ao atualizar.",
     operacao: "Erro ao realizar operação.",
     conexao: "Erro de conexão. Verifique sua internet.",

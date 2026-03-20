@@ -409,6 +409,7 @@ export default function ClientDetails() {
                 <h3 className="text-xl font-extrabold text-gray-900">
                   Unidades / Filiais
                 </h3>
+                {unidades && unidades.length > 0 && (
                 <button
                   type="button"
                   className="flex items-center gap-1 text-primary font-bold text-sm hover:underline"
@@ -417,6 +418,7 @@ export default function ClientDetails() {
                   Ver todas
                   <ArrowUpRight className="h-3.5 w-3.5" />
                 </button>
+                )}
               </div>
 
               {isUnidadesLoading ? (
@@ -440,7 +442,7 @@ export default function ClientDetails() {
                     onClick={handleAddUnidade}
                     className="mt-4 text-primary font-bold text-sm hover:underline"
                   >
-                    Criar Unidade agora
+                    Adicionar Unidade
                   </button>
                 </div>
               ) : (
@@ -529,6 +531,7 @@ export default function ClientDetails() {
                 <h3 className="text-xl font-extrabold text-gray-900">
                   Colaboradores Designados
                 </h3>
+                {collaborators && collaborators.length > 0 && (
                 <button
                   type="button"
                   className="flex items-center gap-1 text-primary font-bold text-sm hover:underline"
@@ -537,6 +540,7 @@ export default function ClientDetails() {
                   Ver Todos
                   <ArrowUpRight className="h-3.5 w-3.5" />
                 </button>
+                )}
               </div>
 
               {isCollabsLoading ? (
@@ -547,7 +551,7 @@ export default function ClientDetails() {
               ) : !collaborators || collaborators.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-200">
                   <p className="text-gray-400 font-bold">
-                    Nenhum turno vinculado a este cliente.
+                    Nenhum colaborador/turno vinculado a este cliente.
                   </p>
                 </div>
               ) : (

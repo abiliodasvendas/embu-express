@@ -1,3 +1,4 @@
+import { messages } from "@/constants/messages";
 import { unidadeApi } from "@/services/api/unidade.api";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,10 +10,10 @@ export function useCreateUnidade() {
     mutationFn: (data: any) => unidadeApi.createUnidade(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      toast.success("Unidade criada com sucesso!");
+      toast.success(messages.sucesso.salvar);
     },
     onError: (error: any) => {
-      toast.error("Erro ao criar unidade", { description: error.message });
+      toast.error(messages.erro.cadastrar, { description: error.message });
     },
   });
 }
@@ -24,10 +25,10 @@ export function useUpdateUnidade() {
     mutationFn: ({ id, ...data }: any) => unidadeApi.updateUnidade(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      toast.success("Unidade atualizada com sucesso!");
+      toast.success(messages.sucesso.atualizar);
     },
     onError: (error: any) => {
-      toast.error("Erro ao atualizar unidade", { description: error.message });
+      toast.error(messages.erro.atualizar, { description: error.message });
     },
   });
 }
@@ -39,10 +40,10 @@ export function useDeleteUnidade() {
     mutationFn: (id: number) => unidadeApi.deleteUnidade(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      toast.success("Unidade removida com sucesso!");
+      toast.success(messages.sucesso.excluir);
     },
     onError: (error: any) => {
-      toast.error("Erro ao remover unidade", { description: error.message });
+      toast.error(messages.erro.excluir, { description: error.message });
     },
   });
 }
@@ -55,9 +56,10 @@ export function useToggleUnidadeStatus() {
       unidadeApi.updateUnidade(id, { ativo }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
+      toast.success(messages.sucesso.atualizar);
     },
     onError: (error: any) => {
-      toast.error("Erro ao alterar status da unidade", { description: error.message });
+      toast.error(messages.erro.atualizar, { description: error.message });
     },
   });
 }

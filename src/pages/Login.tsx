@@ -95,8 +95,6 @@ export default function Login() {
       const axiosError = error as any;
       const msg = axiosError.response?.data?.message || axiosError.response?.data?.error || messages.auth.erro.login;
 
-      console.log("Login Error Msg:", msg);
-
       if (msg.includes("CPF não encontrado")) {
         form.setError("cpfcnpj", { message: msg });
       } else if (msg.includes("Senha inválida")) {

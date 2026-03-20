@@ -11,6 +11,7 @@ export const ROUTES = {
         COLABORADOR_DETAILS: "/colaboradores/:id",
         CLIENTES: "/clientes",
         CLIENTE_DETAILS: "/clientes/:id",
+        CLIENTE_UNIDADE_DETAILS: "/clientes/:id/unidades/:unitId",
         EMPRESAS: "/empresas",
         PERFIS: "/perfis",
         CONFIGURACOES: "/configuracoes",

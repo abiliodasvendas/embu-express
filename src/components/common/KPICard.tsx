@@ -1,6 +1,6 @@
 
 import { LockOverlay } from "@/components/common/LockOverlay";
-import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
+import { useAnimatedNumber } from "@/hooks/ui/useAnimatedNumber";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import React from "react";

@@ -44,6 +44,7 @@ const Collaborators = lazyLoad(() => import("./pages/admin/Collaborators"));
 const CollaboratorDetails = lazyLoad(() => import("./pages/admin/CollaboratorDetails"));
 const Clients = lazyLoad(() => import("./pages/admin/Clients"));
 const ClientDetails = lazyLoad(() => import("./pages/admin/ClientDetails"));
+const UnitDetails = lazyLoad(() => import("./pages/admin/UnitDetails"));
 const Empresas = lazyLoad(() => import("./pages/admin/Empresas"));
 const Perfis = lazyLoad(() => import("./pages/admin/Perfis"));
 const Configuracoes = lazyLoad(() => import("./pages/admin/Configuracoes"));
@@ -242,6 +243,7 @@ const App = () => {
                     <Route element={<RequirePermission permissions={[PERMISSIONS.CLIENTES.VER]} />}>
                       <Route path={ROUTES.PRIVATE.CLIENTES.replace("/", "")} element={<Clients />} />
                       <Route path={ROUTES.PRIVATE.CLIENTE_DETAILS.replace(/^\//, "")} element={<ClientDetails />} />
+                      <Route path={ROUTES.PRIVATE.CLIENTE_UNIDADE_DETAILS.replace(/^\//, "")} element={<UnitDetails />} />
                     </Route>
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.EMPRESAS.VER]} />}>

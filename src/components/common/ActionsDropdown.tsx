@@ -56,7 +56,10 @@ export function ActionsDropdown({
           </Button>
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align}>
+      <DropdownMenuContent 
+        align={align}
+        className="min-w-[180px] p-2 bg-white/95 backdrop-blur-sm border-gray-100 rounded-2xl shadow-xl shadow-gray-200/50 animate-in fade-in zoom-in duration-200"
+      >
         {visibleActions.map((action, idx) => (
           <DropdownMenuItem
             key={`${action.label}-${idx}`}
@@ -66,14 +69,18 @@ export function ActionsDropdown({
             }}
             disabled={action.disabled}
             className={cn(
-              "cursor-pointer",
-              action.isDestructive && "text-red-600 focus:text-red-600",
-              action.variant === "destructive" && "text-red-600 focus:text-red-600",
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer outline-none focus:bg-gray-50",
+              action.isDestructive || action.variant === "destructive"
+                ? "text-rose-600 focus:bg-rose-50"
+                : "text-gray-700 focus:text-gray-900"
             )}
             title={action.title}
           >
             {action.icon && (
-              <span className={cn("mr-2 h-4 w-4", action.isDestructive ? "text-red-600" : "")}>
+              <span className={cn(
+                "h-4 w-4 flex items-center justify-center transition-transform",
+                action.isDestructive || action.variant === "destructive" ? "text-rose-600" : "text-gray-400"
+              )}>
                 {action.icon}
               </span>
             )}

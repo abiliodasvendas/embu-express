@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { formatMinutes } from "@/utils/ponto";
-import { PontoDiarioRelatorio } from "@/types/ponto-relatorio";
 import { CALENDARIO_STATUS } from "@/constants/financeiro.constants";
 import { messages } from "@/constants/messages";
+import { cn } from "@/lib/utils";
+import { PontoDiarioRelatorio } from "@/types/ponto-relatorio";
+import { formatMinutes } from "@/utils/ponto";
 
 interface TimeMirrorDailyCardProps {
     day: PontoDiarioRelatorio;
@@ -155,7 +155,7 @@ export function TimeMirrorDailyCard({
 
                             {/* Carga (Esperado / Meta) */}
                             <div className="text-center">
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{messages.ponto.labels.carga}</p>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{messages.ponto.labels.esperado}</p>
                                 <p className="text-xs font-bold text-gray-300">
                                     {formatMinutes(day.minutos_esperados)}
                                 </p>

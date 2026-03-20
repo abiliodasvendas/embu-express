@@ -116,76 +116,98 @@ export function TimeMirrorView({
             {/* KPI Section - Premium & Consolidated */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* 1. Jornada de Trabalho (Meta vs Realizado) */}
-                <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden border border-gray-100">
+                <Card className="border shadow-sm rounded-3xl bg-slate-50/40 border-slate-200/60 overflow-hidden group hover:shadow-md transition-all duration-300">
                     <CardContent className="p-0">
-                        <div className="bg-blue-600 p-4 text-white">
-                            <div className="flex items-center justify-between mb-2">
-                                <Clock className="h-5 w-5 opacity-80" />
-                                <Badge className="bg-blue-500/30 text-white border-blue-400/50 text-[10px] font-bold uppercase">{messages.ponto.labels.jornadaMensal}</Badge>
+                        <div className="p-5">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="p-3 bg-white rounded-2xl group-hover:bg-blue-600 transition-colors duration-300 shadow-sm">
+                                    <Clock className="h-5 w-5 text-blue-600 group-hover:text-white transition-colors duration-300" />
+                                </div>
+                                <Badge variant="secondary" className="bg-white text-slate-600 border border-slate-200 text-[10px] font-bold uppercase py-0.5 px-2">
+                                    {messages.ponto.labels.jornadaMensal}
+                                </Badge>
                             </div>
-                            <h3 className="text-3xl font-black">{formatMinutes(kpis.horas_trabalhadas)}</h3>
-                            <p className="text-xs text-blue-100 font-medium opacity-80">Realizado de {formatMinutes(kpis.horas_esperadas)} planejadas</p>
-                        </div>
-                        <div className="p-4 flex items-center justify-between bg-gray-50/50">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.saldoAtual}</p>
-                                <p className={cn("text-lg font-black", hourBalance >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                                <h3 className="text-3xl font-black text-slate-800 tracking-tight">{formatMinutes(kpis.horas_trabalhadas)}</h3>
+                                <p className="text-xs text-slate-400 font-medium tracking-wide">
+                                    Realizado de <span className="text-slate-600 font-bold">{formatMinutes(kpis.horas_esperadas)}</span> planejadas
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/40 bg-white/50">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.saldoAtual}</p>
+                                <p className={cn("text-lg font-black leading-none", hourBalance >= 0 ? "text-emerald-600" : "text-rose-600")}>
                                     {formatMinutes(hourBalance, true)}
                                 </p>
                             </div>
                             <div className="text-right space-y-1">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.diasAtuados}</p>
-                                <p className="text-lg font-black text-gray-700">{kpis.dias_trabalhados} / {kpis.dias_meta_turno}</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.diasAtuados}</p>
+                                <p className="text-lg font-black text-slate-700 leading-none">{kpis.dias_trabalhados} / {kpis.dias_meta_turno}</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* 2. Assiduidade (Faltas) */}
-                <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden border border-gray-100">
+                <Card className="border shadow-sm rounded-3xl bg-slate-50/40 border-slate-200/60 overflow-hidden group hover:shadow-md transition-all duration-300">
                     <CardContent className="p-0">
-                        <div className="bg-rose-600 p-4 text-white">
-                            <div className="flex items-center justify-between mb-2">
-                                <TrendingDown className="h-5 w-5 opacity-80" />
-                                <Badge className="bg-rose-500/30 text-white border-rose-400/50 text-[10px] font-bold uppercase">{messages.ponto.labels.faltas}</Badge>
+                        <div className="p-5">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className={cn("p-3 bg-white rounded-2xl transition-colors duration-300 shadow-sm", kpis.dias_faltas === 0 ? "group-hover:bg-emerald-600" : "group-hover:bg-rose-600")}>
+                                    <TrendingDown className={cn("h-5 w-5 transition-colors duration-300", kpis.dias_faltas === 0 ? "text-emerald-600 group-hover:text-white" : "text-rose-600 group-hover:text-white")} />
+                                </div>
+                                <Badge variant="secondary" className={cn("bg-white border text-[10px] font-bold uppercase py-0.5 px-2", kpis.dias_faltas === 0 ? "text-emerald-600 border-emerald-100" : "text-rose-600 border-rose-100")}>
+                                    {messages.ponto.labels.faltas}
+                                </Badge>
                             </div>
-                            <h3 className="text-3xl font-black">{kpis.dias_faltas}</h3>
-                            <p className="text-xs text-rose-100 font-medium opacity-80">Faltas detectadas</p>
-                        </div>
-                        <div className="p-4 flex items-center justify-between bg-gray-50/50">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.totalEmHoras}</p>
-                                <p className="text-lg font-black text-rose-600">
+                                <h3 className={cn("text-3xl font-black tracking-tight", kpis.dias_faltas === 0 ? "text-emerald-600" : "text-rose-600")}>{kpis.dias_faltas}</h3>
+                                <p className="text-xs text-slate-400 font-medium tracking-wide">Faltas detectadas no período</p>
+                            </div>
+                        </div>
+                        <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/40 bg-white/50">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.totalEmHoras}</p>
+                                <p className={cn("text-lg font-black leading-none", kpis.dias_faltas === 0 ? "text-emerald-600" : "text-rose-600")}>
                                     {formatMinutes(kpis.horas_faltas)}
                                 </p>
                             </div>
-                            <div className="p-2 bg-rose-100 rounded-2xl">
-                                <Calendar className="h-5 w-5 text-rose-600" />
+                            <div className={cn("p-2 rounded-xl", kpis.dias_faltas === 0 ? "bg-emerald-50" : "bg-rose-50")}>
+                                <Calendar className={cn("h-4 w-4", kpis.dias_faltas === 0 ? "text-emerald-600" : "text-rose-600")} />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* 3. Desempenho (KM) */}
-                <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden border border-gray-100">
+                <Card className="border shadow-sm rounded-3xl bg-slate-50/40 border-slate-200/60 overflow-hidden group hover:shadow-md transition-all duration-300">
                     <CardContent className="p-0">
-                        <div className="bg-slate-800 p-4 text-white">
-                            <div className="flex items-center justify-between mb-2">
-                                <Gauge className="h-5 w-5 opacity-80" />
-                                <Badge className="bg-slate-700 text-white border-slate-600 text-[10px] font-bold uppercase">{messages.ponto.labels.rodagemKm}</Badge>
+                        <div className="p-5">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="p-3 bg-white rounded-2xl group-hover:bg-slate-800 transition-colors duration-300 shadow-sm">
+                                    <Gauge className="h-5 w-5 text-slate-800 group-hover:text-white transition-colors duration-300" />
+                                </div>
+                                <Badge variant="secondary" className="bg-white text-slate-600 border border-slate-200 text-[10px] font-bold uppercase py-0.5 px-2">
+                                    {messages.ponto.labels.rodagemKm}
+                                </Badge>
                             </div>
-                            <h3 className="text-3xl font-black">{kpis.km_realizado} <span className="text-sm font-normal text-slate-400">km</span></h3>
-                            <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Contratado: {kpis.km_contratado} km</p>
-                        </div>
-                        <div className="p-4 flex items-center justify-between bg-gray-50/50">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{messages.ponto.labels.saldoKm}</p>
-                                <p className={cn("text-lg font-black", kpis.km_saldo <= 0 ? "text-emerald-600" : "text-rose-600")}>
+                                <h3 className="text-3xl font-black text-slate-800 tracking-tight">{kpis.km_realizado} <span className="text-sm font-normal text-slate-400">km</span></h3>
+                                <p className="text-xs text-slate-400 font-medium tracking-wide uppercase tracking-widest">
+                                    Contratado: <span className="text-slate-700 font-bold">{kpis.km_contratado} km</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/40 bg-white/50">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.saldoKm}</p>
+                                <p className={cn("text-lg font-black leading-none", kpis.km_saldo <= 0 ? "text-emerald-600" : "text-rose-600")}>
                                     {kpis.km_saldo <= 0 ? `+${Math.abs(kpis.km_saldo)}` : `-${kpis.km_saldo}`} km
                                 </p>
                             </div>
-                            <div className="p-2 bg-slate-100 rounded-2xl">
-                                <MapPin className="h-5 w-5 text-slate-800" />
+                            <div className="p-2 bg-slate-100 rounded-xl">
+                                <MapPin className="h-4 w-4 text-slate-800" />
                             </div>
                         </div>
                     </CardContent>
@@ -207,7 +229,7 @@ export function TimeMirrorView({
                         <>
                             <div className="col-span-1 text-center">{messages.ponto.labels.kmTotal}</div>
                             <div className="col-span-1 text-center">{messages.ponto.labels.efetivo}</div>
-                            <div className="col-span-1 text-center">{messages.ponto.labels.carga}</div>
+                            <div className="col-span-1 text-center">{messages.ponto.labels.esperado}</div>
                             <div className="col-span-2 text-right">{messages.ponto.labels.saldoDia}</div>
                         </>
                     )}

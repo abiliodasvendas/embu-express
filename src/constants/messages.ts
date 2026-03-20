@@ -134,6 +134,7 @@ export const messages = {
       saldoDia: "Saldo Dia",
       efetivo: "Efetivo",
       carga: "Carga",
+      esperado: "Esperado",
       foraVigencia: "Fora de Vigência",
       referenciaPrefix: "Ref:",
       kmRodado: "KM Rodado",

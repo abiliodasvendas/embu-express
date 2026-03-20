@@ -46,7 +46,7 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Label } from "@/components/ui/label";
@@ -129,14 +129,14 @@ export function CollaboratorTurnDialog({
           valor_adiantamento: formatCurrency(
             turnToEdit.valor_adiantamento || 0,
           ),
-          data_inicio: turnToEdit.data_inicio || null,
+          data_inicio: turnToEdit.data_inicio || "",
           isMotoboyOrFiscal: isMOrF,
           horarios:
             turnToEdit.horarios?.map((h) => ({
               dia_semana: h.dia_semana,
               hora_inicio: (h.hora_inicio || "").substring(0, 5),
               hora_fim: (h.hora_fim || "").substring(0, 5),
-              tolerancia_pausa_min: Number(h.tolerancia_pausa_min) || 0,
+              tolerancia_pausa_min: h.tolerancia_pausa_min || 0,
             })) || [],
         });
       } else {
@@ -149,7 +149,7 @@ export function CollaboratorTurnDialog({
           valor_bonus: "" as any,
           ajuda_custo: "" as any,
           valor_adiantamento: "" as any,
-          data_inicio: null,
+          data_inicio: "",
           isMotoboyOrFiscal: isMOrF,
           horarios: [],
         });
@@ -194,9 +194,31 @@ export function CollaboratorTurnDialog({
   );
   const clientScale = selectedUnidade?.escala_semanal || [1, 2, 3, 4, 5, 6, 7];
 
+  const lastUnidadeRef = useRef<string | null>(null);
+
   // Sincroniza horários com a escala da unidade
   useEffect(() => {
-    if (selectedUnidadeId && selectedUnidade) {
+    if (!open) {
+      lastUnidadeRef.current = null;
+      return;
+    }
+
+    if (!turnToEdit && selectedUnidadeId && selectedUnidadeId !== lastUnidadeRef.current && selectedUnidade) {
+      lastUnidadeRef.current = selectedUnidadeId;
+      
+      // Ao trocar de unidade, ativamos todos os dias da nova escala
+      const initialHorarios = (selectedUnidade.escala_semanal || [1, 2, 3, 4, 5, 6, 7]).map(diaId => ({
+        dia_semana: diaId,
+        hora_inicio: "",
+        hora_fim: "",
+        tolerancia_pausa_min: "" as any,
+      }));
+      form.setValue("horarios", initialHorarios, { shouldValidate: true });
+      return;
+    }
+
+    // Se mudar de unidade ou escala, limpamos os dias que não fazem mais parte da escala atual
+    if (selectedUnidadeId && selectedUnidade && (turnToEdit || selectedUnidadeId === lastUnidadeRef.current)) {
       const current = form.getValues("horarios") || [];
       const updated = current.filter((h) => clientScale.includes(h.dia_semana));
       if (updated.length !== current.length) {
@@ -204,6 +226,7 @@ export function CollaboratorTurnDialog({
       }
     } else if (!selectedUnidadeId && !turnToEdit && open) {
       // Se desmarcar a unidade em modo novo turno, garante que limpa horários
+      lastUnidadeRef.current = null;
       const current = form.getValues("horarios");
       if (current && current.length > 0) {
         form.setValue("horarios", [], { shouldValidate: true });
@@ -264,19 +287,20 @@ export function CollaboratorTurnDialog({
 
       const current = form.getValues("horarios") || [];
       if (checked) {
-        form.setValue(
-          "horarios",
-          [
-            ...current,
-            {
-              dia_semana: dia,
-              hora_inicio: "",
-              hora_fim: "",
-              tolerancia_pausa_min: "" as any,
-            },
-          ],
-          { shouldValidate: true, shouldDirty: true },
-        );
+        const updated = [
+          ...current,
+          {
+            dia_semana: dia,
+            hora_inicio: "",
+            hora_fim: "",
+            tolerancia_pausa_min: "" as any,
+          },
+        ].sort((a, b) => a.dia_semana - b.dia_semana);
+
+        form.setValue("horarios", updated, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
       } else {
         form.setValue(
           "horarios",
@@ -287,6 +311,28 @@ export function CollaboratorTurnDialog({
     },
     [form, selectedUnidadeId, turnToEdit],
   );
+
+  const handleRepeatAll = useCallback(() => {
+    const current = form.getValues("horarios") || [];
+    if (current.length < 2) return;
+
+    const first = current[0];
+    const updated = current.map((h, i) => {
+      if (i === 0) return h;
+      return {
+        ...h,
+        hora_inicio: first.hora_inicio,
+        hora_fim: first.hora_fim,
+        tolerancia_pausa_min: first.tolerancia_pausa_min,
+      };
+    });
+
+    form.setValue("horarios", updated, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    toast.success("Horários replicados para todos os dias!");
+  }, [form]);
 
   const isSubmitting = createVinculo.isPending || updateVinculo.isPending;
 
@@ -592,7 +638,7 @@ export function CollaboratorTurnDialog({
                                 ) : (
                                   isClosed && (
                                     <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider mt-0.5">
-                                      Fechado cliente
+                                      Unidade Fechada
                                     </span>
                                   )
                                 )}
@@ -761,6 +807,23 @@ export function CollaboratorTurnDialog({
                                   </span>
                                 </div>
                               </div>
+                              {index === 0 && watchedHorarios.length > 1 && (
+                                <div className="col-span-3 pt-1 flex justify-center">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRepeatAll();
+                                    }}
+                                    className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 hover:bg-blue-50 gap-2 rounded-xl border border-blue-100/50"
+                                  >
+                                    <Wand2 className="h-3 w-3" />
+                                    Repetir para todos
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

@@ -12,9 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  CALENDARIO_STATUS,
   FINANCEIRO_STATUS,
   LANCAMENTO_TIPO,
-  CALENDARIO_STATUS,
 } from "@/constants/financeiro.constants";
 import { getMessage } from "@/constants/messages";
 import { PERMISSIONS } from "@/constants/permissions.enum";
@@ -24,13 +24,13 @@ import { useFinanceiroMutations } from "@/hooks/api/useFinanceiroMutations";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useDateFilters } from "@/hooks/ui/useFilters";
 import { cn } from "@/lib/utils";
+import { Ocorrencia } from "@/types/database";
+import { ResumoClienteFinanceiro } from "@/types/financeiro";
 import { meses } from "@/utils/formatters/constants";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateTimeToBR } from "@/utils/formatters/date";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Ocorrencia, RegistroPonto } from "@/types/database";
-import { ExtratoMensal, ResumoClienteFinanceiro } from "@/types/financeiro";
 import {
   AlertCircle,
   ArrowDownCircle,
@@ -514,7 +514,7 @@ export function FinancialReportView({
                         {/* Composição do Contrato */}
                         <div className="bg-gray-50/50 rounded-[2rem] p-6 space-y-4 border border-gray-100">
                           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 border-l-2 border-blue-600 pl-3">
-                            Composição do Contrato
+                            Composição do Contrato (Mensal)
                           </p>
                           <div className="grid grid-cols-2 gap-x-8 gap-y-3">
                             {resumo.valores_fixos?.contrato > 0 && (
@@ -532,7 +532,7 @@ export function FinancialReportView({
                             {resumo.valores_fixos?.bonus > 0 && (
                               <div className="flex justify-between text-[13px] items-center">
                                 <span className="text-gray-500 font-medium">
-                                  Bônus
+                                  Bônus (Efetivo)
                                 </span>
                                 <span className="font-bold text-emerald-600">
                                   {formatCurrency(resumo.valores_fixos.bonus)}
@@ -561,25 +561,31 @@ export function FinancialReportView({
                                 </span>
                               </div>
                             )}
-                            {resumo.valores_fixos?.adiantamento_config > 0 && extrato.adiantamento_confirmado && (
+                            {resumo.valores_fixos?.adiantamento_config > 0 && (
                               <div className="flex justify-between text-[13px] items-center">
-                                <span className="text-red-400 font-bold italic">
+                                <span className="text-gray-500 font-medium">
                                   Adiantamento
                                 </span>
-                                <span className="font-bold text-red-600">
-                                  -
-                                  {formatCurrency(
-                                    resumo.valores_fixos.adiantamento,
-                                  )}
-                                </span>
+                                {resumo.valores_fixos.adiantamento > 0 ? (
+                                  <span className="font-bold text-red-600">
+                                    -
+                                    {formatCurrency(
+                                      resumo.valores_fixos.adiantamento,
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="font-bold text-gray-300">
+                                    -
+                                  </span>
+                                )}
                               </div>
                             )}
                           </div>
                           <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center px-2">
                             <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                              Base mensal (Cheio)
+                              Base Mensal do Período
                             </span>
-                            <span className="text-lg font-black text-gray-400 line-through opacity-40">
+                            <span className="text-lg font-black text-gray-400">
                               {formatCurrency(resumo.saldo_fixo_original)}
                             </span>
                           </div>
@@ -589,7 +595,7 @@ export function FinancialReportView({
                             </span>
                             <span className="text-lg font-black text-blue-600">
                               {formatCurrency(
-                                ((resumo.saldo_fixo_original - (resumo.valores_fixos.bonus_config || 0)) /
+                                ((resumo.saldo_fixo_original - (resumo.valores_fixos.bonus || 0)) /
                                   resumo.dias_base_mes) *
                                 resumo.dias_trabalhados + (resumo.valores_fixos.bonus || 0),
                               )}

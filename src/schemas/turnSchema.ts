@@ -16,7 +16,7 @@ const optionalMoneySchema = z.union([z.string(), z.number()])
   .refine(val => val === 0 || val > 0, "O valor deve ser maior ou igual a zero");
 
 const horarioSchema = z.object({
-  dia_semana: z.number().min(1).max(7),
+  dia_semana: z.number().min(0).max(6),
   hora_inicio: z.string().min(1, messages.validacao.campoObrigatorio).regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida"),
   hora_fim: z.string().min(1, messages.validacao.campoObrigatorio).regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Hora inválida"),
   tolerancia_pausa_min: z.preprocess((val) => {

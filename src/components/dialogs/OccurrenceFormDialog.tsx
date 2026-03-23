@@ -230,7 +230,7 @@ export function OccurrenceFormDialog({
                                                             <SelectValue placeholder="Selecione o tipo" />
                                                         </SelectTrigger>
                                                     </FormControl>
-                                                    <SelectContent className="rounded-xl shadow-xl">
+                                                    <SelectContent className="rounded-xl shadow-xl" side="bottom" sideOffset={4}>
                                                         {tipos.map((t) => (
                                                             <SelectItem key={t.id} value={String(t.id)} className="cursor-pointer">
                                                                 {t.descricao}
@@ -294,7 +294,7 @@ export function OccurrenceFormDialog({
                                                             <SelectValue placeholder="Selecione o vínculo ou 'Geral'" />
                                                         </SelectTrigger>
                                                     </FormControl>
-                                                    <SelectContent className="rounded-xl shadow-xl">
+                                                    <SelectContent className="rounded-xl shadow-xl" side="bottom" sideOffset={4}>
                                                         <SelectItem value="none" className="cursor-pointer font-semibold text-primary italic">
                                                             Geral (Avulsa)
                                                         </SelectItem>
@@ -379,7 +379,7 @@ export function OccurrenceFormDialog({
                                                                     <SelectValue placeholder="Selecione..." />
                                                                 </SelectTrigger>
                                                             </FormControl>
-                                                            <SelectContent className="rounded-xl shadow-xl">
+                                                            <SelectContent className="rounded-xl shadow-xl" side="bottom" sideOffset={4}>
                                                                 <SelectItem value={LANCAMENTO_TIPO.SAIDA} className="cursor-pointer">Saída (Débito)</SelectItem>
                                                                 <SelectItem value={LANCAMENTO_TIPO.ENTRADA} className="cursor-pointer">Entrada (Crédito)</SelectItem>
                                                             </SelectContent>

@@ -415,7 +415,7 @@ export function CollaboratorTurnDialog({
                                   <SelectValue placeholder="Selecione o Cliente" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent className="rounded-2xl">
+                              <SelectContent className="rounded-2xl" side="bottom" sideOffset={4}>
                                 {clients?.map((client) => (
                                   <SelectItem
                                     key={client.id}
@@ -463,7 +463,7 @@ export function CollaboratorTurnDialog({
                                   />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent className="rounded-2xl">
+                              <SelectContent className="rounded-2xl" side="bottom" sideOffset={4}>
                                 {unidades?.map((unidade) => (
                                   <SelectItem
                                     key={unidade.id}
@@ -505,7 +505,7 @@ export function CollaboratorTurnDialog({
                                 <SelectValue placeholder="Selecione a Empresa" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="rounded-2xl">
+                            <SelectContent className="rounded-2xl" side="bottom" sideOffset={4}>
                               {empresas?.map((emp) => (
                                 <SelectItem
                                   key={emp.id}

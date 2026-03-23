@@ -288,7 +288,7 @@ export function CollaboratorFormDialog({
                             <SelectValue placeholder="Selecione o cargo" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="rounded-xl shadow-xl">
+                        <SelectContent className="rounded-xl shadow-xl" side="bottom" sideOffset={4}>
                           {roles?.map((role: Perfil) => (
                             <SelectItem key={role.id} value={role.id.toString()} className="h-10 rounded-lg cursor-pointer">
                               {getPerfilLabel(role.nome)}

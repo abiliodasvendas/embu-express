@@ -26,7 +26,9 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
     if (!record) return null;
 
     const formatDate = (dateStr: string) => {
-        return format(new Date(dateStr), "d 'de' MMMM, yyyy", { locale: ptBR });
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return format(new Date(year, month - 1, day), "d 'de' MMMM, yyyy", { locale: ptBR });
     };
 
     const formatTime = (timeIso?: string | null) => {
@@ -132,7 +134,12 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                         <h3 className="text-xl font-bold text-gray-900 leading-tight">{record.usuario?.nome_completo}</h3>
                         <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                             <Building2 className="w-4 h-4" />
-                            <span>{(record as any).cliente?.nome_fantasia || record.usuario?.links?.[0]?.cliente?.nome_fantasia || "Sem Cliente"}</span>
+                            <div className="flex flex-col items-center">
+                                <span className="font-bold">{(record as any).cliente?.nome_fantasia || record.usuario?.links?.[0]?.cliente?.nome_fantasia || "Sem Cliente"}</span>
+                                {(record as any).colaborador_cliente?.unidade?.nome_unidade && (
+                                    <span className="text-xs text-gray-400 font-medium ml-1">{(record as any).colaborador_cliente.unidade.nome_unidade}</span>
+                                )}
+                            </div>
                         </div>
                         <div className="flex items-center justify-center gap-2 text-xs font-medium text-gray-400">
                             <MapPin className="w-3 h-3" />

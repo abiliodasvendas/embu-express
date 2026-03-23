@@ -24,6 +24,7 @@ interface TimeMirrorViewProps {
     selectedYear?: number;
     selectedShift?: string;
     hideCollaboratorSelect?: boolean;
+    isActionable?: boolean;
 }
 
 export function TimeMirrorView({
@@ -31,6 +32,7 @@ export function TimeMirrorView({
     selectedMonth,
     selectedYear,
     selectedShift = FilterOptions.TODOS,
+    isActionable = false
 }: TimeMirrorViewProps) {
     const month = selectedMonth || new Date().getMonth() + 1;
     const year = selectedYear || new Date().getFullYear();
@@ -43,7 +45,7 @@ export function TimeMirrorView({
 
     // Filtrar pelo turno selecionado (se não for "TODOS")
     const activeReport = selectedShift === FilterOptions.TODOS
-        ? reportData[0] // Por padrão pegamos o primeiro se for todos, ou deveríamos somar? O usuário geralmente vê um por vez.
+        ? reportData[0] // Por padrão pegamos o primeiro se for todos
         : reportData.find(r => r.shift_id === Number(selectedShift)) || reportData[0];
 
     const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
@@ -52,13 +54,17 @@ export function TimeMirrorView({
     const { data: fullRecord, isFetching: isFetchingRecord } = useTimeRecord(selectedPontoId);
 
     const handleDelete = (record: RegistroPonto) => {
+        handleDeleteById(Number(record.id));
+    };
+
+    const handleDeleteById = (id: number) => {
         openConfirmationDialog({
             title: "Excluir Registro",
             description: "Tem certeza que deseja excluir permanentemente este registro de ponto? Esta ação não pode ser desfeita.",
             confirmText: "Sim, excluir",
             variant: "destructive",
             onConfirm: async () => {
-                await deletePonto(Number(record.id));
+                await deletePonto(id);
                 closeConfirmationDialog();
             }
         });
@@ -66,6 +72,30 @@ export function TimeMirrorView({
 
     const handleEditFromDetails = (record: RegistroPonto) => {
         openTimeRecordDialog({ record });
+    };
+
+    const handleOpenRecord = (day: PontoDiarioRelatorio) => {
+        if (day.ponto_id) {
+            setSelectedPontoId(day.ponto_id);
+        } else if (isActionable && usuarioId && can(PERMISSIONS.PONTO.ADMIN_CRIAR)) {
+            openTimeRecordDialog({
+                record: {
+                    id: `ausente-${day.data}` as any,
+                    usuario_id: usuarioId,
+                    data_referencia: day.data,
+                    colaborador_cliente_id: activeReport?.shift_id,
+                    colaborador_cliente: {
+                        id: activeReport?.shift_id,
+                        unidade: { nome_unidade: day.unidade_nome },
+                        cliente: { nome_fantasia: day.cliente_nome }
+                    },
+                    detalhes_calculo: {
+                        entrada: { turno_base: day.shift_entrada },
+                        saida: { turno_base: day.shift_saida }
+                    }
+                } as any
+            });
+        }
     };
 
     useEffect(() => {
@@ -242,7 +272,9 @@ export function TimeMirrorView({
                         canViewAll={canViewAll}
                         isFetchingRecord={isFetchingRecord}
                         selectedPontoId={selectedPontoId}
-                        onClick={(id) => setSelectedPontoId(id)}
+                        onClick={handleOpenRecord}
+                        onDelete={can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleDeleteById : undefined}
+                        isActionable={isActionable}
                     />
                 ))}
             </div>

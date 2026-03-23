@@ -37,7 +37,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                         <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">CNPJ (MEI)</FormLabel>
                         <FormControl>
                             <Input
-                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200")}
+                                className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all", form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200")}
                                 {...field}
                                 onChange={(e) => field.onChange(cnpjMask(e.target.value))}
                                 maxLength={18}
@@ -53,7 +53,6 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                         label="Valor MEI"
                         labelClassName="text-gray-700 font-bold ml-1 text-sm opacity-70"
                         placeholder="R$ 0,00"
-                        inputClassName="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                     />
                 )} />
                 <FormField name="tipo_chave_pix" control={form.control} render={({ field }) => (
@@ -68,7 +67,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                             value={field.value}
                         >
                             <FormControl>
-                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
+                                <SelectTrigger className="h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all">
                                     <SelectValue placeholder="Selecione o tipo" />
                                 </SelectTrigger>
                             </FormControl>
@@ -91,7 +90,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                             <FormControl>
                                 <Input
                                     disabled={!tipoChavePix}
-                                    className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", form.formState.errors.chave_pix && "border-red-500 focus-visible:ring-red-200", !tipoChavePix && "opacity-50 cursor-not-allowed")}
+                                    className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all", form.formState.errors.chave_pix && "border-red-500 focus-visible:ring-red-200", !tipoChavePix && "opacity-50 cursor-not-allowed")}
                                     {...field}
                                     onChange={(e) => {
                                         field.onChange(pixMask(e.target.value, tipoChavePix));

@@ -33,22 +33,20 @@ export function MoneyInput<T extends FieldValues>({
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
       <FormControl>
-        <div className="relative group">
-          <Input
-            {...field}
-            placeholder={placeholder}
-            type="text"
-            className={cn(
-              "rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-              inputClassName
-            )}
-            disabled={disabled}
-            onChange={(e) => {
-              field.onChange(moneyMask(e.target.value));
-            }}
-            aria-invalid={!!error}
-          />
-        </div>
+        <Input
+          {...field}
+          placeholder={placeholder}
+          type="text"
+          className={cn(
+            "h-11 rounded-2xl bg-gray-50 border-gray-200 px-4 focus:bg-white transition-all font-medium",
+            inputClassName
+          )}
+          disabled={disabled}
+          onChange={(e) => {
+            field.onChange(moneyMask(e.target.value));
+          }}
+          aria-invalid={!!error}
+        />
       </FormControl>
       <FormMessage />
     </FormItem>

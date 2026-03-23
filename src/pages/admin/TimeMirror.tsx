@@ -34,6 +34,7 @@ export function TimeMirror() {
                 selectedYear={vm.filters.selectedAno}
                 selectedShift={vm.filters.selectedTurno}
                 hideCollaboratorSelect // Toolbar already has it
+                isActionable
             />
         </div>
     );

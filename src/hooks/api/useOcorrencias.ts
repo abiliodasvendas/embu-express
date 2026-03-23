@@ -10,12 +10,13 @@ export function useOcorrencias(filtros?: {
     tipo_id?: number;
     order?: string;
     ascending?: boolean;
-}) {
+}, options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>) {
     return useQuery({
         queryKey: ["ocorrencias", filtros],
         queryFn: () => ocorrenciaService.listOcorrencias(filtros),
         staleTime: 0,
         refetchOnMount: true,
+        ...options
     });
 }
 

@@ -25,7 +25,7 @@ export function CollaboratorFormCNH() {
                         <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Registro CNH</FormLabel>
                         <FormControl>
                             <Input
-                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")}
+                                className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all", errors.cnh_registro && "border-red-500 focus-visible:ring-red-200")}
                                 {...field}
                             />
                         </FormControl>
@@ -43,7 +43,7 @@ export function CollaboratorFormCNH() {
                             <Input
                                 placeholder="DD/MM/AAAA"
                                 maxLength={10}
-                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.cnh_vencimento && "border-red-500 focus-visible:ring-red-200")}
+                                className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all", errors.cnh_vencimento && "border-red-500 focus-visible:ring-red-200")}
                                 {...field}
                                 onChange={(e) => field.onChange(dateMask(e.target.value))}
                             />
@@ -61,7 +61,7 @@ export function CollaboratorFormCNH() {
                         <FormControl>
                             <Input
                                 placeholder="A / AB"
-                                className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", errors.cnh_categoria && "border-red-500 focus-visible:ring-red-200")}
+                                className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all uppercase", errors.cnh_categoria && "border-red-500 focus-visible:ring-red-200")}
                                 {...field}
                             />
                         </FormControl>
@@ -84,7 +84,7 @@ export function CollaboratorFormMoto() {
                 <FormItem>
                     <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Modelo</FormLabel>
                     <FormControl>
-                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_modelo && "border-red-500 focus-visible:ring-red-200")} {...field} />
+                        <Input className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all", errors.moto_modelo && "border-red-500 focus-visible:ring-red-200")} {...field} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -93,7 +93,7 @@ export function CollaboratorFormMoto() {
                 <FormItem>
                     <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Cor</FormLabel>
                     <FormControl>
-                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} {...field} />
+                        <Input className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all", errors.moto_cor && "border-red-500 focus-visible:ring-red-200")} {...field} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -102,7 +102,7 @@ export function CollaboratorFormMoto() {
                 <FormItem>
                     <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Ano</FormLabel>
                     <FormControl>
-                        <Input className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors", errors.moto_ano && "border-red-500 focus-visible:ring-red-200")} {...field} maxLength={4} onChange={(e) => field.onChange(onlyNumbers(e.target.value).slice(0, 4))} />
+                        <Input className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all", errors.moto_ano && "border-red-500 focus-visible:ring-red-200")} {...field} maxLength={4} onChange={(e) => field.onChange(onlyNumbers(e.target.value).slice(0, 4))} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -112,7 +112,7 @@ export function CollaboratorFormMoto() {
                     <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Placa</FormLabel>
                     <FormControl>
                         <Input
-                            className={cn("h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase", errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}
+                            className={cn("h-11 rounded-2xl px-4 bg-gray-50 border-gray-200 focus:bg-white transition-all uppercase", errors.moto_placa && "border-red-500 focus-visible:ring-red-200")}
                             {...field}
                             maxLength={8}
                             onChange={(e) => field.onChange(aplicarMascaraPlaca(e.target.value))}

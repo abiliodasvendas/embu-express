@@ -18,6 +18,8 @@ export interface PontoDiarioRelatorio {
     saida_km?: number | null;
     km_rodado: number;
     unidade_nome: string | null;
+    ponto_id: number | null;
+    observacao?: string | null;
 }
 
 export interface EspelhoPontoMensal {

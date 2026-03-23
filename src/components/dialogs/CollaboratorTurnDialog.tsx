@@ -868,7 +868,6 @@ export function CollaboratorTurnDialog({
                       )}
                     />
 
-                    <div className="pt-2">
                       <FormField
                         control={form.control}
                         name="valor_contrato"
@@ -878,11 +877,9 @@ export function CollaboratorTurnDialog({
                             label="Salário Base"
                             required={true}
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                            inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
                         )}
                       />
-                    </div>
 
                     <div className="pt-2 grid grid-cols-1 gap-5 relative z-10">
                       <FormField
@@ -893,7 +890,6 @@ export function CollaboratorTurnDialog({
                             field={field}
                             label="Bônus Zero Falta"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                            inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
                         )}
                       />
@@ -905,7 +901,6 @@ export function CollaboratorTurnDialog({
                             field={field}
                             label="Aluguel Veículo"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                            inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
                         )}
                       />
@@ -917,7 +912,6 @@ export function CollaboratorTurnDialog({
                             field={field}
                             label="Ajuda de Custo"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                            inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-100 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-900"
                           />
                         )}
                       />
@@ -941,7 +935,6 @@ export function CollaboratorTurnDialog({
                           field={field}
                           label="Adiantamento"
                           labelClassName="text-red-900 font-bold ml-1 text-xs uppercase tracking-wider"
-                          inputClassName="px-4 h-11 rounded-2xl bg-white/70 backdrop-blur-sm border-red-100 focus:bg-white focus:ring-2 focus:ring-red-500/20 transition-all font-medium text-red-900"
                         />
                       )}
                     />

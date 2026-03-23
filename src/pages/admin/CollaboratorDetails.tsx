@@ -25,6 +25,7 @@ import {
 import { useDeleteCollaborator, useResetCollaboratorPassword, useUpdateCollaboratorStatus, useUpdateVinculo } from "@/hooks/api/useCollaboratorMutations";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
+import { FilterOptions } from "@/types/enums";
 import { ColaboradorCliente, Usuario } from "@/types/database";
 import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
@@ -614,9 +615,19 @@ export default function CollaboratorDetails() {
                             <h4 className="font-bold text-gray-800 leading-tight">
                               {link.cliente?.nome_fantasia}
                             </h4>
-                            <p className="text-[11px] text-gray-500 font-medium mt-0.5">
-                              {link.unidade?.nome_unidade}
-                            </p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <p className="text-[11px] text-gray-500 font-medium capitalize">
+                                {link.unidade?.nome_unidade?.toLowerCase()}
+                              </p>
+                              {link.horarios?.[0] && (
+                                <>
+                                  <span className="text-gray-300 text-[10px]">•</span>
+                                  <span className="text-[11px] font-bold text-primary">
+                                    {link.horarios[0].hora_inicio.substring(0, 5)} - {link.horarios[0].hora_fim.substring(0, 5)}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
                           {link.data_fim && new Date(link.data_fim + 'T00:00:00') < new Date() && (
                             <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-700 font-bold text-[10px] shrink-0">
@@ -780,6 +791,17 @@ export default function CollaboratorDetails() {
                     ))}
                   </SelectContent>
                 </Select>
+                <Select value={pontoVm.filters.selectedTurno} onValueChange={(v) => pontoVm.setShift?.(v)}>
+                  <SelectTrigger className="h-11 w-[160px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
+                    <SelectValue placeholder="Todos os Turnos" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                    <SelectItem value={FilterOptions.TODOS} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1">Todos os Turnos</SelectItem>
+                    {pontoVm.availableShifts.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1">{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardHeader>
             <CardContent className="px-8 pb-8 pt-6">
@@ -787,6 +809,8 @@ export default function CollaboratorDetails() {
                 usuarioId={id}
                 selectedMonth={filters.selectedMes}
                 selectedYear={filters.selectedAno}
+                selectedShift={pontoVm.filters.selectedTurno}
+                isActionable
               />
             </CardContent>
           </Card>

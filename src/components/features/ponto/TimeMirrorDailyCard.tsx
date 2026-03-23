@@ -5,13 +5,16 @@ import { messages } from "@/constants/messages";
 import { cn } from "@/lib/utils";
 import { PontoDiarioRelatorio } from "@/types/ponto-relatorio";
 import { formatMinutes } from "@/utils/ponto";
+import { MessageSquare, Trash2 } from "lucide-react";
 
 interface TimeMirrorDailyCardProps {
     day: PontoDiarioRelatorio;
     canViewAll: boolean;
     isFetchingRecord?: boolean;
     selectedPontoId?: number | null;
-    onClick: (id: number) => void;
+    onClick: (day: PontoDiarioRelatorio) => void;
+    onDelete?: (id: number) => void;
+    isActionable?: boolean;
 }
 
 export function TimeMirrorDailyCard({
@@ -19,7 +22,9 @@ export function TimeMirrorDailyCard({
     canViewAll,
     isFetchingRecord,
     selectedPontoId,
-    onClick
+    onClick,
+    onDelete,
+    isActionable = false
 }: TimeMirrorDailyCardProps) {
     const isLack = day.status === CALENDARIO_STATUS.FALTA;
     const isWorked = day.status === CALENDARIO_STATUS.TRABALHADO;
@@ -43,15 +48,17 @@ export function TimeMirrorDailyCard({
 
     const { label: labelStatus, badge: badgeLabel } = getStatusLabels();
 
+    const isClickable = (isWorked || (isActionable && !isNotVigente)) && !isFetchingRecord;
+
     return (
         <Card
             className={cn(
                 "border border-gray-100 shadow-sm rounded-[1.5rem] overflow-hidden group transition-all duration-300 relative",
-                isWorked ? "hover:shadow-md cursor-pointer active:scale-[0.99]" : "cursor-default",
+                isClickable ? "hover:shadow-md cursor-pointer active:scale-[0.99]" : "cursor-default",
                 isFetchingRecord && selectedPontoId === day.dia && "opacity-60 cursor-wait",
                 isNotVigente && "opacity-40 grayscale pointer-events-none"
             )}
-            onClick={() => isWorked && !isFetchingRecord && onClick(day.dia)}
+            onClick={() => isClickable && onClick(day)}
         >
             {/* Sidebar de Status - Estética Premium */}
             <div className={cn(
@@ -85,8 +92,13 @@ export function TimeMirrorDailyCard({
                             )}>
                                 {String(day.dia).padStart(2, '0')}
                             </span>
+                            {day.observacao && (
+                                <div className="absolute top-2.5 right-2.5 bg-amber-500 text-white p-0.5 rounded-full ring-2 ring-white">
+                                    <MessageSquare className="w-2.5 h-2.5 fill-current" />
+                                </div>
+                            )}
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                             <h4 className="font-bold text-gray-900 line-clamp-1 leading-tight text-sm">
                                 {day.cliente_nome || (isNotVigente ? messages.ponto.labels.foraVigencia : messages.ponto.labels.semEscala)}
                             </h4>
@@ -94,6 +106,20 @@ export function TimeMirrorDailyCard({
                                 {day.unidade_nome || labelStatus}
                             </p>
                         </div>
+
+                        {/* Botão de Excluir */}
+                        {onDelete && day.ponto_id && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete(day.ponto_id as number);
+                                }}
+                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                title="Excluir marcação"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
 
                     {/* Badge Status */}

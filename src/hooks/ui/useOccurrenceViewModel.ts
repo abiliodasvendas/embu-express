@@ -64,12 +64,14 @@ export function useOccurrenceViewModel(options: UseOccurrenceViewModelOptions = 
   const finalUsuarioId = initialUsuarioId || (canViewAll ? (filters.selectedUsuario === 'todos' ? undefined : filters.selectedUsuario) : profile?.id);
 
   const { data: rawOccurrences = [], isLoading, refetch } = useOcorrencias({
-    data_inicio: filters.startDate,
-    data_fim: filters.endDate,
+    data_inicio: initialDates.start || filters.startDate,
+    data_fim: initialDates.end || filters.endDate,
     tipo_id: filters.selectedTipo === FilterOptions.TODOS ? undefined : Number(filters.selectedTipo),
     usuario_id: finalUsuarioId || undefined,
     order: "data_ocorrencia",
     ascending: false,
+  }, {
+    enabled: canViewAll || (!!profile?.id)
   });
 
   const { data: tiposOcorrencia = [] } = useTiposOcorrencia();

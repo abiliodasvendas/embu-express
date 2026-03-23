@@ -21,6 +21,8 @@ import { AlertCircle, Building2, Calendar as CalendarIcon, Check, ChevronsUpDown
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { getManagementStatus } from "@/utils/ponto";
+import { ManagementStatus } from "@/types/enums";
 
 interface TimeRecordDialogProps {
     isOpen: boolean;
@@ -33,27 +35,38 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
     const { mutateAsync: updatePonto, isPending: isUpdating } = useUpdatePonto();
     const [openCombobox, setOpenCombobox] = useState(false);
 
-    const { data: collaborators = [] } = useActiveCollaborators({ enabled: isOpen && !record });
-
     const idValue = record?.id;
-    const isVirtualId = !!idValue && String(idValue).startsWith('ausente-');
+    // Um registro é virtual se não houver marcação de entrada (sintetizado pelo backend ou frontend para faltas/atrasos)
+    // ou se o ID explicitamente indicar que é um registro de ausência.
+    const isVirtualId = !!record && (
+        !record.entrada_hora ||
+        record.ausente === true ||
+        (!!idValue && String(idValue).startsWith('ausente-'))
+    );
 
-    const isEditMode = !!record && !!idValue && !isVirtualId;
-    const isInclusionMode = !!record && (!idValue || isVirtualId);
+    const { data: collaborators = [] } = useActiveCollaborators({ enabled: isOpen && (!record || isVirtualId) });
+
+    const isEditMode = !!record && !isVirtualId;
+    const isInclusionMode = !!record && isVirtualId;
     const isManualMode = !record;
 
     const form = useForm<ManualTimeRecordFormValues>({
         resolver: zodResolver(manualTimeRecordSchema),
         defaultValues: {
             usuario_id: "",
+            perfil_nome: "",
             data_referencia: format(new Date(), "yyyy-MM-dd"),
             entrada_hora: "",
             saida_hora: "",
             entrada_km: "",
             saida_km: "",
             colaborador_cliente_id: "",
+            observacao: "",
         },
     });
+
+    const watchedPerfilNome = form.watch("perfil_nome");
+    const isMotoboyOrFiscal = watchedPerfilNome === 'motoboy' || watchedPerfilNome === 'fiscal';
 
     const selectedCollaboratorId = form.watch("usuario_id");
     const selectedCollaborator = record?.usuario || collaborators.find(c => c.id.toString() === selectedCollaboratorId);
@@ -63,41 +76,78 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
         safeCloseDialog(onClose);
     };
 
-    const isFixingInconsistency = record?.status_saida === "FALTA_SAIDA" || isVirtualId;
+    // Determina se o turno já encerrou para sugerir preenchimentos automáticos
+    const now = new Date();
+    const getShiftMoment = (timeStr?: string) => {
+        if (!timeStr || !record?.data_referencia) return null;
+        const [h, m] = timeStr.split(':').map(Number);
+        const [y, mm, d] = record.data_referencia.split('-').map(Number);
+        const date = new Date(y, mm - 1, d);
+        date.setHours(h, m, 0, 0);
+        return date;
+    };
+
+    const shiftStart = getShiftMoment(record?.detalhes_calculo?.entrada?.turno_base);
+    let shiftEnd = getShiftMoment(record?.detalhes_calculo?.saida?.turno_base);
+    if (shiftStart && shiftEnd && shiftEnd <= shiftStart) {
+        shiftEnd = new Date(shiftEnd.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    const isShiftEnded = shiftEnd ? now > shiftEnd : false;
+
+    // Sugerimos a saída apenas se for uma falta total confirmada (turno encerrou) ou se houver erro de saída pendente
+    const isFixingInconsistency =
+        isShiftEnded ||
+        record?.status_saida === "FALTA_SAIDA" ||
+        record?.status_saida === "PENDENTE";
 
     useEffect(() => {
         if (isOpen) {
             if (record) {
                 const values = {
                     usuario_id: String(record.usuario_id),
-                    data_referencia: format(new Date(record.data_referencia), "yyyy-MM-dd"),
-                    entrada_hora: record.entrada_hora ? format(new Date(record.entrada_hora), "HH:mm") : (record.detalhes_calculo?.entrada?.turno_base?.slice(0, 5) || ""),
-                    saida_hora: record.saida_hora 
-                        ? format(new Date(record.saida_hora), "HH:mm") 
-                        : (isFixingInconsistency ? (record.detalhes_calculo?.saida?.turno_base?.slice(0, 5) || "") : ""),
+                    perfil_nome: record.usuario?.perfil?.nome || "",
+                    data_referencia: record.data_referencia,
+                    // Regra Entrada: se tem no banco, usa. Senão, se o turno ACABOU (falta), preenche.
+                    // Se apenas passou do início mas não acabou (atraso), deixa vazio para forçar o real.
+                    entrada_hora: record.entrada_hora
+                        ? format(new Date(record.entrada_hora), "HH:mm")
+                        : (isShiftEnded ? (record.detalhes_calculo?.entrada?.turno_base?.slice(0, 5) || "") : ""),
+                    // Regra Saída: se tem no banco, usa. Senão, se o turno ACABOU, preenche.
+                    saida_hora: record.saida_hora
+                        ? format(new Date(record.saida_hora), "HH:mm")
+                        : (isShiftEnded ? (record.detalhes_calculo?.saida?.turno_base?.slice(0, 5) || "") : ""),
                     entrada_km: record.entrada_km != null ? String(record.entrada_km) : "",
                     saida_km: record.saida_km != null ? String(record.saida_km) : "",
                     colaborador_cliente_id: String(record.colaborador_cliente_id || ""),
+                    observacao: record.observacao || "",
                 };
                 form.reset(values);
             } else {
                 form.reset({
                     usuario_id: "",
+                    perfil_nome: "",
                     data_referencia: format(new Date(), "yyyy-MM-dd"),
                     entrada_hora: "",
                     saida_hora: "",
                     entrada_km: "",
                     saida_km: "",
                     colaborador_cliente_id: "",
+                    observacao: "",
                 });
             }
             setOpenCombobox(false);
         }
-    }, [isOpen, record, form, isFixingInconsistency]);
+    }, [isOpen, record, form, isShiftEnded]);
 
     const onSubmit = async (values: ManualTimeRecordFormValues) => {
         try {
-            const { entrada, saida } = TimeRules.resolveDates(values.data_referencia, values.entrada_hora, values.saida_hora || undefined);
+            // Conversão segura decompondo data YYYY-MM-DD para evitar fuso horário
+            const [y, m, d] = values.data_referencia.split('-').map(Number);
+            const refDate = new Date(y, m - 1, d);
+            const refDateStr = format(refDate, "yyyy-MM-dd");
+
+            const { entrada, saida } = TimeRules.resolveDates(refDateStr, values.entrada_hora, values.saida_hora || undefined);
 
             if (saida) {
                 const checkMax = TimeRules.validateMaxDuration(entrada, saida, 16);
@@ -114,7 +164,8 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                 entrada_km: kmToNumber(values.entrada_km),
                 saida_hora: saida ? saida.toISOString() : null,
                 saida_km: values.saida_km ? kmToNumber(values.saida_km) : null,
-                colaborador_cliente_id: values.colaborador_cliente_id ? parseInt(values.colaborador_cliente_id) : undefined
+                colaborador_cliente_id: values.colaborador_cliente_id ? parseInt(values.colaborador_cliente_id) : undefined,
+                observacao: values.observacao
             };
 
             if (isEditMode && record && typeof record.id === 'number') {
@@ -186,11 +237,19 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                             <Building2 className="w-3 h-3" />
                                             <span>
                                                 {(() => {
-                                                    const linkId = form.watch("colaborador_cliente_id");
-                                                    if (linkId) {
-                                                        return (record as any)?.cliente?.nome_fantasia || selectedCollaborator?.links?.find((l: any) => l.id.toString() === linkId)?.cliente?.nome_fantasia;
+                                                    const displayedClient = (record as any)?.cliente?.nome_fantasia || (record as any)?.colaborador_cliente?.cliente?.nome_fantasia || selectedCollaborator?.links?.[0]?.cliente?.nome_fantasia;
+                                                    const displayedUnit = (record as any)?.colaborador_cliente?.unidade?.nome_unidade || selectedCollaborator?.links?.[0]?.unidade?.nome_unidade;
+
+                                                    if (displayedClient || displayedUnit) {
+                                                        return (
+                                                            <div className="flex flex-col items-center text-xs">
+                                                                <span className="font-black text-blue-600 uppercase tracking-tight">{displayedUnit || "Unidade não definida"}</span>
+                                                                <span className="text-[10px] text-gray-400 font-medium italic">{displayedClient || "Cliente não definido"}</span>
+                                                            </div>
+                                                        );
                                                     }
-                                                    return isManualMode ? "Selecione o turno abaixo" : "Sem cliente definido";
+
+                                                    return isManualMode ? "Selecione o turno abaixo" : "Carregando informações do turno...";
                                                 })()}
                                             </span>
                                         </div>
@@ -235,6 +294,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                                                             key={collaborator.id}
                                                                             onSelect={() => {
                                                                                 form.setValue("usuario_id", collaborator.id.toString());
+                                                                                form.setValue("perfil_nome", collaborator.perfil?.nome || "");
                                                                                 setOpenCombobox(false);
                                                                             }}
                                                                             className="cursor-pointer"
@@ -280,9 +340,10 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                                                     : "border-gray-100 hover:border-gray-200 bg-white"
                                                             )}
                                                         >
-                                                            <div className="flex flex-col">
-                                                                <span className="text-sm font-bold text-gray-800">{link.cliente?.nome_fantasia}</span>
-                                                                <span className="text-xs text-gray-500">{link.hora_inicio.slice(0, 5)} - {link.hora_fim.slice(0, 5)}</span>
+                                                            <div className="flex flex-col flex-1 min-w-0">
+                                                                <span className="text-sm font-black text-gray-900 leading-tight uppercase tracking-tight">{link.unidade?.nome_unidade}</span>
+                                                                <span className="text-[10px] text-gray-400 font-medium italic">{link.cliente?.nome_fantasia}</span>
+                                                                <span className="text-[11px] text-blue-600 font-bold mt-0.5">{link.hora_inicio.slice(0, 5)} - {link.hora_fim.slice(0, 5)}</span>
                                                             </div>
                                                             {field.value === link.id.toString() && (
                                                                 <Check className="w-5 h-5 text-blue-600" />
@@ -380,20 +441,25 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    KM Entrada <span className="text-red-500">*</span>
+                                                    KM Entrada {isMotoboyOrFiscal && <span className="text-red-500">*</span>}
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
                                                         <Gauge className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                                         <Input
-                                                            placeholder="0"
+                                                            placeholder=""
                                                             className={cn(
                                                                 "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                                                                 form.formState.errors.entrada_km && "border-red-500 focus-visible:ring-red-200"
                                                             )}
                                                             {...field}
                                                             readOnly={isFixingInconsistency && record?.entrada_km != null}
-                                                            onChange={(e) => field.onChange(kmMask(e.target.value))}
+                                                            onChange={(e) => {
+                                                                field.onChange(kmMask(e.target.value));
+                                                                if (form.getValues('saida_km')) {
+                                                                    form.trigger("saida_km");
+                                                                }
+                                                            }}
                                                         />
                                                     </div>
                                                 </FormControl>
@@ -422,7 +488,12 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                                                 form.formState.errors.saida_hora && "border-red-500 focus-visible:ring-red-200"
                                                             )}
                                                             {...field}
-                                                            onChange={(e) => field.onChange(timeMask(e.target.value))}
+                                                            onChange={(e) => {
+                                                                field.onChange(timeMask(e.target.value));
+                                                                if (form.formState.errors.saida_km || form.getValues('saida_km')) {
+                                                                    form.trigger("saida_km");
+                                                                }
+                                                            }}
                                                         />
                                                     </div>
                                                 </FormControl>
@@ -437,21 +508,52 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    KM Saída
+                                                    KM Saída {isMotoboyOrFiscal && form.watch('saida_hora') && <span className="text-red-500">*</span>}
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
                                                         <Gauge className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
                                                         <Input
-                                                            placeholder="0"
+                                                            placeholder=""
                                                             className={cn(
                                                                 "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                                                                 form.formState.errors.saida_km && "border-red-500 focus-visible:ring-red-200"
                                                             )}
                                                             {...field}
-                                                            onChange={(e) => field.onChange(kmMask(e.target.value))}
+                                                            onChange={(e) => {
+                                                                field.onChange(kmMask(e.target.value));
+                                                                if (form.formState.errors.saida_hora || form.getValues('saida_hora')) {
+                                                                    form.trigger("saida_hora");
+                                                                }
+                                                            }}
                                                         />
                                                     </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="bg-slate-50/50 p-5 rounded-[2rem] border border-slate-100 shadow-sm space-y-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="observacao"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70 flex items-center gap-2">
+                                                    <Edit2 className="w-4 h-4 text-blue-500" />
+                                                    Observações / Justificativa
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <textarea
+                                                        className={cn(
+                                                            "w-full min-h-[100px] p-4 rounded-2xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm resize-none shadow-inner",
+                                                            form.formState.errors.observacao && "border-red-500"
+                                                        )}
+                                                        placeholder="Digite observações importantes sobre este registro..."
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

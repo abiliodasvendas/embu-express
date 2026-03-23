@@ -12,9 +12,7 @@ import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import { OccurrenceDailyItem } from "./OccurrenceDailyItem";
 
-import { format, startOfMonth, endOfMonth } from "date-fns";
 import { useEffect } from "react";
-
 interface OccurrenceViewProps {
   usuarioId?: string;
   mode?: "daily" | "monthly";
@@ -44,16 +42,6 @@ export function OccurrenceView({
     syncWithUrl: !usuarioId,
   });
 
-  useEffect(() => {
-    if (mode === "monthly" && selectedMonth && selectedYear) {
-      const date = new Date(selectedYear, selectedMonth - 1, 1);
-      const start = format(startOfMonth(date), "yyyy-MM-dd");
-      const end = format(endOfMonth(date), "yyyy-MM-dd");
-      
-      if (vm.startDate !== start) vm.setStartDate(start);
-      if (vm.endDate !== end) vm.setEndDate(end);
-    }
-  }, [mode, selectedMonth, selectedYear, vm.startDate, vm.endDate, vm.setStartDate, vm.setEndDate]);
 
   const handleDelete = (occurrence: any) => {
     openConfirmationDialog({

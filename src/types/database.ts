@@ -157,6 +157,8 @@ export interface RegistroPonto {
   usuario?: Usuario;
   pausas?: Pausa[];
   cliente?: { nome_fantasia: string };
+  colaborador_cliente?: ColaboradorCliente;
+  observacao?: string | null;
   ausente?: boolean;
 }
 

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useHierarchyFilters, useDateFilters, usePontoFilters, useFiltersManager, UseFiltersOptions } from "./useFilters";
 import { useTimeMirror } from "@/hooks/api/useTimeMirror";
 import { usePublicTimeMirror, usePublicCollaborators } from "@/hooks/api/usePublicClient";
@@ -86,6 +86,26 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
       .map(r => ({ id: r.shift_id, label: `${r.cliente_nome} - ${r.unidade_nome}` })), 
     [reportData]
   );
+
+  const lastUserId = useRef(finalUsuarioId);
+
+  // Auto-seleção do primeiro turno e reset ao trocar de usuário
+  useEffect(() => {
+    // Se mudou o usuário, resetamos o turno para permitir nova auto-seleção
+    if (lastUserId.current !== finalUsuarioId) {
+      lastUserId.current = finalUsuarioId;
+      filters.setSelectedTurno(FilterOptions.TODOS);
+      return;
+    }
+
+    // Se temos um usuário específico e estamos em "todos", mas existem turnos específicos
+    // selecionamos o primeiro automaticamente para evitar visão misturada.
+    if (finalUsuarioId && 
+        (filters.selectedTurno === FilterOptions.TODOS || !filters.selectedTurno) && 
+        availableShifts.length > 0) {
+      filters.setSelectedTurno(String(availableShifts[0].id));
+    }
+  }, [finalUsuarioId, availableShifts, filters.selectedTurno, filters.setSelectedTurno]);
 
   return useMemo(() => ({
     // State

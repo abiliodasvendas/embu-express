@@ -26,8 +26,10 @@ const horarioSchema = z.object({
     .min(0, messages.validacao.campoObrigatorio)),
 });
 
-const baseSchema = {
+export const turnSchema = z.object({
   empresa_id: z.string().min(1, messages.validacao.campoObrigatorio),
+  cliente_id: z.string().min(1, messages.validacao.campoObrigatorio),
+  unidade_id: z.string().min(1, messages.validacao.campoObrigatorio),
   valor_contrato: moneySchema,
   valor_aluguel: optionalMoneySchema,
   valor_bonus: optionalMoneySchema,
@@ -35,24 +37,8 @@ const baseSchema = {
   valor_adiantamento: optionalMoneySchema,
   data_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
   horarios: z.array(horarioSchema).min(1, "Configure ao menos um dia de trabalho"),
-};
-
-export const turnSchema = z.discriminatedUnion("isMotoboyOrFiscal", [
-  z.object({
-    ...baseSchema,
-    isMotoboyOrFiscal: z.literal(true),
-    cliente_id: z.string({ required_error: messages.validacao.campoObrigatorio })
-      .min(1, messages.validacao.campoObrigatorio),
-    unidade_id: z.string({ required_error: messages.validacao.campoObrigatorio })
-      .min(1, messages.validacao.campoObrigatorio),
-  }),
-  z.object({
-    ...baseSchema,
-    isMotoboyOrFiscal: z.literal(false),
-    cliente_id: z.string().optional().nullable(),
-    unidade_id: z.string().optional().nullable(),
-  }),
-]);
+  isMotoboyOrFiscal: z.boolean().optional(),
+});
 
 export type TurnFormData = z.infer<typeof turnSchema>;
 export type TurnFormInput = z.input<typeof turnSchema>;

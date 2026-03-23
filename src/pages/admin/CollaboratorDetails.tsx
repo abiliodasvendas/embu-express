@@ -32,6 +32,7 @@ import { onlyNumbers } from "@/utils/string";
 import { format, parseISO } from "date-fns";
 import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -613,6 +614,9 @@ export default function CollaboratorDetails() {
                             <h4 className="font-bold text-gray-800 leading-tight">
                               {link.cliente?.nome_fantasia}
                             </h4>
+                            <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                              {link.unidade?.nome_unidade}
+                            </p>
                           </div>
                           {link.data_fim && new Date(link.data_fim + 'T00:00:00') < new Date() && (
                             <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-700 font-bold text-[10px] shrink-0">
@@ -623,11 +627,15 @@ export default function CollaboratorDetails() {
 
                         <div className="flex items-center gap-6">
                           <div>
-                            <div className="flex flex-wrap gap-1 mt-0.5">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1.5">Escala Semanal</p>
+                            <div className="flex flex-wrap gap-1">
                               {link.horarios && link.horarios.length > 0 ? (
-                                <Badge variant="outline" className="bg-white border-primary/20 text-primary font-bold text-[9px] px-1.5">
-                                  {link.horarios.length} {link.horarios.length === 1 ? 'dia configurado' : 'dias configurados'}
-                                </Badge>
+                                <ScaleIndicators 
+                                  activeDays={link.horarios.map(h => h.dia_semana)} 
+                                  availableDays={link.unidade?.escala_semanal}
+                                  size="sm"
+                                  variant="condensed"
+                                />
                               ) : (
                                 <Badge variant="outline" className="bg-red-50 border-red-200 text-red-600 font-bold text-[9px]">
                                   Sem horário

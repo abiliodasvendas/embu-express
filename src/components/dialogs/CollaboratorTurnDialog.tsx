@@ -47,7 +47,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { FieldErrors, useForm, useWatch } from "react-hook-form";
 
 import { Label } from "@/components/ui/label";
 import { messages } from "@/constants/messages";
@@ -78,6 +78,10 @@ export function CollaboratorTurnDialog({
 
   const createVinculo = useCreateVinculo();
   const updateVinculo = useUpdateVinculo();
+
+  const onFormError = (errors: FieldErrors<TurnFormInput>) => {
+    toast.error(messages.validacao.formularioComErros);
+  };
 
   const formatCurrency = (val: number | null = 0) => {
     if (val === null || val === 0) return "";
@@ -113,7 +117,7 @@ export function CollaboratorTurnDialog({
     if (open) {
       const isMOrF = !!(
         collaborator?.perfil?.nome?.toLowerCase() ===
-          ROLES.MOTOBOY.toLowerCase() ||
+        ROLES.MOTOBOY.toLowerCase() ||
         collaborator?.perfil?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase()
       );
 
@@ -205,7 +209,7 @@ export function CollaboratorTurnDialog({
 
     if (!turnToEdit && selectedUnidadeId && selectedUnidadeId !== lastUnidadeRef.current && selectedUnidade) {
       lastUnidadeRef.current = selectedUnidadeId;
-      
+
       // Ao trocar de unidade, ativamos todos os dias da nova escala
       const initialHorarios = (selectedUnidade.escala_semanal || [1, 2, 3, 4, 5, 6, 7]).map(diaId => ({
         dia_semana: diaId,
@@ -241,15 +245,9 @@ export function CollaboratorTurnDialog({
       const data = {
         ...parsedValues,
         colaborador_id: collaboratorId,
-        cliente_id:
-          parsedValues.isMotoboyOrFiscal && parsedValues.cliente_id
-            ? parseInt(parsedValues.cliente_id as any)
-            : null,
-        unidade_id:
-          parsedValues.isMotoboyOrFiscal && parsedValues.unidade_id
-            ? parseInt(parsedValues.unidade_id as any)
-            : null,
-        empresa_id: parseInt(parsedValues.empresa_id as any),
+        cliente_id: parseInt(parsedValues.cliente_id),
+        unidade_id: parseInt(parsedValues.unidade_id),
+        empresa_id: parseInt(parsedValues.empresa_id),
         horarios: parsedValues.horarios,
       };
 
@@ -264,9 +262,9 @@ export function CollaboratorTurnDialog({
       const errorMessage = error.response?.data?.error || error.message || "";
       toast.error(
         errorMessage ||
-          (turnToEdit
-            ? messages.cliente.erro.atualizar
-            : messages.cliente.erro.criar),
+        (turnToEdit
+          ? messages.cliente.erro.atualizar
+          : messages.cliente.erro.criar),
       );
     }
   };
@@ -381,7 +379,7 @@ export function CollaboratorTurnDialog({
           <Form {...form}>
             <form
               id="collaborator-turn-form"
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={form.handleSubmit(onSubmit, onFormError)}
               className="lg:grid lg:grid-cols-12 lg:gap-10"
             >
               {/* COLUNA ESQUERDA: VÍNCULO E ESCALA */}
@@ -400,9 +398,7 @@ export function CollaboratorTurnDialog({
                           <FormItem>
                             <FormLabel className="text-gray-600 font-bold ml-1 text-sm">
                               Cliente
-                              {isMotoboyOrFiscal && (
-                                <span className="text-red-500 ml-1">*</span>
-                              )}
+                              <span className="text-red-500 ml-1">*</span>
                             </FormLabel>
                             <Select
                               onValueChange={field.onChange}
@@ -413,7 +409,7 @@ export function CollaboratorTurnDialog({
                                   className={cn(
                                     "h-12 rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all",
                                     fieldState.error &&
-                                      "border-red-500 focus:ring-red-500/20",
+                                    "border-red-500 focus:ring-red-500/20",
                                   )}
                                 >
                                   <SelectValue placeholder="Selecione o Cliente" />
@@ -443,9 +439,7 @@ export function CollaboratorTurnDialog({
                           <FormItem>
                             <FormLabel className="text-gray-600 font-bold ml-1 text-sm">
                               Unidade
-                              {isMotoboyOrFiscal && (
-                                <span className="text-red-500 ml-1">*</span>
-                              )}
+                              <span className="text-red-500 ml-1">*</span>
                             </FormLabel>
                             <Select
                               onValueChange={field.onChange}
@@ -457,7 +451,7 @@ export function CollaboratorTurnDialog({
                                   className={cn(
                                     "h-12 rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-60",
                                     fieldState.error &&
-                                      "border-red-500 focus:ring-red-500/20",
+                                    "border-red-500 focus:ring-red-500/20",
                                   )}
                                 >
                                   <SelectValue
@@ -505,7 +499,7 @@ export function CollaboratorTurnDialog({
                                 className={cn(
                                   "h-12 rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all",
                                   fieldState.error &&
-                                    "border-red-500 focus:ring-red-500/20",
+                                  "border-red-500 focus:ring-red-500/20",
                                 )}
                               >
                                 <SelectValue placeholder="Selecione a Empresa" />
@@ -551,8 +545,8 @@ export function CollaboratorTurnDialog({
                     className={cn(
                       "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 relative transition-all duration-300",
                       !selectedUnidadeId &&
-                        !turnToEdit &&
-                        "opacity-40 grayscale pointer-events-none select-none",
+                      !turnToEdit &&
+                      "opacity-40 grayscale pointer-events-none select-none",
                     )}
                   >
                     {diasSemana.map((dia) => {
@@ -575,8 +569,8 @@ export function CollaboratorTurnDialog({
                               ? "bg-white border-blue-200 shadow-[0_2px_12px_-4px_rgba(59,130,246,0.15)] hover:border-blue-400 hover:shadow-lg"
                               : "bg-gray-100/50 border-gray-100 hover:bg-white hover:border-blue-200 hover:shadow-md",
                             isWorking &&
-                              form.formState.errors.horarios?.[index] &&
-                              "border-red-300 bg-red-50/20",
+                            form.formState.errors.horarios?.[index] &&
+                            "border-red-300 bg-red-50/20",
                           )}
                           onClick={() =>
                             !isClosed && toggleDia(dia.id, !isWorking)
@@ -598,10 +592,10 @@ export function CollaboratorTurnDialog({
                                   className={cn(
                                     "h-5 w-5 rounded-lg border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 transition-all pointer-events-auto",
                                     isWorking &&
-                                      (form.formState.errors.horarios as any)?.[
-                                        index
-                                      ] &&
-                                      "border-red-500",
+                                    (form.formState.errors.horarios as any)?.[
+                                    index
+                                    ] &&
+                                    "border-red-500",
                                   )}
                                 />
                               </div>
@@ -625,9 +619,9 @@ export function CollaboratorTurnDialog({
                                   {dia.label}
                                 </Label>
                                 {isWorking &&
-                                (form.formState.errors.horarios as any)?.[
+                                  (form.formState.errors.horarios as any)?.[
                                   index
-                                ] ? (
+                                  ] ? (
                                   <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider mt-0.5 animate-pulse">
                                     Preencha os horários
                                   </span>

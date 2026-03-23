@@ -66,7 +66,7 @@ export function PerfilFormDialog({
                     id: perfilToEdit.id.toString(),
                     nome: perfilToEdit.nome,
                     descricao: perfilToEdit.descricao || "",
-                    permissoes: (perfilToEdit as any).perfil_permissoes?.map((pp: any) => pp.permissao_id) || [],
+                    permissoes: (perfilToEdit as any).detalhes_permissoes?.map((p: any) => p.id) || [],
                 });
             } else {
                 form.reset({
@@ -212,48 +212,75 @@ export function PerfilFormDialog({
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="pb-6 pt-2">
-                                        {Object.entries(permissoesAgrupadas).map(([modulo, perms]) => (
-                                            <div key={modulo} className="mb-6 bg-slate-50 p-4 rounded-xl border">
-                                                <h4 className="font-medium text-slate-700 mb-3 border-b pb-2">{modulo}</h4>
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                    {perms.map((permissao) => (
-                                                        <FormField
-                                                            key={permissao.id}
-                                                            control={form.control}
-                                                            name="permissoes"
-                                                            render={({ field }) => {
-                                                                return (
-                                                                    <FormItem
-                                                                        key={permissao.id}
-                                                                        className="flex flex-row items-start space-x-3 space-y-0"
-                                                                    >
-                                                                        <FormControl>
+                                        <FormField
+                                            control={form.control}
+                                            name="permissoes"
+                                            render={({ field }) => (
+                                                <div className="space-y-6">
+                                                    {Object.entries(permissoesAgrupadas).map(([modulo, perms]) => {
+                                                        const allSelected = perms.every(p => field.value?.includes(p.id));
+                                                        return (
+                                                            <div key={modulo} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                                <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-2">
+                                                                    <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                                                        {modulo}
+                                                                    </h4>
+                                                                    <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-sm">
+                                                                        <Checkbox
+                                                                            id={`select-all-${modulo}`}
+                                                                            checked={allSelected}
+                                                                            onCheckedChange={(checked) => {
+                                                                                const current = new Set(field.value || []);
+                                                                                perms.forEach(p => {
+                                                                                    if (checked) current.add(p.id);
+                                                                                    else current.delete(p.id);
+                                                                                });
+                                                                                field.onChange(Array.from(current));
+                                                                            }}
+                                                                        />
+                                                                        <label 
+                                                                            htmlFor={`select-all-${modulo}`}
+                                                                            className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider cursor-pointer select-none"
+                                                                        >
+                                                                            Todas
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                                    {perms.map((permissao) => (
+                                                                        <div
+                                                                            key={permissao.id}
+                                                                            className="flex flex-row items-center space-x-3 space-y-0 group"
+                                                                        >
                                                                             <Checkbox
+                                                                                id={`perm-${permissao.id}`}
                                                                                 checked={field.value?.includes(permissao.id)}
                                                                                 onCheckedChange={(checked) => {
                                                                                     return checked
                                                                                         ? field.onChange([...field.value, permissao.id])
                                                                                         : field.onChange(
                                                                                             field.value?.filter(
-                                                                                                (value) => value !== permissao.id
+                                                                                                (value: number) => value !== permissao.id
                                                                                             )
                                                                                         )
                                                                                 }}
                                                                             />
-                                                                        </FormControl>
-                                                                        <div className="space-y-1 leading-none">
-                                                                            <FormLabel className="cursor-pointer font-normal">
+                                                                            <label 
+                                                                                htmlFor={`perm-${permissao.id}`}
+                                                                                className="text-sm font-medium text-slate-600 cursor-pointer group-hover:text-blue-600 transition-colors"
+                                                                            >
                                                                                 {permissao.descricao}
-                                                                            </FormLabel>
+                                                                            </label>
                                                                         </div>
-                                                                    </FormItem>
-                                                                )
-                                                            }}
-                                                        />
-                                                    ))}
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
-                                            </div>
-                                        ))}
+                                            )}
+                                        />
                                     </AccordionContent>
                                 </AccordionItem>
                             </Accordion>

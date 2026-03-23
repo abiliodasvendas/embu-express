@@ -70,11 +70,17 @@ export function useDateFilters(options: { mesParam?: string; anoParam?: string; 
 }
 
 // 3.1 Hook para Período (Date Range)
-export function useDateRangeFilters(options: { startParam?: string; endParam?: string; syncWithUrl?: boolean } = {}) {
-  const { startParam = "data_inicio", endParam = "data_fim", syncWithUrl = true } = options;
+export function useDateRangeFilters(options: { 
+  startParam?: string; 
+  endParam?: string; 
+  syncWithUrl?: boolean;
+  defaultValueStart?: string;
+  defaultValueEnd?: string;
+} = {}) {
+  const { startParam = "data_inicio", endParam = "data_fim", syncWithUrl = true, defaultValueStart, defaultValueEnd } = options;
   const today = new Date().toISOString().split("T")[0];
-  const [startDate, setStartDate] = useUrlState<string>({ key: startParam, defaultValue: today, syncWithUrl });
-  const [endDate, setEndDate] = useUrlState<string>({ key: endParam, defaultValue: today, syncWithUrl });
+  const [startDate, setStartDate] = useUrlState<string>({ key: startParam, defaultValue: defaultValueStart || today, syncWithUrl });
+  const [endDate, setEndDate] = useUrlState<string>({ key: endParam, defaultValue: defaultValueEnd || today, syncWithUrl });
   return { startDate, setStartDate, endDate, setEndDate };
 }
 

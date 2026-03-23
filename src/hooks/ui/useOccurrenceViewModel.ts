@@ -5,6 +5,7 @@ import { useOccurrenceBusiness } from "../business/useOccurrenceBusiness";
 import { usePermissions } from "../business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { FilterOptions } from "@/types/enums";
+import { endOfMonth, format, startOfMonth } from "date-fns";
 
 interface UseOccurrenceViewModelOptions extends UseFiltersOptions {
   usuarioId?: string;
@@ -24,10 +25,23 @@ export function useOccurrenceViewModel(options: UseOccurrenceViewModelOptions = 
     syncWithUrl
   });
 
+  const initialDates = useMemo(() => {
+    if (options.mode === "monthly" && options.selectedMonth && options.selectedYear) {
+      const date = new Date(options.selectedYear, options.selectedMonth - 1, 1);
+      return {
+        start: format(startOfMonth(date), "yyyy-MM-dd"),
+        end: format(endOfMonth(date), "yyyy-MM-dd")
+      };
+    }
+    return {};
+  }, [options.mode, options.selectedMonth, options.selectedYear]);
+
   const { startDate, setStartDate, endDate, setEndDate } = useDateRangeFilters({
     startParam: "data_inicio",
     endParam: "data_fim",
-    syncWithUrl
+    syncWithUrl,
+    defaultValueStart: initialDates.start,
+    defaultValueEnd: initialDates.end
   });
 
   const [selectedTipo, setSelectedTipo] = useUrlState<string>({

@@ -34,7 +34,7 @@ export function OccurrenceView({
 }: OccurrenceViewProps) {
   const { openConfirmationDialog, closeConfirmationDialog, openOccurrenceDetailsDialog, closeOccurrenceDetailsDialog } = useLayout();
   const deleteMutation = useDeleteOcorrencia();
-  const { data: collaborators = [] } = useCollaborators({});
+  const { data: collaborators = [] } = useCollaborators({}, { enabled: !usuarioId });
 
   const vm = useOccurrenceViewModel({
     usuarioId,
@@ -47,10 +47,13 @@ export function OccurrenceView({
   useEffect(() => {
     if (mode === "monthly" && selectedMonth && selectedYear) {
       const date = new Date(selectedYear, selectedMonth - 1, 1);
-      vm.setStartDate(format(startOfMonth(date), "yyyy-MM-dd"));
-      vm.setEndDate(format(endOfMonth(date), "yyyy-MM-dd"));
+      const start = format(startOfMonth(date), "yyyy-MM-dd");
+      const end = format(endOfMonth(date), "yyyy-MM-dd");
+      
+      if (vm.startDate !== start) vm.setStartDate(start);
+      if (vm.endDate !== end) vm.setEndDate(end);
     }
-  }, [mode, selectedMonth, selectedYear, vm.setStartDate, vm.setEndDate]);
+  }, [mode, selectedMonth, selectedYear, vm.startDate, vm.endDate, vm.setStartDate, vm.setEndDate]);
 
   const handleDelete = (occurrence: any) => {
     openConfirmationDialog({

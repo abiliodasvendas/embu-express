@@ -53,7 +53,7 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                         label="Valor MEI"
                         labelClassName="text-gray-700 font-bold ml-1 text-sm opacity-70"
                         placeholder="R$ 0,00"
-                        inputClassName="pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                        inputClassName="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                     />
                 )} />
                 <FormField name="tipo_chave_pix" control={form.control} render={({ field }) => (

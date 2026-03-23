@@ -1,7 +1,6 @@
 import { FormControl, FormItem, FormLabel, FormMessage, useFormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { moneyMask } from "@/utils/masks";
-import { DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ControllerRenderProps, FieldPath, FieldValues } from "react-hook-form";
 
@@ -39,7 +38,10 @@ export function MoneyInput<T extends FieldValues>({
             {...field}
             placeholder={placeholder}
             type="text"
-            className={cn("rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all", inputClassName)}
+            className={cn(
+              "rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
+              inputClassName
+            )}
             disabled={disabled}
             onChange={(e) => {
               field.onChange(moneyMask(e.target.value));

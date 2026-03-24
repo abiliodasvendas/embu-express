@@ -9,17 +9,16 @@ import { ApiError } from "@/types/api";
 /**
  * Invalida caches relacionados ao ponto para garantir que o espelho e o financeiro estejam sempre corretos.
  */
-async function invalidatePontoCache(queryClient: QueryClient, colaboradorId?: string) {
-  await queryClient.invalidateQueries({ queryKey: ["time-records"] });
-  await queryClient.invalidateQueries({ queryKey: ["time-mirror"] }); // Unificado
-  await queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
-  await queryClient.invalidateQueries({ queryKey: ["public-time-mirror"] });
-  await queryClient.invalidateQueries({ queryKey: ["public-time-tracking"] });
-
-  if (colaboradorId) {
-    await queryClient.invalidateQueries({ queryKey: ["time-mirror", colaboradorId] });
-    await queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", colaboradorId] });
-  }
+async function invalidatePontoCache(queryClient: QueryClient, _colaboradorId?: string) {
+  // Invalidar a chave pai já invalida todas as chaves filhas/específicas por padrão no React Query
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["time-records"] }),
+    queryClient.invalidateQueries({ queryKey: ["time-mirror"] }),
+    queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] }),
+    queryClient.invalidateQueries({ queryKey: ["ocorrencias"] }),
+    queryClient.invalidateQueries({ queryKey: ["public-time-mirror"] }),
+    queryClient.invalidateQueries({ queryKey: ["public-time-tracking"] }),
+  ]);
 }
 
 export function useUpdatePonto() {

@@ -791,12 +791,11 @@ export default function CollaboratorDetails() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={pontoVm.filters.selectedTurno} onValueChange={(v) => pontoVm.setShift?.(v)}>
-                  <SelectTrigger className="h-11 w-[160px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
-                    <SelectValue placeholder="Todos os Turnos" />
+                <Select value={pontoVm.filters.selectedTurno} onValueChange={(v) => pontoVm.setShift?.(v)} disabled={pontoVm.availableShifts.length === 0}>
+                  <SelectTrigger className="h-11 w-[160px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <SelectValue placeholder={pontoVm.availableShifts.length === 0 ? "Sem turnos" : "Selecione..."} />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                    <SelectItem value={FilterOptions.TODOS} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1">Todos os Turnos</SelectItem>
                     {pontoVm.availableShifts.map((s) => (
                       <SelectItem key={s.id} value={String(s.id)} className="text-xs font-bold focus:bg-primary/5 focus:text-primary rounded-xl m-1">{s.label}</SelectItem>
                     ))}

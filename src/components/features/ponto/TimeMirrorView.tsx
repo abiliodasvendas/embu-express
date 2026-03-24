@@ -34,6 +34,8 @@ export function TimeMirrorView({
     selectedShift = FilterOptions.TODOS,
     isActionable = false
 }: TimeMirrorViewProps) {
+    const { can } = usePermissions();
+    const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
     const month = selectedMonth || new Date().getMonth() + 1;
     const year = selectedYear || new Date().getFullYear();
 
@@ -102,15 +104,12 @@ export function TimeMirrorView({
         if (fullRecord && selectedPontoId) {
             openTimeRecordDetailsDialog({
                 record: fullRecord,
-                onEdit: handleEditFromDetails,
-                onDelete: handleDelete
+                onEdit: isActionable && can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleEditFromDetails : undefined,
+                onDelete: isActionable && can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleDelete : undefined
             });
             setSelectedPontoId(null);
         }
-    }, [fullRecord, selectedPontoId]);
-
-    const { can } = usePermissions();
-    const canViewAll = can(PERMISSIONS.PONTO.ADMIN_VER);
+    }, [fullRecord, selectedPontoId, isActionable, can]);
 
     if (!usuarioId) {
         return (
@@ -273,7 +272,7 @@ export function TimeMirrorView({
                         isFetchingRecord={isFetchingRecord}
                         selectedPontoId={selectedPontoId}
                         onClick={handleOpenRecord}
-                        onDelete={can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleDeleteById : undefined}
+                        onDelete={isActionable && can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleDeleteById : undefined}
                         isActionable={isActionable}
                     />
                 ))}

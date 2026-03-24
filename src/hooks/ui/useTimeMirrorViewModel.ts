@@ -73,16 +73,20 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
   // Seleciona o relatório do turno ativo
   const activeReport = useMemo(() => {
     if (!reportData.length) return null;
+    
+    const realShifts = reportData.filter(r => r.shift_id !== 0);
+    const defaultReport = realShifts.length > 0 ? realShifts[0] : reportData[0];
+
     if (!filters.selectedTurno || filters.selectedTurno === FilterOptions.TODOS) {
-      return reportData[0];
+      return defaultReport;
     }
-    return reportData.find(r => r.shift_id === Number(filters.selectedTurno)) || reportData[0];
+    return reportData.find(r => r.shift_id === Number(filters.selectedTurno)) || defaultReport;
   }, [reportData, filters.selectedTurno]);
 
   // Se precisar extrair os turnos disponíveis para o seletor
   const availableShifts = useMemo(() => 
     reportData
-      .filter(r => r.shift_id !== 0) // Filtra o consolidado para não duplicar com "Todos"
+      .filter(r => r.shift_id !== 0) // Filtra o consolidado para não duplicar
       .map(r => ({ id: r.shift_id, label: `${r.cliente_nome} - ${r.unidade_nome}` })), 
     [reportData]
   );
@@ -91,15 +95,14 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
 
   // Auto-seleção do primeiro turno e reset ao trocar de usuário
   useEffect(() => {
-    // Se mudou o usuário, resetamos o turno para permitir nova auto-seleção
+    // Se mudou o usuário, resetamos o turno
     if (lastUserId.current !== finalUsuarioId) {
       lastUserId.current = finalUsuarioId;
       filters.setSelectedTurno(FilterOptions.TODOS);
       return;
     }
 
-    // Se temos um usuário específico e estamos em "todos", mas existem turnos específicos
-    // selecionamos o primeiro automaticamente para evitar visão misturada.
+    // Se estamos em "todos" mas existem turnos específicos, selecionamos o primeiro automaticamente.
     if (finalUsuarioId && 
         (filters.selectedTurno === FilterOptions.TODOS || !filters.selectedTurno) && 
         availableShifts.length > 0) {

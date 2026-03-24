@@ -14,7 +14,7 @@ export const unidadeSchema = z.object({
   bairro: z.string().min(1, messages.validacao.campoObrigatorio),
   cidade: z.string().min(1, messages.validacao.campoObrigatorio),
   estado: z.string().min(2, messages.validacao.campoObrigatorio),
-  km_contratados: z.coerce.number({ invalid_type_error: messages.validacao.campoObrigatorio }).min(1, messages.validacao.campoObrigatorio),
+  km_contratados: z.coerce.number({ invalid_type_error: messages.validacao.campoObrigatorio }).min(0, messages.validacao.campoObrigatorio),
   escala_semanal: z.array(z.number()).min(1, messages.validacao.campoObrigatorio),
   ativo: z.boolean().default(true),
 });

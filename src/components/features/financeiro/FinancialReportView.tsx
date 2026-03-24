@@ -597,7 +597,8 @@ export function FinancialReportView({
                               {formatCurrency(
                                 ((resumo.saldo_fixo_original - (resumo.valores_fixos.bonus || 0)) /
                                   resumo.dias_base_mes) *
-                                resumo.dias_trabalhados + (resumo.valores_fixos.bonus || 0),
+                                Math.max(0, resumo.dias_esperados_turno - (resumo.faltas || 0)) + 
+                                (resumo.valores_fixos.bonus || 0),
                               )}
                             </span>
                           </div>

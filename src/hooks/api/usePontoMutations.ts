@@ -11,8 +11,10 @@ import { ApiError } from "@/types/api";
  */
 async function invalidatePontoCache(queryClient: QueryClient, colaboradorId?: string) {
   await queryClient.invalidateQueries({ queryKey: ["time-records"] });
-  await queryClient.invalidateQueries({ queryKey: ["time-mirror"] });
+  await queryClient.invalidateQueries({ queryKey: ["time-mirror"] }); // Unificado
   await queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
+  await queryClient.invalidateQueries({ queryKey: ["public-time-mirror"] });
+  await queryClient.invalidateQueries({ queryKey: ["public-time-tracking"] });
 
   if (colaboradorId) {
     await queryClient.invalidateQueries({ queryKey: ["time-mirror", colaboradorId] });

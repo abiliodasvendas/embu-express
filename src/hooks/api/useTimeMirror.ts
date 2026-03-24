@@ -4,7 +4,7 @@ import { EspelhoPontoMensal } from "@/types/ponto-relatorio";
 
 export function useTimeMirror(usuarioId: string | undefined, mes: number, ano: number) {
     return useQuery<EspelhoPontoMensal[]>({
-        queryKey: ["time-mirror-v2", usuarioId, mes, ano],
+        queryKey: ["time-mirror", usuarioId, mes, ano],
         queryFn: () => pontoApi.getEspelhoPonto(usuarioId!, mes, ano),
         enabled: !!usuarioId && !!mes && !!ano,
         staleTime: 0,

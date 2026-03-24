@@ -146,74 +146,109 @@ export default function RegistrarPonto() {
                             exit={{ opacity: 0, scale: 0.98 }}
                             className="flex flex-col items-center justify-start max-w-md mx-auto py-2"
                         >
-                            <div className="w-full space-y-4 text-center">
-                                <div className="space-y-0.5 pt-2">
-                                    <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">Pronto para iniciar?</h1>
-                                    <p className="text-slate-500 font-medium text-xs">Confirme seu turno para liberar o registro.</p>
-                                </div>
-
-                                <Card className="rounded-[2.5rem] shadow-lg border-none bg-white shadow-blue-900/5 overflow-hidden p-0 relative">
-                                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-30" />
-                                    <CardContent className="p-5 space-y-4 relative z-10">
-                                        <div className="space-y-1 text-left">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-4">{messages.ponto.labels.selecioneTurno}</label>
-                                            <Select
-                                                value={vm.selectedLinkId}
-                                                onValueChange={vm.setSelectedLinkId}
-                                                disabled={vm.isProcessing}
-                                            >
-                                                <SelectTrigger className="w-full h-14 rounded-xl bg-slate-50 border-none shadow-none text-slate-800 font-bold focus:ring-blue-500/20 text-sm ring-offset-0 px-5 transition-all hover:bg-slate-100">
-                                                    <SelectValue placeholder="Toque para escolher..." />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-2xl border-slate-100 shadow-2xl p-2 max-h-[250px]">
-                                                    {business.activeLinks.map((link: ColaboradorCliente) => {
-                                                        const today = new Date().getDay();
-                                                        const schedule = link.horarios?.find((h: any) => h.dia_semana === today);
-                                                        return (
-                                                            <SelectItem key={link.id} value={link.id.toString()} className="rounded-xl cursor-pointer py-3 pl-4 pr-4 focus:bg-blue-600 focus:text-white mb-1 group transition-colors text-sm [&>span:first-child]:hidden">
-                                                                <div className="flex flex-col text-left">
-                                                                    <span className="font-black">{link.cliente?.nome_fantasia || "Cliente"}</span>
-                                                                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 group-focus:text-blue-100 mt-0.5 uppercase tracking-wide">
-                                                                        <RefreshCw className="w-2 h-2" />
-                                                                        {schedule ? `${schedule.hora_inicio?.slice(0, 5)} - ${schedule.hora_fim?.slice(0, 5)}` : messages.ponto.labels.semEscala}
-                                                                    </div>
-                                                                </div>
-                                                            </SelectItem>
-                                                        );
-                                                    })}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <Button
-                                            onClick={vm.handleToggle}
-                                            disabled={vm.isProcessing || !vm.selectedLinkId}
-                                            className="w-full h-16 text-lg font-black rounded-2xl shadow-xl shadow-blue-600/20 bg-blue-600 text-white hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50"
-                                        >
-                                            {vm.isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-3" /> : <Play className="w-5 h-5 mr-3 fill-current" />}
-                                            {messages.ponto.labels.iniciarTurno}
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-
-                                <div className="flex items-center justify-center gap-8 py-4">
-                                    <div className="flex items-center gap-3 text-slate-400">
-                                        <div className={`w-2 h-2 rounded-full ${geo.location ? 'bg-emerald-500' : 'bg-slate-300'} animate-pulse`} />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none">
-                                            {geo.location ? messages.ponto.labels.localizacaoAtiva : messages.ponto.labels.localizacaoPendente}
-                                        </span>
+                            {business.activeLinks.length > 0 ? (
+                                <div className="w-full space-y-4 text-center">
+                                    <div className="space-y-0.5 pt-2">
+                                        <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">Pronto para iniciar?</h1>
+                                        <p className="text-slate-500 font-medium text-xs">Confirme seu turno para liberar o registro.</p>
                                     </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-slate-400 font-bold tracking-widest text-[10px] uppercase hover:bg-slate-50 rounded-xl px-4"
-                                        onClick={vm.onRefresh}
-                                    >
-                                        {messages.ponto.labels.atualizarDados}
-                                    </Button>
+
+                                    <Card className="rounded-[2.5rem] shadow-lg border-none bg-white shadow-blue-900/5 overflow-hidden p-0 relative">
+                                        <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-30" />
+                                        <CardContent className="p-5 space-y-4 relative z-10">
+                                            <div className="space-y-1 text-left">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-4">{messages.ponto.labels.selecioneTurno}</label>
+                                                <Select
+                                                    value={vm.selectedLinkId}
+                                                    onValueChange={vm.setSelectedLinkId}
+                                                    disabled={vm.isProcessing}
+                                                >
+                                                    <SelectTrigger className="w-full h-14 rounded-xl bg-slate-50 border-none shadow-none text-slate-800 font-bold focus:ring-blue-500/20 text-sm ring-offset-0 px-5 transition-all hover:bg-slate-100">
+                                                        <SelectValue placeholder="Toque para escolher..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-2xl border-slate-100 shadow-2xl p-2 max-h-[250px]">
+                                                        {business.activeLinks.map((link: ColaboradorCliente) => {
+                                                            const today = new Date().getDay();
+                                                            const schedule = link.horarios?.find((h: any) => h.dia_semana === today);
+                                                            return (
+                                                                <SelectItem key={link.id} value={link.id.toString()} className="rounded-xl cursor-pointer py-3 pl-4 pr-4 focus:bg-blue-600 focus:text-white mb-1 group transition-colors text-sm [&>span:first-child]:hidden">
+                                                                    <div className="flex flex-col text-left">
+                                                                        <span className="font-black">{link.cliente?.nome_fantasia || "Cliente"}</span>
+                                                                        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 group-focus:text-blue-100 mt-0.5 uppercase tracking-wide">
+                                                                            <RefreshCw className="w-2 h-2" />
+                                                                            {schedule ? `${schedule.hora_inicio?.slice(0, 5)} - ${schedule.hora_fim?.slice(0, 5)}` : messages.ponto.labels.semEscala}
+                                                                        </div>
+                                                                    </div>
+                                                                </SelectItem>
+                                                            );
+                                                        })}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            <Button
+                                                onClick={vm.handleToggle}
+                                                disabled={vm.isProcessing || !vm.selectedLinkId}
+                                                className="w-full h-16 text-lg font-black rounded-2xl shadow-xl shadow-blue-600/20 bg-blue-600 text-white hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50"
+                                            >
+                                                {vm.isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-3" /> : <Play className="w-5 h-5 mr-3 fill-current" />}
+                                                {messages.ponto.labels.iniciarTurno}
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+
+                                    <div className="flex items-center justify-center gap-8 py-4">
+                                        <div className="flex items-center gap-3 text-slate-400">
+                                            <div className={`w-2 h-2 rounded-full ${geo.location ? 'bg-emerald-500' : 'bg-slate-300'} animate-pulse`} />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none">
+                                                {geo.location ? messages.ponto.labels.localizacaoAtiva : messages.ponto.labels.localizacaoPendente}
+                                            </span>
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-slate-400 font-bold tracking-widest text-[10px] uppercase hover:bg-slate-50 rounded-xl px-4"
+                                            onClick={vm.onRefresh}
+                                        >
+                                            {messages.ponto.labels.atualizarDados}
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="w-full space-y-6 text-center py-8">
+                                    <div className="relative inline-block">
+                                        <div className="bg-slate-100 p-8 rounded-[2.5rem] mb-2 relative z-10">
+                                            <Briefcase className="h-16 w-16 text-slate-400 opacity-50" />
+                                        </div>
+                                        <div className="absolute -bottom-2 -right-2 bg-amber-500 p-2 rounded-2xl z-20 shadow-lg border-4 border-white">
+                                            <ShieldAlert className="h-6 w-6 text-white" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
+                                            {messages.ponto.labels.vinculosNaoEncontrados}
+                                        </h2>
+                                        <p className="text-slate-500 font-medium text-sm max-w-[280px] mx-auto">
+                                            {messages.ponto.labels.semTurnosAtivos}
+                                        </p>
+                                    </div>
+
+                                    <Button
+                                        onClick={vm.onRefresh}
+                                        variant="outline"
+                                        className="h-14 px-8 border-2 border-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-white hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95 bg-slate-50/50"
+                                    >
+                                        <RefreshCw className="w-5 h-5 mr-3" /> {messages.ponto.labels.atualizarDados}
+                                    </Button>
+                                    
+                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest pt-4">
+                                        Tente atualizar se o vínculo foi criado agora.
+                                    </p>
+                                </div>
+                            )}
                         </motion.div>
+
                     ) : (
                         /* State: WORKING / PAUSED (Full Dashboard) */
                         <motion.div

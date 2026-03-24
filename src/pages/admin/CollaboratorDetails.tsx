@@ -611,7 +611,6 @@ export default function CollaboratorDetails() {
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <div className="flex-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Cliente</p>
                             <h4 className="font-bold text-gray-800 leading-tight">
                               {link.cliente?.nome_fantasia}
                             </h4>
@@ -641,8 +640,8 @@ export default function CollaboratorDetails() {
                             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1.5">Escala Semanal</p>
                             <div className="flex flex-wrap gap-1">
                               {link.horarios && link.horarios.length > 0 ? (
-                                <ScaleIndicators 
-                                  activeDays={link.horarios.map(h => h.dia_semana)} 
+                                <ScaleIndicators
+                                  activeDays={link.horarios.map(h => h.dia_semana)}
                                   availableDays={link.unidade?.escala_semanal}
                                   size="sm"
                                   variant="condensed"

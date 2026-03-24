@@ -9,14 +9,14 @@ import { RegistroPonto, ColaboradorCliente, Pausa } from "@/types/database";
 
 export function useRegistrarPontoBusiness() {
     const { user } = useSession();
-    const { profile: userProfile, isLoading: isLoadingProfile } = useProfile(user?.id);
+    const { profile: userProfile, isLoading: isLoadingProfile, refreshProfile } = useProfile(user?.id);
 
     const togglePonto = useTogglePonto();
     const iniciarPausa = useIniciarPausa();
     const finalizarPausa = useFinalizarPausa();
 
     // Fetch Today's Point Data
-    const { data: pontoHoje, isLoading: isLoadingPonto, refetch } = useQuery({
+    const { data: pontoHoje, isLoading: isLoadingPonto, refetch: refetchPonto } = useQuery({
         queryKey: ['ponto-hoje-smart', user?.id],
         queryFn: async (): Promise<RegistroPonto | null> => {
             if (!user?.id) return null;
@@ -28,6 +28,13 @@ export function useRegistrarPontoBusiness() {
         enabled: !!user?.id,
         refetchInterval: 60 * 1000 // Refresh every minute
     });
+
+    const refetch = async () => {
+        await Promise.all([
+            refetchPonto(),
+            refreshProfile()
+        ]);
+    };
 
     const activeLinks = useMemo(() => {
         return (userProfile?.links as ColaboradorCliente[] | undefined)?.filter((l: ColaboradorCliente) => {

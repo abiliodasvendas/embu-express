@@ -126,7 +126,7 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
     activeReport,
     collaborators,
     isLoading,
-    canViewAll,
+    isOnlyPersonal: !canViewAll,
     usuarioId: finalUsuarioId,
     
     // Actions
@@ -136,6 +136,6 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
     setShift: filters.setSelectedTurno,
     setUsuario: filters.setSelectedUsuario
   }), [
-    filters, activeReport, reportData, availableShifts, collaborators, isLoading, canViewAll, finalUsuarioId, refetch
+    filters, activeReport, reportData, availableShifts, collaborators, isLoading, canViewAll, finalUsuarioId, refetch, !canViewAll
   ]);
 }

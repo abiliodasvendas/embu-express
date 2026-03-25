@@ -228,12 +228,7 @@ const App = () => {
                     </Route>
 
                     {/* Rotas Pessoais/Administrativas (Híbridas) */}
-                    <Route element={<RequirePermission 
-                      permissions={[PERMISSIONS.PONTO.ADMIN_VER, PERMISSIONS.PONTO.VER_MEU]} 
-                      useOrCondition={true} 
-                    />}>
-                      <Route path={ROUTES.PRIVATE.ESPELHO_PONTO.replace("/", "")} element={<TimeMirror />} />
-                    </Route>
+                    <Route path={ROUTES.PRIVATE.ESPELHO_PONTO.replace("/", "")} element={<TimeMirror />} />
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.USUARIOS.VER]} />}>
                       <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />
@@ -258,12 +253,7 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.OCORRENCIAS.replace("/", "")} element={<Ocorrencias />} />
                     </Route>
 
-                    <Route element={<RequirePermission 
-                      permissions={[PERMISSIONS.FINANCEIRO.EXTRATO, PERMISSIONS.FINANCEIRO.VER_MEU]} 
-                      useOrCondition={true}
-                    />}>
-                      <Route path={ROUTES.PRIVATE.RELATORIO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
-                    </Route>
+                    <Route path={ROUTES.PRIVATE.RELATORIO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.CONFIGURACAO.VER]} />}>
                       <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />

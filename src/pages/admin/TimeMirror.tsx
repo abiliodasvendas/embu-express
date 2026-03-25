@@ -7,11 +7,11 @@ import { useEffect } from "react";
 export function TimeMirror() {
     const { setPageTitle } = useLayout();
     const vm = useTimeMirrorViewModel();
-    const { data: collaborators = [] } = useActiveCollaborators();
+    const { data: collaborators = [] } = useActiveCollaborators({ enabled: !vm.isOnlyPersonal });
 
     useEffect(() => {
-        setPageTitle("Espelho de Ponto");
-    }, [setPageTitle]);
+        setPageTitle(vm.isOnlyPersonal ? "Meu Espelho de Ponto" : "Espelho de Ponto");
+    }, [setPageTitle, vm.isOnlyPersonal]);
 
     return (
         <div className="space-y-6 pb-24">
@@ -26,6 +26,7 @@ export function TimeMirror() {
                 onMonthChange={vm.setMonth}
                 onYearChange={vm.setYear}
                 onShiftChange={vm.setShift}
+                hideCollaboratorSelect={vm.isOnlyPersonal}
             />
 
             <TimeMirrorView 

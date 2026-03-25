@@ -51,7 +51,6 @@ export const pagesItems: PageItem[] = [
         title: "Espelho de Ponto",
         href: ROUTES.PRIVATE.ESPELHO_PONTO,
         icon: FileText,
-        permissionKey: [PERMISSIONS.PONTO.ADMIN_VER, PERMISSIONS.PONTO.VER_MEU],
         category: MENU_CATEGORIES.PONTO
     },
     {
@@ -71,7 +70,6 @@ export const pagesItems: PageItem[] = [
         title: "Relatório Financeiro",
         href: ROUTES.PRIVATE.RELATORIO_FINANCEIRO,
         icon: Banknote,
-        permissionKey: [PERMISSIONS.FINANCEIRO.EXTRATO, PERMISSIONS.FINANCEIRO.VER_MEU],
     },
     {
         title: "Ocorrências",

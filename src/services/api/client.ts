@@ -56,12 +56,9 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // 403 (Forbidden) logic - immediate sign out
+    // 403 (Forbidden) logic - Removido logout automático
     if (error.response.status === 403) {
-      if (!originalRequest.url?.includes("/app/updates")) {
-        console.warn('[ApiClient] 403 Forbidden: Sessão revogada.', originalRequest.url);
-        sessionManager.signOut().catch(() => { });
-      }
+      console.warn('[ApiClient] 403 Forbidden: Acesso negado ou sessão expirada.', originalRequest.url);
       return Promise.reject(error);
     }
 
@@ -110,12 +107,14 @@ api.interceptors.response.use(
           }
         }
       }
+    }
 
-      // Logout se falhar o refresh e FOR de fato um erro de autorização do servidor
-      if (error.response?.status === 401) {
-        console.warn('[ApiClient] 401 Interceptor: Sessão revogada ou não recuperável. Usuário deslogado.', originalRequest.url);
-        sessionManager.signOut().catch(() => { });
-      }
+    // Logout automático desativado: usuário deve decidir sair manualmente
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.warn('[ApiClient] Sessão inválida ou revogada. Logout automático desativado por regra de negócio.', {
+        url: originalRequest.url,
+        status: error.response.status
+      });
     }
 
     return Promise.reject(error);

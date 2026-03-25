@@ -37,10 +37,8 @@ export function useFinancialReportViewModel(options: UseFinancialReportViewModel
   };
 
   const canViewAll = can(PERMISSIONS.FINANCEIRO.EXTRATO);
-  const canViewOwn = can(PERMISSIONS.FINANCEIRO.VER_MEU);
-  const isOnlyPersonal = canViewOwn && !canViewAll;
-
-  const finalUsuarioId = initialUsuarioId || (isOnlyPersonal ? profile?.id : (filters.selectedUsuario === 'todos' ? undefined : filters.selectedUsuario));
+  const finalUsuarioId = initialUsuarioId || (canViewAll ? (filters.selectedUsuario === 'todos' ? undefined : filters.selectedUsuario) : profile?.id);
+  const isOnlyPersonal = !canViewAll;
 
   const { data: rawReport, isLoading, refetch } = useFinanceiro(
     finalUsuarioId || undefined,

@@ -223,12 +223,12 @@ const App = () => {
                     {/* Rotas Administrativas Puras */}
                     <Route element={<RequirePermission permissions={[PERMISSIONS.PONTO.ADMIN_VER]} />}>
                       <Route path={ROUTES.PRIVATE.INICIO.replace("/", "")} element={<Inicio />} />
-                      <Route path={ROUTES.PRIVATE.CONTROLE_PONTO.replace("/", "")} element={<TimeTracking />} />
+                      <Route path={ROUTES.PRIVATE.CONTROLE_ATIVIDADE_DIARIO.replace("/", "")} element={<TimeTracking />} />
                       <Route path={ROUTES.PRIVATE.INCONSISTENCIAS.replace("/", "")} element={<Inconsistencias />} />
                     </Route>
 
                     {/* Rotas Pessoais/Administrativas (Híbridas) */}
-                    <Route path={ROUTES.PRIVATE.ESPELHO_PONTO.replace("/", "")} element={<TimeMirror />} />
+                    <Route path={ROUTES.PRIVATE.ESPELHO_ATIVIDADE.replace("/", "")} element={<TimeMirror />} />
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.USUARIOS.VER]} />}>
                       <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />

@@ -1,3 +1,4 @@
+import { isMotoboy } from "@/utils/business/roles";
 import { messages } from "@/constants/messages";
 import { ROLES } from "@/constants/permissions.enum";
 import { authApi } from "@/services/api/auth.api";
@@ -39,7 +40,6 @@ export function useSelfRegistrationForm() {
       cnh_categoria: "",
       chave_pix: "",
       perfil_id: "",
-      isMotoboyOrFiscal: true,
     },
     mode: "onChange",
   });
@@ -48,7 +48,8 @@ export function useSelfRegistrationForm() {
     setIsLoading(true);
     try {
       // Find role name by id if roles are provided
-      const roleName = roles?.find(r => r.id.toString() === values.perfil_id)?.nome || ROLES.MOTOBOY;
+      const selectedRole = roles?.find(r => r.id.toString() === values.perfil_id);
+      const roleName = selectedRole?.nome || ROLES.MOTOBOY;
 
       // Use our custom backend registration API instead of direct Supabase signUp
       const payload = {

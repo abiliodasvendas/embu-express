@@ -110,7 +110,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                         <CalendarClock className="w-5 h-5 text-white" />
                     </div>
                     <DialogTitle className="text-xl font-bold text-white">
-                        Detalhes do Ponto
+                        Detalhes da Atividade
                     </DialogTitle>
                 </div>
 
@@ -119,7 +119,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                         <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
                             <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
                             <div>
-                                <h4 className="text-sm font-bold text-orange-900">Ponto Inconsistente</h4>
+                                <h4 className="text-sm font-bold text-orange-900">Atividade Inconsistente</h4>
                                 <p className="text-xs text-orange-700 font-medium">
                                     Este colaborador não registrou a saída. O sistema marcou como inconsistente após 4 horas do término previsto.
                                 </p>

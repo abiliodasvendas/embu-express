@@ -1,6 +1,7 @@
 import { messages } from "@/constants/messages";
 import { z } from "zod";
 import { kmToNumber } from "@/utils/masks";
+import { isMotoboy } from "@/utils/business/roles";
 
 export const manualTimeRecordSchema = z.object({
   usuario_id: z.string().min(1, messages.validacao.campoObrigatorio),
@@ -21,7 +22,7 @@ export const manualTimeRecordSchema = z.object({
   colaborador_cliente_id: z.string().optional(),
   observacao: z.string().max(500, "Máximo de 500 caracteres").optional(),
 }).refine(data => {
-  const isRequired = data.perfil_nome === 'motoboy' || data.perfil_nome === 'fiscal';
+  const isRequired = isMotoboy(data.perfil_nome);
   if (isRequired && data.saida_hora && !data.saida_km) return false;
   if (!isRequired && data.saida_km && !data.saida_hora) return false;
   if (isRequired && data.saida_km && !data.saida_hora) return false;
@@ -30,7 +31,7 @@ export const manualTimeRecordSchema = z.object({
   message: "Hora e KM de saída devem ser preenchidos juntos",
   path: ["saida_hora"]
 }).refine(data => {
-  const isRequired = data.perfil_nome === 'motoboy' || data.perfil_nome === 'fiscal';
+  const isRequired = isMotoboy(data.perfil_nome);
   if (isRequired && !data.entrada_km) return false;
   return true;
 }, {
@@ -68,7 +69,7 @@ export const editTimeRecordSchema = z.object({
     .refine(val => !val || !isNaN(kmToNumber(val || "")), "KM inválido"),
   observacao: z.string().max(500, "Máximo de 500 caracteres").optional(),
 }).refine(data => {
-  const isRequired = data.perfil_nome === 'motoboy' || data.perfil_nome === 'fiscal';
+  const isRequired = isMotoboy(data.perfil_nome);
   if (isRequired && data.saida_hora && !data.saida_km) return false;
   if (data.saida_km && !data.saida_hora) return false;
   return true;
@@ -76,7 +77,7 @@ export const editTimeRecordSchema = z.object({
   message: "Hora e KM de saída devem ser preenchidos juntos",
   path: ["saida_hora"]
 }).refine(data => {
-  const isRequired = data.perfil_nome === 'motoboy' || data.perfil_nome === 'fiscal';
+  const isRequired = isMotoboy(data.perfil_nome);
   if (isRequired && !data.entrada_km) return false;
   return true;
 }, {

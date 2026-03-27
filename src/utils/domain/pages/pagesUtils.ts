@@ -30,7 +30,7 @@ export const pagesItems: PageItem[] = [
         permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
     },
     {
-        title: "Registrar Ponto",
+        title: "Registrar Atividade",
         href: ROUTES.PRIVATE.REGISTRAR_PONTO,
         icon: Clock,
     },
@@ -41,14 +41,14 @@ export const pagesItems: PageItem[] = [
         permissionKey: PERMISSIONS.USUARIOS.VER,
     },
     {
-        title: "Controle de Ponto",
+        title: "Controle Diário",
         href: ROUTES.PRIVATE.CONTROLE_PONTO,
         icon: Clock,
         permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
         category: MENU_CATEGORIES.PONTO
     },
     {
-        title: "Espelho de Ponto",
+        title: "Espelho de Atividade",
         href: ROUTES.PRIVATE.ESPELHO_PONTO,
         icon: FileText,
         category: MENU_CATEGORIES.PONTO

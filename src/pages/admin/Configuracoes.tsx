@@ -36,7 +36,7 @@ const CONFIG_METADATA: Record<string, { label: string; icon: any; unit?: string;
         label: "Valor Fixo para Feriado",
         icon: CircleDollarSign,
         unit: "R$",
-        description: "Valor adicional pago automaticamente como ocorrência extra quando um ponto é aberto em dia de feriado.",
+        description: "Valor adicional pago automaticamente como ocorrência extra quando uma atividade é aberta em dia de feriado.",
         example: "Ex: Se definido como 50, o colaborador ganhará R$ 50,00 adicionais no extrato se abrir turno num feriado."
     },
 };
@@ -100,7 +100,7 @@ export default function Configuracoes() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ToleranceTimeline draftValues={draftValues} />
-                
+
                 {configs?.filter(c => c.chave !== 'tolerancia_verde_min' && c.chave !== 'tolerancia_saida_min').map((config) => (
                     <ConfigCard
                         key={config.chave}

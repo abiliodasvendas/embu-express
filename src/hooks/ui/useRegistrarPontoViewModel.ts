@@ -10,13 +10,17 @@ import { ColaboradorCliente, PontoLocation, Pausa } from "@/types/database";
 
 export function useRegistrarPontoViewModel() {
     const business = useRegistrarPontoBusiness();
-    const { isMotoboyOrFiscal } = usePermissions();
+    const { isMotoboy } = usePermissions();
     const geo = useGeolocation();
     const { openMileageDialog } = useLayout();
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedLinkId, setSelectedLinkId] = useState<string>("");
     const [timer, setTimer] = useState<string>("00:00:00");
+    const [totalPauseTimer, setTotalPauseTimer] = useState<string>("00:00:00");
+    const [activePauseTimer, setActivePauseTimer] = useState<string>("00:00:00");
+    const [activePauseStartTime, setActivePauseStartTime] = useState<string | null>(null);
+
     const [activeShift, setActiveShift] = useState<{
         id?: string;
         nome: string;
@@ -108,52 +112,67 @@ export function useRegistrarPontoViewModel() {
         return date.getTime();
     }, []);
 
-    // Timer Logic
+    // Helper to format duration MS to HH:MM:SS
+    const formatDuration = (diff: number) => {
+        if (diff < 0) return "00:00:00";
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
+    // Timers Logic (Work, Total Pause, Active Pause)
     useEffect(() => {
-        if (status === StatusPonto.TRABALHANDO) {
-            const start = parseDate(business.pontoHoje?.entrada_hora);
-            const pauseMs = business.journeyMetrics.totalMs;
+        const updateTimers = () => {
+            if (status === StatusPonto.TRABALHANDO) {
+                const start = parseDate(business.pontoHoje?.entrada_hora);
+                const pauseMs = business.journeyMetrics.totalMs;
 
-            if (!start || isNaN(start)) {
-                setTimer("--:--:--");
-                return;
-            }
-
-            const updateTimer = () => {
-                const now = Date.now();
-                const diff = (now - start) - pauseMs;
-                if (diff < 0) {
-                    setTimer("00:00:00");
+                if (!start || isNaN(start)) {
+                    setTimer("--:--:--");
+                    setTotalPauseTimer(formatDuration(pauseMs));
                     return;
                 }
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-            };
 
-            updateTimer(); // Executa imediatamente para evitar o "salto" de 0s
-            const interval = setInterval(updateTimer, 1000);
-            return () => clearInterval(interval);
-        } else if (status === StatusPonto.PAUSADO) {
-            const openPause = business.pontoHoje?.pausas?.find((p: Pausa) => !p.fim_hora);
-            if (openPause) {
-                const start = parseDate(business.pontoHoje?.entrada_hora);
-                const pauseStart = parseDate(openPause.inicio_hora);
-                const diff = (pauseStart - start) - business.journeyMetrics.totalMs;
-                
-                if (diff < 0) {
-                    setTimer("00:00:00");
-                } else {
-                    const h = Math.floor(diff / 3600000);
-                    const m = Math.floor((diff % 3600000) / 60000);
-                    const s = Math.floor((diff % 60000) / 1000);
-                    setTimer(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+                const workDiff = (Date.now() - start) - pauseMs;
+                setTimer(formatDuration(workDiff));
+                setTotalPauseTimer(formatDuration(pauseMs));
+                setActivePauseTimer("00:00:00");
+                setActivePauseStartTime(null);
+
+            } else if (status === StatusPonto.PAUSADO) {
+                const openPause = business.pontoHoje?.pausas?.find((p: Pausa) => !p.fim_hora);
+                if (openPause) {
+                    const start = parseDate(business.pontoHoje?.entrada_hora);
+                    const pauseStart = parseDate(openPause.inicio_hora);
+                    const finishedPauseMs = business.journeyMetrics.totalMs;
+                    
+                    // Work Timer Frozen
+                    const workDiff = (pauseStart - start) - finishedPauseMs;
+                    setTimer(formatDuration(workDiff));
+
+                    // Active Pause Timer
+                    const activeDiff = Date.now() - pauseStart;
+                    setActivePauseTimer(formatDuration(activeDiff));
+
+                    // Total Pause Timer (Accumulated + Active)
+                    setTotalPauseTimer(formatDuration(finishedPauseMs + activeDiff));
+
+                    // Active Pause Start Time (HH:MM)
+                    const date = new Date(pauseStart);
+                    setActivePauseStartTime(`${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`);
                 }
+            } else {
+                setTimer("--:--:--");
+                setTotalPauseTimer("00:00:00");
+                setActivePauseTimer("00:00:00");
+                setActivePauseStartTime(null);
             }
-        } else {
-            setTimer("--:--:--");
-        }
+        };
+
+        updateTimers();
+        const interval = setInterval(updateTimers, 1000);
+        return () => clearInterval(interval);
     }, [status, business.pontoHoje, business.journeyMetrics.totalMs, parseDate]);
 
     const executeAction = useCallback(async (actionType: 'toggle' | 'pause-start' | 'pause-end', loc: PontoLocation, km?: number) => {
@@ -193,7 +212,7 @@ export function useRegistrarPontoViewModel() {
         try {
             const [loc, lastKmData] = await Promise.all([
                 geo.requestLocation(),
-                isMotoboyOrFiscal ? apiClient.get(`/pontos/ultimo-km/${business.user?.id}`) : Promise.resolve({ data: { km: 0 } })
+                isMotoboy ? apiClient.get(`/pontos/ultimo-km/${business.user?.id}`) : Promise.resolve({ data: { km: 0 } })
             ]);
 
             if (!loc) {
@@ -201,7 +220,7 @@ export function useRegistrarPontoViewModel() {
                 return;
             }
 
-            if (isMotoboyOrFiscal) {
+            if (isMotoboy) {
                 const lastKm = lastKmData.data?.km || 0;
                 let title = "Início de Turno";
                 let description = "Informe o KM da moto.";
@@ -241,7 +260,7 @@ export function useRegistrarPontoViewModel() {
             console.error("Action preparation error:", error);
             setIsProcessing(false);
         }
-    }, [isProcessing, geo, isMotoboyOrFiscal, business.user?.id, status, openMileageDialog, executeAction]);
+    }, [isProcessing, geo, isMotoboy, business.user?.id, status, openMileageDialog, executeAction]);
 
     const onRefresh = async () => {
         await Promise.all([
@@ -256,11 +275,14 @@ export function useRegistrarPontoViewModel() {
         selectedLinkId,
         setSelectedLinkId,
         timer,
+        totalPauseTimer,
+        activePauseTimer,
+        activePauseStartTime,
         activeShift,
         isProcessing: isProcessing || business.isLoadingPonto,
         geo,
         business,
-        isMotoboyOrFiscal,
+        isMotoboy,
 
         // Actions
         handleToggle: () => handleAction('toggle'),

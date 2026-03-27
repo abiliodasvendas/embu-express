@@ -6,7 +6,7 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useRoles } from "@/hooks";
 import { useSelfRegistrationForm } from "@/hooks/form/useSelfRegistrationForm";
 import { mockGenerator } from "@/utils/mocks/generator";
-import { ROLES } from "@/constants/permissions.enum";
+import { isMotoboy } from "@/utils/business/roles";
 import { ArrowLeft, CheckCircle2, UserPlus, Wand2 } from "lucide-react";
 
 export default function SelfRegistration() {
@@ -64,16 +64,16 @@ export default function SelfRegistration() {
                 onClick={() => {
                   form.reset();
                   const mockData = mockGenerator.selfRegistrationMandatory();
-                  const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
+                  const motoboyRole = roles?.find(r => isMotoboy(r.nome));
 
                   Object.keys(mockData).forEach((key) => {
-                    // @ts-ignore
+                    // @ts-expect-error - key is dynamic from object keys
                     form.setValue(key, mockData[key], { shouldValidate: true });
                   });
 
                   if (motoboyRole) {
                     form.setValue("perfil_id", motoboyRole.id.toString());
-                    form.setValue("isMotoboyOrFiscal", true);
+        
                   }
                 }}
                 className="w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"
@@ -89,16 +89,16 @@ export default function SelfRegistration() {
                 size="icon"
                 onClick={() => {
                   const mockData = mockGenerator.selfRegistration();
-                  const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase() === ROLES.MOTOBOY.toLowerCase());
+                  const motoboyRole = roles?.find(r => isMotoboy(r.nome));
 
                   Object.keys(mockData).forEach((key) => {
-                    // @ts-ignore
+                    // @ts-expect-error - key is dynamic from object keys
                     form.setValue(key, mockData[key], { shouldValidate: true });
                   });
 
                   if (motoboyRole) {
                     form.setValue("perfil_id", motoboyRole.id.toString());
-                    form.setValue("isMotoboyOrFiscal", true);
+        
                   }
                 }}
                 className="w-10 h-10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-sm"

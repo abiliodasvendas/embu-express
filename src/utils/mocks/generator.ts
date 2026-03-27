@@ -195,7 +195,7 @@ export const generateClientData = () => {
 export const generateUnidadeData = (clienteId?: number) => {
   const nomes = ["Matriz", "Filial 1", "CD 02", "Expedição", "Hub Logístico", "Pátio A", "Estação Central"];
   const sufixos = ["Ltda", "S.A.", "EPP", "ME"];
-  
+
   const nomeUnidade = nomes[randomNumber(0, nomes.length - 1)];
   const razaoSocial = `${nomeUnidade} Empreendimentos ${sufixos[randomNumber(0, sufixos.length - 1)]}`;
 
@@ -268,7 +268,7 @@ export const generateCollaboratorData = () => {
 };
 
 /**
- * Gera um registro de ponto fictício para o colaborador na data especificada e turno
+ * Gera um registro de atividade fictício para o colaborador na data especificada e turno
  */
 export const generateTimeRecord = (usuarioId: string, date: string, turno?: { hora_inicio: string, hora_fim: string }, scenarioOverride?: number) => {
   const scenario = scenarioOverride || randomNumber(1, 6);

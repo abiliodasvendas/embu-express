@@ -60,7 +60,7 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
   const handleDelete = (record: RegistroPonto) => {
     openConfirmationDialog({
       title: "Excluir Registro",
-      description: "Tem certeza que deseja excluir permanentemente este registro de ponto? Esta ação não pode ser desfeita.",
+      description: "Tem certeza que deseja excluir permanentemente este registro de atividade? Esta ação não pode ser desfeita.",
       confirmText: "Sim, excluir",
       variant: "destructive",
       onConfirm: async () => {

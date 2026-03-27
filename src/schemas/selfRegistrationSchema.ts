@@ -26,12 +26,12 @@ const commonSchema = z.object({
   tipo_chave_pix: z.string().optional(),
   chave_pix: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
-  isMotoboyOrFiscal: z.boolean().optional().default(false),
+
 });
 
 // 2. Schema Profissional: Condicional baseada no flag isMotoboy (que indica se é perfil profissional como Motoboy ou Fiscal)
 const professionalSchema = z.object({
-  isMotoboyOrFiscal: z.boolean().optional(),
+
   cnh_registro: z.string().optional(),
   cnh_vencimento: z.string().optional(),
   cnh_categoria: z.string().optional(),

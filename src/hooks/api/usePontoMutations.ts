@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/types/api";
 
 /**
- * Invalida caches relacionados ao ponto para garantir que o espelho e o financeiro estejam sempre corretos.
+ * Invalida caches relacionados a atividade para garantir que o espelho e o financeiro estejam sempre corretos.
  */
 async function invalidatePontoCache(queryClient: QueryClient, _colaboradorId?: string) {
   // Invalidar a chave pai já invalida todas as chaves filhas/específicas por padrão no React Query
@@ -98,7 +98,7 @@ export function useIniciarPausa() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ pontoId, data }: { pontoId: number; data: { inicio_hora?: string; inicio_km?: number; inicio_loc?: PontoLocation } }) => 
+    mutationFn: ({ pontoId, data }: { pontoId: number; data: { inicio_hora?: string; inicio_km?: number; inicio_loc?: PontoLocation } }) =>
       pontoApi.iniciarPausa(pontoId, data),
     onSuccess: async () => {
       await invalidatePontoCache(queryClient);
@@ -115,7 +115,7 @@ export function useFinalizarPausa() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ pausaId, data }: { pausaId: number; data: { fim_hora?: string; fim_km?: number; fim_loc?: PontoLocation } }) => 
+    mutationFn: ({ pausaId, data }: { pausaId: number; data: { fim_hora?: string; fim_km?: number; fim_loc?: PontoLocation } }) =>
       pontoApi.finalizarPausa(pausaId, data),
     onSuccess: async () => {
       await invalidatePontoCache(queryClient);

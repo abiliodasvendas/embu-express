@@ -92,8 +92,8 @@ export function EndTurnDialog({
 
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
             <p className="text-sm text-amber-800 font-semibold leading-relaxed">
-              Ao encerrar, o colaborador não poderá mais registrar ponto para
-              este cliente. Todo o histórico de pontos, ocorrências e
+              Ao encerrar, o colaborador não poderá mais registrar atividade para
+              este cliente. Todo o histórico de atividades, ocorrências e
               financeiro será preservado.
             </p>
           </div>

@@ -12,7 +12,7 @@ interface RequirePermissionProps {
 }
 
 export function RequirePermission({ permissions, requireAdminPanel, requireOperational, useOrCondition = false }: RequirePermissionProps) {
-    const { roleName, isLoading, canViewAdminPanel, can } = usePermissions();
+    const { roleName, isLoading, canViewAdminPanel, can, isSuperAdmin, isMotoboyOrFiscal } = usePermissions();
 
     if (isLoading) {
         return (
@@ -31,8 +31,10 @@ export function RequirePermission({ permissions, requireAdminPanel, requireOpera
 
     if (requireAdminPanel && !canViewAdminPanel) hasAccess = false;
 
-    // Substituindo o legado pela Permissão exata de Registrar Ponto
-    if (requireOperational) hasAccess = false;
+    // Se exigir operacional, permite Super Admin (pra suporte/testes) ou Perfis de Campo (Motoboy/Fiscal)
+    if (requireOperational && !isSuperAdmin && !isMotoboyOrFiscal) {
+        hasAccess = false;
+    }
 
     if (permissions && permissions.length > 0) {
         if (useOrCondition) {

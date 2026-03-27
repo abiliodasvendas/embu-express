@@ -1,5 +1,5 @@
 export const MENU_CATEGORIES = {
-  PONTO: "Ponto",
+  PONTO: "Atividade",
   CADASTROS: "Cadastros",
   FINANCEIRO: "Financeiro",
   SISTEMA: "Sistema",

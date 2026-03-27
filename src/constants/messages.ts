@@ -16,7 +16,7 @@ export const messages = {
     conexao: "Erro de conexão. Verifique sua internet.",
     permissao: "Você não tem permissão para realizar esta ação.",
     validacao: "Corrija os erros no formulário.",
-    integridade: "Não é possível excluir este registro pois ele já possui histórico (ex: pontos ou ocorrências) associado. Utilize a edição para encerrá-lo/inativá-lo.",
+    integridade: "Não é possível excluir este registro pois ele já possui histórico (ex: atividades ou ocorrências) associado. Utilize a edição para encerrá-lo/inativá-lo.",
   },
 
   // ========== SUCESSO GENÉRICO ==========
@@ -62,11 +62,11 @@ export const messages = {
     },
   },
 
-  // ========== CONTROLE DE PONTO ==========
+  // ========== CONTROLE DE ATIVIDADE ==========
   ponto: {
     erro: {
-      carregar: "Erro ao carregar registros de ponto.",
-      registrar: "Erro ao registrar ponto.",
+      carregar: "Erro ao carregar registros de atividade.",
+      registrar: "Erro ao registrar atividade.",
       iniciarPausa: "Erro ao iniciar pausa.",
       finalizarPausa: "Erro ao finalizar pausa.",
       atualizar: "Erro ao atualizar registro.",
@@ -74,7 +74,7 @@ export const messages = {
       excluir: "Erro ao excluir registro.",
     },
     sucesso: {
-      registrado: "Ponto registrado com sucesso!",
+      registrado: "Atividade registrada com sucesso!",
       pausaIniciada: "Pausa iniciada!",
       pausaFinalizada: "Pausa finalizada!",
       atualizado: "Registro atualizado com sucesso!",
@@ -83,9 +83,9 @@ export const messages = {
     },
     labels: {
       nenhumColaborador: "Nenhum colaborador selecionado",
-      escolhaColaborador: "Escolha um colaborador acima para visualizar o espelho de ponto.",
+      escolhaColaborador: "Escolha um colaborador acima para visualizar o espelho de atividade.",
       semRegistros: "Sem registros neste mês",
-      semRegistrosDesc: "Não foram encontrados pontos nem escala configurada para este colaborador no período selecionado.",
+      semRegistrosDesc: "Não foram encontradas atividades nem escala configurada para este colaborador no período selecionado.",
       carregandoDados: "Carregando dados...",
       buscandoLocalizacao: "Buscando localização...",
       localizacaoRequerida: "Localização Requerida",
@@ -117,10 +117,12 @@ export const messages = {
       semEscala: "Sem escala hoje",
       entrada: "Entrada",
       pausas: "Pausas",
+      totalPausa: "Total Pausa",
+      inicioPausa: "Início Pausa",
       kmTotal: "KM Total",
       kmServico: "KM em Serviço",
       kmPausa: "KM em Pausa",
-      detalhesPonto: "Detalhes do Ponto",
+      detalhesPonto: "Detalhes da Atividade",
       jornadaMensal: "Jornada Mensal",
       faltas: "Faltas",
       rodagemKm: "Rodagem (KM)",
@@ -298,7 +300,7 @@ export const messages = {
       semResultados: "Não encontramos resultados para sua busca.",
     },
     ponto: {
-      titulo: "Nenhum registro de ponto encontrado",
+      titulo: "Nenhum registro de atividade encontrada",
       descricao: "Não há registros para o turno selecionado.",
       semResultados: "Não encontramos resultados para sua busca.",
     },

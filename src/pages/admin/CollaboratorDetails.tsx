@@ -14,6 +14,7 @@ import { messages } from "@/constants/messages";
 import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
+import { isMotoboy } from "@/utils/business/roles";
 import {
   safeCloseDialog,
   useCollaborator,
@@ -254,7 +255,7 @@ export default function CollaboratorDetails() {
   const handleReactivateTurn = (link: ColaboradorCliente) => {
     openConfirmationDialog({
       title: "Reativar Vínculo",
-      description: `Deseja realmente reativar o vínculo com o cliente "${link.cliente?.nome_fantasia}"? O colaborador voltará a poder registrar ponto.`,
+      description: `Deseja realmente reativar o vínculo com o cliente "${link.cliente?.nome_fantasia}"? O colaborador voltará a poder registrar atividade.`,
       confirmText: "Reativar",
       variant: "success",
       onConfirm: async () => {
@@ -498,7 +499,7 @@ export default function CollaboratorDetails() {
 
             <div className="lg:col-span-2 space-y-6">
 
-              {role?.nome === ROLES.MOTOBOY && (
+              {isMotoboy(role?.nome) && (
                 <Card className="border-0 shadow-sm rounded-3xl border-l-4 border-l-primary bg-white">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">

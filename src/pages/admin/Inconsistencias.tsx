@@ -23,7 +23,7 @@ export default function Inconsistencias() {
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <DateNavigation date={vm.date} onNavigate={vm.setDate} />
-            
+
             <div className="flex items-center gap-3 w-full md:w-auto">
               {vm.hasActiveFilters && (
                 <button
@@ -52,12 +52,12 @@ export default function Inconsistencias() {
 
       <div className="bg-orange-50/80 backdrop-blur-sm border border-orange-100 p-5 rounded-3xl flex items-start gap-4 shadow-sm shadow-orange-500/5">
         <div className="p-2 bg-orange-100 rounded-2xl">
-            <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0" />
+          <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0" />
         </div>
         <div>
           <h4 className="text-sm font-black text-orange-900 uppercase tracking-wider mb-1">O que são inconsistências?</h4>
           <p className="text-xs text-orange-800 font-medium leading-relaxed opacity-80">
-            Listagem de colaboradores que iniciaram o turno mas não registraram a saída após 4 horas do horário previsto ou excederam 14h de jornada. 
+            Listagem de colaboradores que iniciaram o turno mas não registraram a saída após 4 horas do horário previsto ou excederam 14h de jornada.
             Estes registros requerem ajuste manual para fechar o saldo corretamente.
           </p>
         </div>
@@ -66,10 +66,10 @@ export default function Inconsistencias() {
       {vm.isLoading ? (
         <ListSkeleton />
       ) : vm.filteredRecords.length === 0 ? (
-        <UnifiedEmptyState 
+        <UnifiedEmptyState
           icon={AlertTriangle}
           title={vm.searchTerm ? "Nenhuma pendência para esta busca" : "Nenhuma pendência encontrada"}
-          description={vm.searchTerm ? "Tente buscar por outro nome ou limpe a pesquisa." : "Todos os colaboradores desta data registraram o ponto corretamente ou não iniciaram."}
+          description={vm.searchTerm ? "Tente buscar por outro nome ou limpe a pesquisa." : "Todos os colaboradores desta data registraram a atividade corretamente ou não iniciaram."}
         />
       ) : (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">

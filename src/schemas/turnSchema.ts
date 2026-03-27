@@ -37,7 +37,7 @@ export const turnSchema = z.object({
   valor_adiantamento: optionalMoneySchema,
   data_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
   horarios: z.array(horarioSchema).min(1, "Configure ao menos um dia de trabalho"),
-  isMotoboyOrFiscal: z.boolean().optional(),
+
 });
 
 export type TurnFormData = z.infer<typeof turnSchema>;

@@ -277,9 +277,18 @@ export default function RegistrarPonto() {
                                         <p className={`text-[10px] font-black ${vm.status === StatusPonto.PAUSADO ? 'text-amber-400' : 'text-slate-400'} uppercase tracking-[0.15em]`}>{vm.activeShift?.horario || 'Horário Flexível'}</p>
                                     </div>
 
-                                    <div className={`text-5xl sm:text-7xl font-black font-mono tracking-tighter tabular-nums ${colors.timer} my-4`}>
-                                        {vm.timer}
+                                    <div className={`text-5xl sm:text-7xl font-black font-mono tracking-tighter tabular-nums ${colors.timer} ${vm.status === StatusPonto.PAUSADO ? 'mb-2' : 'my-4'}`}>
+                                        {vm.status === StatusPonto.PAUSADO ? vm.activePauseTimer : vm.timer}
                                     </div>
+
+                                    {vm.status === StatusPonto.PAUSADO && (
+                                        <div className="flex flex-col items-center gap-2 mt-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                                            <div className="flex items-center gap-2 text-amber-600 font-bold text-[10px] uppercase tracking-[0.15em] bg-amber-100/50 px-3 py-1 rounded-full border border-amber-200/50">
+                                                <Pause className="w-3 h-3 fill-current" />
+                                                <span>{messages.ponto.labels.inicioPausa}: {vm.activePauseStartTime}</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
 
@@ -327,9 +336,9 @@ export default function RegistrarPonto() {
                                     </span>
                                 </Card>
                                 <Card className="rounded-3xl border-none bg-slate-50/50 p-5 text-center ring-1 ring-slate-100 shadow-sm">
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{messages.ponto.labels.kmTotal}</span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{messages.ponto.labels.totalPausa}</span>
                                     <span className="text-xl font-black text-slate-700">
-                                        {vm.formatKm((business.journeyMetrics.kmTrabalho || 0) + (business.journeyMetrics.kmPausa || 0))}
+                                        {vm.totalPauseTimer}
                                     </span>
                                 </Card>
                             </div>

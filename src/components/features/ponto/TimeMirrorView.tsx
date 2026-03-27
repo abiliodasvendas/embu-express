@@ -17,6 +17,7 @@ import { formatMinutes } from "@/utils/ponto";
 import { Calendar, Clock, Gauge, MapPin, TrendingDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { TimeMirrorDailyCard } from "./TimeMirrorDailyCard";
+import { safeCloseDialog } from "@/hooks";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -67,7 +68,7 @@ export function TimeMirrorView({
             variant: "destructive",
             onConfirm: async () => {
                 await deletePonto(id);
-                closeConfirmationDialog();
+                safeCloseDialog(closeConfirmationDialog);
             }
         });
     };

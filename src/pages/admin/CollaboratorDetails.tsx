@@ -15,6 +15,7 @@ import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
+  safeCloseDialog,
   useCollaborator,
   useDateFilters,
   useDeleteVinculo,
@@ -95,7 +96,7 @@ export default function CollaboratorDetails() {
       onConfirm: async () => {
         try {
           await updateStatus.mutateAsync({ id: collab.id, status: newStatus });
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
 
           if (newStatus === STATUS.ATIVO) {
             // Pequeno delay para suavizar a transição entre diálogos
@@ -129,7 +130,7 @@ export default function CollaboratorDetails() {
       onConfirm: async () => {
         try {
           await deleteCollaborator.mutateAsync(collaborator.id);
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
           navigate("/colaboradores");
         } catch (error) {
           toast.error(messages.erro.excluir);
@@ -148,7 +149,7 @@ export default function CollaboratorDetails() {
       onConfirm: async () => {
         try {
           await resetPassword.mutateAsync(collaborator.id);
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
           toast.error(messages.erro.atualizar);
         }
@@ -234,7 +235,7 @@ export default function CollaboratorDetails() {
       onConfirm: async () => {
         try {
           await deleteVinculo.mutateAsync({ id: turnId, colaboradorId: id! });
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
           toast.error(messages.erro.excluir);
         }
@@ -264,7 +265,7 @@ export default function CollaboratorDetails() {
             data_fim: null,
             silent: true,
           });
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
           toast.error(messages.erro.atualizar);
         }

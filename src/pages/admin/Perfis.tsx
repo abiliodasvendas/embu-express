@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 import { useDeletePerfil, usePerfis } from "@/hooks/api/usePerfis";
 import { Perfil } from "@/types/database";
 import { toast } from "@/utils/notifications/toast";
@@ -35,7 +36,7 @@ export default function Perfis() {
                 try {
                     await deletePerfil.mutateAsync(perfil.id);
                     toast.success("Perfil deletado com sucesso!");
-                    closeConfirmationDialog();
+                    safeCloseDialog(closeConfirmationDialog);
                 } catch (error: any) {
                     toast.error("Erro ao deletar perfil", {
                         description: error.response?.data?.error || "Perfil pode estar em uso.",

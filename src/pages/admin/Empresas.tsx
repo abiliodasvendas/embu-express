@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 import {
   useCreateEmpresa,
   useDeleteEmpresa,
@@ -63,7 +64,7 @@ export function Empresas() {
       onConfirm: async () => {
         try {
           await deleteEmpresa.mutateAsync(empresa.id);
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
           console.error(error);
         }
@@ -84,7 +85,7 @@ export function Empresas() {
             id: empresa.id,
             ativo: !empresa.ativo,
           });
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
           toast.error(messages.erro.atualizar);
         }

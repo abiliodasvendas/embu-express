@@ -52,7 +52,7 @@ export function OccurrenceView({
       onConfirm: async () => {
         await deleteMutation.mutateAsync(occurrence.id);
         closeOccurrenceDetailsDialog();
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
         vm.refetch();
         onOccurrenceDeleted?.();
       },

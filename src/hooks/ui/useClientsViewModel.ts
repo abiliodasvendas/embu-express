@@ -3,13 +3,14 @@ import { useLayout } from '@/contexts/LayoutContext';
 import { useSearchFilters, useStatusFilters, useFiltersManager, useBatchFilters } from './useFilters';
 import { StatusUsuario, FilterOptions } from '@/types/enums';
 import { messages } from '@/constants/messages';
-import { 
+import {
     useClients,
     useCreateClient,
     useDeleteClient,
-    useToggleClientStatus
+    useToggleClientStatus,
+    safeCloseDialog
 } from '@/hooks';
-import { Client } from '@/types/client';
+import { Client } from '@/types/database';
 
 export function useClientsViewModel() {
     const {
@@ -65,7 +66,7 @@ export function useClientsViewModel() {
             variant: client.ativo ? "destructive" : "default",
             onConfirm: async () => {
                 await toggleStatus.mutateAsync({ id: client.id, ativo: !client.ativo });
-                closeConfirmationDialog();
+                safeCloseDialog(closeConfirmationDialog);
             },
         });
     }, [toggleStatus, openConfirmationDialog, closeConfirmationDialog]);
@@ -78,7 +79,7 @@ export function useClientsViewModel() {
             variant: "destructive",
             onConfirm: async () => {
                 await deleteClient.mutateAsync(client.id);
-                closeConfirmationDialog();
+                safeCloseDialog(closeConfirmationDialog);
             },
         });
     }, [deleteClient, openConfirmationDialog, closeConfirmationDialog]);
@@ -89,11 +90,11 @@ export function useClientsViewModel() {
         setFilters(newFilters);
     }, [setFilters]);
 
-    const isActionLoading = useMemo(() => 
-        toggleStatus.isPending || 
-        deleteClient.isPending || 
+    const isActionLoading = useMemo(() =>
+        toggleStatus.isPending ||
+        deleteClient.isPending ||
         createClient.isPending
-    , [toggleStatus.isPending, deleteClient.isPending, createClient.isPending]);
+        , [toggleStatus.isPending, deleteClient.isPending, createClient.isPending]);
 
     return {
         // Data

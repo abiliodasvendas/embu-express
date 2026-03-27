@@ -20,6 +20,7 @@ import { MoneyInput } from "@/components/ui/MoneyInput";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 import {
     useCreateTipoOcorrencia,
     useDeleteTipoOcorrencia,
@@ -138,7 +139,7 @@ export function OccurrenceTypesDialog({
             variant: "destructive",
             onConfirm: async () => {
                 await deleteMutation.mutateAsync(tipo.id);
-                closeConfirmationDialog();
+                safeCloseDialog(closeConfirmationDialog);
             },
         });
     };

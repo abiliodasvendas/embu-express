@@ -76,7 +76,6 @@ export function CollaboratorFormDialog({
   });
 
   const perfilIdWatch = form.watch("perfil_id");
-  const isMotoboyOrFiscal = form.watch("isMotoboyOrFiscal");
 
   useEffect(() => {
     if (roles && open && perfilIdWatch) {

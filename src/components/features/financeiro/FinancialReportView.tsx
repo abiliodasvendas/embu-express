@@ -19,6 +19,7 @@ import {
 import { getMessage } from "@/constants/messages";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 import { useFinanceiro } from "@/hooks/api/useFinanceiro";
 import { useFinanceiroMutations } from "@/hooks/api/useFinanceiroMutations";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -217,7 +218,7 @@ export function FinancialReportView({
                                 mes: selectedMonth,
                                 ano: selectedYear,
                               });
-                              closeConfirmationDialog();
+                              safeCloseDialog(closeConfirmationDialog);
                             },
                           });
                         }}
@@ -242,7 +243,7 @@ export function FinancialReportView({
                                 mes: selectedMonth,
                                 ano: selectedYear,
                               });
-                              closeConfirmationDialog();
+                              safeCloseDialog(closeConfirmationDialog);
                             },
                           });
                         }}
@@ -266,7 +267,7 @@ export function FinancialReportView({
                               mes: selectedMonth,
                               ano: selectedYear,
                             });
-                            closeConfirmationDialog();
+                            safeCloseDialog(closeConfirmationDialog);
                           },
                         });
                       }}
@@ -296,7 +297,7 @@ export function FinancialReportView({
                               mes: selectedMonth,
                               ano: selectedYear,
                             });
-                            closeConfirmationDialog();
+                            safeCloseDialog(closeConfirmationDialog);
                           },
                         });
                       }}
@@ -422,20 +423,20 @@ export function FinancialReportView({
                           )}
                           {(resumo.data_inicio || resumo.data_fim) && (
                             <p className="text-[11px] text-gray-400 font-bold">
-                              {resumo.data_inicio && 
-                               new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
-                               new Date(resumo.data_inicio + 'T12:00:00').getUTCFullYear() === selectedYear &&
-                               `Início: ${resumo.data_inicio.split("-").reverse().join("/")}`
+                              {resumo.data_inicio &&
+                                new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
+                                new Date(resumo.data_inicio + 'T12:00:00').getUTCFullYear() === selectedYear &&
+                                `Início: ${resumo.data_inicio.split("-").reverse().join("/")}`
                               }
-                              {resumo.data_inicio && resumo.data_fim && 
-                               new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
-                               new Date(resumo.data_fim + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
-                               " · "
+                              {resumo.data_inicio && resumo.data_fim &&
+                                new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
+                                new Date(resumo.data_fim + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
+                                " · "
                               }
-                              {resumo.data_fim && 
-                               new Date(resumo.data_fim + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
-                               new Date(resumo.data_fim + 'T12:00:00').getUTCFullYear() === selectedYear &&
-                               `Término: ${resumo.data_fim.split("-").reverse().join("/")}`
+                              {resumo.data_fim &&
+                                new Date(resumo.data_fim + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
+                                new Date(resumo.data_fim + 'T12:00:00').getUTCFullYear() === selectedYear &&
+                                `Término: ${resumo.data_fim.split("-").reverse().join("/")}`
                               }
                             </p>
                           )}
@@ -597,7 +598,7 @@ export function FinancialReportView({
                               {formatCurrency(
                                 ((resumo.saldo_fixo_original - (resumo.valores_fixos.bonus || 0)) /
                                   resumo.dias_base_mes) *
-                                Math.max(0, resumo.dias_esperados_turno - (resumo.faltas || 0)) + 
+                                Math.max(0, resumo.dias_esperados_turno - (resumo.faltas || 0)) +
                                 (resumo.valores_fixos.bonus || 0),
                               )}
                             </span>

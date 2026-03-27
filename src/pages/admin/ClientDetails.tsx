@@ -3,12 +3,12 @@ import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { CollaboratorCard } from "@/components/common/CollaboratorCard";
 import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 import {
   useDeleteClient,
   useToggleClientStatus,
@@ -51,7 +51,7 @@ export default function ClientDetails() {
   const [isCopied, setIsCopied] = useState(false);
   const [isUnidadeDialogOpen, setIsUnidadeDialogOpen] = useState(false);
   const [editingUnidade, setEditingUnidade] = useState<Unidade | null>(null);
-  
+
   // Pagination states
   const [unitPage, setUnitPage] = useState(1);
   const unitsPerPage = 5;
@@ -142,7 +142,7 @@ export default function ClientDetails() {
       variant: newStatus ? "success" : "warning",
       onConfirm: async () => {
         await toggleStatus.mutateAsync({ id: client.id, ativo: newStatus });
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
       },
     });
   };
@@ -156,7 +156,7 @@ export default function ClientDetails() {
       variant: "destructive",
       onConfirm: async () => {
         await deleteClient.mutateAsync(client.id);
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
         navigate("/clientes");
       },
     });
@@ -180,7 +180,7 @@ export default function ClientDetails() {
       variant: "destructive",
       onConfirm: async () => {
         await deleteUnidade.mutateAsync(unidade.id);
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
       },
     });
   };

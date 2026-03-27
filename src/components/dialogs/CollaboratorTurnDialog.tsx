@@ -109,7 +109,6 @@ export function CollaboratorTurnDialog({
     },
   });
 
-  const isMotoboyOrFiscal = form.watch("isMotoboyOrFiscal");
   const watchedHorarios =
     useWatch({ control: form.control, name: "horarios" }) || [];
 
@@ -868,18 +867,18 @@ export function CollaboratorTurnDialog({
                       )}
                     />
 
-                      <FormField
-                        control={form.control}
-                        name="valor_contrato"
-                        render={({ field }) => (
-                          <MoneyInput
-                            field={field}
-                            label="Salário Base"
-                            required={true}
-                            labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
-                          />
-                        )}
-                      />
+                    <FormField
+                      control={form.control}
+                      name="valor_contrato"
+                      render={({ field }) => (
+                        <MoneyInput
+                          field={field}
+                          label="Salário Base"
+                          required={true}
+                          labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
+                        />
+                      )}
+                    />
 
                     <div className="pt-2 grid grid-cols-1 gap-5 relative z-10">
                       <FormField

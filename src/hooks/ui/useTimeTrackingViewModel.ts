@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 
 import { useTimeRecords } from '../api/useTimeRecords';
 import { usePublicTimeTracking, usePublicCollaborators } from '../api/usePublicClient';
+import { safeCloseDialog } from './useDialogClose';
 
 interface UseTimeTrackingViewModelProps {
     uuid?: string; // If provided, uses public fetches
@@ -20,23 +21,23 @@ interface UseTimeTrackingViewModelProps {
     collaborators?: Usuario[]; // Optional manual override
 }
 
-export function useTimeTrackingViewModel({ 
+export function useTimeTrackingViewModel({
     uuid,
     isAdmin = false,
-    initialDate = new Date(), 
+    initialDate = new Date(),
     syncWithUrl = true,
     records: externalRecords,
     collaborators: externalCollaborators
 }: UseTimeTrackingViewModelProps) {
     const { setPageTitle, openTimeRecordDialog, openTimeRecordDetailsDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
-    
+
     // 1. Local UI State
     const [date, setDate] = useState<Date>(initialDate);
     const [activeKpiFilter, setActiveKpiFilter] = useState<ManagementStatus | null>(null);
 
     // 2. Data Fetching
     const formattedDateString = format(date, "yyyy-MM-dd");
-    
+
     // Admin Fetch
     const { data: adminRecords, isLoading: isAdminLoading, refetch: refetchAdmin } = useTimeRecords({
         date: formattedDateString,
@@ -66,17 +67,17 @@ export function useTimeTrackingViewModel({
 
     // 4. Filters State (Modularizado)
     const { searchTerm, setSearchTerm } = useSearchFilters("search", syncWithUrl);
-    
-    const { 
-        selectedTurno, setSelectedTurno 
+
+    const {
+        selectedTurno, setSelectedTurno
     } = usePontoFilters({
         turnoParam: "turno",
         syncWithUrl
     });
 
-    const { 
-        selectedUsuario, setSelectedUsuario, 
-        selectedCliente, setSelectedCliente 
+    const {
+        selectedUsuario, setSelectedUsuario,
+        selectedCliente, setSelectedCliente
     } = useHierarchyFilters({
         usuarioParam: "usuario",
         clienteParam: "cliente",
@@ -85,7 +86,7 @@ export function useTimeTrackingViewModel({
 
     const activeParams = ["search", "usuario", "cliente", "turno"];
     const { hasActiveFilters: hasActiveFiltersFromUrl, clearFilters } = useFiltersManager(activeParams, syncWithUrl);
-    
+
     const setFilters = useBatchFilters({
         usuarioParam: "usuario",
         clienteParam: "cliente",
@@ -110,7 +111,7 @@ export function useTimeTrackingViewModel({
             variant: "destructive",
             onConfirm: async () => {
                 await deleteRecord.mutateAsync(Number(record.id));
-                closeConfirmationDialog();
+                safeCloseDialog(closeConfirmationDialog);
             }
         });
     }, [deleteRecord, openConfirmationDialog, closeConfirmationDialog]);
@@ -153,13 +154,13 @@ export function useTimeTrackingViewModel({
 
     // Stage 2: Calculate KPI counts based on Stage 1 (Independent of active KPI filter)
     const dynamicKpiCounts = useMemo(() => {
-        const counts: Record<string, number> = { 
-            [ManagementStatus.ALL]: baseFilteredRecords.length, 
-            [ManagementStatus.LATE]: 0, 
-            [ManagementStatus.WORKING]: 0, 
-            [ManagementStatus.DONE]: 0, 
-            [ManagementStatus.WAITING]: 0, 
-            [ManagementStatus.ABSENT]: 0 
+        const counts: Record<string, number> = {
+            [ManagementStatus.ALL]: baseFilteredRecords.length,
+            [ManagementStatus.LATE]: 0,
+            [ManagementStatus.WORKING]: 0,
+            [ManagementStatus.DONE]: 0,
+            [ManagementStatus.WAITING]: 0,
+            [ManagementStatus.ABSENT]: 0
         };
         baseFilteredRecords.forEach(r => {
             if (counts[r.mgtStatus] !== undefined) {
@@ -206,7 +207,7 @@ export function useTimeTrackingViewModel({
         dynamicKpiCounts,
         uniqueShifts,
         collaborators,
-        
+
         // State
         isLoading,
         isActionLoading: createRecord.isPending || updateRecord.isPending || deleteRecord.isPending,
@@ -226,7 +227,7 @@ export function useTimeTrackingViewModel({
         handleKpiClick,
         clearAllFilters: clearAllFiltersFinal,
         setFilters,
-        
+
         // Actions
         handleCreate,
         handleEdit,

@@ -8,6 +8,7 @@ import { getManagementStatus } from "@/utils/ponto";
 import { Card } from "@/components/ui/card";
 
 import { TimeRecordCard } from "./TimeRecordCard";
+import { safeCloseDialog } from "@/hooks";
 
 interface TimeTrackingListProps {
   records: RegistroPonto[];
@@ -36,7 +37,7 @@ function TimeTrackingItem({ record, date, showClient, showActions = true, onDeta
 
   return (
     <Card className="h-full border shadow-none bg-white rounded-2xl relative">
-       <TimeRecordCard
+      <TimeRecordCard
         record={record}
         date={date}
         onDetails={onDetails}
@@ -64,7 +65,7 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
       variant: "destructive",
       onConfirm: async () => {
         await deletePonto(Number(record.id));
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
       }
     });
   };
@@ -106,11 +107,11 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
               </h3>
               <div className="h-px bg-gray-100 flex-1" />
             </div>
-            
+
             {groupRecords.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {groupRecords.map((record) => (
-                    <TimeTrackingItem
+                  <TimeTrackingItem
                     key={record.id}
                     record={record}
                     date={date}
@@ -119,9 +120,9 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
                     onDetails={openDetails}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
-                    />
+                  />
                 ))}
-                </div>
+              </div>
             )}
           </div>
         );

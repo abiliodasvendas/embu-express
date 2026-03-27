@@ -7,26 +7,27 @@ import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks";
 import { useClients } from "@/hooks/api/useClients";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import {
-    useDeleteUnidade,
-    useToggleUnidadeStatus,
+  useDeleteUnidade,
+  useToggleUnidadeStatus,
 } from "@/hooks/api/useUnidadeMutations";
 import { useUnidade } from "@/hooks/api/useUnidades";
 import { cn } from "@/lib/utils";
 import { cnpjMask } from "@/utils/masks";
 import {
-    ArrowUpRight,
-    CheckCircle2,
-    ChevronDown,
-    Edit2,
-    MapPin,
-    MapPinned,
-    Trash2,
-    Users,
-    XCircle,
-    Zap,
+  ArrowUpRight,
+  CheckCircle2,
+  ChevronDown,
+  Edit2,
+  MapPin,
+  MapPinned,
+  Trash2,
+  Users,
+  XCircle,
+  Zap,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -75,7 +76,7 @@ export default function UnitDetails() {
       variant: newStatus ? "success" : "warning",
       onConfirm: async () => {
         await toggleStatus.mutateAsync({ id: unit.id, ativo: newStatus });
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
       },
     });
   };
@@ -89,7 +90,7 @@ export default function UnitDetails() {
       variant: "destructive",
       onConfirm: async () => {
         await deleteUnidade.mutateAsync(unit.id);
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
         navigate(`/clientes/${clientId}`);
       },
     });

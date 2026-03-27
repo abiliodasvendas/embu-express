@@ -11,7 +11,7 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { messages } from "@/constants/messages";
 import { PERMISSIONS } from "@/constants/permissions.enum";
-import { useDeleteFeriado, useFeriados, useLayout, usePermissions } from "@/hooks";
+import { safeCloseDialog, useDeleteFeriado, useFeriados, useLayout, usePermissions } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Feriado } from "@/types/database";
 import { anos } from "@/utils/formatters/constants";
@@ -154,7 +154,7 @@ export default function Feriados() {
             variant: "destructive",
             onConfirm: async () => {
                 await deleteFeriado.mutateAsync(id);
-                closeConfirmationDialog();
+                safeCloseDialog(closeConfirmationDialog);
             },
         });
     };
@@ -162,7 +162,7 @@ export default function Feriados() {
     const filteredFeriados = useMemo(() => {
         if (!searchTerm) return feriados;
         const term = searchTerm.toLowerCase();
-        return feriados.filter(f => 
+        return feriados.filter(f =>
             f.descricao.toLowerCase().includes(term) ||
             new Date(f.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }).includes(term)
         );
@@ -227,7 +227,7 @@ export default function Feriados() {
                                 <ResponsiveDataList
                                     data={filteredFeriados}
                                     mobileContainerClassName="space-y-3"
-                                    mobileItemRenderer={(feriado, index) => (
+                                    mobileItemRenderer={(feriado: Feriado, index: number) => (
                                         <FeriadoMobileItem
                                             key={feriado.id}
                                             feriado={feriado}

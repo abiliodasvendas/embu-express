@@ -3,18 +3,19 @@ import { useLayout } from '@/contexts/LayoutContext';
 import { useSearchFilters, useStatusFilters, useCategoryFilters, useHierarchyFilters, useFiltersManager, useBatchFilters } from './useFilters';
 import { StatusUsuario, FilterOptions } from '@/types/enums';
 import { messages } from '@/constants/messages';
-import { 
-    useCollaborators, 
-    useRoles 
+import {
+    useCollaborators,
+    useRoles
 } from '@/hooks/api/useCollaborators';
 import { useEmpresas } from '@/hooks/api/useEmpresas';
 import { useClientSelection } from '@/hooks/ui/useClientSelection';
-import { 
-    useCreateCollaborator, 
-    useDeleteCollaborator, 
-    useUpdateCollaboratorStatus 
+import {
+    useCreateCollaborator,
+    useDeleteCollaborator,
+    useUpdateCollaboratorStatus
 } from '@/hooks/api/useCollaboratorMutations';
 import { Usuario as Collaborator } from '@/types/database';
+import { safeCloseDialog } from './useDialogClose';
 
 export function useCollaboratorsViewModel() {
     const {
@@ -29,9 +30,9 @@ export function useCollaboratorsViewModel() {
     const { searchTerm, setSearchTerm } = useSearchFilters();
     const { selectedStatus, setSelectedStatus } = useStatusFilters("status");
     const { selectedCategoria: selectedRole, setSelectedCategoria: setSelectedRole } = useCategoryFilters("cargo");
-    const { 
+    const {
         selectedCliente: selectedClient, setSelectedCliente: setSelectedClient,
-        selectedEmpresa, setSelectedEmpresa 
+        selectedEmpresa, setSelectedEmpresa
     } = useHierarchyFilters({
         clienteParam: "cliente",
         empresaParam: "empresa"
@@ -91,7 +92,7 @@ export function useCollaboratorsViewModel() {
             variant: "destructive",
             onConfirm: async () => {
                 await deleteCollaborator.mutateAsync(collaborator.id);
-                closeConfirmationDialog();
+                safeCloseDialog(closeConfirmationDialog);
             },
         });
     }, [deleteCollaborator, openConfirmationDialog, closeConfirmationDialog]);
@@ -109,7 +110,7 @@ export function useCollaboratorsViewModel() {
                     status: newStatus,
                 });
 
-                closeConfirmationDialog();
+                safeCloseDialog(closeConfirmationDialog);
 
                 if (newStatus === StatusUsuario.ATIVO) {
                     setTimeout(() => {
@@ -143,11 +144,11 @@ export function useCollaboratorsViewModel() {
         });
     }, [setFilters]);
 
-    const isActionLoading = useMemo(() => 
-        deleteCollaborator.isPending || 
-        updateStatus.isPending || 
+    const isActionLoading = useMemo(() =>
+        deleteCollaborator.isPending ||
+        updateStatus.isPending ||
         createCollaborator.isPending
-    , [deleteCollaborator.isPending, updateStatus.isPending, createCollaborator.isPending]);
+        , [deleteCollaborator.isPending, updateStatus.isPending, createCollaborator.isPending]);
 
     return {
         // Data

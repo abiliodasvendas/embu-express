@@ -36,18 +36,18 @@ export function OccurrenceDailyItem({
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
         <div className="flex-1 min-w-0">
+          {showCollaborator && (
+            <div className="text-[11px] font-black text-gray-900 uppercase tracking-tight mb-0.5">
+              {oc.colaborador?.nome_completo}
+            </div>
+          )}
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-black text-gray-400 uppercase tracking-wider">
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
               {format(parseISO(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
             </span>
-            <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-gray-200 text-gray-500 font-bold bg-white">
+            <Badge variant="outline" className="text-[9px] h-3.5 px-1.5 border-gray-100 text-gray-400 font-bold bg-white/50">
               {oc.tipo?.descricao || 'Ocorrência'}
             </Badge>
-            {showCollaborator && (
-              <span className="text-[11px] font-bold text-gray-900 truncate max-w-[150px]">
-                {oc.colaborador?.nome_completo}
-              </span>
-            )}
           </div>
           <p className="text-sm font-semibold text-gray-700 truncate pr-4 italic">
             {oc.observacao || 'Sem observação'}

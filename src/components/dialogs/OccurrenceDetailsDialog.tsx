@@ -65,6 +65,19 @@ export function OccurrenceDetailsDialog({
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
+                        {/* Colaborador */}
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                            <div className="bg-blue-50 p-2.5 rounded-xl">
+                                <User className="w-5 h-5 text-blue-500" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Colaborador</p>
+                                <p className="text-sm font-bold text-gray-700 mt-0.5">
+                                    {occurrence.colaborador?.nome_completo || 'Colaborador não identificado'}
+                                </p>
+                            </div>
+                        </div>
+
                         {/* Data e Hora */}
                         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
                             <div className="bg-gray-50 p-2.5 rounded-xl">
@@ -90,7 +103,7 @@ export function OccurrenceDetailsDialog({
                                         {occurrence.vinculo?.cliente?.nome_fantasia || 'Turno Vinculado'} 
                                         {occurrence.vinculo && (
                                             <span className="text-xs font-medium text-gray-500 ml-1">
-                                                ({formatTime(occurrence.vinculo.hora_inicio)} - {formatTime(occurrence.vinculo.hora_fim)})
+                                                ({formatTime((occurrence.vinculo as any).hora_inicio)} - {formatTime((occurrence.vinculo as any).hora_fim)})
                                             </span>
                                         )}
                                     </p>

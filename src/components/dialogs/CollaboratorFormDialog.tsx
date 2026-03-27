@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/select";
 import { PIX_TYPES } from "@/constants/financeiro.constants";
 import { messages } from "@/constants/messages";
-import { ROLES } from "@/constants/permissions.enum";
 import { useCreateCollaborator, useEmpresas, useLayout, useRoles, useUpdateCollaborator } from "@/hooks";
 import { useCollaboratorForm } from "@/hooks/form/useCollaboratorForm";
 import { cn } from "@/lib/utils";
@@ -37,6 +36,7 @@ import { Perfil, Usuario } from "@/types/database";
 import { StatusUsuario } from "@/types/enums";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { getPerfilLabel } from "@/utils/formatters";
+import { isMotoboy, isMotoboyOrFiscal } from "@/utils/business/roles";
 import { aplicarMascaraPlaca, cnpjMask, cpfMask, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -66,7 +66,7 @@ export function CollaboratorFormDialog({
   const { data: empresas } = useEmpresas();
   const [openSections, setOpenSections] = useState(["personal", "cnh", "moto", "financial"]);
 
-  const { openConfirmationDialog, closeConfirmationDialog, openCollaboratorFormDialog, openCollaboratorTurnDialog, openSuccessRegistrationDialog } = useLayout();
+  const { openSuccessRegistrationDialog } = useLayout();
   const createCollaborator = useCreateCollaborator();
   const updateCollaborator = useUpdateCollaborator();
 
@@ -77,28 +77,20 @@ export function CollaboratorFormDialog({
 
   const perfilIdWatch = form.watch("perfil_id");
 
+  const selectedRole = roles?.find(r => r.id.toString() === perfilIdWatch);
+  const checkIsMotoboy = isMotoboy(selectedRole?.nome);
+
   useEffect(() => {
-    if (roles && open && perfilIdWatch) {
-      const selectedRole = roles.find(r => r.id.toString() === perfilIdWatch);
-      const isProfissional =
-        selectedRole?.nome?.toLowerCase() === ROLES.MOTOBOY.toLowerCase() ||
-        selectedRole?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase();
-
-      form.setValue("isMotoboyOrFiscal", isProfissional, { shouldValidate: true });
-
-      // Só limpamos se estivermos trocando manualmente de um profissional para não-profissional
-      // e não quando o formulário está apenas inicializando
-      if (perfilIdWatch && !isProfissional && !collaboratorToEdit) {
-        form.setValue("cnh_registro", "");
-        form.setValue("cnh_vencimento", "");
-        form.setValue("cnh_categoria", "");
-        form.setValue("moto_modelo", "");
-        form.setValue("moto_placa", "");
-        form.setValue("moto_cor", "");
-        form.setValue("moto_ano", "");
-      }
+    if (open && perfilIdWatch && !checkIsMotoboy && !collaboratorToEdit) {
+      form.setValue("cnh_registro", "");
+      form.setValue("cnh_vencimento", "");
+      form.setValue("cnh_categoria", "");
+      form.setValue("moto_modelo", "");
+      form.setValue("moto_placa", "");
+      form.setValue("moto_cor", "");
+      form.setValue("moto_ano", "");
     }
-  }, [perfilIdWatch, roles, form, open, collaboratorToEdit]);
+  }, [perfilIdWatch, checkIsMotoboy, form, open, collaboratorToEdit]);
 
   const onFormError = (errors: FieldErrors<CollaboratorFormValues>) => {
     toast.error(messages.validacao.formularioComErros);
@@ -112,13 +104,6 @@ export function CollaboratorFormDialog({
     setOpenSections(prev => Array.from(new Set([...prev, ...Array.from(sectionsWithError)])));
   };
 
-  /* Helper to convert DD/MM/YYYY to YYYY-MM-DD */
-  const parseDateBr = (dateStr: string | undefined) => {
-    if (!dateStr || dateStr.length !== 10) return null;
-    const [day, month, year] = dateStr.split('/');
-    return `${year}-${month}-${day}`;
-  };
-
   const handleFillMock = async () => {
     const mockData = mockGenerator.collaborator();
     const address = mockGenerator.address();
@@ -126,10 +111,9 @@ export function CollaboratorFormDialog({
     const cnh = mockGenerator.cnh();
 
     // Perfil e Status
-    const motoboyRole = roles?.find(r => (r.nome as string).toLowerCase().includes("motoboy"));
+    const motoboyRole = roles?.find(r => isMotoboy(r.nome));
     if (motoboyRole) {
       form.setValue("perfil_id", motoboyRole.id.toString() as any);
-      form.setValue("isMotoboyOrFiscal", true);
     }
     form.setValue("status", StatusUsuario.ATIVO);
 
@@ -321,29 +305,33 @@ export function CollaboratorFormDialog({
                       </AccordionContent>
                     </AccordionItem>
 
-                    <AccordionItem value="cnh" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                      <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="w-4 h-4 text-blue-600" />
-                          Dados da CNH
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="pb-6 pt-2">
-                        <CollaboratorFormCNH />
-                      </AccordionContent>
-                    </AccordionItem>
+                    {checkIsMotoboy && (
+                      <>
+                        <AccordionItem value="cnh" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                          <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="w-4 h-4 text-blue-600" />
+                              Dados da CNH
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-6 pt-2">
+                            <CollaboratorFormCNH />
+                          </AccordionContent>
+                        </AccordionItem>
 
-                    <AccordionItem value="moto" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                      <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                        <div className="flex items-center gap-2">
-                          <Briefcase className="w-4 h-4 text-blue-600" />
-                          Dados da Moto
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="pb-6 pt-2">
-                        <CollaboratorFormMoto />
-                      </AccordionContent>
-                    </AccordionItem>
+                        <AccordionItem value="moto" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
+                          <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="w-4 h-4 text-blue-600" />
+                              Dados da Moto
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-6 pt-2">
+                            <CollaboratorFormMoto />
+                          </AccordionContent>
+                        </AccordionItem>
+                      </>
+                    )}
 
                     <AccordionItem value="financial" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
                       <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">

@@ -51,7 +51,6 @@ import { FieldErrors, useForm, useWatch } from "react-hook-form";
 
 import { Label } from "@/components/ui/label";
 import { messages } from "@/constants/messages";
-import { ROLES } from "@/constants/permissions.enum";
 import { TurnFormData, TurnFormInput, turnSchema } from "@/schemas/turnSchema";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "sonner";
@@ -104,21 +103,15 @@ export function CollaboratorTurnDialog({
       ajuda_custo: 0 as any,
       valor_adiantamento: 0 as any,
       data_inicio: "",
-      isMotoboyOrFiscal: false,
+
       horarios: [],
     },
   });
 
-  const watchedHorarios =
-    useWatch({ control: form.control, name: "horarios" }) || [];
+  const watchedHorarios = useWatch({ control: form.control, name: "horarios" }) || [];
 
   useEffect(() => {
     if (open) {
-      const isMOrF = !!(
-        collaborator?.perfil?.nome?.toLowerCase() ===
-        ROLES.MOTOBOY.toLowerCase() ||
-        collaborator?.perfil?.nome?.toLowerCase() === ROLES.FISCAL.toLowerCase()
-      );
 
       if (turnToEdit) {
         form.reset({
@@ -133,7 +126,7 @@ export function CollaboratorTurnDialog({
             turnToEdit.valor_adiantamento || 0,
           ),
           data_inicio: turnToEdit.data_inicio || "",
-          isMotoboyOrFiscal: isMOrF,
+
           horarios:
             turnToEdit.horarios?.map((h) => ({
               dia_semana: h.dia_semana,
@@ -153,7 +146,7 @@ export function CollaboratorTurnDialog({
           ajuda_custo: "" as any,
           valor_adiantamento: "" as any,
           data_inicio: "",
-          isMotoboyOrFiscal: isMOrF,
+
           horarios: [],
         });
       }

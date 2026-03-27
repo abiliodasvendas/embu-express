@@ -36,7 +36,7 @@ export function useCreateCollaborator() {
   return useMutation({
     mutationFn: (data: CreateCollaboratorVariables) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { silent, isMotoboyOrFiscal, ...collaboratorData } = data;
+      const { silent, ...collaboratorData } = data;
 
       const payload = {
         ...collaboratorData,
@@ -72,7 +72,7 @@ interface UpdateCollaboratorVariables extends CollaboratorFormData {
 export function useUpdateCollaborator() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, isMotoboyOrFiscal, silent, ...data }: UpdateCollaboratorVariables) => {
+    mutationFn: ({ id, silent, ...data }: UpdateCollaboratorVariables) => {
       const payload = {
         ...data,
         data_nascimento: formatDateToISO(data.data_nascimento),

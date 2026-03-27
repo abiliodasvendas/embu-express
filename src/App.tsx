@@ -340,7 +340,7 @@ const App = () => {
 
 // Componente auxiliar para redirecionamento inteligente
 const RedirectByRole = () => {
-  const { canViewAdminPanel, canOperate, isLoading, roleName } = usePermissions();
+  const { canViewAdminPanel, isLoading } = usePermissions();
 
   if (isLoading) {
     return (
@@ -353,11 +353,6 @@ const RedirectByRole = () => {
   // Prioridade 1: Painel Admin (se tiver permissão de ver início ou qualquer admin)
   if (canViewAdminPanel) {
     return <Navigate to={ROUTES.PRIVATE.INICIO} replace />;
-  }
-
-  // Prioridade 2: Registrar Ponto (se for um colaborador operacional)
-  if (canOperate) {
-    return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
   }
 
   // Fallback

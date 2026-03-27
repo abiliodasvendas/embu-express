@@ -21,8 +21,7 @@ import { AlertCircle, Building2, Calendar as CalendarIcon, Check, ChevronsUpDown
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { getManagementStatus } from "@/utils/ponto";
-import { ManagementStatus } from "@/types/enums";
+import { isMotoboy } from "@/utils/business/roles";
 
 interface TimeRecordDialogProps {
     isOpen: boolean;
@@ -66,7 +65,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
     });
 
     const watchedPerfilNome = form.watch("perfil_nome");
-    const isMotoboyOrFiscal = watchedPerfilNome === 'motoboy' || watchedPerfilNome === 'fiscal';
+    const isMotoboyUser = isMotoboy(watchedPerfilNome);
 
     const selectedCollaboratorId = form.watch("usuario_id");
     const selectedCollaborator = record?.usuario || collaborators.find(c => c.id.toString() === selectedCollaboratorId);
@@ -441,7 +440,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    KM Entrada {isMotoboyOrFiscal && <span className="text-red-500">*</span>}
+                                                    KM Entrada {isMotoboyUser && <span className="text-red-500">*</span>}
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
@@ -508,7 +507,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    KM Saída {isMotoboyOrFiscal && form.watch('saida_hora') && <span className="text-red-500">*</span>}
+                                                    KM Saída {isMotoboyUser && form.watch('saida_hora') && <span className="text-red-500">*</span>}
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">

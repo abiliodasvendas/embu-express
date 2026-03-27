@@ -27,7 +27,6 @@ interface CollaboratorFormFinancialProps {
 
 export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancialProps) {
     const form = useFormContext();
-    const isMotoboyOrFiscal = form.watch("isMotoboyOrFiscal");
 
     return (
         <div className="space-y-4">

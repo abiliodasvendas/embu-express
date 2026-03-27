@@ -12,8 +12,7 @@ import { onlyNumbers } from "@/utils/string";
 import { useFormContext } from "react-hook-form";
 
 export function CollaboratorFormCNH() {
-    const { formState: { errors }, watch, control } = useFormContext();
-    const isMotoboyOrFiscal = watch("isMotoboyOrFiscal");
+    const { formState: { errors }, control } = useFormContext();
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -74,8 +73,7 @@ export function CollaboratorFormCNH() {
 }
 
 export function CollaboratorFormMoto() {
-    const { formState: { errors }, watch, control } = useFormContext();
-    const isMotoboyOrFiscal = watch("isMotoboyOrFiscal");
+    const { formState: { errors }, control } = useFormContext();
 
 
     return (

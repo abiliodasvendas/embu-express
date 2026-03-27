@@ -48,9 +48,9 @@ export function RequirePermission({ permissions, requireAdminPanel, requireOpera
 
     if (!hasAccess) {
         if (canViewAdminPanel) {
-            return <Navigate to={ROUTES.PRIVATE.CONTROLE_PONTO} replace />;
+            return <Navigate to={ROUTES.PRIVATE.CONTROLE_ATIVIDADE_DIARIO} replace />;
         }
-        return <Navigate to={ROUTES.PRIVATE.REGISTRAR_PONTO} replace />;
+        return <Navigate to={ROUTES.PRIVATE.REGISTRAR_ATIVIDADE} replace />;
     }
 
     return <Outlet />;

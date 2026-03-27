@@ -217,7 +217,7 @@ const App = () => {
 
                     {/* Rotas Operacionais (Motoboy/Fiscal) */}
                     <Route element={<RequirePermission requireOperational={true} />}>
-                      <Route path={ROUTES.PRIVATE.REGISTRAR_PONTO.replace("/", "")} element={<RegistrarPonto />} />
+                      <Route path={ROUTES.PRIVATE.REGISTRAR_ATIVIDADE.replace("/", "")} element={<RegistrarPonto />} />
                     </Route>
 
                     {/* Rotas Administrativas Puras */}

@@ -31,7 +31,7 @@ export const pagesItems: PageItem[] = [
     },
     {
         title: "Registrar Atividade",
-        href: ROUTES.PRIVATE.REGISTRAR_PONTO,
+        href: ROUTES.PRIVATE.REGISTRAR_ATIVIDADE,
         icon: Clock,
     },
     {
@@ -42,14 +42,14 @@ export const pagesItems: PageItem[] = [
     },
     {
         title: "Controle Diário",
-        href: ROUTES.PRIVATE.CONTROLE_PONTO,
+        href: ROUTES.PRIVATE.CONTROLE_ATIVIDADE_DIARIO,
         icon: Clock,
         permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
         category: MENU_CATEGORIES.PONTO
     },
     {
         title: "Espelho de Atividade",
-        href: ROUTES.PRIVATE.ESPELHO_PONTO,
+        href: ROUTES.PRIVATE.ESPELHO_ATIVIDADE,
         icon: FileText,
         category: MENU_CATEGORIES.PONTO
     },

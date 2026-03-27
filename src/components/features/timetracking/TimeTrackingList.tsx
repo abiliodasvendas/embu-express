@@ -2,7 +2,6 @@ import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { useTimeRecordActions } from "@/hooks/business/useTimeRecordActions";
 import { useLayout } from "@/contexts/LayoutContext";
 import { RegistroPonto } from "@/types/database";
-import { FilterX } from "lucide-react";
 import { ManagementStatus } from "@/types/enums";
 import { getManagementStatus } from "@/utils/ponto";
 import { Card } from "@/components/ui/card";

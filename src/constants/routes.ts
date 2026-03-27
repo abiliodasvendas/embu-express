@@ -5,8 +5,8 @@ export const ROUTES = {
         NEW_PASSWORD: "/nova-senha",
     },
     PRIVATE: {
-        REGISTRAR_PONTO: "/registrar-ponto",
-        CONTROLE_PONTO: "/controle-ponto",
+        REGISTRAR_ATIVIDADE: "/registrar-atividade",
+        CONTROLE_ATIVIDADE_DIARIO: "/controle-atividade-diario",
         COLABORADORES: "/colaboradores",
         COLABORADOR_DETAILS: "/colaboradores/:id",
         CLIENTES: "/clientes",
@@ -17,11 +17,9 @@ export const ROUTES = {
         CONFIGURACOES: "/configuracoes",
         FERIADOS: "/feriados",
         OCORRENCIAS: "/admin/ocorrencias",
-        ESPELHO_PONTO: "/admin/espelho-ponto",
+        ESPELHO_ATIVIDADE: "/admin/espelho-atividade",
         RELATORIO_FINANCEIRO: "/admin/financeiro",
         INCONSISTENCIAS: "/admin/inconsistencias",
-        MEUS_PONTOS: "/meus-pontos",
-        MEU_FINANCEIRO: "/meu-financeiro",
         INICIO: "/inicio"
     }
 } as const;

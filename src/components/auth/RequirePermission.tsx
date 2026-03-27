@@ -7,12 +7,11 @@ import { Navigate, Outlet } from "react-router-dom";
 interface RequirePermissionProps {
     permissions?: PermissionKey[];
     requireAdminPanel?: boolean;
-    requireOperational?: boolean;
     useOrCondition?: boolean;
 }
 
-export function RequirePermission({ permissions, requireAdminPanel, requireOperational, useOrCondition = false }: RequirePermissionProps) {
-    const { roleName, isLoading, canViewAdminPanel, can, isSuperAdmin, isMotoboyOrFiscal } = usePermissions();
+export function RequirePermission({ permissions, requireAdminPanel, useOrCondition = false }: RequirePermissionProps) {
+    const { roleName, isLoading, canViewAdminPanel, can } = usePermissions();
 
     if (isLoading) {
         return (
@@ -31,11 +30,6 @@ export function RequirePermission({ permissions, requireAdminPanel, requireOpera
 
     if (requireAdminPanel && !canViewAdminPanel) hasAccess = false;
 
-    // Se exigir operacional, permite Super Admin (pra suporte/testes) ou Perfis de Campo (Motoboy/Fiscal)
-    if (requireOperational && !isSuperAdmin && !isMotoboyOrFiscal) {
-        hasAccess = false;
-    }
-
     if (permissions && permissions.length > 0) {
         if (useOrCondition) {
             const hasAny = permissions.some(p => can(p));
@@ -47,9 +41,6 @@ export function RequirePermission({ permissions, requireAdminPanel, requireOpera
     }
 
     if (!hasAccess) {
-        if (canViewAdminPanel) {
-            return <Navigate to={ROUTES.PRIVATE.CONTROLE_ATIVIDADE_DIARIO} replace />;
-        }
         return <Navigate to={ROUTES.PRIVATE.REGISTRAR_ATIVIDADE} replace />;
     }
 

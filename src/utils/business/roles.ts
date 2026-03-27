@@ -4,17 +4,23 @@ import { ROLES } from "@/constants/permissions.enum";
  * Verifica se um nome de perfil (string) corresponde ao perfil de Motoboy.
  * Centraliza a lógica para evitar o uso de strings mágicas em schemas e componentes.
  */
+/**
+ * Verifica se um nome de perfil (string) corresponde a um perfil operacional de Motoboy.
+ * Agora é mais flexível para aceitar nomes dinâmicos (ex: motoboy_noturno).
+ */
 export function isMotoboy(perfilNome?: string): boolean {
     if (!perfilNome) return false;
-    return perfilNome.toLowerCase() === ROLES.MOTOBOY.toLowerCase();
+    const lower = perfilNome.toLowerCase();
+    return lower === ROLES.MOTOBOY.toLowerCase() || lower.includes("motoboy");
 }
 
 /**
- * Verifica se um nome de perfil (string) corresponde ao perfil de Fiscal.
+ * Verifica se um nome de perfil corresponde ao perfil de Fiscal.
  */
 export function isFiscal(perfilNome?: string): boolean {
     if (!perfilNome) return false;
-    return perfilNome.toLowerCase() === ROLES.FISCAL.toLowerCase();
+    const lower = perfilNome.toLowerCase();
+    return lower === ROLES.FISCAL.toLowerCase() || lower.includes("fiscal");
 }
 
 /**
@@ -26,7 +32,8 @@ export function isMotoboyOrFiscal(perfilNome?: string): boolean {
 
 export function isAdmin(perfilNome?: string): boolean {
     if (!perfilNome) return false;
-    return perfilNome.toLowerCase() === ROLES.ADMIN.toLowerCase();
+    const lower = perfilNome.toLowerCase();
+    return lower === ROLES.ADMIN.toLowerCase() || lower.includes("admin");
 }
 
 export function isSuperAdmin(perfilNome?: string): boolean {

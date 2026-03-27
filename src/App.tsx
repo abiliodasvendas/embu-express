@@ -215,10 +215,8 @@ const App = () => {
                   >
                     <Route index element={<RedirectByRole />} />
 
-                    {/* Rotas Operacionais (Motoboy/Fiscal) */}
-                    <Route element={<RequirePermission requireOperational={true} />}>
-                      <Route path={ROUTES.PRIVATE.REGISTRAR_ATIVIDADE.replace("/", "")} element={<RegistrarPonto />} />
-                    </Route>
+                    {/* Rotas Operacionais (Motoboy/Fiscal/Todos) */}
+                    <Route path={ROUTES.PRIVATE.REGISTRAR_ATIVIDADE.replace("/", "")} element={<RegistrarPonto />} />
 
                     {/* Rotas Administrativas Puras */}
                     <Route element={<RequirePermission permissions={[PERMISSIONS.PONTO.ADMIN_VER]} />}>
@@ -340,8 +338,7 @@ const App = () => {
 
 // Componente auxiliar para redirecionamento inteligente
 const RedirectByRole = () => {
-  const { canViewAdminPanel, isLoading } = usePermissions();
-
+  const { isAdmin, isSuperAdmin, isLoading } = usePermissions();
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -350,13 +347,13 @@ const RedirectByRole = () => {
     );
   }
 
-  // Prioridade 1: Painel Admin (se tiver permissão de ver início ou qualquer admin)
-  if (canViewAdminPanel) {
+  // Só Administradores Reais (Super ou Admin) caem na home administrativa
+  if (isAdmin || isSuperAdmin) {
     return <Navigate to={ROUTES.PRIVATE.INICIO} replace />;
   }
 
-  // Fallback
-  return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
+  // Todos os outros usuários caem na tela de registro
+  return <Navigate to={ROUTES.PRIVATE.REGISTRAR_ATIVIDADE} replace />;
 };
 
 export default App;

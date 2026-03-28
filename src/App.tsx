@@ -151,6 +151,35 @@ const App = () => {
     notifyReady();
   }, []);
 
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      document.body.classList.remove('native-app');
+      return;
+    }
+
+    document.body.classList.add('native-app');
+
+    const injectSafeAreas = () => {
+      const testDiv = document.createElement('div');
+      testDiv.style.paddingTop = 'env(safe-area-inset-top)';
+      testDiv.style.position = 'absolute';
+      testDiv.style.visibility = 'hidden';
+      document.body.appendChild(testDiv);
+
+      const computedStyle = window.getComputedStyle(testDiv);
+      const topInset = parseInt(computedStyle.paddingTop) || 0;
+      document.body.removeChild(testDiv);
+
+      if (topInset === 0 && Capacitor.getPlatform() === 'android') {
+        const root = document.documentElement;
+        root.style.setProperty('--safe-area-top', '24px');
+        root.style.setProperty('--safe-area-bottom', '24px');
+      }
+    };
+
+    setTimeout(injectSafeAreas, 500);
+  }, []);
+
   // Componente de loading para Suspense
   const LoadingFallback = () => (
     <div className="min-h-screen flex items-center justify-center">

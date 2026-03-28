@@ -49,7 +49,7 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      <main className="pt-[6.5rem] pb-10 md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 min-h-screen">
+      <main className="pt-[calc(6.5rem+var(--safe-area-top))] pb-[calc(2.5rem+var(--safe-area-bottom))] md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 min-h-screen transition-all">
         <Outlet />
       </main>
     </div>

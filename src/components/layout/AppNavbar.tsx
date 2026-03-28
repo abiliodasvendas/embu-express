@@ -57,7 +57,7 @@ export function AppNavbar() {
   }, [profile?.nome_completo]);
 
   return (
-    <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white touch-none">
+    <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white touch-none h-[calc(5rem+var(--safe-area-top))] pt-[var(--safe-area-top)] transition-all">
       <div className="flex h-20 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <div className="md:hidden">
@@ -72,7 +72,7 @@ export function AppNavbar() {
                 className="w-80 border-r border-gray-100 bg-white p-0 flex flex-col h-full"
                 onOpenAutoFocus={(e) => e.preventDefault()}
               >
-                <SheetHeader className="flex flex-col items-center justify-center py-6 border-b border-gray-100 shrink-0">
+              <SheetHeader className="flex flex-col items-center justify-center pt-[calc(1.5rem+var(--safe-area-top))] pb-6 border-b border-gray-100 shrink-0">
                   <SheetTitle className="text-lg font-semibold tracking-wide">
                     <img
                       src="/assets/logo-embuexpress.png"

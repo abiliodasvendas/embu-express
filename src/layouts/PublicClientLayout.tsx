@@ -38,8 +38,8 @@ export default function PublicClientLayout() {
     }
 
     const navItems = [
-        { label: "Controle de Ponto", path: `/public/c/${uuid}/controle`, icon: Clock },
-        { label: "Espelho de Ponto", path: `/public/c/${uuid}/espelho`, icon: CalendarDays },
+        { label: "Controle de Atividade", path: `/public/c/${uuid}/controle`, icon: Clock },
+        { label: "Espelho de Atividade", path: `/public/c/${uuid}/espelho`, icon: CalendarDays },
     ];
 
     return (
@@ -68,8 +68,8 @@ export default function PublicClientLayout() {
                                         to={item.path}
                                         className={cn(
                                             "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all",
-                                            isActive 
-                                                ? "bg-primary/10 text-primary" 
+                                            isActive
+                                                ? "bg-primary/10 text-primary"
                                                 : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                                         )}
                                     >
@@ -98,8 +98,8 @@ export default function PublicClientLayout() {
                             to={item.path}
                             className={cn(
                                 "flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl transition-all",
-                                isActive 
-                                    ? "bg-primary text-white" 
+                                isActive
+                                    ? "bg-primary text-white"
                                     : "text-gray-400 hover:bg-gray-50"
                             )}
                         >

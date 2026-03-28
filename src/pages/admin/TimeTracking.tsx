@@ -20,7 +20,7 @@ export default function TimeTracking() {
     });
 
     useEffect(() => {
-        vm.setPageTitle("Controle de Ponto");
+        vm.setPageTitle("Controle de Atividade");
     }, [vm]);
 
     return (
@@ -63,7 +63,7 @@ export default function TimeTracking() {
                     onFilterClick={vm.handleKpiClick}
                     className="pt-2"
                 />
-                
+
                 <div className="space-y-4">
                     {vm.isLoading ? (
                         <ListSkeleton />

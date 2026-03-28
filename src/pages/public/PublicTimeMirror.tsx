@@ -8,13 +8,13 @@ import { useParams } from "react-router-dom";
 export function PublicTimeMirror() {
     const { uuid } = useParams();
     const { setPageTitle } = useLayout();
-    const vm = useTimeMirrorViewModel({ 
+    const vm = useTimeMirrorViewModel({
         uuid,
-        syncWithUrl: false 
+        syncWithUrl: false
     });
 
     useEffect(() => {
-        setPageTitle("Meu Espelho de Ponto");
+        setPageTitle("Espelho de Atividade");
     }, [setPageTitle]);
 
     return (
@@ -32,7 +32,7 @@ export function PublicTimeMirror() {
                 onShiftChange={vm.setShift}
             />
 
-            <TimeMirrorView 
+            <TimeMirrorView
                 usuarioId={vm.usuarioId}
                 selectedMonth={vm.filters.selectedMes}
                 selectedYear={vm.filters.selectedAno}

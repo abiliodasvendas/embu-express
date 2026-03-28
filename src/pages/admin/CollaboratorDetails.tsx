@@ -363,7 +363,7 @@ export default function CollaboratorDetails() {
           </TabsTrigger>
           <TabsTrigger value="ponto" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <Clock className="h-4 w-4" />
-            <span>Ponto</span>
+            <span>Atividade</span>
           </TabsTrigger>
           <TabsTrigger value="financeiro" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <Wallet className="h-4 w-4" />
@@ -764,7 +764,7 @@ export default function CollaboratorDetails() {
                     <Clock className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <span className="block">Espelho de Ponto</span>
+                    <span className="block">Espelho de Atividade</span>
                     <span className="text-xs text-muted-foreground font-medium mt-0.5">Histórico detalhado de entradas e saídas.</span>
                   </div>
                 </CardTitle>

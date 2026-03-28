@@ -10,7 +10,7 @@ export function TimeMirror() {
     const { data: collaborators = [] } = useActiveCollaborators({ enabled: !vm.isOnlyPersonal });
 
     useEffect(() => {
-        setPageTitle(vm.isOnlyPersonal ? "Meu Espelho de Ponto" : "Espelho de Ponto");
+        setPageTitle(vm.isOnlyPersonal ? "Espelho de Atividade" : "Espelho de Atividade");
     }, [setPageTitle, vm.isOnlyPersonal]);
 
     return (
@@ -29,7 +29,7 @@ export function TimeMirror() {
                 hideCollaboratorSelect={vm.isOnlyPersonal}
             />
 
-            <TimeMirrorView 
+            <TimeMirrorView
                 usuarioId={vm.usuarioId}
                 selectedMonth={vm.filters.selectedMes}
                 selectedYear={vm.filters.selectedAno}

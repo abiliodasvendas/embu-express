@@ -108,7 +108,7 @@ export const messages = {
       pausa: "PAUSA",
       encerrarTurno: "ENCERRAR TURNO",
       encerrar: "Encerrar",
-      retomarTrabalho: "RETOMAR TRABALHO",
+      retomarTrabalho: "Encerrar Pausa",
       localizacaoAtiva: "Localização Ativa",
       localizacaoPendente: "Localização Pendente",
       ativa: "Ativa",

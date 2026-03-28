@@ -26,7 +26,7 @@ export default function RegistrarPonto() {
     const { setPageTitle } = useLayout();
 
     useEffect(() => {
-        setPageTitle("Registrar Ponto");
+        setPageTitle("Registrar Atividade");
     }, [setPageTitle]);
 
     const getStatusColors = () => {
@@ -224,7 +224,7 @@ export default function RegistrarPonto() {
                                             <ShieldAlert className="h-6 w-6 text-white" />
                                         </div>
                                     </div>
-                                    
+
                                     <div className="space-y-2">
                                         <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
                                             {messages.ponto.labels.vinculosNaoEncontrados}
@@ -241,7 +241,7 @@ export default function RegistrarPonto() {
                                     >
                                         <RefreshCw className="w-5 h-5 mr-3" /> {messages.ponto.labels.atualizarDados}
                                     </Button>
-                                    
+
                                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest pt-4">
                                         Tente atualizar se o vínculo foi criado agora.
                                     </p>

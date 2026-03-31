@@ -90,10 +90,6 @@ export interface OpenFeriadoFormProps {
   onSuccess?: () => void;
 }
 
-export interface OpenForgotPasswordProps {
-  onSuccess?: () => void;
-}
-
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -154,9 +150,6 @@ export interface LayoutContextType {
 
   openPasswordGuardDialog: (props: OpenPasswordGuardProps) => void;
   closePasswordGuardDialog: () => void;
-
-  openForgotPasswordDialog: (props: OpenForgotPasswordProps) => void;
-  closeForgotPasswordDialog: () => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

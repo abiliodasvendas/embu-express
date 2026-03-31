@@ -44,7 +44,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
-  const { openForgotPasswordDialog } = useLayout();
 
   const formSchema = z.object({
     cpfcnpj: cpfSchema,
@@ -58,10 +57,6 @@ export default function Login() {
       senha: "",
     },
   });
-
-  const handleForgotPassword = useCallback(() => {
-    openForgotPasswordDialog({});
-  }, [openForgotPasswordDialog]);
 
   const handleLogin = async (data: z.infer<typeof formSchema>) => {
     setLoading(true);
@@ -236,14 +231,6 @@ export default function Login() {
                 </div>
 
                 <div className="flex flex-col items-center gap-3 sm:gap-4 mt-4 sm:mt-6">
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    className="text-sm text-gray-500 hover:text-blue-600 transition-colors font-medium"
-                  >
-                    Esqueci minha senha
-                  </button>
-
                   <div className="border-t border-gray-100 w-full my-2"></div>
 
                   <p className="text-sm text-gray-600">

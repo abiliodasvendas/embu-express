@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, LayoutContextType, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenForgotPasswordProps } from './LayoutContext';
+import { LayoutContext, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps } from './LayoutContext';
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
@@ -23,7 +23,6 @@ import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import { EndTurnDialog } from "@/components/dialogs/EndTurnDialog";
 import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 import { PasswordGuardDialog } from "@/components/dialogs/PasswordGuardDialog";
-import { ForgotPasswordDialog } from "@/components/dialogs/ForgotPasswordDialog";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
@@ -59,12 +58,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [alterarSenhaDialogState, setAlterarSenhaDialogState] = useState({ open: false });
   const [editarCadastroDialogState, setEditarCadastroDialogState] = useState({ open: false });
   const [passwordGuardDialogState, setPasswordGuardDialogState] = useState<{ open: boolean; props?: OpenPasswordGuardProps }>({ open: false });
-  const [forgotPasswordDialogState, setForgotPasswordDialogState] = useState<{ open: boolean; props?: OpenForgotPasswordProps }>({ open: false });
 
   // --- Actions ---
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => setConfirmationDialogState({ open: true, props });
   const closeConfirmationDialog = () => closeDialog(() => setConfirmationDialogState((prev) => ({ ...prev, open: false })));
-  
+
   const openCollaboratorFormDialog = (props: OpenCollaboratorFormProps) => setCollaboratorFormDialogState({ open: true, props });
   const closeCollaboratorFormDialog = () => closeDialog(() => setCollaboratorFormDialogState((prev) => ({ ...prev, open: false })));
 
@@ -116,9 +114,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openPasswordGuardDialog = (props: OpenPasswordGuardProps) => setPasswordGuardDialogState({ open: true, props });
   const closePasswordGuardDialog = () => closeDialog(() => setPasswordGuardDialogState((prev) => ({ ...prev, open: false })));
 
-  const openForgotPasswordDialog = (props: OpenForgotPasswordProps) => setForgotPasswordDialogState({ open: true, props });
-  const closeForgotPasswordDialog = () => closeDialog(() => setForgotPasswordDialogState((prev) => ({ ...prev, open: false })));
-
   return (
     <LayoutContext.Provider value={{
       pageTitle, setPageTitle, pageSubtitle, setPageSubtitle,
@@ -140,7 +135,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openAlterarSenhaDialog, closeAlterarSenhaDialog,
       openEditarCadastroDialog, closeEditarCadastroDialog,
       openPasswordGuardDialog, closePasswordGuardDialog,
-      openForgotPasswordDialog, closeForgotPasswordDialog
     }}>
       {children}
       {confirmationDialogState.props && <ConfirmationDialog open={confirmationDialogState.open} onOpenChange={(open) => setConfirmationDialogState((prev) => ({ ...prev, open }))} title={confirmationDialogState.props.title} description={confirmationDialogState.props.description} onConfirm={confirmationDialogState.props.onConfirm} confirmText={confirmationDialogState.props.confirmText} cancelText={confirmationDialogState.props.cancelText} variant={confirmationDialogState.props.variant} isLoading={confirmationDialogState.props.isLoading} />}
@@ -161,7 +155,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {alterarSenhaDialogState.open && <AlterarSenhaDialog isOpen={true} onClose={closeAlterarSenhaDialog} />}
       {editarCadastroDialogState.open && <EditarCadastroDialog isOpen={true} onClose={closeEditarCadastroDialog} />}
       {passwordGuardDialogState.open && passwordGuardDialogState.props && <PasswordGuardDialog open={true} onSuccess={() => { passwordGuardDialogState.props?.onSuccess?.(); closePasswordGuardDialog(); }} />}
-      {forgotPasswordDialogState.open && <ForgotPasswordDialog open={true} onOpenChange={(open) => !open && closeForgotPasswordDialog()} />}
     </LayoutContext.Provider>
   );
 };

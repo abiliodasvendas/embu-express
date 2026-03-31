@@ -199,16 +199,6 @@ export interface Pausa {
   updated_at?: string;
 }
 
-export interface ColaboradorClienteHorario {
-  id: number;
-  colaborador_cliente_id: number;
-  dia_semana: number;
-  hora_inicio: string;
-  hora_fim: string;
-  tolerancia_pausa_min: number;
-  created_at?: string;
-}
-
 export interface ColaboradorCliente {
   id: number;
   colaborador_id: string;

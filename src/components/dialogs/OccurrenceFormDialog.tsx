@@ -82,7 +82,7 @@ export function OccurrenceFormDialog({
     const handleFillMagic = () => {
         const data = mockGenerator.occurrence(collaboratorId);
         const tipo = tipos[Math.floor(Math.random() * tipos.length)];
-        
+
         form.reset({
             ...(data as any),
             tipo_id: tipo ? String(tipo.id) : "",
@@ -300,7 +300,7 @@ export function OccurrenceFormDialog({
                                                         </SelectItem>
                                                         {links.map((link: any) => (
                                                             <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
-                                                                {link.cliente?.nome_fantasia || "Sem Cliente"} ({(link.hora_inicio || "").slice(0, 5)} - {(link.hora_fim || "").slice(0, 5)})
+                                                                {link.cliente?.nome_fantasia || "Sem Cliente"}
                                                             </SelectItem>
                                                         ))}
                                                     </SelectContent>

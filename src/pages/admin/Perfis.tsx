@@ -53,7 +53,7 @@ export default function Perfis() {
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
+                <div className="hidden sm:inline">
                     <p className="text-muted-foreground">Gerencie os perfis de acesso e suas permissões no sistema.</p>
                 </div>
                 <Can I={PERMISSIONS.PERFIS.CRIAR}>

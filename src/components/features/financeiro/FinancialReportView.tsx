@@ -652,6 +652,11 @@ export function FinancialReportView({
                                       <p className="text-sm font-black text-gray-800 tracking-tight">
                                         {occ.tipo?.descricao}
                                       </p>
+                                      {occ.observacao && (
+                                        <p className="text-[11px] text-gray-500 italic font-medium leading-tight max-w-[250px] mt-0.5">
+                                          {occ.observacao}
+                                        </p>
+                                      )}
                                       <p className="text-[10px] text-gray-400 font-bold uppercase">
                                         {format(
                                           new Date(occ.data_ocorrencia),
@@ -791,6 +796,11 @@ export function FinancialReportView({
                                     <p className="text-sm font-black text-gray-800 tracking-tight">
                                       {occ.tipo?.descricao}
                                     </p>
+                                    {occ.observacao && (
+                                      <p className="text-[11px] text-gray-500 italic font-medium leading-tight max-w-[250px] mt-0.5">
+                                        {occ.observacao}
+                                      </p>
+                                    )}
                                     <p className="text-[10px] text-gray-400 font-bold uppercase">
                                       {format(
                                         new Date(occ.data_ocorrencia),

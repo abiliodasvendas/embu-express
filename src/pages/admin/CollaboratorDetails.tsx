@@ -695,7 +695,7 @@ export default function CollaboratorDetails() {
                   </div>
                   <div>
                     <span className="block">Histórico de Ocorrências</span>
-                    <span className="text-xs text-muted-foreground font-medium mt-0.5">Registros de faltas, atrasos e outros eventos.</span>
+                    <span className="text-xs text-muted-foreground font-medium mt-0.5">Registros de ausências, atrasos e outros eventos.</span>
                   </div>
                 </CardTitle>
               </div>

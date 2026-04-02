@@ -179,32 +179,32 @@ export function TimeMirrorView({
                     </CardContent>
                 </Card>
 
-                {/* 2. Assiduidade (Faltas) */}
+                {/* 2. Assiduidade (Ausencias) */}
                 <Card className="border shadow-sm rounded-3xl bg-slate-50/40 border-slate-200/60 overflow-hidden group hover:shadow-md transition-all duration-300">
                     <CardContent className="p-0">
                         <div className="p-5">
                             <div className="flex items-center justify-between mb-4">
-                                <div className={cn("p-3 bg-white rounded-2xl transition-colors duration-300 shadow-sm", kpis.dias_faltas === 0 ? "group-hover:bg-emerald-600" : "group-hover:bg-rose-600")}>
-                                    <TrendingDown className={cn("h-5 w-5 transition-colors duration-300", kpis.dias_faltas === 0 ? "text-emerald-600 group-hover:text-white" : "text-rose-600 group-hover:text-white")} />
+                                <div className={cn("p-3 bg-white rounded-2xl transition-colors duration-300 shadow-sm", kpis.dias_ausencias === 0 ? "group-hover:bg-emerald-600" : "group-hover:bg-rose-600")}>
+                                    <TrendingDown className={cn("h-5 w-5 transition-colors duration-300", kpis.dias_ausencias === 0 ? "text-emerald-600 group-hover:text-white" : "text-rose-600 group-hover:text-white")} />
                                 </div>
-                                <Badge variant="secondary" className={cn("bg-white border text-[10px] font-bold uppercase py-0.5 px-2", kpis.dias_faltas === 0 ? "text-emerald-600 border-emerald-100" : "text-rose-600 border-rose-100")}>
-                                    {messages.ponto.labels.faltas}
+                                <Badge variant="secondary" className={cn("bg-white border text-[10px] font-bold uppercase py-0.5 px-2", kpis.dias_ausencias === 0 ? "text-emerald-600 border-emerald-100" : "text-rose-600 border-rose-100")}>
+                                    {messages.ponto.labels.ausencias}
                                 </Badge>
                             </div>
                             <div className="space-y-1">
-                                <h3 className={cn("text-3xl font-black tracking-tight", kpis.dias_faltas === 0 ? "text-emerald-600" : "text-rose-600")}>{kpis.dias_faltas}</h3>
-                                <p className="text-xs text-slate-400 font-medium tracking-wide">Faltas detectadas no período</p>
+                                <h3 className={cn("text-3xl font-black tracking-tight", kpis.dias_ausencias === 0 ? "text-emerald-600" : "text-rose-600")}>{kpis.dias_ausencias}</h3>
+                                <p className="text-xs text-slate-400 font-medium tracking-wide">Ausências detectadas no período</p>
                             </div>
                         </div>
                         <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/40 bg-white/50">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.totalEmHoras}</p>
-                                <p className={cn("text-lg font-black leading-none", kpis.dias_faltas === 0 ? "text-emerald-600" : "text-rose-600")}>
-                                    {formatMinutes(kpis.horas_faltas)}
+                                <p className={cn("text-lg font-black leading-none", kpis.dias_ausencias === 0 ? "text-emerald-600" : "text-rose-600")}>
+                                    {formatMinutes(kpis.horas_ausencias)}
                                 </p>
                             </div>
-                            <div className={cn("p-2 rounded-xl", kpis.dias_faltas === 0 ? "bg-emerald-50" : "bg-rose-50")}>
-                                <Calendar className={cn("h-4 w-4", kpis.dias_faltas === 0 ? "text-emerald-600" : "text-rose-600")} />
+                            <div className={cn("p-2 rounded-xl", kpis.dias_ausencias === 0 ? "bg-emerald-50" : "bg-rose-50")}>
+                                <Calendar className={cn("h-4 w-4", kpis.dias_ausencias === 0 ? "text-emerald-600" : "text-rose-600")} />
                             </div>
                         </div>
                     </CardContent>

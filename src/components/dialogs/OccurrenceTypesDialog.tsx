@@ -211,7 +211,7 @@ export function OccurrenceTypesDialog({
                                                             <FormControl>
                                                                 <Input
                                                                     {...field}
-                                                                    placeholder="Ex: Falta, Atraso..."
+                                                                    placeholder="Ex: Ausência, Atraso..."
                                                                     className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
                                                                 />
                                                             </FormControl>

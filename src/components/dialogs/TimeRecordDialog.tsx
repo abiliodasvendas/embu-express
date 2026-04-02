@@ -35,7 +35,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
     const [openCombobox, setOpenCombobox] = useState(false);
 
     const idValue = record?.id;
-    // Um registro é virtual se não houver marcação de entrada (sintetizado pelo backend ou frontend para faltas/atrasos)
+    // Um registro é virtual se não houver marcação de entrada (sintetizado pelo backend ou frontend para ausencias/atrasos)
     // ou se o ID explicitamente indicar que é um registro de ausência.
     const isVirtualId = !!record && (
         !record.entrada_hora ||
@@ -94,7 +94,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
 
     const isShiftEnded = shiftEnd ? now > shiftEnd : false;
 
-    // Sugerimos a saída apenas se for uma falta total confirmada (turno encerrou) ou se houver erro de saída pendente
+    // Sugerimos a saída apenas se for uma ausencia total confirmada (turno encerrou) ou se houver erro de saída pendente
     const isFixingInconsistency =
         isShiftEnded ||
         record?.status_saida === "FALTA_SAIDA" ||
@@ -107,7 +107,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                     usuario_id: String(record.usuario_id),
                     perfil_nome: record.usuario?.perfil?.nome || "",
                     data_referencia: record.data_referencia,
-                    // Regra Entrada: se tem no banco, usa. Senão, se o turno ACABOU (falta), preenche.
+                    // Regra Entrada: se tem no banco, usa. Senão, se o turno ACABOU (ausencia), preenche.
                     // Se apenas passou do início mas não acabou (atraso), deixa vazio para forçar o real.
                     entrada_hora: record.entrada_hora
                         ? format(new Date(record.entrada_hora), "HH:mm")

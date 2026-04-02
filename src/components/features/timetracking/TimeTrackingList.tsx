@@ -79,7 +79,7 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
 
   const statusOrder = [
     { key: ManagementStatus.LATE, label: "Atrasados" },
-    { key: ManagementStatus.ABSENT, label: "Falta" },
+    { key: ManagementStatus.ABSENT, label: "Sem Atividade" },
     { key: ManagementStatus.WORKING, label: "Trabalhando" },
     { key: ManagementStatus.WAITING, label: "Aguardando Início" },
     { key: ManagementStatus.DONE, label: "Finalizado" }

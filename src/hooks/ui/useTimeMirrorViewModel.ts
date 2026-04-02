@@ -36,7 +36,7 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
   });
 
   const manager = useFiltersManager(["usuario", "mes", "ano", "turno"], syncWithUrl);
-  
+
   const filters = {
     selectedUsuario, setSelectedUsuario,
     selectedMes, setSelectedMes,
@@ -73,7 +73,7 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
   // Seleciona o relatório do turno ativo
   const activeReport = useMemo(() => {
     if (!reportData.length) return null;
-    
+
     const realShifts = reportData.filter(r => r.shift_id !== 0);
     const defaultReport = realShifts.length > 0 ? realShifts[0] : reportData[0];
 
@@ -84,10 +84,10 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
   }, [reportData, filters.selectedTurno]);
 
   // Se precisar extrair os turnos disponíveis para o seletor
-  const availableShifts = useMemo(() => 
+  const availableShifts = useMemo(() =>
     reportData
       .filter(r => r.shift_id !== 0) // Filtra o consolidado para não duplicar
-      .map(r => ({ id: r.shift_id, label: `${r.cliente_nome} - ${r.unidade_nome}` })), 
+      .map(r => ({ id: r.shift_id, label: `${r.cliente_nome} - ${r.unidade_nome}` })),
     [reportData]
   );
 
@@ -103,9 +103,9 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
     }
 
     // Se estamos em "todos" mas existem turnos específicos, selecionamos o primeiro automaticamente.
-    if (finalUsuarioId && 
-        (filters.selectedTurno === FilterOptions.TODOS || !filters.selectedTurno) && 
-        availableShifts.length > 0) {
+    if (finalUsuarioId &&
+      (filters.selectedTurno === FilterOptions.TODOS || !filters.selectedTurno) &&
+      availableShifts.length > 0) {
       filters.setSelectedTurno(String(availableShifts[0].id));
     }
   }, [finalUsuarioId, availableShifts, filters.selectedTurno, filters.setSelectedTurno]);
@@ -115,11 +115,11 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
     filters,
     records: activeReport?.calendario || [],
     totals: activeReport?.kpis ? {
-        worked: activeReport.kpis.horas_trabalhadas,
-        expected: activeReport.kpis.horas_esperadas,
-        balance: activeReport.kpis.horas_trabalhadas - activeReport.kpis.horas_esperadas,
-        kmCount: activeReport.kpis.km_realizado,
-        lackCount: activeReport.kpis.dias_faltas
+      worked: activeReport.kpis.horas_trabalhadas,
+      expected: activeReport.kpis.horas_esperadas,
+      balance: activeReport.kpis.horas_trabalhadas - activeReport.kpis.horas_esperadas,
+      kmCount: activeReport.kpis.km_realizado,
+      lackCount: activeReport.kpis.dias_ausencias
     } : { worked: 0, expected: 0, balance: 0, kmCount: 0, lackCount: 0 },
     availableShifts,
     reportData, // Expor tudo se a view quiser gerenciar multiplos
@@ -128,7 +128,7 @@ export function useTimeMirrorViewModel(options: UseTimeMirrorViewModelOptions = 
     isLoading,
     isOnlyPersonal: !canViewAll,
     usuarioId: finalUsuarioId,
-    
+
     // Actions
     refetch,
     setMonth: filters.setSelectedMes,

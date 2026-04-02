@@ -4,7 +4,7 @@ export interface PontoDiarioRelatorio {
     dia: number;
     dia_semana_curto: string;
     dia_semana_longo: string;
-    status: 'TRABALHADO' | 'FALTA' | 'NAO_VIGENTE' | 'FUTURO';
+    status: 'TRABALHADO' | 'SEM_ATIVIDADE' | 'NAO_VIGENTE' | 'FUTURO';
     is_dia_escala: boolean;
     cliente_nome: string | null;
     minutos_esperados: number;
@@ -31,10 +31,10 @@ export interface EspelhoPontoMensal {
         dias_base_mes: number;
         dias_meta_turno: number;
         dias_trabalhados: number;
-        dias_faltas: number;
+        dias_ausencias: number;
         horas_esperadas: number; // minutos
         horas_trabalhadas: number; // minutos
-        horas_faltas: number; // minutos
+        horas_ausencias: number; // minutos
         horas_extras: number; // minutos
         horas_devidas: number; // minutos
         km_contratado: number;

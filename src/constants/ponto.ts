@@ -17,7 +17,7 @@ export const PONTO_STATUS_UI_CONFIG: Record<string, { label: string; color: stri
   WORKING: { label: "Trabalhando", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-500", borderSide: "bg-blue-500", icon: PlayCircle },
   DONE: { label: "Finalizado", color: "text-gray-400", bg: "bg-gray-100", border: "border-gray-500", borderSide: "bg-gray-400", icon: LogOut },
   WAITING: { label: "Aguar. Início", color: "text-sky-600", bg: "bg-sky-50", border: "border-sky-300", borderSide: "bg-sky-400", icon: Clock },
-  ABSENT: { label: "Falta", color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-500", borderSide: "bg-rose-500", icon: AlertTriangle },
+  ABSENT: { label: "Ausência", color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-500", borderSide: "bg-rose-500", icon: AlertTriangle },
 };
 
 export const FILTER_OPTIONS = {

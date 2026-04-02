@@ -26,7 +26,7 @@ export function TimeMirrorDailyCard({
     onDelete,
     isActionable = false
 }: TimeMirrorDailyCardProps) {
-    const isLack = day.status === CALENDARIO_STATUS.FALTA;
+    const isLack = day.status === CALENDARIO_STATUS.SEM_ATIVIDADE;
     const isWorked = day.status === CALENDARIO_STATUS.TRABALHADO;
     const isFuture = day.status === CALENDARIO_STATUS.FUTURO;
     const isNotVigente = day.status === CALENDARIO_STATUS.NAO_VIGENTE;
@@ -35,8 +35,8 @@ export function TimeMirrorDailyCard({
         switch (day.status) {
             case CALENDARIO_STATUS.TRABALHADO:
                 return { label: messages.ponto.labels.trabalhado, badge: messages.ponto.labels.ok };
-            case CALENDARIO_STATUS.FALTA:
-                return { label: messages.ponto.labels.falta, badge: messages.ponto.labels.falta };
+            case CALENDARIO_STATUS.SEM_ATIVIDADE:
+                return { label: messages.ponto.labels.ausencia, badge: messages.ponto.labels.ausencia };
             case CALENDARIO_STATUS.NAO_VIGENTE:
                 return { label: messages.ponto.labels.naoVigente, badge: messages.ponto.labels.off };
             case CALENDARIO_STATUS.FUTURO:

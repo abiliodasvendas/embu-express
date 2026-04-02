@@ -17,14 +17,14 @@ export interface ResumoClienteFinanceiro {
     dias_base_mes: number;
     dias_esperados_turno: number;
     dias_trabalhados: number;
-    faltas: number;
+    ausencias: number;
     calendario_visual: Array<{
         data: string;
         data_br: string;
         dia: number;
         dia_semana_curto: string;
         dia_semana_longo: string;
-        status: 'TRABALHADO' | 'FALTA' | 'NAO_VIGENTE' | 'FUTURO';
+        status: 'TRABALHADO' | 'SEM_ATIVIDADE' | 'NAO_VIGENTE' | 'FUTURO';
         is_dia_escala: boolean;
     }>;
     data_inicio: string | null;

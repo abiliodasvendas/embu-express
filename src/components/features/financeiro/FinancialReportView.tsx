@@ -409,7 +409,7 @@ export function FinancialReportView({
                                 const dtFim = resumo.data_fim ? new Date(resumo.data_fim + 'T12:00:00') : null;
                                 if (dtIni && dtIni.getUTCMonth() + 1 === selectedMonth && dtIni.getUTCFullYear() === selectedYear) return "(Início)";
                                 if (dtFim && dtFim.getUTCMonth() + 1 === selectedMonth && dtFim.getUTCFullYear() === selectedYear) return "(Término)";
-                                return "(Faltas)";
+                                return "(Ausências)";
                               })()}
                             </Badge>
                           )}
@@ -493,14 +493,14 @@ export function FinancialReportView({
                                 className={cn(
                                   "h-12 w-10 flex flex-col items-center justify-center rounded-xl transition-all border shadow-sm shrink-0",
                                   dia.status === CALENDARIO_STATUS.TRABALHADO && "bg-emerald-500 text-white border-emerald-600 scale-105 z-10",
-                                  dia.status === CALENDARIO_STATUS.FALTA && "bg-red-500 text-white border-red-600 shadow-red-200/50",
+                                  dia.status === CALENDARIO_STATUS.SEM_ATIVIDADE && "bg-red-500 text-white border-red-600 shadow-red-200/50",
                                   dia.status === CALENDARIO_STATUS.FUTURO && "bg-gray-50 text-gray-300 border-gray-100 border-dashed opacity-50",
                                   dia.status === CALENDARIO_STATUS.NAO_VIGENTE && "bg-gray-100/50 text-gray-200 border-transparent opacity-30"
                                 )}
                               >
                                 <span className={cn(
                                   "text-[7px] font-black leading-none mb-0.5 opacity-70 uppercase tracking-tighter",
-                                  (dia.status === CALENDARIO_STATUS.TRABALHADO || dia.status === CALENDARIO_STATUS.FALTA) ? "text-white" : "text-gray-400"
+                                  (dia.status === CALENDARIO_STATUS.TRABALHADO || dia.status === CALENDARIO_STATUS.SEM_ATIVIDADE) ? "text-white" : "text-gray-400"
                                 )}>
                                   {dia.dia_semana_curto}
                                 </span>
@@ -598,7 +598,7 @@ export function FinancialReportView({
                               {formatCurrency(
                                 ((resumo.saldo_fixo_original - (resumo.valores_fixos.bonus || 0)) /
                                   resumo.dias_base_mes) *
-                                Math.max(0, resumo.dias_esperados_turno - (resumo.faltas || 0)) +
+                                Math.max(0, resumo.dias_esperados_turno - (resumo.ausencias || 0)) +
                                 (resumo.valores_fixos.bonus || 0),
                               )}
                             </span>

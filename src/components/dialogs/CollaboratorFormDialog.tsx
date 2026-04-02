@@ -173,7 +173,7 @@ export function CollaboratorFormDialog({
         });
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || "";
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "";
       const errorMsgLower = errorMessage.toLowerCase();
 
       // Mapeamento de erros comuns do backend para campos do formulário

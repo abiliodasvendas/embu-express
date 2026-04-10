@@ -15,10 +15,18 @@ export function TimeTrackingKpiFilters({
     onFilterClick,
     className
 }: TimeTrackingKpiFiltersProps) {
-    const statuses = Object.values(ManagementStatus);
+    const statuses = [
+        ManagementStatus.ALL,
+        ManagementStatus.LATE,
+        ManagementStatus.OVERTIME,
+        ManagementStatus.WORKING,
+        ManagementStatus.ABSENT,
+        ManagementStatus.WAITING,
+        ManagementStatus.DONE
+    ];
 
     return (
-        <div className={cn("grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 lg:gap-4", className)}>
+        <div className={cn("grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3 lg:gap-4", className)}>
             {statuses.map((status) => {
                 const config = PONTO_STATUS_UI_CONFIG[status as ManagementStatus];
                 const isActive = (status === ManagementStatus.ALL && activeFilter === null) || activeFilter === (status as ManagementStatus);

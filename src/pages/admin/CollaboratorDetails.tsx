@@ -772,7 +772,7 @@ export default function CollaboratorDetails() {
 
               <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
                 <Select value={String(filters.selectedMes)} onValueChange={(v) => filters.setSelectedMes?.(Number(v))}>
-                  <SelectTrigger className="h-11 w-[130px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
+                  <SelectTrigger className="h-11 w-[120px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
@@ -793,7 +793,7 @@ export default function CollaboratorDetails() {
                   </SelectContent>
                 </Select>
                 <Select value={pontoVm.filters.selectedTurno} onValueChange={(v) => pontoVm.setShift?.(v)} disabled={pontoVm.availableShifts.length === 0}>
-                  <SelectTrigger className="h-11 w-[160px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  <SelectTrigger className="h-11 w-[270px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     <SelectValue placeholder={pontoVm.availableShifts.length === 0 ? "Sem turnos" : "Selecione..."} />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-gray-100 shadow-xl">

@@ -41,7 +41,7 @@ export const pagesItems: PageItem[] = [
         permissionKey: PERMISSIONS.USUARIOS.VER,
     },
     {
-        title: "Controle Diário",
+        title: "Controle de Atividade",
         href: ROUTES.PRIVATE.CONTROLE_ATIVIDADE_DIARIO,
         icon: Clock,
         permissionKey: PERMISSIONS.PONTO.ADMIN_VER,

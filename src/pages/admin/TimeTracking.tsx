@@ -40,32 +40,16 @@ export default function TimeTracking() {
                 <TimeTrackingToolbar
                     date={vm.date}
                     onDateChange={vm.setDate}
-                    searchTerm={vm.searchTerm}
-                    onSearchChange={vm.setSearchTerm}
                     filters={{
-                        usuarioId: vm.selectedUsuario,
                         clienteId: vm.selectedCliente,
                         turno: vm.selectedTurno
                     }}
                     onFiltersChange={(key, val) => {
-                        if (key === "usuarioId") vm.setSelectedUsuario(val);
                         if (key === "clienteId") vm.setSelectedCliente(val);
                         if (key === "turno") vm.setSelectedTurno(val);
                     }}
-                    onRegister={vm.handleCreate}
-                    collaborators={activeCollaborators}
                     clients={clients}
                     uniqueShifts={vm.uniqueShifts}
-                    onApplyFilters={(newFilters) => {
-                        vm.setFilters({
-                            usuario: newFilters.usuarioId,
-                            cliente: newFilters.clienteId,
-                            turno: newFilters.turno,
-                            searchTerm: newFilters.searchTerm
-                        });
-                    }}
-                    onClearFilters={vm.clearAllFilters}
-                    hasActiveFilters={vm.hasActiveFilters}
                     countdown={countdown}
                     isLoading={vm.isFetching || vm.isActionLoading}
                 />

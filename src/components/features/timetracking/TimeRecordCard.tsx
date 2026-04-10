@@ -52,7 +52,7 @@ export function TimeRecordCard({
                             </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                            <h3 className="font-bold text-gray-900 leading-tight line-clamp-1">{record.usuario?.nome_completo}</h3>
+                            <h3 title={record.usuario?.nome_completo} className="font-bold text-gray-900 leading-tight line-clamp-1">{record.usuario?.nome_completo}</h3>
                             <div className="flex flex-col gap-0.5 mt-0.5">
                                 {showClient && record.cliente?.nome_fantasia && (
                                     <p className="text-[10px] font-semibold text-gray-900 uppercase tracking-wide">

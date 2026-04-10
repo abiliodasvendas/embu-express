@@ -48,6 +48,7 @@ export enum ManagementStatus {
   ALL = 'ALL',
   LATE = 'LATE',
   WORKING = 'WORKING',
+  OVERTIME = 'OVERTIME',
   DONE = 'DONE',
   WAITING = 'WAITING',
   ABSENT = 'ABSENT'

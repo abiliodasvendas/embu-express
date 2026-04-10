@@ -19,6 +19,7 @@ export const getStatusLabel = (status: string | null, type: 'entrada' | 'saida')
         case FilterOptions.INICIOU: return "Iniciou";
         case FilterOptions.CONCLUIU: return "Concluiu";
         case FilterOptions.TRABALHANDO: return "Trabalhando";
+        case ManagementStatus.OVERTIME: return "Hora Extra";
         default: return status;
     }
 };
@@ -27,7 +28,8 @@ export const getStatusColorClass = (status: string | null, type?: 'entrada' | 's
     switch (status) {
         case StatusVisualPonto.VERDE: return "bg-emerald-100 text-emerald-700 border-emerald-200";
         case StatusVisualPonto.AMARELO:
-            return type === 'saida'
+        case ManagementStatus.OVERTIME:
+            return type === 'saida' || status === ManagementStatus.OVERTIME
                 ? "bg-sky-100 text-sky-700 border-sky-200" // Hora Extra (Blue)
                 : "bg-amber-100 text-amber-700 border-amber-200"; // Atraso (Amber/Yellow/Orange)
         case StatusVisualPonto.ANTECIPADA:
@@ -88,8 +90,25 @@ export const getManagementStatus = (record: RegistroPonto, dateReference: Date):
     // 1. Finalizado
     if (record.saida_hora) return ManagementStatus.DONE;
 
-    // 2. Trabalhando (Se tem entrada mas não tem saída)
-    if (record.entrada_hora) return ManagementStatus.WORKING;
+    // 2. Trabalhando ou Hora Extra (Se tem entrada mas não tem saída)
+    if (record.entrada_hora) {
+        if (isToday && record.detalhes_calculo?.saida?.turno_base) {
+            const now = new Date();
+            const [hOut, mOut] = record.detalhes_calculo.saida.turno_base.split(':').map(Number);
+            const [hIn, mIn] = record.detalhes_calculo.entrada?.turno_base?.split(':').map(Number) || [0, 0];
+            
+            let shiftEnd = new Date(dateReference);
+            shiftEnd.setHours(hOut, mOut, 0, 0);
+
+            // Se o horário de saída é menor ou igual ao de entrada, o turno vira a noite
+            if (hOut < hIn || (hOut === hIn && mOut <= mIn)) {
+                shiftEnd = addDays(shiftEnd, 1);
+            }
+
+            if (isAfter(now, shiftEnd)) return ManagementStatus.OVERTIME;
+        }
+        return ManagementStatus.WORKING;
+    }
 
     // 3. Se não tem entrada:
     if (!record.entrada_hora) {

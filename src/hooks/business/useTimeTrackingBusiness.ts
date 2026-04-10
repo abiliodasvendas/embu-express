@@ -29,6 +29,7 @@ export function useTimeTrackingBusiness({ records, date, collaborators }: UseTim
             [ManagementStatus.ALL]: processedRecords.length, 
             [ManagementStatus.LATE]: 0, 
             [ManagementStatus.WORKING]: 0, 
+            [ManagementStatus.OVERTIME]: 0,
             [ManagementStatus.DONE]: 0, 
             [ManagementStatus.WAITING]: 0, 
             [ManagementStatus.ABSENT]: 0 

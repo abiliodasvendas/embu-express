@@ -115,18 +115,6 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30 space-y-6">
-                    {record.status_saida === StatusVisualPonto.PENDENTE && (
-                        <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                            <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
-                            <div>
-                                <h4 className="text-sm font-bold text-orange-900">Atividade Inconsistente</h4>
-                                <p className="text-xs text-orange-700 font-medium">
-                                    Este colaborador não registrou a saída. O sistema marcou como inconsistente após 4 horas do término previsto.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center space-y-2">
                         <div className="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-2">
                             <User className="w-6 h-6" />

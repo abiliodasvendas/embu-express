@@ -3,6 +3,7 @@ export const ROUTES = {
         ROOT: "/",
         LOGIN: "/login",
         NEW_PASSWORD: "/nova-senha",
+        PRIVACY_POLICY: "/politica-de-privacidade",
     },
     PRIVATE: {
         REGISTRAR_ATIVIDADE: "/registrar-atividade",

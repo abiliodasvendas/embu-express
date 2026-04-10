@@ -33,6 +33,7 @@ import { sessionManager } from "@/services/sessionManager";
 import { useLayout } from "@/contexts/LayoutContext";
 
 // Utils
+import { ROUTES } from "@/constants/routes";
 import { messages } from "@/constants/messages";
 import { cn } from "@/lib/utils";
 import { cpfMask } from "@/utils/masks";
@@ -243,6 +244,14 @@ export default function Login() {
                       Cadastre-se aqui
                     </button>
                   </p>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(ROUTES.PUBLIC.PRIVACY_POLICY)}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    Política de Privacidade
+                  </button>
                 </div>
               </form>
             </Form>

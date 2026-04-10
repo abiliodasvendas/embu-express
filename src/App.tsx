@@ -36,6 +36,7 @@ const SelfRegistration = lazyLoad(() => import("./pages/public/SelfRegistration"
 const PublicClientLayout = lazyLoad(() => import("./layouts/PublicClientLayout"));
 const PublicTimeTracking = lazyLoad(() => import("./pages/public/PublicTimeTracking"));
 const PublicTimeMirror = lazyLoad(() => import("./pages/public/PublicTimeMirror"));
+const PrivacyPolicy = lazyLoad(() => import("./pages/public/PrivacyPolicy"));
 
 // Admin - Embu Express
 const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
@@ -204,6 +205,11 @@ const App = () => {
                   <Route
                     path="/cadastro"
                     element={<SelfRegistration />}
+                  />
+
+                  <Route
+                    path={ROUTES.PUBLIC.PRIVACY_POLICY}
+                    element={<PrivacyPolicy />}
                   />
 
                   <Route path="/public/c/:uuid" element={<PublicClientLayout />}>

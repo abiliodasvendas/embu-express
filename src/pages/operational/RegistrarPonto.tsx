@@ -75,15 +75,10 @@ export default function RegistrarPonto() {
                             </div>
                             <AlertTitle className="font-black text-2xl text-red-800 mb-2 tracking-tight uppercase">{messages.ponto.labels.localizacaoRequerida}</AlertTitle>
                             <AlertDescription className="text-red-700 font-medium leading-relaxed max-w-sm">
-                                {geo.permissionStatus === 'denied' ? (
-                                    messages.ponto.labels.localizacaoNegada
-                                ) : geo.error ? (
-                                    messages.ponto.labels.localizacaoSinalFraco
-                                ) : (
-                                    messages.ponto.labels.localizacaoAguardando
-                                )}
+                                {geo.error || messages.ponto.labels.localizacaoAguardando}
 
                                 <div className="mt-8 space-y-3 w-full">
+                                    {/* Caso a permissão tenha sido negada no sistema operacional */}
                                     {geo.permissionStatus === 'denied' && (
                                         !geo.isWeb ? (
                                             <Button
@@ -106,6 +101,7 @@ export default function RegistrarPonto() {
                                         )
                                     )}
 
+                                    {/* Caso o GPS esteja desligado ou sinal esteja fraco (permissão concedida mas erro técnico) */}
                                     {geo.permissionStatus !== 'denied' && (
                                         <Button
                                             onClick={() => geo.requestLocation()}
@@ -306,8 +302,8 @@ export default function RegistrarPonto() {
                                 <Card className="rounded-3xl border-none bg-slate-50/50 p-5 text-center ring-1 ring-slate-100 shadow-sm">
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{messages.ponto.labels.entrada}</span>
                                     <span className="text-xl font-black text-slate-700">
-                                        {business.pontoHoje?.entrada_hora
-                                            ? new Date(business.pontoHoje.entrada_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                                        {vm.pontoAtivo?.entrada_hora
+                                            ? new Date(vm.pontoAtivo.entrada_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
                                             : '--:--'}
                                     </span>
                                 </Card>

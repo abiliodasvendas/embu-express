@@ -90,18 +90,42 @@ export function useRegistrarPontoViewModel() {
         }
     }, [selectedLinkId, business.activeLinks]);
 
+    const pontoAtivo = useMemo(() => {
+        if (!business.pontoHoje) return null;
+        if (!Array.isArray(business.pontoHoje)) return business.pontoHoje;
+        return business.pontoHoje.find((p: any) => String(p.colaborador_cliente_id) === selectedLinkId) || null;
+    }, [business.pontoHoje, selectedLinkId]);
+
+    const journeyMetrics = useMemo(() => {
+        if (!pontoAtivo) return { count: 0, totalMs: 0, kmTrabalho: 0, kmPausa: 0, entradaKm: 0 };
+
+        const allPausas = pontoAtivo.pausas || [];
+        const finishedPausas = allPausas.filter((p: Pausa) => p.fim_hora) || [];
+
+        const totalPausasMs = finishedPausas.reduce((acc: number, p: Pausa) => {
+            const s = new Date(p.inicio_hora).getTime();
+            const e = new Date(p.fim_hora!).getTime();
+            return acc + (e - s);
+        }, 0);
+
+        const kmTrabalho = allPausas.reduce((acc: number, p: Pausa) => acc + (Number(p.distancia_trabalho) || 0), 0) + (Number(pontoAtivo.saida_distancia_trabalho) || 0);
+        const kmPausa = allPausas.reduce((acc: number, p: Pausa) => acc + (Number(p.distancia_pausa) || 0), 0);
+        const entradaKm = Number(pontoAtivo.entrada_km || 0);
+
+        return {
+            count: allPausas.length,
+            totalMs: totalPausasMs,
+            kmTrabalho,
+            kmPausa,
+            entradaKm
+        };
+    }, [pontoAtivo]);
+
     const status = useMemo((): StatusPonto => {
-        // Garantir que temos um registro válido e não uma lista vazia ou null
-        const hasActivePoint = business.pontoHoje && 
-                             !Array.isArray(business.pontoHoje) && 
-                             business.pontoHoje.id && 
-                             !business.pontoHoje.saida_hora;
-
-        if (!hasActivePoint) return StatusPonto.AGUARDANDO;
-
-        const openPause = business.pontoHoje.pausas?.find((p: Pausa) => !p.fim_hora);
+        if (!pontoAtivo || pontoAtivo.saida_hora) return StatusPonto.AGUARDANDO;
+        const openPause = pontoAtivo.pausas?.find((p: Pausa) => !p.fim_hora);
         return openPause ? StatusPonto.PAUSADO : StatusPonto.TRABALHANDO;
-    }, [business.pontoHoje]);
+    }, [pontoAtivo]);
 
     // Robust Date Normalization for Multi-platform support
     const parseDate = useCallback((dateStr?: string) => {
@@ -125,8 +149,8 @@ export function useRegistrarPontoViewModel() {
     useEffect(() => {
         const updateTimers = () => {
             if (status === StatusPonto.TRABALHANDO) {
-                const start = parseDate(business.pontoHoje?.entrada_hora);
-                const pauseMs = business.journeyMetrics.totalMs;
+                const start = parseDate(pontoAtivo?.entrada_hora);
+                const pauseMs = journeyMetrics.totalMs;
 
                 if (!start || isNaN(start)) {
                     setTimer("--:--:--");
@@ -141,11 +165,11 @@ export function useRegistrarPontoViewModel() {
                 setActivePauseStartTime(null);
 
             } else if (status === StatusPonto.PAUSADO) {
-                const openPause = business.pontoHoje?.pausas?.find((p: Pausa) => !p.fim_hora);
+                const openPause = pontoAtivo?.pausas?.find((p: Pausa) => !p.fim_hora);
                 if (openPause) {
-                    const start = parseDate(business.pontoHoje?.entrada_hora);
+                    const start = parseDate(pontoAtivo?.entrada_hora);
                     const pauseStart = parseDate(openPause.inicio_hora);
-                    const finishedPauseMs = business.journeyMetrics.totalMs;
+                    const finishedPauseMs = journeyMetrics.totalMs;
                     
                     // Work Timer Frozen
                     const workDiff = (pauseStart - start) - finishedPauseMs;
@@ -173,7 +197,7 @@ export function useRegistrarPontoViewModel() {
         updateTimers();
         const interval = setInterval(updateTimers, 1000);
         return () => clearInterval(interval);
-    }, [status, business.pontoHoje, business.journeyMetrics.totalMs, parseDate]);
+    }, [status, pontoAtivo, journeyMetrics.totalMs, parseDate]);
 
     const executeAction = useCallback(async (actionType: 'toggle' | 'pause-start' | 'pause-end', loc: PontoLocation, km?: number) => {
         setIsProcessing(true);
@@ -190,11 +214,11 @@ export function useRegistrarPontoViewModel() {
                 });
             } else if (actionType === 'pause-start') {
                 await business.iniciarPausa.mutateAsync({
-                    pontoId: business.pontoHoje!.id,
+                    pontoId: pontoAtivo!.id,
                     data: { inicio_loc: loc, inicio_km: km }
                 });
             } else if (actionType === 'pause-end') {
-                const openPause = business.pontoHoje!.pausas?.find((p: Pausa) => !p.fim_hora);
+                const openPause = pontoAtivo!.pausas?.find((p: Pausa) => !p.fim_hora);
                 await business.finalizarPausa.mutateAsync({
                     pausaId: openPause!.id,
                     data: { fim_loc: loc, fim_km: km }

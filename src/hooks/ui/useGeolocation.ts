@@ -40,31 +40,31 @@ export function useGeolocation() {
     try {
       // 1. Check current status
       let state = await checkPermissionState();
-      setPermissionStatus(state);
-
-      // 2. If it's prompt, try to request
-      if (state === 'prompt' || state === 'unknown') {
+      
+      // 2. If it's prompt or unknown on Native, try to request
+      if (!isWeb && (state === 'prompt' || state === 'unknown')) {
         try {
           const req = await Geolocation.requestPermissions();
           state = (req.location === 'granted' || req.coarseLocation === 'granted') ? 'granted' : 'denied';
-          setPermissionStatus(state);
         } catch (e) {
-          console.error("Request permission error:", e);
+          console.error("Native request permission error:", e);
         }
       }
 
+      setPermissionStatus(state);
+
       // 3. If denied, stop here
       if (state === 'denied') {
-        const msg = getMessage('geolocation.erro.permissaoNegada');
-        setError(msg);
+        setError(getMessage('geolocation.erro.permissaoNegada'));
         setLoading(false);
         return null;
       }
 
       // 4. Try to get position
+      // In Android, enableHighAccuracy: true triggers the system prompt to enable GPS precision
       const position = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
-        timeout: 20000,
+        timeout: 15000, // Reduced slightly for better UX
         maximumAge: 0
       });
 
@@ -78,29 +78,33 @@ export function useGeolocation() {
       setLoading(false);
       return data;
 
-    } catch (err: unknown) {
-      const error = err as Error;
+    } catch (err: any) {
+      console.error("Geolocation error detail:", err);
+      const errorMessage = err?.message?.toLowerCase() || "";
       
+      // Check current state again to be sure if it's a permission issue
       const currentState = await checkPermissionState();
       setPermissionStatus(currentState);
 
       let msg = getMessage('geolocation.erro.desconhecido');
 
-      // Check if it's actually a permission denial
-      if (error.message?.includes('denied') || error.message?.includes('Permission') || currentState === 'denied') {
+      // Specific error mapping for native and web
+      if (currentState === 'denied' || errorMessage.includes('denied') || errorMessage.includes('permission')) {
         msg = getMessage('geolocation.erro.permissaoNegada');
         setPermissionStatus('denied');
-      } else if (error.message?.includes('timeout') || (error as any).code === 3) {
-        msg = getMessage('geolocation.erro.timeout');
-      } else if (error.message?.includes('unavailable') || (error as any).code === 2) {
+      } else if (errorMessage.includes('location unavailable') || errorMessage.includes('gps') || err?.code === 2) {
+        // This is the CASE: GPS is OFF or no signal. 
+        // We keep permission as granted (if it is) but show "unavailable" error.
         msg = getMessage('geolocation.erro.indisponivel');
+      } else if (errorMessage.includes('timeout') || err?.code === 3) {
+        msg = getMessage('geolocation.erro.timeout');
       }
 
       setError(msg);
       setLoading(false);
       return null;
     }
-  }, [checkPermissionState]);
+  }, [checkPermissionState, isWeb]);
 
   return {
     location,

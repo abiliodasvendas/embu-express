@@ -46,32 +46,6 @@ export function useRegistrarPontoBusiness() {
 
     const hasShifts = activeLinks.length > 0;
 
-    const journeyMetrics = useMemo(() => {
-        if (!pontoHoje) return { count: 0, totalMs: 0, kmTrabalho: 0, kmPausa: 0 };
-
-        const allPausas = pontoHoje.pausas || [];
-        const finishedPausas = allPausas.filter((p: Pausa) => p.fim_hora) || [];
-
-        const totalPausasMs = finishedPausas.reduce((acc: number, p: Pausa) => {
-            const s = new Date(p.inicio_hora).getTime();
-            const e = new Date(p.fim_hora!).getTime();
-            return acc + (e - s);
-        }, 0);
-
-        const kmTrabalho = allPausas.reduce((acc: number, p: Pausa) => acc + (Number(p.distancia_trabalho) || 0), 0) + (Number(pontoHoje.saida_distancia_trabalho) || 0);
-        const kmPausa = allPausas.reduce((acc: number, p: Pausa) => acc + (Number(p.distancia_pausa) || 0), 0);
-
-        const entradaKm = Number(pontoHoje.entrada_km || 0);
-
-        return {
-            count: allPausas.length,
-            totalMs: totalPausasMs,
-            kmTrabalho,
-            kmPausa,
-            entradaKm
-        };
-    }, [pontoHoje]);
-
     return {
         user,
         userProfile,
@@ -80,7 +54,6 @@ export function useRegistrarPontoBusiness() {
         isLoadingPonto,
         activeLinks,
         hasShifts,
-        journeyMetrics,
         refetch,
         togglePonto,
         iniciarPausa,

@@ -142,9 +142,9 @@ export function TimeMirrorView({
     const hourBalance = kpis.horas_trabalhadas - kpis.horas_esperadas;
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col space-y-6">
             {/* KPI Section - Premium & Consolidated */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="order-2 md:order-1 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* 1. Jornada de Trabalho (Meta vs Realizado) */}
                 <Card className="border shadow-sm rounded-3xl bg-slate-50/40 border-slate-200/60 overflow-hidden group hover:shadow-md transition-all duration-300">
                     <CardContent className="p-0">
@@ -245,7 +245,7 @@ export function TimeMirrorView({
             </div>
 
             {/* Daily Logs */}
-            <div className="grid gap-3">
+            <div className="order-1 md:order-2 grid gap-3">
                 {/* Header da Listagem Desktop */}
                 <div className={cn(
                     "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",

@@ -110,6 +110,7 @@ export const messages = {
       retomarTrabalho: "Encerrar Pausa",
       localizacaoAtiva: "Localização Ativa",
       localizacaoPendente: "Localização Pendente",
+      verTutorialLocalizacao: "Como Liberar Localização",
       ativa: "Ativa",
       indisponivel: "Indisponível",
       obtendo: "Obtendo...",
@@ -365,6 +366,7 @@ export const messages = {
       labels: {
         trabalhado: "Trabalhado",
         ausencia: "Ausência Detectada",
+        verTutorialLocalizacao: "Como ativar a localização",
         futuro: "Futuro",
         naoVigente: "Off",
         escalado: "Escalado",

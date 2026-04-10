@@ -23,6 +23,7 @@ import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import { EndTurnDialog } from "@/components/dialogs/EndTurnDialog";
 import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 import { PasswordGuardDialog } from "@/components/dialogs/PasswordGuardDialog";
+import { LocationTutorialDialog } from "@/components/dialogs/LocationTutorialDialog";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
@@ -58,6 +59,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [alterarSenhaDialogState, setAlterarSenhaDialogState] = useState({ open: false });
   const [editarCadastroDialogState, setEditarCadastroDialogState] = useState({ open: false });
   const [passwordGuardDialogState, setPasswordGuardDialogState] = useState<{ open: boolean; props?: OpenPasswordGuardProps }>({ open: false });
+  const [locationTutorialDialogState, setLocationTutorialDialogState] = useState({ open: false });
 
   // --- Actions ---
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => setConfirmationDialogState({ open: true, props });
@@ -114,6 +116,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openPasswordGuardDialog = (props: OpenPasswordGuardProps) => setPasswordGuardDialogState({ open: true, props });
   const closePasswordGuardDialog = () => closeDialog(() => setPasswordGuardDialogState((prev) => ({ ...prev, open: false })));
 
+  const openLocationTutorialDialog = () => setLocationTutorialDialogState({ open: true });
+  const closeLocationTutorialDialog = () => setLocationTutorialDialogState({ open: false });
+
   return (
     <LayoutContext.Provider value={{
       pageTitle, setPageTitle, pageSubtitle, setPageSubtitle,
@@ -135,6 +140,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openAlterarSenhaDialog, closeAlterarSenhaDialog,
       openEditarCadastroDialog, closeEditarCadastroDialog,
       openPasswordGuardDialog, closePasswordGuardDialog,
+      openLocationTutorialDialog, closeLocationTutorialDialog,
     }}>
       {children}
       {confirmationDialogState.props && <ConfirmationDialog open={confirmationDialogState.open} onOpenChange={(open) => setConfirmationDialogState((prev) => ({ ...prev, open }))} title={confirmationDialogState.props.title} description={confirmationDialogState.props.description} onConfirm={confirmationDialogState.props.onConfirm} confirmText={confirmationDialogState.props.confirmText} cancelText={confirmationDialogState.props.cancelText} variant={confirmationDialogState.props.variant} isLoading={confirmationDialogState.props.isLoading} />}
@@ -155,6 +161,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {alterarSenhaDialogState.open && <AlterarSenhaDialog isOpen={true} onClose={closeAlterarSenhaDialog} />}
       {editarCadastroDialogState.open && <EditarCadastroDialog isOpen={true} onClose={closeEditarCadastroDialog} />}
       {passwordGuardDialogState.open && passwordGuardDialogState.props && <PasswordGuardDialog open={true} onSuccess={() => { passwordGuardDialogState.props?.onSuccess?.(); closePasswordGuardDialog(); }} />}
+      {locationTutorialDialogState.open && <LocationTutorialDialog isOpen={true} onClose={closeLocationTutorialDialog} />}
     </LayoutContext.Provider>
   );
 };

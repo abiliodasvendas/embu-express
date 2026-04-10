@@ -12,7 +12,7 @@ export function useRegistrarPontoViewModel() {
     const business = useRegistrarPontoBusiness();
     const { isMotoboy } = usePermissions();
     const geo = useGeolocation();
-    const { openMileageDialog } = useLayout();
+    const { openMileageDialog, openLocationTutorialDialog } = useLayout();
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedLinkId, setSelectedLinkId] = useState<string>("");
@@ -288,6 +288,7 @@ export function useRegistrarPontoViewModel() {
         handleToggle: () => handleAction('toggle'),
         handlePauseStart: () => handleAction('pause-start'),
         handlePauseEnd: () => handleAction('pause-end'),
+        openLocationTutorialDialog,
         onRefresh,
         formatKm: (val: number) => formatKm(val)
     };

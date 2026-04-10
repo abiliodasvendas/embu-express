@@ -17,7 +17,7 @@ import { ColaboradorCliente } from "@/types/database";
 import { StatusPonto } from "@/types/enums";
 import { AndroidSettings, IOSSettings, NativeSettings } from 'capacitor-native-settings';
 import { AnimatePresence, motion } from "framer-motion";
-import { Briefcase, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
+import { Briefcase, Info, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 
 export default function RegistrarPonto() {
@@ -69,7 +69,6 @@ export default function RegistrarPonto() {
                     className="mb-8"
                 >
                     <Alert variant="destructive" className="rounded-[2.5rem] border-none shadow-2xl shadow-red-500/20 bg-white/90 backdrop-blur-xl text-red-900 mb-2 p-8 overflow-hidden relative group ring-1 ring-red-100">
-                        <div className="absolute top-0 left-0 w-2 h-full bg-red-500" />
                         <div className="flex flex-col items-center text-center">
                             <div className="bg-red-50 p-4 rounded-3xl mb-4">
                                 <ShieldAlert className="h-10 w-10 text-red-600" />
@@ -97,9 +96,13 @@ export default function RegistrarPonto() {
                                                 <Settings className="w-5 h-5 mr-3" /> {messages.ponto.labels.abrirConfiguracoes}
                                             </Button>
                                         ) : (
-                                            <div className="p-4 bg-red-50 rounded-2xl border border-red-100 text-sm italic font-semibold">
-                                                {messages.ponto.labels.localizacaoPendente}
-                                            </div>
+                                            <Button
+                                                onClick={vm.openLocationTutorialDialog}
+                                                variant="outline"
+                                                className="w-full h-14 border-2 border-slate-200 text-slate-800 font-bold rounded-2xl hover:bg-slate-50 transition-all flex items-center justify-center active:scale-95 bg-white"
+                                            >
+                                                <Info className="w-5 h-5 mr-3 text-blue-600" /> {messages.ponto.labels.verTutorialLocalizacao}
+                                            </Button>
                                         )
                                     )}
 
@@ -140,7 +143,6 @@ export default function RegistrarPonto() {
                                 <div className="w-full space-y-4 text-center">
                                     <div className="space-y-0.5 pt-2">
                                         <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">Pronto para iniciar?</h1>
-                                        <p className="text-slate-500 font-medium text-xs">Confirme seu turno para liberar o registro.</p>
                                     </div>
 
                                     <Card className="rounded-[2.5rem] shadow-lg border-none bg-white shadow-blue-900/5 overflow-hidden p-0 relative">

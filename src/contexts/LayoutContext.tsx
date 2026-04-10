@@ -150,6 +150,9 @@ export interface LayoutContextType {
 
   openPasswordGuardDialog: (props: OpenPasswordGuardProps) => void;
   closePasswordGuardDialog: () => void;
+
+  openLocationTutorialDialog: () => void;
+  closeLocationTutorialDialog: () => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

@@ -41,13 +41,16 @@ export default function TimeTracking() {
                     date={vm.date}
                     onDateChange={vm.setDate}
                     filters={{
+                        colaboradorId: vm.selectedUsuario,
                         clienteId: vm.selectedCliente,
                         turno: vm.selectedTurno
                     }}
                     onFiltersChange={(key, val) => {
+                        if (key === "colaboradorId") vm.setSelectedUsuario(val);
                         if (key === "clienteId") vm.setSelectedCliente(val);
                         if (key === "turno") vm.setSelectedTurno(val);
                     }}
+                    collaborators={vm.collaborators}
                     clients={clients}
                     uniqueShifts={vm.uniqueShifts}
                     countdown={countdown}

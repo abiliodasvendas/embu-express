@@ -15,10 +15,12 @@ interface TimeTrackingToolbarProps {
   date: Date;
   onDateChange: (date: Date) => void;
   filters: {
+    colaboradorId: string;
     clienteId: string;
     turno: string;
   };
   onFiltersChange: (key: string, value: string) => void;
+  collaborators: any[];
   clients: any[];
   uniqueShifts: string[];
   countdown?: number;
@@ -30,6 +32,7 @@ export function TimeTrackingToolbar({
   onDateChange,
   filters,
   onFiltersChange,
+  collaborators,
   clients,
   uniqueShifts,
   countdown,
@@ -65,6 +68,20 @@ export function TimeTrackingToolbar({
         </div>
 
         <div className="flex flex-col sm:flex-row items-end gap-3 w-full lg:w-auto">
+          {/* Filtro de Colaborador */}
+          <div className="flex flex-col space-y-1.5 flex-1 sm:flex-initial min-w-[200px] w-full">
+            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Colaborador</Label>
+            <Combobox
+              options={[{ value: FilterOptions.TODOS, label: "Todos os Colaboradores" }, ...collaborators.map(c => ({ value: c.id.toString(), label: c.nome_completo }))]}
+              value={filters.colaboradorId === FilterOptions.TODOS ? "" : filters.colaboradorId}
+              onSelect={(val) => onFiltersChange("colaboradorId", val || FilterOptions.TODOS)}
+              placeholder="Todos os Colaboradores"
+              searchPlaceholder="Buscar colaborador..."
+              emptyText="Nenhum colaborador encontrado."
+              className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium shadow-none text-sm text-gray-600 hover:bg-white transition-none"
+            />
+          </div>
+
           {/* Filtro de Cliente */}
           <div className="flex flex-col space-y-1.5 flex-1 sm:flex-initial min-w-[200px] w-full">
             <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Cliente</Label>

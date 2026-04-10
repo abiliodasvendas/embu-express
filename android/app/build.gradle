@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.tibis.embuexpress"
+    namespace "com.tibis.embu_express"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.tibis.embuexpress"
+        applicationId "com.tibis.embu_express"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

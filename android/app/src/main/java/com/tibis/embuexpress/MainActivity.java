@@ -1,4 +1,4 @@
-package com.tibis.embuexpress;
+package com.tibis.embu_express;
 
 import android.os.Bundle;
 import androidx.core.view.WindowCompat;

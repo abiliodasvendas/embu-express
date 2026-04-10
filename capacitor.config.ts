@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.tibis.embuexpress',
+  appId: 'com.tibis.embu_express',
   appName: 'Embu Express',
   webDir: 'dist',
   plugins: {

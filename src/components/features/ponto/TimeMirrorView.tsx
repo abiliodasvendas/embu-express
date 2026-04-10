@@ -142,106 +142,68 @@ export function TimeMirrorView({
     const hourBalance = kpis.horas_trabalhadas - kpis.horas_esperadas;
 
     return (
-        <div className="flex flex-col space-y-6">
-            {/* KPI Section - Premium & Consolidated */}
-            <div className="order-2 md:order-1 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* 1. Jornada de Trabalho (Meta vs Realizado) */}
-                <Card className="border shadow-sm rounded-3xl bg-slate-50/40 border-slate-200/60 overflow-hidden group hover:shadow-md transition-all duration-300">
-                    <CardContent className="p-0">
-                        <div className="p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-3 bg-white rounded-2xl group-hover:bg-blue-600 transition-colors duration-300 shadow-sm">
-                                    <Clock className="h-5 w-5 text-blue-600 group-hover:text-white transition-colors duration-300" />
-                                </div>
-                                <Badge variant="secondary" className="bg-white text-slate-600 border border-slate-200 text-[10px] font-bold uppercase py-0.5 px-2">
-                                    {messages.ponto.labels.jornadaMensal}
-                                </Badge>
-                            </div>
-                            <div className="space-y-1">
-                                <h3 className="text-3xl font-black text-slate-800 tracking-tight">{formatMinutes(kpis.horas_trabalhadas)}</h3>
-                                <p className="text-xs text-slate-400 font-medium tracking-wide">
-                                    Realizado de <span className="text-slate-600 font-bold">{formatMinutes(kpis.horas_esperadas)}</span> planejadas
-                                </p>
-                            </div>
-                        </div>
-                        <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/40 bg-white/50">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.saldoAtual}</p>
-                                <p className={cn("text-lg font-black leading-none", hourBalance >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                                    {formatMinutes(hourBalance, true)}
-                                </p>
-                            </div>
-                            <div className="text-right space-y-1">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.diasAtuados}</p>
-                                <p className="text-lg font-black text-slate-700 leading-none">{kpis.dias_trabalhados} / {kpis.dias_meta_turno}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+        <div className="flex flex-col gap-10 md:gap-14">
+            {/* KPI Section - Soft & Slim */}
+            <div className="order-2 md:order-1 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                {/* 1. Saldo de Horas */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all hover:border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        {messages.ponto.labels.saldoAtual}
+                    </span>
+                    <div className="flex flex-col">
+                        <span className={cn("text-2xl font-bold tracking-tight", hourBalance >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                            {formatMinutes(hourBalance, true)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium mt-1">
+                            {formatMinutes(kpis.horas_trabalhadas)} realizados
+                        </span>
+                    </div>
+                </div>
 
-                {/* 2. Assiduidade (Ausencias) */}
-                <Card className="border shadow-sm rounded-3xl bg-slate-50/40 border-slate-200/60 overflow-hidden group hover:shadow-md transition-all duration-300">
-                    <CardContent className="p-0">
-                        <div className="p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className={cn("p-3 bg-white rounded-2xl transition-colors duration-300 shadow-sm", kpis.dias_ausencias === 0 ? "group-hover:bg-emerald-600" : "group-hover:bg-rose-600")}>
-                                    <TrendingDown className={cn("h-5 w-5 transition-colors duration-300", kpis.dias_ausencias === 0 ? "text-emerald-600 group-hover:text-white" : "text-rose-600 group-hover:text-white")} />
-                                </div>
-                                <Badge variant="secondary" className={cn("bg-white border text-[10px] font-bold uppercase py-0.5 px-2", kpis.dias_ausencias === 0 ? "text-emerald-600 border-emerald-100" : "text-rose-600 border-rose-100")}>
-                                    {messages.ponto.labels.ausencias}
-                                </Badge>
-                            </div>
-                            <div className="space-y-1">
-                                <h3 className={cn("text-3xl font-black tracking-tight", kpis.dias_ausencias === 0 ? "text-emerald-600" : "text-rose-600")}>{kpis.dias_ausencias}</h3>
-                                <p className="text-xs text-slate-400 font-medium tracking-wide">Ausências detectadas no período</p>
-                            </div>
-                        </div>
-                        <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/40 bg-white/50">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.totalEmHoras}</p>
-                                <p className={cn("text-lg font-black leading-none", kpis.dias_ausencias === 0 ? "text-emerald-600" : "text-rose-600")}>
-                                    {formatMinutes(kpis.horas_ausencias)}
-                                </p>
-                            </div>
-                            <div className={cn("p-2 rounded-xl", kpis.dias_ausencias === 0 ? "bg-emerald-50" : "bg-rose-50")}>
-                                <Calendar className={cn("h-4 w-4", kpis.dias_ausencias === 0 ? "text-emerald-600" : "text-rose-600")} />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* 2. Dias Trabalhados */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all hover:border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        Presença
+                    </span>
+                    <div className="flex flex-col">
+                        <span className="text-2xl font-bold text-slate-700 tracking-tight">
+                            {kpis.dias_trabalhados} <span className="text-xs text-slate-400 uppercase">dias</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium mt-1">
+                            Meta: {kpis.dias_meta_turno} dias
+                        </span>
+                    </div>
+                </div>
 
-                {/* 3. Desempenho (KM) */}
-                <Card className="border shadow-sm rounded-3xl bg-slate-50/40 border-slate-200/60 overflow-hidden group hover:shadow-md transition-all duration-300">
-                    <CardContent className="p-0">
-                        <div className="p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-3 bg-white rounded-2xl group-hover:bg-slate-800 transition-colors duration-300 shadow-sm">
-                                    <Gauge className="h-5 w-5 text-slate-800 group-hover:text-white transition-colors duration-300" />
-                                </div>
-                                <Badge variant="secondary" className="bg-white text-slate-600 border border-slate-200 text-[10px] font-bold uppercase py-0.5 px-2">
-                                    {messages.ponto.labels.rodagemKm}
-                                </Badge>
-                            </div>
-                            <div className="space-y-1">
-                                <h3 className="text-3xl font-black text-slate-800 tracking-tight">{kpis.km_realizado} <span className="text-sm font-normal text-slate-400">km</span></h3>
-                                <p className="text-xs text-slate-400 font-medium tracking-wide uppercase tracking-widest">
-                                    Contratado: <span className="text-slate-700 font-bold">{kpis.km_contratado} km</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/40 bg-white/50">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{messages.ponto.labels.saldoKm}</p>
-                                <p className={cn("text-lg font-black leading-none", kpis.km_saldo <= 0 ? "text-emerald-600" : "text-rose-600")}>
-                                    {kpis.km_saldo <= 0 ? `+${Math.abs(kpis.km_saldo)}` : `-${kpis.km_saldo}`} km
-                                </p>
-                            </div>
-                            <div className="p-2 bg-slate-100 rounded-xl">
-                                <MapPin className="h-4 w-4 text-slate-800" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* 3. Ausências */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all hover:border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        {messages.ponto.labels.ausencias}
+                    </span>
+                    <div className="flex flex-col">
+                        <span className={cn("text-2xl font-bold tracking-tight", kpis.dias_ausencias === 0 ? "text-slate-700" : "text-rose-600")}>
+                            {kpis.dias_ausencias}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium mt-1">
+                            {formatMinutes(kpis.horas_ausencias)} perdidas
+                        </span>
+                    </div>
+                </div>
+
+                {/* 4. KM Rodado */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all hover:border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        {messages.ponto.labels.rodagemKm}
+                    </span>
+                    <div className="flex flex-col">
+                        <span className={cn("text-2xl font-bold tracking-tight", kpis.km_saldo <= 0 ? "text-emerald-600" : "text-rose-600")}>
+                            {kpis.km_realizado} <span className="text-xs font-normal opacity-70">km</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium mt-1">
+                            Saldo: {kpis.km_saldo <= 0 ? `+${Math.abs(kpis.km_saldo)}` : `-${kpis.km_saldo}`} km
+                        </span>
+                    </div>
+                </div>
             </div>
 
             {/* Daily Logs */}

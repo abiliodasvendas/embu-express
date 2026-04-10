@@ -39,13 +39,13 @@ export function useTimeTrackingViewModel({
     const formattedDateString = format(date, "yyyy-MM-dd");
 
     // Admin Fetch
-    const { data: adminRecords, isLoading: isAdminLoading, refetch: refetchAdmin } = useTimeRecords({
+    const { data: adminRecords, isLoading: isAdminLoading, isFetching: isAdminFetching, refetch: refetchAdmin } = useTimeRecords({
         date: formattedDateString,
         incluirTodos: true,
     });
 
     // Public Fetch
-    const { data: publicRecords, isLoading: isPublicLoading, refetch: refetchPublic } = usePublicTimeTracking(uuid, formattedDateString);
+    const { data: publicRecords, isLoading: isPublicLoading, isFetching: isPublicFetching, refetch: refetchPublic } = usePublicTimeTracking(uuid, formattedDateString);
     const { data: publicCollabs } = usePublicCollaborators(uuid);
 
     const records = uuid ? (publicRecords || []) : (externalRecords || adminRecords);
@@ -210,6 +210,7 @@ export function useTimeTrackingViewModel({
 
         // State
         isLoading,
+        isFetching: uuid ? isPublicFetching : isAdminFetching,
         isActionLoading: createRecord.isPending || updateRecord.isPending || deleteRecord.isPending,
         searchTerm,
         activeKpiFilter,

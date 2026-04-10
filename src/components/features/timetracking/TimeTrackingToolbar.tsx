@@ -26,7 +26,7 @@ import {
 import { FilterOptions } from "@/types/enums";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import { cn } from "@/lib/utils";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 import { Can } from "@/components/auth/Can";
 import { PERMISSIONS } from "@/constants/permissions.enum";
@@ -49,6 +49,8 @@ interface TimeTrackingToolbarProps {
   onApplyFilters: (filters: any) => void;
   onClearFilters: () => void;
   hasActiveFilters?: boolean;
+  countdown?: number;
+  isLoading?: boolean;
 }
 
 export function TimeTrackingToolbar({
@@ -64,7 +66,9 @@ export function TimeTrackingToolbar({
   uniqueShifts,
   onApplyFilters,
   onClearFilters,
-  hasActiveFilters
+  hasActiveFilters,
+  countdown,
+  isLoading
 }: TimeTrackingToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -167,7 +171,28 @@ export function TimeTrackingToolbar({
   return (
     <div className="flex flex-col space-y-6 mb-6">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <DateNavigation date={date} onNavigate={onDateChange} />
+        <div className="flex items-center gap-3">
+          <DateNavigation date={date} onNavigate={onDateChange} />
+          {countdown !== undefined && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50/80 border border-gray-100 dark:bg-slate-800/40 dark:border-slate-700/50 backdrop-blur-sm min-w-[110px] justify-center transition-all duration-300">
+              {isLoading ? (
+                <>
+                  <RefreshCcw className="h-3.5 w-3.5 text-gray-400 animate-spin" />
+                  <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider animate-pulse">
+                    Atualizando...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <RefreshCcw className="h-3.5 w-3.5 text-gray-400" />
+                  <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tabular-nums tracking-wider">
+                    {countdown}s
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
           {hasActiveFilters && (

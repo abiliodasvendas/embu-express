@@ -4,9 +4,8 @@ import { TimeTrackingKpiFilters } from "@/components/features/timetracking/TimeT
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { useActiveCollaborators, useClients } from "@/hooks";
-import { useEffect } from "react";
-import { useTimeTrackingViewModel } from "@/hooks";
+import { useEffect, useCallback } from "react";
+import { useActiveCollaborators, useClients, useTimeTrackingViewModel, useCountdown } from "@/hooks";
 
 export default function TimeTracking() {
     const { data: activeCollaborators = [] } = useActiveCollaborators();
@@ -19,12 +18,24 @@ export default function TimeTracking() {
         isAdmin: true
     });
 
+    const { seconds: countdown, reset: resetCountdown } = useCountdown({
+        initialSeconds: 15,
+        onComplete: async () => {
+            await vm.refetch();
+        }
+    });
+
+    const handleRefresh = useCallback(async () => {
+        resetCountdown();
+        await vm.refetch();
+    }, [vm, resetCountdown]);
+
     useEffect(() => {
         vm.setPageTitle("Controle de Atividade");
     }, [vm]);
 
     return (
-        <PullToRefreshWrapper onRefresh={async () => { await vm.refetch(); }}>
+        <PullToRefreshWrapper onRefresh={handleRefresh}>
             <div className="space-y-6 pb-12">
                 <TimeTrackingToolbar
                     date={vm.date}
@@ -55,6 +66,8 @@ export default function TimeTracking() {
                     }}
                     onClearFilters={vm.clearAllFilters}
                     hasActiveFilters={vm.hasActiveFilters}
+                    countdown={countdown}
+                    isLoading={vm.isFetching || vm.isActionLoading}
                 />
 
                 <TimeTrackingKpiFilters

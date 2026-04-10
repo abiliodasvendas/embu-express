@@ -19,7 +19,6 @@ export const ROUTES = {
         OCORRENCIAS: "/admin/ocorrencias",
         ESPELHO_ATIVIDADE: "/admin/espelho-atividade",
         RELATORIO_FINANCEIRO: "/admin/financeiro",
-        INCONSISTENCIAS: "/admin/inconsistencias",
         INICIO: "/inicio"
     }
 } as const;

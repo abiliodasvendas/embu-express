@@ -34,9 +34,9 @@ export { useTimeMirrorViewModel } from "./ui/useTimeMirrorViewModel";
 export { useOccurrenceViewModel } from "./ui/useOccurrenceViewModel";
 export { useFinancialReportViewModel } from "./ui/useFinancialReportViewModel";
 export { useRegistrarPontoViewModel } from "./ui/useRegistrarPontoViewModel";
-export { useInconsistenciesViewModel } from "./ui/useInconsistenciesViewModel";
 export { useCollaboratorsViewModel } from "./ui/useCollaboratorsViewModel";
 export { useClientsViewModel } from "./ui/useClientsViewModel";
+export { useCountdown } from "./ui/useCountdown";
 
 // Embu Express Hooks
 export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClient } from "./api/useClientMutations";

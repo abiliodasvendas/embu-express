@@ -52,7 +52,6 @@ const Feriados = lazyLoad(() => import("./pages/admin/Feriados"));
 const Ocorrencias = lazyLoad(() => import("./pages/admin/Occurrences"));
 const TimeMirror = lazyLoad(() => import("./pages/admin/TimeMirror"));
 const FinancialReport = lazyLoad(() => import("./pages/admin/FinancialReport"));
-const Inconsistencias = lazyLoad(() => import("./pages/admin/Inconsistencias"));
 const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
 
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -251,7 +250,6 @@ const App = () => {
                     <Route element={<RequirePermission permissions={[PERMISSIONS.PONTO.ADMIN_VER]} />}>
                       <Route path={ROUTES.PRIVATE.INICIO.replace("/", "")} element={<Inicio />} />
                       <Route path={ROUTES.PRIVATE.CONTROLE_ATIVIDADE_DIARIO.replace("/", "")} element={<TimeTracking />} />
-                      <Route path={ROUTES.PRIVATE.INCONSISTENCIAS.replace("/", "")} element={<Inconsistencias />} />
                     </Route>
 
                     {/* Rotas Pessoais/Administrativas (Híbridas) */}

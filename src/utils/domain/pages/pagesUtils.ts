@@ -54,13 +54,6 @@ export const pagesItems: PageItem[] = [
         category: MENU_CATEGORIES.PONTO
     },
     {
-        title: "Inconsistências",
-        href: ROUTES.PRIVATE.INCONSISTENCIAS,
-        icon: AlertTriangle,
-        permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
-        category: MENU_CATEGORIES.PONTO
-    },
-    {
         title: "Clientes",
         href: ROUTES.PRIVATE.CLIENTES,
         icon: Briefcase,

@@ -134,7 +134,7 @@ export default function CollaboratorDetails() {
           safeCloseDialog(closeConfirmationDialog);
           navigate("/colaboradores");
         } catch (error) {
-          toast.error(messages.erro.excluir);
+          // O hook já exibe o toast de erro via o manipulador onError
         }
       },
     });
@@ -238,7 +238,7 @@ export default function CollaboratorDetails() {
           await deleteVinculo.mutateAsync({ id: turnId, colaboradorId: id! });
           safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
-          toast.error(messages.erro.excluir);
+          // O hook useDeleteVinculo já exibe o toast de erro via o manipulador onError global do hook
         }
       },
     });

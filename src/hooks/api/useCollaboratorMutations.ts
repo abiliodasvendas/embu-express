@@ -142,8 +142,9 @@ export function useDeleteCollaborator() {
       toast.success(messages.colaborador.sucesso.excluido);
     },
     onError: (error: ApiError) => {
-      toast.error(messages.colaborador.erro.excluir, {
-        description: error.response?.data?.error || error.message,
+      const backendError = error.response?.data?.error || error.response?.data?.message;
+      toast.error(backendError || messages.colaborador.erro.excluir, {
+        description: backendError ? undefined : error.message,
       });
     },
   });
@@ -190,8 +191,9 @@ export function useDeleteVinculo() {
       toast.success(messages.vinculo.sucesso.excluido);
     },
     onError: (error: ApiError) => {
-      toast.error(messages.vinculo.erro.excluir, {
-        description: error.response?.data?.error || error.message,
+      const backendError = error.response?.data?.error || error.response?.data?.message;
+      toast.error(backendError || messages.vinculo.erro.excluir, {
+        description: backendError ? undefined : error.message,
       });
     },
   });

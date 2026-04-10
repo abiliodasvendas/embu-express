@@ -11,24 +11,27 @@ export function FinancialReport() {
     const vm = useFinancialReportViewModel();
 
     useEffect(() => {
-        setPageTitle(vm.isOnlyPersonal ? "Meu Extrato Financeiro" : "Relatório Financeiro");
-    }, [setPageTitle, vm.isOnlyPersonal]);
+        setPageTitle("Relatório Financeiro");
+    }, [setPageTitle]);
 
     const { data: collaborators = [] } = useCollaborators({}, { enabled: vm.canViewAll });
 
     return (
-        <div className="space-y-6 pb-24">
-            <PeriodSelectorToolbar
-                usuarioId={vm.filters.selectedUsuario}
-                collaborators={collaborators}
-                selectedMonth={vm.filters.selectedMes}
-                selectedYear={vm.filters.selectedAno}
-                onUsuarioChange={vm.setUsuario}
-                onMonthChange={vm.setMonth}
-                onYearChange={vm.setYear}
-                hideCollaboratorSelect={!vm.canViewAll}
-                hideShiftSelect
-            />
+        <div className="space-y-4 pb-24">
+            <div className="space-y-2">
+                <PeriodSelectorToolbar
+                    usuarioId={vm.filters.selectedUsuario}
+                    collaborators={collaborators}
+                    selectedMonth={vm.filters.selectedMes}
+                    selectedYear={vm.filters.selectedAno}
+                    onUsuarioChange={vm.setUsuario}
+                    onMonthChange={vm.setMonth}
+                    onYearChange={vm.setYear}
+                    hideCollaboratorSelect={!vm.canViewAll}
+                    hideShiftSelect
+                    title="Data"
+                />
+            </div>
 
             <FinancialReportView
                 usuarioId={vm.usuarioId}

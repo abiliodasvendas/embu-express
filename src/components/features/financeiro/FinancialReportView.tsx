@@ -104,24 +104,24 @@ export function FinancialReportView({
         {!propMonth && !propYear && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50 p-4 rounded-[2rem] border border-gray-100">
             <div className="flex items-center gap-3 ml-2">
-              <div className="p-2 bg-white rounded-xl shadow-sm border border-gray-100">
-                <Calendar className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-white rounded-xl shadow-sm border border-gray-100 shrink-0">
+                <Calendar className="h-5 w-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                  Período de Referência
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
+                  Período
                 </p>
-                <p className="text-xs font-bold text-gray-600">
-                  Selecione o mês para o cálculo
+                <p className="text-[11px] font-bold text-gray-600 leading-none">
+                  Referência do cálculo
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Select
                 value={String(selectedMonth)}
                 onValueChange={(v) => setSelectedMonth(Number(v))}
               >
-                <SelectTrigger className="h-11 w-[140px] rounded-2xl border-none bg-white shadow-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20">
+                <SelectTrigger className="h-11 flex-1 sm:w-[140px] rounded-2xl border-none bg-white shadow-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/20">
                   <SelectValue placeholder="Mês" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
@@ -129,7 +129,7 @@ export function FinancialReportView({
                     <SelectItem
                       key={index}
                       value={String(index + 1)}
-                      className="font-medium focus:bg-blue-50 focus:text-blue-700 rounded-xl m-1 capitalize"
+                      className="font-medium focus:bg-emerald-50 focus:text-emerald-700 rounded-xl m-1 capitalize"
                     >
                       {label}
                     </SelectItem>
@@ -141,7 +141,7 @@ export function FinancialReportView({
                 value={String(selectedYear)}
                 onValueChange={(v) => setSelectedYear(Number(v))}
               >
-                <SelectTrigger className="h-11 w-[100px] rounded-2xl border-none bg-white shadow-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20">
+                <SelectTrigger className="h-11 w-[90px] sm:w-[100px] rounded-2xl border-none bg-white shadow-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/20">
                   <SelectValue placeholder="Ano" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
@@ -150,7 +150,7 @@ export function FinancialReportView({
                       <SelectItem
                         key={ano}
                         value={String(ano)}
-                        className="font-medium focus:bg-blue-50 focus:text-blue-700 rounded-xl m-1"
+                        className="font-medium focus:bg-emerald-50 focus:text-emerald-700 rounded-xl m-1"
                       >
                         {ano}
                       </SelectItem>
@@ -180,10 +180,10 @@ export function FinancialReportView({
                     "rounded-full px-4 py-1.5 font-bold text-xs uppercase tracking-widest",
                     extrato.status === FINANCEIRO_STATUS.PAGO
                       ? "bg-emerald-500 text-white"
-                      : "bg-white text-blue-500 hover:bg-white hover:text-blue-600 border-blue-500 border",
+                      : "bg-white text-emerald-600 hover:bg-emerald-50 border-emerald-500 border",
                   )}
                 >
-                  {extrato.status}
+                  {extrato.status === FINANCEIRO_STATUS.RASCUNHO ? "EM ABERTO" : extrato.status}
                 </Badge>
                 {extrato.data_pagamento && (
                   <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5">
@@ -202,7 +202,7 @@ export function FinancialReportView({
                     {!extrato.adiantamento_confirmado ? (
                       <Button
                         variant="outline"
-                        className="rounded-2xl border-blue-600 text-blue-600 hover:bg-blue-50 font-bold h-11 px-6 shadow-sm transition-all"
+                        className="rounded-2xl border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold h-11 px-6 shadow-sm transition-all"
                         disabled={confirmarAdiantamentoMutation.isPending}
                         onClick={() => {
                           const valorTotalAdiantamento = extrato.totais?.total_adiantamento ??
@@ -310,17 +310,17 @@ export function FinancialReportView({
             </div>
 
             {/* Dashboard Header Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {/* Main Balance */}
-              <Card className="col-span-1 border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-700 text-white overflow-hidden relative group">
+              <Card className="col-span-2 md:col-span-1 border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-emerald-600 to-teal-700 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
                   <Banknote className="h-24 w-24" />
                 </div>
-                <CardContent className="p-8 relative z-10">
-                  <p className="text-blue-100/70 uppercase font-black tracking-widest text-[10px] mb-3">
+                <CardContent className="p-6 md:p-8 relative z-10">
+                  <p className="text-emerald-100/70 uppercase font-black tracking-widest text-[10px] mb-2">
                     Saldo Líquido a Pagar
                   </p>
-                  <h2 className="text-3xl xl:text-4xl font-black mb-4">
+                  <h2 className="text-3xl md:text-4xl font-black mb-3">
                     {formatCurrency(extrato.totais?.saldo_final || 0)}
                   </h2>
                   <div className="inline-flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-xl text-[10px] font-bold backdrop-blur-sm border border-white/10">
@@ -335,39 +335,39 @@ export function FinancialReportView({
               </Card>
 
               {/* Subtotal Turnos */}
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                  <Calendar className="h-20 w-20" />
+              <Card className="col-span-1 md:col-span-1 border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                  <Calendar className="h-16 w-16" />
                 </div>
-                <CardContent className="p-8 relative z-10">
-                  <p className="text-indigo-100/70 uppercase font-black tracking-widest text-[10px] mb-3">
+                <CardContent className="p-4 md:p-8 relative z-10">
+                  <p className="text-gray-100/70 uppercase font-black tracking-widest text-[8px] md:text-[10px] mb-2">
                     Total de Turnos
                   </p>
-                  <h2 className="text-2xl font-black mb-1">
+                  <h2 className="text-lg md:text-2xl font-black mb-1">
                     {formatCurrency(extrato.totais?.total_turnos || 0)}
                   </h2>
-                  <p className="text-[10px] text-indigo-100/60 font-medium">
+                  <p className="hidden md:block text-[10px] text-gray-100/60 font-medium">
                     Soma dos turnos (contrato + ocorrências)
                   </p>
                 </CardContent>
               </Card>
 
               {/* Subtotal Avulso */}
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                  <CreditCard className="h-20 w-20" />
+              <Card className="col-span-1 md:col-span-1 border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                  <CreditCard className="h-16 w-16" />
                 </div>
-                <CardContent className="p-8 relative z-10">
-                  <p className="text-indigo-100/70 uppercase font-black tracking-widest text-[10px] mb-3">
+                <CardContent className="p-4 md:p-8 relative z-10">
+                  <p className="text-gray-100/70 uppercase font-black tracking-widest text-[8px] md:text-[10px] mb-2">
                     Total Avulso
                   </p>
-                  <h2 className="text-2xl font-black mb-1">
+                  <h2 className="text-lg md:text-2xl font-black mb-1">
                     {formatCurrency(
                       (extrato.totais?.total_avulso || 0) +
                       (extrato.totais?.total_mei || 0),
                     )}
                   </h2>
-                  <p className="text-[10px] text-indigo-100/60 font-medium">
+                  <p className="hidden md:block text-[10px] text-gray-100/60 font-medium">
                     Lançamentos avulsos + MEI proporcional
                   </p>
                 </CardContent>
@@ -377,7 +377,7 @@ export function FinancialReportView({
             {/* Turn Breakdown Section */}
             <div className="space-y-6">
               <div className="flex items-center gap-3 ml-2">
-                <div className="h-1 w-8 bg-blue-600 rounded-full" />
+                <div className="h-1 w-8 bg-emerald-600 rounded-full" />
                 <h3 className="text-xl font-black text-gray-800 tracking-tight">
                   {getMessage("financeiro.labels.detalhamentoTurno")}
                 </h3>
@@ -391,8 +391,8 @@ export function FinancialReportView({
                   {/* Header do Turno */}
                   <div className="bg-gray-50/50 px-10 py-8 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6 group-hover:bg-white transition-colors">
                     <div className="flex items-center gap-5">
-                      <div className="h-14 w-14 rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-blue-100 transition-colors">
-                        <User className="h-7 w-7 text-blue-600" />
+                      <div className="h-14 w-14 rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-emerald-100 transition-colors">
+                        <User className="h-7 w-7 text-emerald-600" />
                       </div>
                       <div>
                         <h4 className="font-black text-gray-900 text-xl uppercase tracking-tight">
@@ -402,7 +402,7 @@ export function FinancialReportView({
                           {resumo.dias_trabalhados < resumo.dias_base_mes && (
                             <Badge
                               variant="secondary"
-                              className="bg-blue-50 text-blue-600 hover:bg-blue-50 text-[10px] font-bold px-2.5 py-0.5 rounded-lg border-blue-100"
+                              className="bg-emerald-50 text-emerald-600 hover:bg-emerald-50 text-[10px] font-bold px-2.5 py-0.5 rounded-lg border-emerald-100"
                             >
                               Pagamento Proporcional {(() => {
                                 const dtIni = resumo.data_inicio ? new Date(resumo.data_inicio + 'T12:00:00') : null;
@@ -447,7 +447,7 @@ export function FinancialReportView({
                       <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">
                         Valor do Turno
                       </p>
-                      <p className="text-2xl font-black text-blue-600">
+                      <p className="text-2xl font-black text-emerald-600">
                         {formatCurrency(resumo.valor_calculado)}
                       </p>
                     </div>
@@ -477,8 +477,8 @@ export function FinancialReportView({
                                 </Badge>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[9px] font-bold text-blue-600">Trabalhados:</span>
-                                <Badge className="bg-blue-600 text-white font-black h-5 px-1.5 shadow-sm text-[10px]">
+                                <span className="text-[9px] font-bold text-emerald-600">Trabalhados:</span>
+                                <Badge className="bg-emerald-600 text-white font-black h-5 px-1.5 shadow-sm text-[10px]">
                                   {resumo.dias_trabalhados}d
                                 </Badge>
                               </div>
@@ -514,10 +514,10 @@ export function FinancialReportView({
 
                         {/* Composição do Contrato */}
                         <div className="bg-gray-50/50 rounded-[2rem] p-6 space-y-4 border border-gray-100">
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 border-l-2 border-blue-600 pl-3">
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 border-l-2 border-emerald-600 pl-3">
                             Composição do Contrato (Mensal)
                           </p>
-                          <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
                             {resumo.valores_fixos?.contrato > 0 && (
                               <div className="flex justify-between text-[13px] items-center">
                                 <span className="text-gray-500 font-medium">
@@ -592,9 +592,9 @@ export function FinancialReportView({
                           </div>
                           <div className="flex justify-between items-center px-2">
                             <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                              Valor Pro-Rata
+                              Valor Proporcional
                             </span>
-                            <span className="text-lg font-black text-blue-600">
+                            <span className="text-lg font-black text-emerald-600">
                               {formatCurrency(
                                 ((resumo.saldo_fixo_original - (resumo.valores_fixos.bonus || 0)) /
                                   resumo.dias_base_mes) *
@@ -607,7 +607,7 @@ export function FinancialReportView({
                       </div>
 
                       {/* Coluna Direita: Ocorrências / Histórico */}
-                      <div className="space-y-6">
+                      <div className="space-y-6 mb-6">
                         <div className="flex items-center gap-3 mb-6">
                           <h5 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">
                             Ocorrências Vinculadas
@@ -694,7 +694,7 @@ export function FinancialReportView({
                                     resumo.creditos_ocorrencia -
                                       resumo.debitos_ocorrencia >=
                                       0
-                                      ? "text-blue-600"
+                                      ? "text-emerald-600"
                                       : "text-red-600",
                                   )}
                                 >
@@ -734,7 +734,7 @@ export function FinancialReportView({
                 ).length > 0) && (
                   <div className="mt-12 space-y-6">
                     <div className="flex items-center gap-3 ml-2">
-                      <div className="h-1 w-8 bg-indigo-600 rounded-full" />
+                      <div className="h-1 w-8 bg-emerald-600 rounded-full" />
                       <h3 className="text-xl font-black text-gray-800 tracking-tight">
                         Ocorrências Avulsas
                       </h3>

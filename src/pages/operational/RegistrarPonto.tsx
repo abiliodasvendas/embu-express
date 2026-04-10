@@ -117,16 +117,6 @@ export default function RegistrarPonto() {
                         </div>
                     </Alert>
                 </motion.div>
-                <div className="mt-auto pt-8 flex justify-center">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-slate-400 font-bold tracking-widest text-[10px] uppercase hover:bg-slate-50 rounded-xl px-4 h-10"
-                        onClick={vm.onRefresh}
-                    >
-                        <RefreshCw className="w-3 h-3 mr-2" /> {messages.ponto.labels.atualizarDados}
-                    </Button>
-                </div>
             </div>
         );
     }
@@ -189,7 +179,7 @@ export default function RegistrarPonto() {
                                             <Button
                                                 onClick={vm.handleToggle}
                                                 disabled={vm.isProcessing || !vm.selectedLinkId}
-                                                className="w-full h-16 text-lg font-black rounded-2xl shadow-xl shadow-blue-600/20 bg-blue-600 text-white hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50"
+                                                className="w-full h-16 text-base sm:text-lg font-black rounded-2xl shadow-xl shadow-blue-600/20 bg-blue-600 text-white hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50"
                                             >
                                                 {vm.isProcessing ? <RefreshCw className="animate-spin w-5 h-5 mr-3" /> : <Play className="w-5 h-5 mr-3 fill-current" />}
                                                 {messages.ponto.labels.iniciarTurno}
@@ -204,14 +194,6 @@ export default function RegistrarPonto() {
                                                 {geo.location ? messages.ponto.labels.localizacaoAtiva : messages.ponto.labels.localizacaoPendente}
                                             </span>
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-slate-400 font-bold tracking-widest text-[10px] uppercase hover:bg-slate-50 rounded-xl px-4"
-                                            onClick={vm.onRefresh}
-                                        >
-                                            {messages.ponto.labels.atualizarDados}
-                                        </Button>
                                     </div>
                                 </div>
                             ) : (
@@ -233,14 +215,6 @@ export default function RegistrarPonto() {
                                             {messages.ponto.labels.semTurnosAtivos}
                                         </p>
                                     </div>
-
-                                    <Button
-                                        onClick={vm.onRefresh}
-                                        variant="outline"
-                                        className="h-14 px-8 border-2 border-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-white hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95 bg-slate-50/50"
-                                    >
-                                        <RefreshCw className="w-5 h-5 mr-3" /> {messages.ponto.labels.atualizarDados}
-                                    </Button>
 
                                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest pt-4">
                                         Tente atualizar se o vínculo foi criado agora.

@@ -37,6 +37,7 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Banknote,
+  Building2,
   Calendar,
   CheckCircle2,
   CreditCard,
@@ -389,16 +390,16 @@ export function FinancialReportView({
                   className="border-none shadow-lg rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 transition-all hover:shadow-xl group"
                 >
                   {/* Header do Turno */}
-                  <div className="bg-gray-50/50 px-10 py-8 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6 group-hover:bg-white transition-colors">
-                    <div className="flex items-center gap-5">
-                      <div className="h-14 w-14 rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-emerald-100 transition-colors">
-                        <User className="h-7 w-7 text-emerald-600" />
+                  <div className="bg-gray-50/50 p-6 md:px-10 md:py-8 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6 group-hover:bg-white transition-colors">
+                    <div className="flex items-start md:items-center gap-4 md:gap-5 min-w-0">
+                      <div className="h-14 w-14 rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-emerald-100 transition-colors mt-0.5 md:mt-0">
+                        <Building2 className="h-7 w-7 text-emerald-600" />
                       </div>
-                      <div>
-                        <h4 className="font-black text-gray-900 text-xl uppercase tracking-tight">
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <h4 className="font-black text-gray-900 text-lg md:text-xl uppercase tracking-tight truncate">
                           {resumo.nome_fantasia}
                         </h4>
-                        <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                           {resumo.dias_trabalhados < resumo.dias_base_mes && (
                             <Badge
                               variant="secondary"
@@ -421,8 +422,12 @@ export function FinancialReportView({
                               Sem bônus (Escala não atingida)
                             </Badge>
                           )}
-                          {(resumo.data_inicio || resumo.data_fim) && (
-                            <p className="text-[11px] text-gray-400 font-bold">
+                        </div>
+                        
+                        {(resumo.data_inicio || resumo.data_fim) && (
+                          <div className="flex items-center gap-1.5 text-[10px] md:text-[11px] text-gray-400 font-bold bg-white/50 w-fit px-2 py-1 rounded-lg border border-gray-100/50">
+                            <Calendar className="h-3 w-3" />
+                            <span>
                               {resumo.data_inicio &&
                                 new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
                                 new Date(resumo.data_inicio + 'T12:00:00').getUTCFullYear() === selectedYear &&
@@ -438,16 +443,16 @@ export function FinancialReportView({
                                 new Date(resumo.data_fim + 'T12:00:00').getUTCFullYear() === selectedYear &&
                                 `Término: ${resumo.data_fim.split("-").reverse().join("/")}`
                               }
-                            </p>
-                          )}
-                        </div>
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="text-left sm:text-right bg-blue-50/50 sm:bg-transparent p-4 sm:p-0 rounded-2xl">
-                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">
+                    <div className="text-left sm:text-right bg-emerald-50/50 sm:bg-transparent p-4 sm:p-0 rounded-2xl border border-emerald-100/20 sm:border-none shrink-0">
+                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-0.5">
                         Valor do Turno
                       </p>
-                      <p className="text-2xl font-black text-emerald-600">
+                      <p className="text-xl sm:text-2xl font-black text-emerald-600">
                         {formatCurrency(resumo.valor_calculado)}
                       </p>
                     </div>
@@ -459,26 +464,29 @@ export function FinancialReportView({
                       <div className="space-y-8">
                         {/* Calendário de Dias Ativos */}
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-400 font-black uppercase tracking-widest text-[10px]">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between py-6 md:py-0 border-y md:border-none border-gray-100 gap-4">
+                            <span className="text-gray-400 font-black uppercase tracking-widest text-[10px] md:text-xs">
                               Período de Atuação
                             </span>
-                            <div className="flex flex-wrap items-center gap-4">
-                              <div className="flex items-center gap-1.5 grayscale opacity-50">
-                                <span className="text-[9px] font-bold">Base Mês:</span>
-                                <Badge variant="outline" className="text-[10px] font-black h-5 px-1.5 opacity-60">
+                            <div className="grid grid-cols-3 md:flex md:flex-wrap items-center gap-3 md:gap-4">
+                              <div className="flex flex-col md:flex-row items-center gap-1 md:gap-1.5 grayscale opacity-50">
+                                <span className="text-[9px] font-bold md:hidden">Base</span>
+                                <span className="text-[9px] font-bold hidden md:block">Base Mês:</span>
+                                <Badge variant="outline" className="text-[10px] font-black h-6 md:h-5 px-1.5 md:opacity-60">
                                   {resumo.dias_base_mes}d
                                 </Badge>
                               </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[9px] font-bold text-gray-500">Meta Turno:</span>
-                                <Badge variant="secondary" className="bg-gray-100 text-[10px] font-black h-5 px-1.5">
+                              <div className="flex flex-col md:flex-row items-center gap-1 md:gap-1.5 border-x md:border-none border-gray-100">
+                                <span className="text-[9px] font-bold text-gray-500 md:hidden">Meta</span>
+                                <span className="text-[9px] font-bold text-gray-500 hidden md:block">Meta Turno:</span>
+                                <Badge variant="secondary" className="bg-gray-100 text-[10px] font-black h-6 md:h-5 px-1.5">
                                   {resumo.dias_esperados_turno}d
                                 </Badge>
                               </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[9px] font-bold text-emerald-600">Trabalhados:</span>
-                                <Badge className="bg-emerald-600 text-white font-black h-5 px-1.5 shadow-sm text-[10px]">
+                              <div className="flex flex-col md:flex-row items-center gap-1 md:gap-1.5">
+                                <span className="text-[9px] font-bold text-emerald-600 md:hidden">Trabalhados</span>
+                                <span className="text-[9px] font-bold text-emerald-600 hidden md:block">Trabalhados:</span>
+                                <Badge className="bg-emerald-600 text-white font-black h-6 md:h-5 px-1.5 shadow-sm text-[10px]">
                                   {resumo.dias_trabalhados}d
                                 </Badge>
                               </div>
@@ -582,19 +590,19 @@ export function FinancialReportView({
                               </div>
                             )}
                           </div>
-                          <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center px-2">
-                            <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                          <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center px-2 gap-1 sm:gap-0">
+                            <span className="text-[10px] sm:text-xs text-gray-400 font-black uppercase tracking-widest">
                               Base Mensal do Período
                             </span>
-                            <span className="text-lg font-black text-gray-400">
+                            <span className="text-base sm:text-lg font-black text-gray-400">
                               {formatCurrency(resumo.saldo_fixo_original)}
                             </span>
                           </div>
-                          <div className="flex justify-between items-center px-2">
-                            <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center px-2 gap-1 sm:gap-0">
+                            <span className="text-[10px] sm:text-xs text-gray-400 font-black uppercase tracking-widest">
                               Valor Proporcional
                             </span>
-                            <span className="text-lg font-black text-emerald-600">
+                            <span className="text-base sm:text-lg font-black text-emerald-600">
                               {formatCurrency(
                                 ((resumo.saldo_fixo_original - (resumo.valores_fixos.bonus || 0)) /
                                   resumo.dias_base_mes) *
@@ -629,9 +637,9 @@ export function FinancialReportView({
                               .map((occ, oIdx) => (
                                 <div
                                   key={oIdx}
-                                  className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ"
+                                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ gap-3"
                                 >
-                                  <div className="flex items-center gap-4">
+                                  <div className="flex items-start sm:items-center gap-4 flex-1">
                                     <div
                                       className={cn(
                                         "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/occ:scale-110",
@@ -653,7 +661,7 @@ export function FinancialReportView({
                                         {occ.tipo?.descricao}
                                       </p>
                                       {occ.observacao && (
-                                        <p className="text-[11px] text-gray-500 italic font-medium leading-tight max-w-[250px] mt-0.5">
+                                        <p className="text-[11px] text-gray-500 italic font-medium leading-tight sm:max-w-[250px] mt-0.5">
                                           {occ.observacao}
                                         </p>
                                       )}
@@ -668,7 +676,7 @@ export function FinancialReportView({
                                   </div>
                                   <span
                                     className={cn(
-                                      "text-sm font-black",
+                                      "text-sm font-black self-end sm:self-center bg-white sm:bg-transparent px-3 py-1 sm:p-0 rounded-lg shadow-sm sm:shadow-none",
                                       occ.tipo_lancamento ===
                                         LANCAMENTO_TIPO.ENTRADA
                                         ? "text-emerald-600"
@@ -744,8 +752,8 @@ export function FinancialReportView({
                         <div className="space-y-4">
                           {/* MEI Integrado (se houver valor) */}
                           {extrato.totais?.total_mei > 0 && (
-                            <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ">
-                              <div className="flex items-center gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ gap-3">
+                              <div className="flex items-start sm:items-center gap-4">
                                 <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/occ:scale-110 bg-emerald-50 text-emerald-600">
                                   <ArrowUpCircle className="h-5 w-5" />
                                 </div>
@@ -758,7 +766,7 @@ export function FinancialReportView({
                                   </p>
                                 </div>
                               </div>
-                              <span className="text-sm font-black text-emerald-600">
+                              <span className="text-sm font-black text-emerald-600 self-end sm:self-center bg-white sm:bg-transparent px-3 py-1 sm:p-0 rounded-lg shadow-sm sm:shadow-none">
                                 + {formatCurrency(extrato.totais.total_mei)}
                               </span>
                             </div>
@@ -773,9 +781,9 @@ export function FinancialReportView({
                             .map((occ, oIdx: number) => (
                               <div
                                 key={oIdx}
-                                className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ"
+                                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ gap-3"
                               >
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-start sm:items-center gap-4 flex-1">
                                   <div
                                     className={cn(
                                       "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/occ:scale-110",
@@ -797,7 +805,7 @@ export function FinancialReportView({
                                       {occ.tipo?.descricao}
                                     </p>
                                     {occ.observacao && (
-                                      <p className="text-[11px] text-gray-500 italic font-medium leading-tight max-w-[250px] mt-0.5">
+                                      <p className="text-[11px] text-gray-500 italic font-medium leading-tight sm:max-w-[250px] mt-0.5">
                                         {occ.observacao}
                                       </p>
                                     )}
@@ -812,7 +820,7 @@ export function FinancialReportView({
                                 </div>
                                 <span
                                   className={cn(
-                                    "text-sm font-black",
+                                    "text-sm font-black self-end sm:self-center bg-white sm:bg-transparent px-3 py-1 sm:p-0 rounded-lg shadow-sm sm:shadow-none",
                                     occ.tipo_lancamento ===
                                       LANCAMENTO_TIPO.ENTRADA
                                       ? "text-emerald-600"
@@ -839,7 +847,7 @@ export function FinancialReportView({
                                   (extrato.totais?.total_avulso || 0) +
                                     (extrato.totais?.total_mei || 0) >=
                                     0
-                                    ? "text-blue-600"
+                                    ? "text-emerald-600"
                                     : "text-red-600",
                                 )}
                               >

@@ -96,7 +96,6 @@ export const messages = {
       tentarNovamente: "Tentar Novamente",
       vinculosNaoEncontrados: "Vínculos não encontrados",
       semTurnosAtivos: "Não identificamos turnos ativos no seu perfil. Entre em contato com seu gestor.",
-      atualizarDados: "Atualizar Dados",
       aguardandoInicio: "Aguardando Início",
       emServico: "Em Serviço",
       emPausa: "Em Pausa",

@@ -423,7 +423,7 @@ export function FinancialReportView({
                             </Badge>
                           )}
                         </div>
-                        
+
                         {(resumo.data_inicio || resumo.data_fim) && (
                           <div className="flex items-center gap-1.5 text-[10px] md:text-[11px] text-gray-400 font-bold bg-white/50 w-fit px-2 py-1 rounded-lg border border-gray-100/50">
                             <Calendar className="h-3 w-3" />

@@ -93,8 +93,12 @@ export function useRegistrarPontoViewModel() {
     const pontoAtivo = useMemo(() => {
         if (!business.pontoHoje) return null;
         if (!Array.isArray(business.pontoHoje)) return business.pontoHoje;
-        return business.pontoHoje.find((p: any) => String(p.colaborador_cliente_id) === selectedLinkId) || null;
-    }, [business.pontoHoje, selectedLinkId]);
+        
+        const selectedLink = business.activeLinks?.find(l => l.id.toString() === selectedLinkId);
+        if (!selectedLink) return business.pontoHoje[0] || null;
+
+        return business.pontoHoje.find((p: any) => String(p.cliente_id) === String(selectedLink.cliente_id)) || business.pontoHoje[0] || null;
+    }, [business.pontoHoje, selectedLinkId, business.activeLinks]);
 
     const journeyMetrics = useMemo(() => {
         if (!pontoAtivo) return { count: 0, totalMs: 0, kmTrabalho: 0, kmPausa: 0, entradaKm: 0 };
@@ -126,6 +130,17 @@ export function useRegistrarPontoViewModel() {
         const openPause = pontoAtivo.pausas?.find((p: Pausa) => !p.fim_hora);
         return openPause ? StatusPonto.PAUSADO : StatusPonto.TRABALHANDO;
     }, [pontoAtivo]);
+
+    const isLongShift = useMemo(() => {
+        if (!pontoAtivo?.entrada_hora || status === StatusPonto.AGUARDANDO) return false;
+        const start = new Date(pontoAtivo.entrada_hora).getTime();
+        const diff = Date.now() - start;
+        return diff > 12 * 60 * 60 * 1000; // Alerta após 12 horas
+    }, [pontoAtivo, status]);
+
+    const hasMultiplePoints = useMemo(() => {
+        return Array.isArray(business.pontoHoje) && business.pontoHoje.length > 1;
+    }, [business.pontoHoje]);
 
     // Robust Date Normalization for Multi-platform support
     const parseDate = useCallback((dateStr?: string) => {
@@ -170,7 +185,7 @@ export function useRegistrarPontoViewModel() {
                     const start = parseDate(pontoAtivo?.entrada_hora);
                     const pauseStart = parseDate(openPause.inicio_hora);
                     const finishedPauseMs = journeyMetrics.totalMs;
-                    
+
                     // Work Timer Frozen
                     const workDiff = (pauseStart - start) - finishedPauseMs;
                     setTimer(formatDuration(workDiff));
@@ -306,7 +321,10 @@ export function useRegistrarPontoViewModel() {
         isProcessing: isProcessing || business.isLoadingPonto,
         geo,
         business,
+        pontoAtivo,
         isMotoboy,
+        isLongShift,
+        hasMultiplePoints,
 
         // Actions
         handleToggle: () => handleAction('toggle'),

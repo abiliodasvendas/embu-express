@@ -125,6 +125,33 @@ export default function RegistrarPonto() {
             <div className="w-full max-w-lg lg:max-w-6xl mx-auto pb-24 md:mt-8 relative animate-in fade-in duration-700 px-4">
                 <LoadingOverlay active={geo.loading || business.isLoadingPonto} text={business.isLoadingPonto ? messages.ponto.labels.carregandoDados : messages.ponto.labels.buscandoLocalizacao} />
 
+                {/* Alertas de Atenção */}
+                <div className="space-y-3 mb-4 px-1">
+                    {vm.isLongShift && (
+                        <Alert className="rounded-3xl border-none bg-red-50 text-red-800 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <ShieldAlert className="h-4 w-4 text-red-600" />
+                            <div className="ml-2">
+                                <AlertTitle className="text-[10px] font-black uppercase tracking-widest">Jornada Longa</AlertTitle>
+                                <AlertDescription className="text-[11px] font-medium leading-tight opacity-90">
+                                    Este turno está aberto há mais de 12 horas. Se esqueceu de encerrar, faça-o agora.
+                                </AlertDescription>
+                            </div>
+                        </Alert>
+                    )}
+
+                    {vm.hasMultiplePoints && (
+                        <Alert className="rounded-3xl border-none bg-blue-50 text-blue-800 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <Info className="h-4 w-4 text-blue-600" />
+                            <div className="ml-2">
+                                <AlertTitle className="text-[10px] font-black uppercase tracking-widest">Vários Turnos</AlertTitle>
+                                <AlertDescription className="text-[11px] font-medium leading-tight opacity-90">
+                                    Você possui outros registros abertos. Lembre-se de encerrar cada um.
+                                </AlertDescription>
+                            </div>
+                        </Alert>
+                    )}
+                </div>
+
                 <AnimatePresence mode="wait">
                     {/* State: AGUARDANDO (Selection Only) */}
                     {vm.status === StatusPonto.AGUARDANDO ? (
@@ -303,7 +330,7 @@ export default function RegistrarPonto() {
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{messages.ponto.labels.entrada}</span>
                                     <span className="text-xl font-black text-slate-700">
                                         {vm.pontoAtivo?.entrada_hora
-                                            ? new Date(vm.pontoAtivo.entrada_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                                            ? new Date(vm.pontoAtivo.entrada_hora.replace(' ', 'T')).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
                                             : '--:--'}
                                     </span>
                                 </Card>

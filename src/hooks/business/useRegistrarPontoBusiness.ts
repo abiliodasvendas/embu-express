@@ -25,8 +25,10 @@ export function useRegistrarPontoBusiness() {
             });
             return res.data;
         },
+        staleTime: 0,
         enabled: !!user?.id,
-        refetchInterval: 60 * 1000 // Refresh every minute
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
     });
 
     const refetch = async () => {

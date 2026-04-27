@@ -148,13 +148,6 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
 
             const { entrada, saida } = TimeRules.resolveDates(refDateStr, values.entrada_hora, values.saida_hora || undefined);
 
-            if (saida) {
-                const checkMax = TimeRules.validateMaxDuration(entrada, saida, 16);
-                if (!checkMax.valid) {
-                    toast.error("Erro na validação", { description: checkMax.message });
-                    return;
-                }
-            }
 
             const payload = {
                 usuario_id: values.usuario_id, // Já é string/UUID

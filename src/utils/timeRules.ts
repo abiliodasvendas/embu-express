@@ -19,33 +19,7 @@ export const TimeRules = {
         return { valid: true }; 
     },
 
-    /**
-     * Valida duração mínima (1 minuto).
-     */
-    validateMinDuration(start: Date, end: Date | null, minMinutes = 1): ValidationResult {
-        if (!end) return { valid: true };
-        
-        const diff = differenceInMinutes(end, start);
-        if (diff < minMinutes) {
-             return { valid: false, message: `Duração muito curta (mínimo ${minMinutes} min).` };
-        }
-        return { valid: true };
-    },
 
-    /**
-     * Valida duração máxima (16 horas).
-     */
-    validateMaxDuration(start: Date, end: Date | null, maxHours = 16): ValidationResult {
-        if (!end) return { valid: true };
-
-        const diffMinutes = differenceInMinutes(end, start);
-        const diffHours = diffMinutes / 60;
-
-        if (diffHours > maxHours) {
-            return { valid: false, message: `Jornada excessiva (+${Math.round(diffHours)}h). Limite é ${maxHours}h.` };
-        }
-        return { valid: true };
-    },
 
     /**
      * Ajusta a data de saída para o dia seguinte se necessário.

@@ -131,17 +131,6 @@ export function useRegistrarPontoViewModel() {
         return openPause ? StatusPonto.PAUSADO : StatusPonto.TRABALHANDO;
     }, [pontoAtivo]);
 
-    const isLongShift = useMemo(() => {
-        if (!pontoAtivo?.entrada_hora || status === StatusPonto.AGUARDANDO) return false;
-        const start = new Date(pontoAtivo.entrada_hora).getTime();
-        const diff = Date.now() - start;
-        return diff > 12 * 60 * 60 * 1000; // Alerta após 12 horas
-    }, [pontoAtivo, status]);
-
-    const hasMultiplePoints = useMemo(() => {
-        return Array.isArray(business.pontoHoje) && business.pontoHoje.length > 1;
-    }, [business.pontoHoje]);
-
     // Robust Date Normalization for Multi-platform support
     const parseDate = useCallback((dateStr?: string) => {
         if (!dateStr) return 0;
@@ -323,8 +312,6 @@ export function useRegistrarPontoViewModel() {
         business,
         pontoAtivo,
         isMotoboy,
-        isLongShift,
-        hasMultiplePoints,
 
         // Actions
         handleToggle: () => handleAction('toggle'),

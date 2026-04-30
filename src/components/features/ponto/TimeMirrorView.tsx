@@ -155,7 +155,7 @@ export function TimeMirrorView({
                             {formatMinutes(hourBalance, true)}
                         </span>
                         <span className="text-[10px] text-slate-400 font-medium mt-1">
-                            {formatMinutes(kpis.horas_trabalhadas)} realizados
+                            {formatMinutes(kpis.horas_trabalhadas)} realizados / {formatMinutes(kpis.horas_esperadas)} esperados
                         </span>
                     </div>
                 </div>

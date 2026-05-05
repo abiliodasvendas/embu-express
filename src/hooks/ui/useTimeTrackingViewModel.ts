@@ -35,37 +35,7 @@ export function useTimeTrackingViewModel({
     const [date, setDate] = useState<Date>(initialDate);
     const [activeKpiFilter, setActiveKpiFilter] = useState<ManagementStatus | null>(null);
 
-    // 2. Data Fetching
-    const formattedDateString = format(date, "yyyy-MM-dd");
-
-    // Admin Fetch
-    const { data: adminRecords, isLoading: isAdminLoading, isFetching: isAdminFetching, refetch: refetchAdmin } = useTimeRecords({
-        date: formattedDateString,
-        incluirTodos: true,
-    });
-
-    // Public Fetch
-    const { data: publicRecords, isLoading: isPublicLoading, isFetching: isPublicFetching, refetch: refetchPublic } = usePublicTimeTracking(uuid, formattedDateString);
-    const { data: publicCollabs } = usePublicCollaborators(uuid);
-
-    const records = uuid ? (publicRecords || []) : (externalRecords || adminRecords);
-    const collaborators = uuid ? (publicCollabs as Usuario[]) : externalCollaborators;
-    const isLoading = uuid ? isPublicLoading : isAdminLoading;
-    const refetch = uuid ? refetchPublic : refetchAdmin;
-
-    // 3. Mutations (Admin Only)
-    const createRecord = useCreatePonto();
-    const updateRecord = useUpdatePonto();
-    const deleteRecord = useDeletePonto();
-
-    // 3. Business Logic
-    const { processedRecords, uniqueShifts } = useTimeTrackingBusiness({
-        records,
-        date,
-        collaborators
-    });
-
-    // 4. Filters State (Modularizado)
+    // 2. Filters State (Modularizado) - Moved up to be used in data fetching
     const { searchTerm, setSearchTerm } = useSearchFilters("search", syncWithUrl);
 
     const {
@@ -82,6 +52,39 @@ export function useTimeTrackingViewModel({
         usuarioParam: "usuario",
         clienteParam: "cliente",
         syncWithUrl
+    });
+
+    // 3. Data Fetching
+    const formattedDateString = format(date, "yyyy-MM-dd");
+
+    // Admin Fetch - NOW PASSING FILTERS
+    const { data: adminRecords, isLoading: isAdminLoading, isFetching: isAdminFetching, refetch: refetchAdmin } = useTimeRecords({
+        date: formattedDateString,
+        incluirTodos: true,
+        clienteId: selectedCliente,
+        usuarioId: selectedUsuario,
+        searchTerm: searchTerm
+    });
+
+    // Public Fetch
+    const { data: publicRecords, isLoading: isPublicLoading, isFetching: isPublicFetching, refetch: refetchPublic } = usePublicTimeTracking(uuid, formattedDateString);
+    const { data: publicCollabs } = usePublicCollaborators(uuid);
+
+    const records = uuid ? (publicRecords || []) : (externalRecords || adminRecords);
+    const collaborators = uuid ? (publicCollabs as Usuario[]) : externalCollaborators;
+    const isLoading = uuid ? isPublicLoading : isAdminLoading;
+    const refetch = uuid ? refetchPublic : refetchAdmin;
+
+    // 4. Mutations (Admin Only)
+    const createRecord = useCreatePonto();
+    const updateRecord = useUpdatePonto();
+    const deleteRecord = useDeletePonto();
+
+    // 5. Business Logic
+    const { processedRecords, uniqueShifts } = useTimeTrackingBusiness({
+        records,
+        date,
+        collaborators
     });
 
     const activeParams = ["search", "usuario", "cliente", "turno"];

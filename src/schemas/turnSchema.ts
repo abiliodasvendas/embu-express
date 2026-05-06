@@ -35,6 +35,7 @@ export const turnSchema = z.object({
   valor_bonus: optionalMoneySchema,
   ajuda_custo: optionalMoneySchema,
   valor_adiantamento: optionalMoneySchema,
+  taxa_entrega: optionalMoneySchema,
   data_inicio: z.string().min(1, messages.validacao.campoObrigatorio),
   horarios: z.array(horarioSchema).min(1, "Configure ao menos um dia de trabalho"),
 

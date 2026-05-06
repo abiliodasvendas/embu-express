@@ -102,6 +102,7 @@ export function CollaboratorTurnDialog({
       valor_bonus: 0 as any,
       ajuda_custo: 0 as any,
       valor_adiantamento: 0 as any,
+      taxa_entrega: 0 as any,
       data_inicio: "",
 
       horarios: [],
@@ -125,6 +126,7 @@ export function CollaboratorTurnDialog({
           valor_adiantamento: formatCurrency(
             turnToEdit.valor_adiantamento || 0,
           ),
+          taxa_entrega: formatCurrency(turnToEdit.taxa_entrega || 0),
           data_inicio: turnToEdit.data_inicio || "",
 
           horarios:
@@ -145,6 +147,7 @@ export function CollaboratorTurnDialog({
           valor_bonus: "" as any,
           ajuda_custo: "" as any,
           valor_adiantamento: "" as any,
+          taxa_entrega: "" as any,
           data_inicio: "",
 
           horarios: [],
@@ -167,6 +170,7 @@ export function CollaboratorTurnDialog({
       valor_aluguel: formatCurrency(data.valor_aluguel),
       ajuda_custo: formatCurrency(data.ajuda_custo),
       valor_bonus: formatCurrency(data.valor_bonus),
+      taxa_entrega: formatCurrency(data.taxa_entrega),
       data_inicio: getLocalDate(),
     });
   };
@@ -903,6 +907,17 @@ export function CollaboratorTurnDialog({
                           <MoneyInput
                             field={field}
                             label="Ajuda de Custo"
+                            labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
+                          />
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="taxa_entrega"
+                        render={({ field }) => (
+                          <MoneyInput
+                            field={field}
+                            label="Taxa Entrega"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
                           />
                         )}

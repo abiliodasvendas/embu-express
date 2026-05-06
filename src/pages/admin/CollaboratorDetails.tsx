@@ -661,6 +661,12 @@ export default function CollaboratorDetails() {
                               {link.empresa?.nome_fantasia || link.empresa?.razao_social || 'EE'}
                             </p>
                           </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Taxa Entrega</p>
+                            <p className="text-sm font-bold text-gray-700 mt-0.5">
+                              {link.taxa_entrega ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(link.taxa_entrega) : '-'}
+                            </p>
+                          </div>
                         </div>
 
                         {link.valor_contrato && (

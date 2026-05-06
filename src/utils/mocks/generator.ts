@@ -433,6 +433,7 @@ export const generateTurnData = () => {
     valor_aluguel: 500,
     ajuda_custo: 200,
     valor_bonus: 0,
+    taxa_entrega: randomNumber(50, 200),
     horarios: horarios
   };
 };

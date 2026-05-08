@@ -14,10 +14,12 @@ import { RegistroPonto } from "@/types/database";
 import { FilterOptions } from "@/types/enums";
 import { PontoDiarioRelatorio } from "@/types/ponto-relatorio";
 import { formatMinutes } from "@/utils/ponto";
-import { Calendar, Clock, Gauge, MapPin, TrendingDown } from "lucide-react";
-import { useEffect, useState } from "react";
 import { TimeMirrorDailyCard } from "./TimeMirrorDailyCard";
 import { safeCloseDialog } from "@/hooks";
+import { CALENDARIO_STATUS } from "@/constants/financeiro.constants";
+import { Button } from "@/components/ui/button";
+import { Calendar, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface TimeMirrorViewProps {
     usuarioId?: string;
@@ -55,6 +57,38 @@ export function TimeMirrorView({
     const { mutateAsync: deletePonto } = useDeletePonto();
     const [selectedPontoId, setSelectedPontoId] = useState<number | null>(null);
     const { data: fullRecord, isFetching: isFetchingRecord } = useTimeRecord(selectedPontoId);
+    const [showFutureScale, setShowFutureScale] = useState(false);
+
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const isCurrentPeriod = month === new Date().getMonth() + 1 && year === new Date().getFullYear();
+
+    // Separar o calendário em "Atividades Realizadas" e "Escala Futura" de forma segura
+    const calendario = activeReport?.calendario || [];
+    const realizedDays = calendario.filter(day => {
+        return day.data <= todayStr || day.ponto_id || day.status !== CALENDARIO_STATUS.FUTURO;
+    });
+
+    const futureDays = calendario.filter(day => {
+        return day.data > todayStr && day.status === CALENDARIO_STATUS.FUTURO && !day.ponto_id;
+    });
+
+    // Auto-expandir a escala se não houver atividades realizadas
+    useEffect(() => {
+        if (!isLoading && realizedDays.length === 0 && futureDays.length > 0) {
+            setShowFutureScale(true);
+        }
+    }, [realizedDays.length, futureDays.length, isLoading]);
+
+    useEffect(() => {
+        if (fullRecord && selectedPontoId) {
+            openTimeRecordDetailsDialog({
+                record: fullRecord,
+                onEdit: isActionable && can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleEditFromDetails : undefined,
+                onDelete: isActionable && can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleDelete : undefined
+            });
+            setSelectedPontoId(null);
+        }
+    }, [fullRecord, selectedPontoId, isActionable, can]);
 
     const handleDelete = (record: RegistroPonto) => {
         handleDeleteById(Number(record.id));
@@ -138,8 +172,9 @@ export function TimeMirrorView({
         );
     }
 
-    const { kpis, calendario } = activeReport;
+    const { kpis } = activeReport;
     const hourBalance = kpis.horas_trabalhadas - kpis.horas_esperadas;
+
 
     return (
         <div className="flex flex-col gap-10 md:gap-14">
@@ -147,9 +182,16 @@ export function TimeMirrorView({
             <div className="order-2 md:order-1 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 {/* 1. Saldo de Horas */}
                 <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all hover:border-slate-200">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                        {messages.ponto.labels.saldoAtual}
-                    </span>
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            {messages.ponto.labels.saldoAtual}
+                        </span>
+                        {isCurrentPeriod && (
+                            <Badge variant="outline" className="text-[9px] font-medium text-slate-400 border-slate-100 h-5 px-1.5 leading-none">
+                                PROPORCIONAL
+                            </Badge>
+                        )}
+                    </div>
                     <div className="flex flex-col">
                         <span className={cn("text-2xl font-bold tracking-tight", hourBalance >= 0 ? "text-emerald-600" : "text-rose-600")}>
                             {formatMinutes(hourBalance, true)}
@@ -208,37 +250,84 @@ export function TimeMirrorView({
 
             {/* Daily Logs */}
             <div className="order-1 md:order-2 grid gap-3">
-                {/* Header da Listagem Desktop */}
-                <div className={cn(
-                    "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",
-                    canViewAll ? "grid-cols-10" : "grid-cols-5"
-                )}>
-                    <div className="col-span-2">{messages.ponto.labels.data} / CLIENTE</div>
-                    <div className="col-span-1">{messages.ponto.labels.status}</div>
-                    <div className="col-span-1">{messages.ponto.labels.entrada}</div>
-                    <div className="col-span-1">{messages.ponto.labels.saida}</div>
-                    {canViewAll && (
-                        <>
-                            <div className="col-span-1 text-center">{messages.ponto.labels.kmTotal}</div>
-                            <div className="col-span-1 text-center">{messages.ponto.labels.efetivo}</div>
-                            <div className="col-span-1 text-center">{messages.ponto.labels.esperado}</div>
-                            <div className="col-span-2 text-right">{messages.ponto.labels.saldoDia}</div>
-                        </>
-                    )}
-                </div>
+                {/* Header da Listagem Desktop - Só aparece se houver atividades realizadas */}
+                {realizedDays.length > 0 && (
+                    <div className={cn(
+                        "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",
+                        canViewAll ? "grid-cols-10" : "grid-cols-5"
+                    )}>
+                        <div className="col-span-2">{messages.ponto.labels.data} / CLIENTE</div>
+                        <div className="col-span-1">{messages.ponto.labels.status}</div>
+                        <div className="col-span-1">{messages.ponto.labels.entrada}</div>
+                        <div className="col-span-1">{messages.ponto.labels.saida}</div>
+                        {canViewAll && (
+                            <>
+                                <div className="col-span-1 text-center">{messages.ponto.labels.kmTotal}</div>
+                                <div className="col-span-1 text-center">{messages.ponto.labels.efetivo}</div>
+                                <div className="col-span-1 text-center">{messages.ponto.labels.esperado}</div>
+                                <div className="col-span-2 text-right">{messages.ponto.labels.saldoDia}</div>
+                            </>
+                        )}
+                    </div>
+                )}
 
-                {calendario.map((day: PontoDiarioRelatorio, idx) => (
-                    <TimeMirrorDailyCard
-                        key={idx}
-                        day={day}
-                        canViewAll={canViewAll}
-                        isFetchingRecord={isFetchingRecord}
-                        selectedPontoId={selectedPontoId}
-                        onClick={handleOpenRecord}
-                        onDelete={isActionable && can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleDeleteById : undefined}
-                        isActionable={isActionable}
-                    />
-                ))}
+                {realizedDays.length > 0 ? (
+                    realizedDays.map((day: PontoDiarioRelatorio, idx) => (
+                        <TimeMirrorDailyCard
+                            key={idx}
+                            day={day}
+                            canViewAll={canViewAll}
+                            isFetchingRecord={isFetchingRecord}
+                            selectedPontoId={selectedPontoId}
+                            onClick={handleOpenRecord}
+                            onDelete={isActionable && can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleDeleteById : undefined}
+                            isActionable={isActionable}
+                        />
+                    ))
+                ) : (
+                    !isLoading && futureDays.length === 0 && (
+                        <div className="py-12 bg-white/50 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+                            <Info className="h-8 w-8 text-slate-300 mb-2" />
+                            <p className="text-sm text-slate-400">Nenhuma atividade registrada para este período.</p>
+                        </div>
+                    )
+                )}
+
+                {/* Escala Futura - Apartada */}
+                {futureDays.length > 0 && (
+                    <div className="mt-6 space-y-4">
+                        <div className="flex items-center gap-4">
+                            <div className="h-[1px] flex-1 bg-slate-100"></div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowFutureScale(!showFutureScale)}
+                                className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:bg-slate-50"
+                            >
+                                {showFutureScale ? <ChevronUp className="h-3 w-3 mr-2" /> : <ChevronDown className="h-3 w-3 mr-2" />}
+                                {showFutureScale ? "Ocultar Escala" : `Ver Escala Futura (${futureDays.length} dias)`}
+                            </Button>
+                            <div className="h-[1px] flex-1 bg-slate-100"></div>
+                        </div>
+
+                        {showFutureScale && (
+                            <div className="grid gap-3 transition-all animate-in fade-in slide-in-from-top-2">
+                                {futureDays.map((day: PontoDiarioRelatorio, idx) => (
+                                    <TimeMirrorDailyCard
+                                        key={`future-${idx}`}
+                                        day={day}
+                                        canViewAll={canViewAll}
+                                        isFetchingRecord={isFetchingRecord}
+                                        selectedPontoId={selectedPontoId}
+                                        onClick={handleOpenRecord}
+                                        onDelete={isActionable && can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? handleDeleteById : undefined}
+                                        isActionable={isActionable}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

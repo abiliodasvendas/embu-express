@@ -1,5 +1,4 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useClientActions } from "@/hooks/business/useClientActions";
@@ -15,13 +14,11 @@ interface ClientListProps {
 
 const ClientMobileItem = ({
   client,
-  index,
   onEdit,
   onDelete,
   onToggleStatus,
 }: {
   client: Client;
-  index: number;
   onEdit: (client: Client) => void;
   onDelete: (client: Client) => void;
   onToggleStatus: (client: Client) => void;
@@ -31,23 +28,25 @@ const ClientMobileItem = ({
   const navigate = useNavigate();
 
   return (
-    <MobileActionItem actions={actions} showHint={index === 0}>
-      <div
-        onClick={() => navigate(`/clientes/${client.id}`)}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform relative cursor-pointer"
-      >
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="min-w-0 flex-1 pr-16 text-left">
-            <p className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
-              {client.nome_fantasia}
-            </p>
-          </div>
-          <StatusBadge status={client.ativo} className="absolute top-4 right-4" />
+    <div
+      onClick={() => navigate(`/clientes/${client.id}`)}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform relative cursor-pointer"
+    >
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="min-w-0 flex-1 text-left">
+          <p className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
+            {client.nome_fantasia}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <StatusBadge status={client.ativo} />
+          <ActionsDropdown actions={actions} />
         </div>
       </div>
-    </MobileActionItem>
+    </div>
   );
 };
+
 
 const ClientTableRow = ({
   client,
@@ -86,11 +85,10 @@ export function ClientList({ clients, onEdit, onDelete, onToggleStatus }: Client
     <ResponsiveDataList
       data={clients}
       mobileContainerClassName="space-y-3"
-      mobileItemRenderer={(client, index) => (
+      mobileItemRenderer={(client) => (
         <ClientMobileItem
           key={client.id}
           client={client}
-          index={index}
           onEdit={onEdit}
           onDelete={onDelete}
           onToggleStatus={onToggleStatus}

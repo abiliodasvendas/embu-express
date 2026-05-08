@@ -1,5 +1,4 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useEmpresaActions } from "@/hooks/business/useEmpresaActions";
@@ -16,13 +15,11 @@ interface EmpresaListProps {
 
 const EmpresaMobileItem = ({
   empresa,
-  index,
   onEdit,
   onToggleStatus,
   onDelete,
 }: {
   empresa: Empresa;
-  index: number;
   onEdit: (empresa: Empresa) => void;
   onToggleStatus: (empresa: Empresa) => void;
   onDelete: (empresa: Empresa) => void;
@@ -30,40 +27,41 @@ const EmpresaMobileItem = ({
   const actions = useEmpresaActions({ empresa, onEdit, onToggleStatus, onDelete });
 
   return (
-    <MobileActionItem actions={actions as ActionItem[]} showHint={index === 0}>
-      <div
-        onClick={() => onEdit(empresa)}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
-      >
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="flex items-center gap-3 pr-20">
-
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
-                {empresa.nome_fantasia}
-              </h3>
-              {empresa.razao_social && (
-                <p className="text-[10px] text-gray-400 mt-1 line-clamp-2 leading-tight">{empresa.razao_social}</p>
-              )}
-            </div>
+    <div
+      onClick={() => onEdit(empresa)}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
+    >
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-gray-900 text-sm line-clamp-2 break-words leading-tight">
+              {empresa.nome_fantasia}
+            </h3>
+            {empresa.razao_social && (
+              <p className="text-[10px] text-gray-400 mt-1 line-clamp-2 leading-tight">{empresa.razao_social}</p>
+            )}
           </div>
-          <StatusBadge status={empresa.ativo} className="absolute top-4 right-4" />
         </div>
-
-        <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t border-gray-50">
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-              CNPJ
-            </p>
-            <p className="font-medium text-gray-700 text-xs text-left">
-              {empresa.cnpj ? cnpjMask(empresa.cnpj) : "-"}
-            </p>
-          </div>
+        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <StatusBadge status={empresa.ativo} />
+          <ActionsDropdown actions={actions as ActionItem[]} />
         </div>
       </div>
-    </MobileActionItem>
+
+      <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t border-gray-50">
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+            CNPJ
+          </p>
+          <p className="font-medium text-gray-700 text-xs text-left">
+            {empresa.cnpj ? cnpjMask(empresa.cnpj) : "-"}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
+
 
 const EmpresaTableRow = ({
   empresa,
@@ -119,11 +117,10 @@ export function EmpresaList({
     <ResponsiveDataList
       data={empresas}
       mobileContainerClassName="space-y-3"
-      mobileItemRenderer={(empresa, index) => (
+      mobileItemRenderer={(empresa) => (
         <EmpresaMobileItem
           key={empresa.id}
           empresa={empresa}
-          index={index}
           onEdit={onEdit}
           onToggleStatus={onToggleStatus}
           onDelete={onDelete}

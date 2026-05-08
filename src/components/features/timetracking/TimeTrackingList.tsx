@@ -70,6 +70,11 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
   };
 
   const openDetails = (record: RegistroPonto) => {
+    if (!record.entrada_hora) {
+      handleEdit(record);
+      return;
+    }
+
     openTimeRecordDetailsDialog({
       record,
       onEdit: handleEdit,

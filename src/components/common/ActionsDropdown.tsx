@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ActionItem } from "@/types/actions";
 import { MoreVertical } from "lucide-react";
+import { useIsMobile } from "@/hooks/ui/use-mobile";
 
 interface ActionsDropdownProps {
   actions: ActionItem[];
@@ -26,6 +27,8 @@ export function ActionsDropdown({
   disabled = false,
   children,
 }: ActionsDropdownProps) {
+  const isMobile = useIsMobile();
+  
   // Filter out hidden actions
   const visibleActions = actions.filter((a) => !a.hidden);
 
@@ -42,7 +45,8 @@ export function ActionsDropdown({
     );
   }
 
-  return (
+  // --- Render logic for Desktop ---
+  const renderDesktop = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {children || (
@@ -90,4 +94,12 @@ export function ActionsDropdown({
       </DropdownMenuContent>
     </DropdownMenu>
   );
+
+  // --- Render logic for Mobile ---
+  // Note: Per user request, we are using Dropdown for both mobile and desktop for now.
+  // In the future, this can be easily switched to a Sheet/Drawer.
+  const renderMobile = () => renderDesktop();
+
+  return isMobile ? renderMobile() : renderDesktop();
 }
+

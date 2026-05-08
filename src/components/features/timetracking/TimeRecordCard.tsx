@@ -1,5 +1,4 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -66,7 +65,7 @@ export function TimeRecordCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                         <Badge className={cn("text-[8px] hover:bg-inherit uppercase font-black px-1.5 h-5 rounded-md border-none shrink-0", config.bg, config.color)}>
                             {config.label}
                         </Badge>
@@ -111,15 +110,6 @@ export function TimeRecordCard({
         </Card>
     );
 
-    if (!showActions || actions.length === 0) {
-        return <div className="h-full">{cardContent}</div>;
-    }
-
-    return (
-        <div className="h-full">
-            <MobileActionItem actions={actions} className="rounded-2xl overflow-hidden shadow-sm">
-                {cardContent}
-            </MobileActionItem>
-        </div>
-    );
+    return <div className="h-full">{cardContent}</div>;
 }
+

@@ -1,5 +1,4 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -22,13 +21,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 const FeriadoMobileItem = ({
     feriado,
-    index,
     onEdit,
     onDelete,
     canEdit,
 }: {
     feriado: Feriado;
-    index: number;
     onEdit: (f: Feriado) => void;
     onDelete: (id: number, desc: string) => void;
     canEdit: boolean;
@@ -51,25 +48,27 @@ const FeriadoMobileItem = ({
     ];
 
     return (
-        <MobileActionItem actions={actions} showHint={index === 0}>
-            <div
-                onClick={() => onEdit(feriado)}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
-            >
-                <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-gray-900 text-sm line-clamp-1 leading-tight">
-                            {feriado.descricao}
-                        </h3>
-                        <p className="text-xs text-blue-600 font-medium mt-1">
-                            {new Date(feriado.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
-                        </p>
-                    </div>
+        <div
+            onClick={() => onEdit(feriado)}
+            className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
+        >
+            <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-gray-900 text-sm line-clamp-1 leading-tight">
+                        {feriado.descricao}
+                    </h3>
+                    <p className="text-xs text-blue-600 font-medium mt-1">
+                        {new Date(feriado.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                    </p>
+                </div>
+                <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <ActionsDropdown actions={actions} />
                 </div>
             </div>
-        </MobileActionItem>
+        </div>
     );
 };
+
 
 const FeriadoTableRow = ({
     feriado,
@@ -227,11 +226,10 @@ export default function Feriados() {
                                 <ResponsiveDataList
                                     data={filteredFeriados}
                                     mobileContainerClassName="space-y-3"
-                                    mobileItemRenderer={(feriado: Feriado, index: number) => (
+                                    mobileItemRenderer={(feriado: Feriado) => (
                                         <FeriadoMobileItem
                                             key={feriado.id}
                                             feriado={feriado}
-                                            index={index}
                                             onEdit={handleEdit}
                                             onDelete={handleDelete}
                                             canEdit={canEdit}

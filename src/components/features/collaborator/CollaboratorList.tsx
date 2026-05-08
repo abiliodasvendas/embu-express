@@ -1,5 +1,4 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { StatusUsuario } from "@/types/enums";
@@ -24,13 +23,11 @@ const getAvatarStyles = (status: string) => {
 
 const CollaboratorMobileItem = ({
   collaborator,
-  index,
   onEdit,
   onStatusChange,
   onDelete,
 }: {
   collaborator: Usuario;
-  index: number;
   onEdit: (collaborator: Usuario) => void;
   onStatusChange: (collaborator: Usuario, newStatus: string) => void;
   onDelete: (collaborator: Usuario) => void;
@@ -39,60 +36,61 @@ const CollaboratorMobileItem = ({
   const navigate = useNavigate();
 
   return (
-    <MobileActionItem actions={actions} showHint={index === 0}>
-      <div
-        onClick={() => navigate(`/colaboradores/${collaborator.id}`)}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
-      >
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="flex items-center gap-3 pr-20">
-            {/* Added pr-20 to avoid overlap with absolute badge */}
-            <div className="relative">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(collaborator.status)}`}>
-                {collaborator.nome_completo.charAt(0)}
-              </div>
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-gray-900 text-sm break-words leading-tight">
-                {collaborator.nome_completo}
-              </h3>
+    <div
+      onClick={() => navigate(`/colaboradores/${collaborator.id}`)}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
+    >
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="relative">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarStyles(collaborator.status)}`}>
+              {collaborator.nome_completo.charAt(0)}
             </div>
           </div>
-          <StatusBadge status={collaborator.status} className="absolute top-4 right-4" />
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-gray-900 text-sm break-words leading-tight">
+              {collaborator.nome_completo}
+            </h3>
+          </div>
         </div>
-
-        <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t border-gray-50">
-          <div className="space-y-3">
-            <div>
-              <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-                Cargo
-              </p>
-              <p className="font-medium text-gray-700 text-xs text-left">
-                {collaborator.perfil?.nome.toUpperCase()}
-              </p>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {collaborator.links && collaborator.links.length > 0 && (
-              <div className="flex flex-col items-end">
-                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider text-right w-full">
-                  {(collaborator.links.length > 1) ? "Clientes" : "Cliente"}
-                </p>
-                <div className="flex flex-col gap-0.5 w-full">
-                  {collaborator.links.slice(0, 2).map((link) => (
-                    <p key={link.id} className="font-medium text-gray-700 text-[11px] text-right leading-tight truncate">
-                      {link.cliente?.nome_fantasia}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <StatusBadge status={collaborator.status} />
+          <ActionsDropdown actions={actions} />
         </div>
       </div>
-    </MobileActionItem>
+
+      <div className="grid grid-cols-2 gap-2 text-sm mt-3 pt-3 border-t border-gray-50">
+        <div className="space-y-3">
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+              Cargo
+            </p>
+            <p className="font-medium text-gray-700 text-xs text-left">
+              {collaborator.perfil?.nome.toUpperCase()}
+            </p>
+          </div>
+        </div>
+        <div className="space-y-3">
+          {collaborator.links && collaborator.links.length > 0 && (
+            <div className="flex flex-col items-end">
+              <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider text-right w-full">
+                {(collaborator.links.length > 1) ? "Clientes" : "Cliente"}
+              </p>
+              <div className="flex flex-col gap-0.5 w-full">
+                {collaborator.links.slice(0, 2).map((link) => (
+                  <p key={link.id} className="font-medium text-gray-700 text-[11px] text-right leading-tight truncate">
+                    {link.cliente?.nome_fantasia}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
+
 
 const CollaboratorTableRow = ({
   collaborator,
@@ -160,11 +158,10 @@ export function CollaboratorList({
     <ResponsiveDataList
       data={collaborators}
       mobileContainerClassName="space-y-3"
-      mobileItemRenderer={(collaborator, index) => (
+      mobileItemRenderer={(collaborator) => (
         <CollaboratorMobileItem
           key={collaborator.id}
           collaborator={collaborator}
-          index={index}
           onEdit={onEdit}
           onStatusChange={onStatusChange}
           onDelete={onDelete}

@@ -1,7 +1,7 @@
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { RegistroPonto } from "@/types/database";
-import { Edit2, Eye, Trash2 } from "lucide-react";
+import { Edit2, Eye, Trash2, PlusCircle } from "lucide-react";
 
 interface UseTimeRecordActionsProps {
   record: RegistroPonto;
@@ -31,16 +31,26 @@ export function useTimeRecordActions({
   }
 
   if (can(PERMISSIONS.PONTO.ADMIN_EDITAR)) {
-    actions.push({
-      label: "Editar registro",
-      icon: <Edit2 className="h-4 w-4" />,
-      onClick: () => onEdit(record),
-      swipeColor: "bg-blue-600",
-      drawerClass: "text-blue-600",
-    });
+    if (!record.entrada_hora) {
+      actions.push({
+        label: "Incluir registro",
+        icon: <PlusCircle className="h-4 w-4" />,
+        onClick: () => onEdit(record),
+        swipeColor: "bg-emerald-600",
+        drawerClass: "text-emerald-600",
+      });
+    } else {
+      actions.push({
+        label: "Editar registro",
+        icon: <Edit2 className="h-4 w-4" />,
+        onClick: () => onEdit(record),
+        swipeColor: "bg-blue-600",
+        drawerClass: "text-blue-600",
+      });
+    }
   }
 
-  if (can(PERMISSIONS.PONTO.ADMIN_DELETAR)) {
+  if (can(PERMISSIONS.PONTO.ADMIN_DELETAR) && record.entrada_hora) {
     actions.push({
       label: "Excluir",
       icon: <Trash2 className="h-4 w-4" />,
@@ -53,3 +63,4 @@ export function useTimeRecordActions({
 
   return actions;
 }
+

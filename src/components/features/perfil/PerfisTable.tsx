@@ -2,7 +2,6 @@ import { Perfil } from "@/types/database";
 import { Shield, ShieldAlert } from "lucide-react";
 import { PROTECTED_ROLES_NAMES } from "@/constants/permissions.enum";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { usePerfilActions } from "@/hooks/business/usePerfilActions";
 
@@ -14,12 +13,10 @@ interface PerfisTableProps {
 
 const PerfilMobileItem = ({
     perfil,
-    index,
     onEdit,
     onDelete,
 }: {
     perfil: Perfil;
-    index: number;
     onEdit: (perfil: Perfil) => void;
     onDelete: (perfil: Perfil) => void;
 }) => {
@@ -27,33 +24,35 @@ const PerfilMobileItem = ({
     const isProtected = PROTECTED_ROLES_NAMES.includes(perfil.nome as any);
 
     return (
-        <MobileActionItem actions={actions} showHint={index === 0}>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 relative">
-                <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="min-w-0 pr-10">
-                        <div className="flex items-center gap-2">
-                            <Shield className={`h-4 w-4 shrink-0 ${isProtected ? 'text-blue-500' : 'text-slate-400'}`} />
-                            <p className="font-bold text-gray-900 text-sm break-words leading-tight capitalize">
-                                {perfil.nome.replace(/_/g, ' ')}
-                            </p>
-                            {isProtected && (
-                                <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold shrink-0">
-                                    SISTEMA
-                                </span>
-                            )}
-                        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 relative">
+            <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                        <Shield className={`h-4 w-4 shrink-0 ${isProtected ? 'text-blue-500' : 'text-slate-400'}`} />
+                        <p className="font-bold text-gray-900 text-sm break-words leading-tight capitalize">
+                            {perfil.nome.replace(/_/g, ' ')}
+                        </p>
+                        {isProtected && (
+                            <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold shrink-0">
+                                SISTEMA
+                            </span>
+                        )}
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">ID: #{perfil.id}</span>
                 </div>
-                <p className="text-sm text-gray-600 mb-3 truncate">{perfil.descricao || "Sem descrição"}</p>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100 w-fit">
-                    <span className="text-xs font-bold text-slate-400">COLABORADORES ATIVOS:</span>
-                    <span className="text-xs font-black text-blue-600">{perfil.total_colaboradores || 0}</span>
+                <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">ID: #{perfil.id}</span>
+                    <ActionsDropdown actions={actions} />
                 </div>
             </div>
-        </MobileActionItem>
+            <p className="text-sm text-gray-600 mb-3 truncate">{perfil.descricao || "Sem descrição"}</p>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100 w-fit">
+                <span className="text-xs font-bold text-slate-400">COLABORADORES ATIVOS:</span>
+                <span className="text-xs font-black text-blue-600">{perfil.total_colaboradores || 0}</span>
+            </div>
+        </div>
     );
 };
+
 
 const PerfilTableRow = ({
     perfil,
@@ -110,11 +109,10 @@ export function PerfisTable({ perfis, onEdit, onDelete }: PerfisTableProps) {
         <ResponsiveDataList
             data={perfis}
             mobileContainerClassName="space-y-3"
-            mobileItemRenderer={(perfil, index) => (
+            mobileItemRenderer={(perfil) => (
                 <PerfilMobileItem
                     key={perfil.id}
                     perfil={perfil}
-                    index={index}
                     onEdit={onEdit}
                     onDelete={onDelete}
                 />

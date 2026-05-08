@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { useTimeRecordActions } from "@/hooks/business/useTimeRecordActions";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -5,9 +6,9 @@ import { RegistroPonto } from "@/types/database";
 import { ManagementStatus } from "@/types/enums";
 import { getManagementStatus } from "@/utils/ponto";
 import { Card } from "@/components/ui/card";
-
 import { TimeRecordCard } from "./TimeRecordCard";
 import { safeCloseDialog } from "@/hooks";
+import { useManualAbsences } from "@/hooks/api/useManualAbsences";
 
 interface TimeTrackingListProps {
   records: RegistroPonto[];
@@ -24,14 +25,29 @@ interface TimeTrackingItemProps {
   onDetails: (record: RegistroPonto) => void;
   onEdit: (record: RegistroPonto) => void;
   onDelete: (record: RegistroPonto) => void;
+  onMarkAbsent: (record: RegistroPonto) => void;
+  isManuallyAbsent: boolean;
 }
 
-function TimeTrackingItem({ record, date, showClient, showActions = true, onDetails, onEdit, onDelete }: TimeTrackingItemProps) {
+function TimeTrackingItem({ 
+  record, 
+  date, 
+  showClient, 
+  showActions = true, 
+  onDetails, 
+  onEdit, 
+  onDelete,
+  onMarkAbsent,
+  isManuallyAbsent
+}: TimeTrackingItemProps) {
   const actions = useTimeRecordActions({
     record,
+    date,
     onDetails,
     onEdit,
-    onDelete
+    onDelete,
+    onMarkAbsent,
+    isManuallyAbsent
   });
 
   return (
@@ -48,9 +64,11 @@ function TimeTrackingItem({ record, date, showClient, showActions = true, onDeta
   );
 }
 
+
 export function TimeTrackingList({ records, date, showClient = false, showActions = true }: TimeTrackingListProps) {
   const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { mutateAsync: deletePonto } = useDeletePonto();
+  const { manualAbsenceIds, addManualAbsence, removeManualAbsence } = useManualAbsences(date);
 
   const handleEdit = (record: RegistroPonto) => {
     openTimeRecordDialog({ record });
@@ -82,6 +100,15 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
     });
   };
 
+  const handleMarkAbsent = async (record: RegistroPonto) => {
+    const isAbsent = manualAbsenceIds.includes(record.usuario_id!);
+    if (isAbsent) {
+      await removeManualAbsence.mutateAsync(record.usuario_id!);
+    } else {
+      await addManualAbsence.mutateAsync(record.usuario_id!);
+    }
+  };
+
   const statusOrder = [
     { key: ManagementStatus.LATE, label: "Atrasados" },
     { key: ManagementStatus.OVERTIME, label: "Hora Extra" },
@@ -92,12 +119,18 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
   ];
 
   // Group records using the pre-calculated mgtStatus
-  const grouped = records.reduce((acc, record: any) => {
-    const status = record.mgtStatus || getManagementStatus(record, date);
+  const grouped = useMemo(() => records.reduce((acc, record: any) => {
+    let status = record.mgtStatus || getManagementStatus(record, date);
+    
+    // Override para ausência manual (apenas se estiver atrasado ou aguardando)
+    if ((status === ManagementStatus.LATE || status === ManagementStatus.WAITING) && manualAbsenceIds.includes(record.usuario_id)) {
+      status = ManagementStatus.ABSENT;
+    }
+
     if (!acc[status]) acc[status] = [];
     acc[status].push(record);
     return acc;
-  }, {} as Record<string, RegistroPonto[]>);
+  }, {} as Record<string, RegistroPonto[]>), [records, date, manualAbsenceIds]);
 
   return (
     <div className="space-y-12">
@@ -125,6 +158,8 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
                     onDetails={openDetails}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onMarkAbsent={handleMarkAbsent}
+                    isManuallyAbsent={manualAbsenceIds.includes(record.usuario_id!)}
                   />
                 ))}
               </div>

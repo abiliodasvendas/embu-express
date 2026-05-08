@@ -32,4 +32,15 @@ export const pontoApi = {
 
   getById: (id: number): Promise<RegistroPonto> =>
     apiClient.get(`/pontos/${id}`).then(res => res.data),
+
+  // AUSÊNCIAS MANUAIS (CACHE EM MEMÓRIA)
+  listManualAbsences: (date: string): Promise<string[]> =>
+    apiClient.get(`/pontos/manual-absence`, { params: { date } }).then(res => res.data),
+
+  addManualAbsence: (date: string, userId: string): Promise<void> =>
+    apiClient.post(`/pontos/manual-absence`, { date, userId }).then(res => res.data),
+
+  removeManualAbsence: (date: string, userId: string): Promise<void> =>
+    apiClient.delete(`/pontos/manual-absence`, { data: { date, userId } }).then(res => res.data),
 };
+

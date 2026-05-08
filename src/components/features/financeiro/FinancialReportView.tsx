@@ -424,28 +424,7 @@ export function FinancialReportView({
                           )}
                         </div>
 
-                        {(resumo.data_inicio || resumo.data_fim) && (
-                          <div className="flex items-center gap-1.5 text-[10px] md:text-[11px] text-gray-400 font-bold bg-white/50 w-fit px-2 py-1 rounded-lg border border-gray-100/50">
-                            <Calendar className="h-3 w-3" />
-                            <span>
-                              {resumo.data_inicio &&
-                                new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
-                                new Date(resumo.data_inicio + 'T12:00:00').getUTCFullYear() === selectedYear &&
-                                `Início: ${resumo.data_inicio.split("-").reverse().join("/")}`
-                              }
-                              {resumo.data_inicio && resumo.data_fim &&
-                                new Date(resumo.data_inicio + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
-                                new Date(resumo.data_fim + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
-                                " · "
-                              }
-                              {resumo.data_fim &&
-                                new Date(resumo.data_fim + 'T12:00:00').getUTCMonth() + 1 === selectedMonth &&
-                                new Date(resumo.data_fim + 'T12:00:00').getUTCFullYear() === selectedYear &&
-                                `Término: ${resumo.data_fim.split("-").reverse().join("/")}`
-                              }
-                            </span>
-                          </div>
-                        )}
+
                       </div>
                     </div>
                     <div className="text-left sm:text-right bg-emerald-50/50 sm:bg-transparent p-4 sm:p-0 rounded-2xl border border-emerald-100/20 sm:border-none shrink-0">

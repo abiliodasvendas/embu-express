@@ -410,7 +410,7 @@ export function FinancialReportView({
                                 const dtFim = resumo.data_fim ? new Date(resumo.data_fim + 'T12:00:00') : null;
                                 if (dtIni && dtIni.getUTCMonth() + 1 === selectedMonth && dtIni.getUTCFullYear() === selectedYear) return "(Início)";
                                 if (dtFim && dtFim.getUTCMonth() + 1 === selectedMonth && dtFim.getUTCFullYear() === selectedYear) return "(Término)";
-                                return "(Ausências)";
+                                return "(Sem Atividade)";
                               })()}
                             </Badge>
                           )}

@@ -345,7 +345,7 @@ export const messages = {
     confirmacao: {
       titulo: "Finalizar Fechamento",
       descricao: "Você está finalizando este fechamento e marcando-o como pago. Os valores atuais serão salvos de forma permanente para este mês. Deseja continuar?",
-      botao: "Finalizar e Pagar",
+      botao: "Confirmar Pagamento",
       adiantamento: {
         titulo: "Confirmar Adiantamento",
         descricao: "Deseja confirmar o pagamento do adiantamento? Ao confirmar, este valor será descontado automaticamente do fechamento final.",

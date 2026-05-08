@@ -174,8 +174,8 @@ export function FinancialReportView({
         ) : extrato ? (
           <div className="animate-in fade-in duration-500 space-y-8">
             {/* Status e Ações */}
-            <div className="flex items-center justify-between px-2">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 gap-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <Badge
                   className={cn(
                     "rounded-full px-4 py-1.5 font-bold text-xs uppercase tracking-widest",
@@ -199,11 +199,11 @@ export function FinancialReportView({
 
               {extrato.status === FINANCEIRO_STATUS.RASCUNHO &&
                 can(PERMISSIONS.FINANCEIRO.PAGAR) && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                     {!extrato.adiantamento_confirmado ? (
                       <Button
                         variant="outline"
-                        className="rounded-2xl border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold h-11 px-6 shadow-sm transition-all"
+                        className="rounded-2xl border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold h-11 px-6 shadow-sm transition-all w-full sm:w-auto"
                         disabled={confirmarAdiantamentoMutation.isPending}
                         onClick={() => {
                           const valorTotalAdiantamento = extrato.totais?.total_adiantamento ??
@@ -225,12 +225,12 @@ export function FinancialReportView({
                         }}
                       >
                         <Wallet className="h-4 w-4 mr-2" />
-                        {getMessage("financeiro.confirmacao.adiantamento.botao")}
+                        {getMessage("financeiro.confirmacao.adiantamento.titulo")}
                       </Button>
                     ) : (
                       <Button
                         variant="ghost"
-                        className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 font-bold h-11 px-6 transition-all"
+                        className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 font-bold h-11 px-6 transition-all w-full sm:w-auto"
                         disabled={desconfirmarAdiantamentoMutation.isPending}
                         onClick={() => {
                           openConfirmationDialog({
@@ -255,7 +255,7 @@ export function FinancialReportView({
                     )}
 
                     <Button
-                      className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 px-8 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5"
+                      className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 px-8 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 w-full sm:w-auto"
                       disabled={handlePaymentMutation.isPending}
                       onClick={() => {
                         openConfirmationDialog({
@@ -274,17 +274,17 @@ export function FinancialReportView({
                       }}
                     >
                       <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Finalizar e Pagar
+                      {getMessage("financeiro.confirmacao.botao")}
                     </Button>
                   </div>
                 )}
 
               {extrato.status === FINANCEIRO_STATUS.PAGO &&
                 can(PERMISSIONS.FINANCEIRO.PAGAR) && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                     <Button
                       variant="ghost"
-                      className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 font-bold h-11 px-6 transition-all"
+                      className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 font-bold h-11 px-6 transition-all w-full sm:w-auto"
                       disabled={desfazerPagamentoMutation.isPending}
                       onClick={() => {
                         openConfirmationDialog({
@@ -458,7 +458,7 @@ export function FinancialReportView({
                     </div>
                   </div>
 
-                  <CardContent className="p-10">
+                  <CardContent className="px-3 sm:px-10 py-10">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                       {/* Coluna Esquerda: Composição do Cálculo */}
                       <div className="space-y-8">

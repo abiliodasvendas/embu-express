@@ -870,7 +870,7 @@ export function CollaboratorTurnDialog({
                       render={({ field }) => (
                         <MoneyInput
                           field={field}
-                          label="Salário Base"
+                          label="Valor Contrato"
                           required={true}
                           labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
                         />

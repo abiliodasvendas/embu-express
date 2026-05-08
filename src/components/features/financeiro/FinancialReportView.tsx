@@ -625,14 +625,14 @@ export function FinancialReportView({
                         {(extrato.ocorrencias as Ocorrencia[]).filter(
                           (o) =>
                             o.colaborador_cliente_id === resumo.id_vinculo &&
-                            o.impacto_financeiro,
+                            (o.impacto_financeiro || o.is_virtual),
                         ).length > 0 ? (
                           <div className="space-y-4">
                             {(extrato.ocorrencias as Ocorrencia[])
                               .filter(
                                 (o) =>
                                   o.colaborador_cliente_id ===
-                                  resumo.id_vinculo && o.impacto_financeiro,
+                                  resumo.id_vinculo && (o.impacto_financeiro || o.is_virtual),
                               )
                               .map((occ, oIdx) => (
                                 <div
@@ -657,8 +657,13 @@ export function FinancialReportView({
                                       )}
                                     </div>
                                     <div>
-                                      <p className="text-sm font-black text-gray-800 tracking-tight">
-                                        {occ.tipo?.descricao}
+                                      <p className="text-sm font-black text-gray-800 tracking-tight flex items-center gap-2">
+                                        {occ.tipo?.descricao || occ.observacao}
+                                        {occ.is_virtual && (
+                                          <Badge variant="outline" className="text-[8px] font-black uppercase tracking-tighter h-4 px-1.5 opacity-50">
+                                            Sistema
+                                          </Badge>
+                                        )}
                                       </p>
                                       {occ.observacao && (
                                         <p className="text-[11px] text-gray-500 italic font-medium leading-tight sm:max-w-[250px] mt-0.5">

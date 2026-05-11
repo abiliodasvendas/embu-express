@@ -72,6 +72,9 @@ export default function TimeTracking() {
                             records={vm.filteredRecords}
                             date={vm.date}
                             showClient={true}
+                            manualAbsenceIds={vm.manualAbsenceIds}
+                            addManualAbsence={vm.addManualAbsence}
+                            removeManualAbsence={vm.removeManualAbsence}
                         />
                     )}
                 </div>

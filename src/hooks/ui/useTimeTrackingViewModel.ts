@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { useTimeRecords } from '../api/useTimeRecords';
 import { usePublicTimeTracking, usePublicCollaborators } from '../api/usePublicClient';
 import { safeCloseDialog } from './useDialogClose';
+import { useManualAbsences } from '../api/useManualAbsences';
 
 interface UseTimeTrackingViewModelProps {
     uuid?: string; // If provided, uses public fetches
@@ -66,13 +67,16 @@ export function useTimeTrackingViewModel({
         searchTerm: searchTerm
     });
 
+    // Manual Absences
+    const { manualAbsenceIds, addManualAbsence, removeManualAbsence, isLoading: isManualAbsenceLoading } = useManualAbsences(date);
+
     // Public Fetch
     const { data: publicRecords, isLoading: isPublicLoading, isFetching: isPublicFetching, refetch: refetchPublic } = usePublicTimeTracking(uuid, formattedDateString);
     const { data: publicCollabs } = usePublicCollaborators(uuid);
 
     const records = uuid ? (publicRecords || []) : (externalRecords || adminRecords);
     const collaborators = uuid ? (publicCollabs as Usuario[]) : externalCollaborators;
-    const isLoading = uuid ? isPublicLoading : isAdminLoading;
+    const isLoading = uuid ? (isPublicLoading || isManualAbsenceLoading) : (isAdminLoading || isManualAbsenceLoading);
     const refetch = uuid ? refetchPublic : refetchAdmin;
 
     // 4. Mutations (Admin Only)
@@ -84,7 +88,8 @@ export function useTimeTrackingViewModel({
     const { processedRecords, uniqueShifts } = useTimeTrackingBusiness({
         records,
         date,
-        collaborators
+        collaborators,
+        manualAbsenceIds
     });
 
     const activeParams = ["search", "usuario", "cliente", "turno"];
@@ -211,11 +216,12 @@ export function useTimeTrackingViewModel({
         dynamicKpiCounts,
         uniqueShifts,
         collaborators,
+        manualAbsenceIds,
 
         // State
         isLoading,
         isFetching: uuid ? isPublicFetching : isAdminFetching,
-        isActionLoading: createRecord.isPending || updateRecord.isPending || deleteRecord.isPending,
+        isActionLoading: createRecord.isPending || updateRecord.isPending || deleteRecord.isPending || addManualAbsence.isPending || removeManualAbsence.isPending,
         searchTerm,
         activeKpiFilter,
         selectedUsuario,
@@ -238,6 +244,8 @@ export function useTimeTrackingViewModel({
         handleEdit,
         handleDelete,
         handleOpenDetails,
+        addManualAbsence,
+        removeManualAbsence,
         setPageTitle,
         refetch
     };

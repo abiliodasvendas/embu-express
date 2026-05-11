@@ -26,8 +26,8 @@ export function TimeRecordCard({
     showActions = true,
     showClient = false
 }: TimeRecordCardProps) {
-    const mStatus = getManagementStatus(record, date);
-    const config = PONTO_STATUS_UI_CONFIG[mStatus];
+    const mStatus = (record as any).mgtStatus || getManagementStatus(record, date);
+    const config = PONTO_STATUS_UI_CONFIG[mStatus as ManagementStatus];
 
     const cardContent = (
         <Card

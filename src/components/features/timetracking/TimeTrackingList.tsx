@@ -8,13 +8,15 @@ import { getManagementStatus } from "@/utils/ponto";
 import { Card } from "@/components/ui/card";
 import { TimeRecordCard } from "./TimeRecordCard";
 import { safeCloseDialog } from "@/hooks";
-import { useManualAbsences } from "@/hooks/api/useManualAbsences";
 
 interface TimeTrackingListProps {
   records: RegistroPonto[];
   date: Date;
   showClient?: boolean;
   showActions?: boolean;
+  manualAbsenceIds?: string[];
+  addManualAbsence?: any;
+  removeManualAbsence?: any;
 }
 
 interface TimeTrackingItemProps {
@@ -65,10 +67,17 @@ function TimeTrackingItem({
 }
 
 
-export function TimeTrackingList({ records, date, showClient = false, showActions = true }: TimeTrackingListProps) {
+export function TimeTrackingList({ 
+  records, 
+  date, 
+  showClient = false, 
+  showActions = true,
+  manualAbsenceIds = [],
+  addManualAbsence,
+  removeManualAbsence
+}: TimeTrackingListProps) {
   const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { mutateAsync: deletePonto } = useDeletePonto();
-  const { manualAbsenceIds, addManualAbsence, removeManualAbsence } = useManualAbsences(date);
 
   const handleEdit = (record: RegistroPonto) => {
     openTimeRecordDialog({ record });
@@ -101,6 +110,8 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
   };
 
   const handleMarkAbsent = async (record: RegistroPonto) => {
+    if (!addManualAbsence || !removeManualAbsence) return;
+
     const isAbsent = manualAbsenceIds.includes(record.usuario_id!);
     if (isAbsent) {
       await removeManualAbsence.mutateAsync(record.usuario_id!);
@@ -118,19 +129,14 @@ export function TimeTrackingList({ records, date, showClient = false, showAction
     { key: ManagementStatus.DONE, label: "Finalizado" }
   ];
 
-  // Group records using the pre-calculated mgtStatus
+  // Group records using the pre-calculated mgtStatus (already includes manual override from ViewModel)
   const grouped = useMemo(() => records.reduce((acc, record: any) => {
-    let status = record.mgtStatus || getManagementStatus(record, date);
+    const status = record.mgtStatus || getManagementStatus(record, date);
     
-    // Override para ausência manual (apenas se estiver atrasado ou aguardando)
-    if ((status === ManagementStatus.LATE || status === ManagementStatus.WAITING) && manualAbsenceIds.includes(record.usuario_id)) {
-      status = ManagementStatus.ABSENT;
-    }
-
     if (!acc[status]) acc[status] = [];
     acc[status].push(record);
     return acc;
-  }, {} as Record<string, RegistroPonto[]>), [records, date, manualAbsenceIds]);
+  }, {} as Record<string, RegistroPonto[]>), [records, date]);
 
   return (
     <div className="space-y-12">

@@ -90,6 +90,7 @@ export default function PublicTimeTracking() {
                             records={vm.filteredRecords}
                             date={vm.date}
                             showActions={false}
+                            manualAbsenceIds={vm.manualAbsenceIds}
                         />
                     )}
                 </div>

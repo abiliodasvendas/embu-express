@@ -41,8 +41,11 @@ export function useTimeRecordActions({
   }
 
   // 2. Marcar Sem Atividade / Voltar para Atrasados
-  const mStatus = getManagementStatus(record, date);
-  const showManualAction = isManuallyAbsent || mStatus === ManagementStatus.LATE;
+  const mStatus = (record as any).mgtStatus || getManagementStatus(record, date);
+  const showManualAction = isManuallyAbsent || 
+    mStatus === ManagementStatus.LATE || 
+    mStatus === ManagementStatus.ABSENT || 
+    mStatus === ManagementStatus.WAITING;
 
   if (can(PERMISSIONS.PONTO.ADMIN_EDITAR) && !record.entrada_hora && onMarkAbsent && showManualAction) {
     actions.push({

@@ -7,21 +7,29 @@ interface UseTimeTrackingBusinessProps {
     records: RegistroPonto[] | undefined;
     date: Date;
     collaborators?: Usuario[];
+    manualAbsenceIds?: string[];
 }
 
-export function useTimeTrackingBusiness({ records, date, collaborators }: UseTimeTrackingBusinessProps) {
+export function useTimeTrackingBusiness({ records, date, collaborators, manualAbsenceIds = [] }: UseTimeTrackingBusinessProps) {
     // 1. Process records with unified management status and enriched collaborator data
     const processedRecords = useMemo(() => {
         return records?.map(r => {
             const collaborator = collaborators?.find(c => c.id === r.usuario_id);
+            
+            // Se o usuário está marcado manualmente como ausente, forçamos o status ABSENT
+            const isManuallyAbsent = manualAbsenceIds.includes(r.usuario_id);
+            const status = isManuallyAbsent 
+                ? ManagementStatus.ABSENT 
+                : getManagementStatus(r, date) as ManagementStatus;
+
             return {
                 ...r,
                 // Ensure the full collaborator object (with links) is available for filtering
                 usuario: collaborator || r.usuario, 
-                mgtStatus: getManagementStatus(r, date) as ManagementStatus
+                mgtStatus: status
             };
         }) || [];
-    }, [records, date, collaborators]);
+    }, [records, date, collaborators, manualAbsenceIds]);
 
     // 2. Calculate KPI counts
     const kpiCounts = useMemo(() => {

@@ -69,8 +69,8 @@ export function TimeRecordCard({
 
                     <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                         {isManual && mStatus === ManagementStatus.ABSENT && (
-                            <Badge className="text-[8px] bg-emerald-100 text-emerald-700 hover:bg-emerald-100 uppercase font-black px-1.5 h-5 rounded-md border-none shrink-0">
-                                CONFIRMADO
+                            <Badge className="text-[8px] bg-slate-100 text-slate-500 hover:bg-slate-100 uppercase font-black px-1.5 h-5 rounded-md border-none shrink-0">
+                                MANUAL
                             </Badge>
                         )}
                         <Badge className={cn("text-[8px] hover:bg-inherit uppercase font-black px-1.5 h-5 rounded-md border-none shrink-0", config.bg, config.color)}>

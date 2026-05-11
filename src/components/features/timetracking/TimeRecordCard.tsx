@@ -48,12 +48,12 @@ export function TimeRecordCard({
                     <div className="flex items-center gap-3 min-w-0">
                         <Avatar className="h-10 w-10 border shadow-sm shrink-0">
                             <AvatarImage src={record.usuario?.foto_url} />
-                            <AvatarFallback className="bg-primary/5 text-primary text-xs font-bold uppercase">
+                            <AvatarFallback className={cn("text-primary text-xs font-bold uppercase", config.color)}>
                                 {record.usuario?.nome_completo?.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
                             </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                            <h3 title={record.usuario?.nome_completo} className="font-bold text-gray-900 leading-tight line-clamp-1">{record.usuario?.nome_completo}</h3>
+                            <h3 title={record.usuario?.nome_completo} className="font-bold text-gray-900 leading-tight">{record.usuario?.nome_completo}</h3>
                             <div className="flex flex-col gap-0.5 mt-0.5">
                                 {showClient && record.cliente?.nome_fantasia && (
                                     <p className="text-[10px] font-semibold text-gray-900 uppercase tracking-wide">
@@ -61,21 +61,23 @@ export function TimeRecordCard({
                                     </p>
                                 )}
                                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
-                                    Turno: {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--:--"} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--:--"}
+                                    {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--:--"} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--:--"}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                        {isManual && mStatus === ManagementStatus.ABSENT && (
-                            <Badge className="text-[8px] bg-slate-100 text-slate-500 hover:bg-slate-100 uppercase font-black px-1.5 h-5 rounded-md border-none shrink-0">
-                                MANUAL
+                    <div className="flex items-start gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex flex-col items-end gap-1">
+                            <Badge className={cn("text-[8px] hover:bg-inherit uppercase font-black px-1.5 h-4.5 rounded-md border-none shrink-0", config.bg, config.color)}>
+                                {config.label}
                             </Badge>
-                        )}
-                        <Badge className={cn("text-[8px] hover:bg-inherit uppercase font-black px-1.5 h-5 rounded-md border-none shrink-0", config.bg, config.color)}>
-                            {config.label}
-                        </Badge>
+                            {isManual && mStatus === ManagementStatus.ABSENT && (
+                                <Badge className="text-[8px] bg-slate-100 text-slate-500 hover:bg-slate-100 uppercase font-black px-1.5 h-4.5 rounded-md border-none shrink-0">
+                                    MANUAL
+                                </Badge>
+                            )}
+                        </div>
                         {showActions && actions.length > 0 && <ActionsDropdown actions={actions} />}
                     </div>
                 </div>

@@ -357,7 +357,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
                             className="w-full h-11 rounded-xl font-black shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] bg-blue-600 hover:bg-blue-700 text-white"
                         >
                             <Edit2 className="w-4 h-4 mr-2" />
-                            {(record as any).ausente ? "Incluir Registro" : "Editar Registro"}
+                            {(record as any).ausente ? "Registrar Atividade" : "Editar Atividade"}
                         </Button>
                     </Can>
                 </div>

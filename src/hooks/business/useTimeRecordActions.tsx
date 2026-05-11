@@ -54,12 +54,12 @@ export function useTimeRecordActions({
     });
   }
 
-  // 3. Incluir/Editar Registro
+  // 3. Registrar/Editar atividade
   if (can(PERMISSIONS.PONTO.ADMIN_EDITAR)) {
 
     if (!record.entrada_hora) {
       actions.push({
-        label: "Incluir registro",
+        label: "Registrar Atividade",
         icon: <PlusCircle className="h-4 w-4" />,
         onClick: () => onEdit(record),
         swipeColor: "bg-emerald-600",
@@ -67,7 +67,7 @@ export function useTimeRecordActions({
       });
     } else {
       actions.push({
-        label: "Editar registro",
+        label: "Editar Atividade",
         icon: <Edit2 className="h-4 w-4" />,
         onClick: () => onEdit(record),
         swipeColor: "bg-blue-600",

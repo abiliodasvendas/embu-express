@@ -196,7 +196,7 @@ export function TimeRecordDialog({ isOpen, onClose, record }: TimeRecordDialogPr
                         {isEditMode ? <Edit2 className="w-5 h-5 text-white" /> : <PlusCircle className="w-5 h-5 text-white" />}
                     </div>
                     <DialogTitle className="text-xl font-bold text-white">
-                        {isEditMode ? "Editar Registro" : isInclusionMode ? "Incluir Registro" : "Novo Registro Manual"}
+                        {isEditMode ? "Editar Atividade" : "Registrar Atividade"}
                     </DialogTitle>
                 </div>
 

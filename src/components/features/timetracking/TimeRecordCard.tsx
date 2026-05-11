@@ -16,6 +16,7 @@ interface TimeRecordCardProps {
     actions?: any[];
     showActions?: boolean;
     showClient?: boolean;
+    isManual?: boolean;
 }
 
 export function TimeRecordCard({
@@ -24,7 +25,8 @@ export function TimeRecordCard({
     onDetails,
     actions = [],
     showActions = true,
-    showClient = false
+    showClient = false,
+    isManual = false
 }: TimeRecordCardProps) {
     const mStatus = (record as any).mgtStatus || getManagementStatus(record, date);
     const config = PONTO_STATUS_UI_CONFIG[mStatus as ManagementStatus];
@@ -66,6 +68,11 @@ export function TimeRecordCard({
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {isManual && mStatus === ManagementStatus.ABSENT && (
+                            <Badge className="text-[8px] bg-emerald-100 text-emerald-700 hover:bg-emerald-100 uppercase font-black px-1.5 h-5 rounded-md border-none shrink-0">
+                                CONFIRMADO
+                            </Badge>
+                        )}
                         <Badge className={cn("text-[8px] hover:bg-inherit uppercase font-black px-1.5 h-5 rounded-md border-none shrink-0", config.bg, config.color)}>
                             {config.label}
                         </Badge>

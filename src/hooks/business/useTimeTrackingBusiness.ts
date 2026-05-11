@@ -26,7 +26,8 @@ export function useTimeTrackingBusiness({ records, date, collaborators, manualAb
                 ...r,
                 // Ensure the full collaborator object (with links) is available for filtering
                 usuario: collaborator || r.usuario, 
-                mgtStatus: status
+                mgtStatus: status,
+                isManual: isManuallyAbsent
             };
         }) || [];
     }, [records, date, collaborators, manualAbsenceIds]);

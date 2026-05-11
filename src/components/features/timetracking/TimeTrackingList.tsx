@@ -61,6 +61,7 @@ function TimeTrackingItem({
         actions={showActions ? actions : []}
         showActions={showActions}
         showClient={showClient}
+        isManual={isManuallyAbsent}
       />
     </Card>
   );

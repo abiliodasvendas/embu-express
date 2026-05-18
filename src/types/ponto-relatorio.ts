@@ -4,7 +4,7 @@ export interface PontoDiarioRelatorio {
     dia: number;
     dia_semana_curto: string;
     dia_semana_longo: string;
-    status: 'TRABALHADO' | 'SEM_ATIVIDADE' | 'NAO_VIGENTE' | 'FUTURO';
+    status: 'TRABALHADO' | 'SEM_ATIVIDADE' | 'NAO_VIGENTE' | 'FUTURO' | 'FERIADO';
     is_dia_escala: boolean;
     cliente_nome: string | null;
     minutos_esperados: number;

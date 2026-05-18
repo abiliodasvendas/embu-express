@@ -174,8 +174,8 @@ export function FinancialReportView({
         ) : extrato ? (
           <div className="animate-in fade-in duration-500 space-y-8">
             {/* Status e Ações */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 gap-4">
-              <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 gap-4">
+              <div className="flex flex-wrap items-center gap-3">
                 <Badge
                   className={cn(
                     "rounded-full px-4 py-1.5 font-bold text-xs uppercase tracking-widest",
@@ -478,16 +478,22 @@ export function FinancialReportView({
                                 key={dia.data}
                                 title={`${dia.dia_semana_longo}, ${dia.data_br} - ${dia.status}`}
                                 className={cn(
-                                  "h-12 w-10 flex flex-col items-center justify-center rounded-xl transition-all border shadow-sm shrink-0",
+                                  "relative h-12 w-10 flex flex-col items-center justify-center rounded-xl transition-all border shadow-sm shrink-0",
                                   dia.status === CALENDARIO_STATUS.TRABALHADO && "bg-emerald-500 text-white border-emerald-600 scale-105 z-10",
                                   dia.status === CALENDARIO_STATUS.SEM_ATIVIDADE && "bg-red-500 text-white border-red-600 shadow-red-200/50",
+                                  dia.status === CALENDARIO_STATUS.FERIADO && "bg-teal-500 text-white border-teal-600 shadow-teal-200/50",
                                   dia.status === CALENDARIO_STATUS.FUTURO && "bg-gray-50 text-gray-300 border-gray-100 border-dashed opacity-50",
                                   dia.status === CALENDARIO_STATUS.NAO_VIGENTE && "bg-gray-100/50 text-gray-200 border-transparent opacity-30"
                                 )}
                               >
+                                {dia.status === CALENDARIO_STATUS.FERIADO && (
+                                  <div className="absolute -top-2 -right-2 bg-teal-700 text-white text-[6px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest shadow-md z-20 border border-teal-500/50">
+                                    Feriado
+                                  </div>
+                                )}
                                 <span className={cn(
                                   "text-[7px] font-black leading-none mb-0.5 opacity-70 uppercase tracking-tighter",
-                                  (dia.status === CALENDARIO_STATUS.TRABALHADO || dia.status === CALENDARIO_STATUS.SEM_ATIVIDADE) ? "text-white" : "text-gray-400"
+                                  (dia.status === CALENDARIO_STATUS.TRABALHADO || dia.status === CALENDARIO_STATUS.SEM_ATIVIDADE || dia.status === CALENDARIO_STATUS.FERIADO) ? "text-white" : "text-gray-400"
                                 )}>
                                   {dia.dia_semana_curto}
                                 </span>
@@ -744,9 +750,6 @@ export function FinancialReportView({
                                 <div>
                                   <p className="text-sm font-black text-gray-800 tracking-tight">
                                     MEI
-                                  </p>
-                                  <p className="text-[10px] text-gray-400 font-bold uppercase">
-                                    Valor Proporcional
                                   </p>
                                 </div>
                               </div>

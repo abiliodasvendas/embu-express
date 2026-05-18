@@ -657,7 +657,7 @@ export function FinancialReportView({
                                       )}
                                       <p className="text-[10px] text-gray-400 font-bold uppercase">
                                         {format(
-                                          new Date(occ.data_ocorrencia),
+                                          new Date(occ.data_ocorrencia + "T12:00:00"),
                                           "PPP",
                                           { locale: ptBR },
                                         )}
@@ -798,7 +798,7 @@ export function FinancialReportView({
                                     )}
                                     <p className="text-[10px] text-gray-400 font-bold uppercase">
                                       {format(
-                                        new Date(occ.data_ocorrencia),
+                                        new Date(occ.data_ocorrencia + "T12:00:00"),
                                         "PPP",
                                         { locale: ptBR },
                                       )}

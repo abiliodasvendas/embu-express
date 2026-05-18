@@ -254,10 +254,10 @@ export function TimeMirrorView({
                 {realizedDays.length > 0 && (
                     <div className={cn(
                         "hidden md:grid px-6 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] pb-2",
-                        canViewAll ? "grid-cols-10" : "grid-cols-5"
+                        canViewAll ? "grid-cols-11" : "grid-cols-6"
                     )}>
                         <div className="col-span-2">{messages.ponto.labels.data} / CLIENTE</div>
-                        <div className="col-span-1">{messages.ponto.labels.status}</div>
+                        <div className="col-span-2">{messages.ponto.labels.status}</div>
                         <div className="col-span-1">{messages.ponto.labels.entrada}</div>
                         <div className="col-span-1">{messages.ponto.labels.saida}</div>
                         {canViewAll && (

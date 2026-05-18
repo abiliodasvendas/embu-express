@@ -124,7 +124,7 @@ export const messages = {
       kmPausa: "KM em Pausa",
       detalhesPonto: "Detalhes da Atividade",
       jornadaMensal: "Jornada Mensal",
-      ausencias: "Ausências",
+      ausencias: "Sem Atividade",
       rodagemKm: "Rodagem (KM)",
       saldoAtual: "Saldo Atual",
       totalEmHoras: "Total em Horas",
@@ -145,7 +145,7 @@ export const messages = {
       off: "OFF",
       futuro: "FUTURO",
       trabalhado: "Trabalhado",
-      ausencia: "Ausência",
+      ausencia: "Sem Atividade",
       naoVigente: "Não Vigente",
       dataFutura: "Data Futura",
       escalado: "Escalado",
@@ -365,7 +365,7 @@ export const messages = {
     calendario: {
       labels: {
         trabalhado: "Trabalhado",
-        ausencia: "Ausência Detectada",
+        ausencia: "Sem Atividade",
         verTutorialLocalizacao: "Como ativar a localização",
         futuro: "Futuro",
         naoVigente: "Off",

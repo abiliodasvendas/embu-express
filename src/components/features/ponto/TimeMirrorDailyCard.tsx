@@ -30,6 +30,7 @@ export function TimeMirrorDailyCard({
     const isWorked = day.status === CALENDARIO_STATUS.TRABALHADO;
     const isFuture = day.status === CALENDARIO_STATUS.FUTURO;
     const isNotVigente = day.status === CALENDARIO_STATUS.NAO_VIGENTE;
+    const isFeriado = day.status === CALENDARIO_STATUS.FERIADO;
 
     const getStatusLabels = () => {
         switch (day.status) {
@@ -41,6 +42,8 @@ export function TimeMirrorDailyCard({
                 return { label: messages.ponto.labels.naoVigente, badge: messages.ponto.labels.off };
             case CALENDARIO_STATUS.FUTURO:
                 return { label: messages.ponto.labels.dataFutura, badge: messages.ponto.labels.futuro };
+            case CALENDARIO_STATUS.FERIADO:
+                return { label: "Feriado", badge: "Feriado" };
             default:
                 return { label: messages.ponto.labels.escalado, badge: messages.ponto.labels.vazio };
         }
@@ -65,30 +68,31 @@ export function TimeMirrorDailyCard({
                 "absolute left-0 top-0 bottom-0 w-1.5 transition-colors",
                 isWorked ? "bg-emerald-500" :
                     isLack ? "bg-red-500" :
-                        isFuture ? "bg-gray-300" : "bg-gray-100"
+                        isFeriado ? "bg-teal-500" :
+                            isFuture ? "bg-gray-300" : "bg-gray-100"
             )} />
 
             <CardContent className="p-4 md:py-3 md:px-6">
                 <div className={cn(
                     "grid gap-y-4 gap-x-2 md:gap-4 items-center",
-                    canViewAll ? "grid-cols-2 md:grid-cols-10" : "grid-cols-2 md:grid-cols-5",
+                    canViewAll ? "grid-cols-2 md:grid-cols-11" : "grid-cols-2 md:grid-cols-6",
                     isFuture && "opacity-60"
                 )}>
                     {/* Date & Client */}
                     <div className="flex items-center gap-3 col-span-2 md:col-span-2">
                         <div className={cn(
                             "h-10 w-10 rounded-xl transition-colors flex flex-col items-center justify-center shrink-0",
-                            isLack ? "bg-red-50" : isWorked ? "bg-emerald-50" : "bg-gray-50"
+                            isLack ? "bg-red-50" : isWorked ? "bg-emerald-50" : isFeriado ? "bg-teal-50" : "bg-gray-50"
                         )}>
                             <span className={cn(
                                 "text-[10px] uppercase font-bold leading-none mb-0.5",
-                                isLack ? "text-red-400" : isWorked ? "text-emerald-400" : "text-gray-400"
+                                isLack ? "text-red-400" : isWorked ? "text-emerald-400" : isFeriado ? "text-teal-500" : "text-gray-400"
                             )}>
                                 {day.dia_semana_curto}
                             </span>
                             <span className={cn(
                                 "text-sm font-black",
-                                isLack ? "text-red-600" : isWorked ? "text-emerald-600" : "text-gray-700"
+                                isLack ? "text-red-600" : isWorked ? "text-emerald-600" : isFeriado ? "text-teal-600" : "text-gray-700"
                             )}>
                                 {String(day.dia).padStart(2, '0')}
                             </span>
@@ -123,12 +127,13 @@ export function TimeMirrorDailyCard({
                     </div>
 
                     {/* Badge Status */}
-                    <div className="hidden md:block">
+                    <div className="hidden md:block md:col-span-2">
                         <Badge variant="secondary" className={cn(
-                            "text-[10px] uppercase font-bold px-2 py-0 border-none h-5",
+                            "text-[10px] uppercase font-bold px-2 py-0 border-none h-5 whitespace-nowrap",
                             isLack ? "bg-red-100 text-red-600" :
                                 isWorked ? "bg-emerald-100 text-emerald-600" :
-                                    "bg-gray-100 text-gray-500"
+                                    isFeriado ? "bg-teal-100 text-teal-600 uppercase font-black" :
+                                        "bg-gray-100 text-gray-500"
                         )}>
                             {badgeLabel}
                         </Badge>

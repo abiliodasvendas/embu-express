@@ -16,4 +16,20 @@ export const financeiroApi = {
 
     desfazerPagamento: (usuarioId: string, mes: number, ano: number): Promise<any> =>
         apiClient.delete(`/financeiro/desfazer-pagamento/${usuarioId}`, { params: { mes, ano } }),
+
+    getStatusGeral: (mes: number, ano: number): Promise<StatusGeralFechamento[]> =>
+        apiClient.get(`/financeiro/status-geral`, { params: { mes, ano } }).then(res => res.data),
 };
+
+export interface StatusGeralFechamento {
+  colaborador_id: string;
+  nome_completo: string;
+  email: string;
+  adiantamento_confirmado: boolean;
+  data_confirmacao_adiantamento: string | null;
+  pago: boolean;
+  data_pagamento: string | null;
+  valor_adiantamento_configurado: number;
+  valor_final: number;
+  clientes: string[];
+}

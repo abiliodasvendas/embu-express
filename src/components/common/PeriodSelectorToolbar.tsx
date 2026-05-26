@@ -6,12 +6,12 @@ import { meses, anos } from "@/utils/formatters/constants";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/ui/use-mobile";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger
 } from "@/components/ui/sheet";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -54,7 +54,7 @@ export function PeriodSelectorToolbar({
                 <div className="flex flex-col md:flex-row items-stretch md:items-end gap-4 md:gap-3">
                     {!hideCollaboratorSelect && (
                         <div className="w-full md:flex-1 space-y-2">
-                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">Clientes</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">Colaborador</label>
                             <Combobox
                                 options={[
                                     { value: FilterOptions.TODOS, label: "Selecionar Colaborador" },
@@ -101,9 +101,9 @@ export function PeriodSelectorToolbar({
                     {!hideShiftSelect && (
                         <div className="w-full md:flex-1 space-y-2">
                             <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">Turno</label>
-                            <Select 
-                                value={selectedShift} 
-                                onValueChange={onShiftChange} 
+                            <Select
+                                value={selectedShift}
+                                onValueChange={onShiftChange}
                                 disabled={(usuarioId === FilterOptions.TODOS && !hideCollaboratorSelect) || availableShifts.length === 0}
                             >
                                 <SelectTrigger className="h-12 md:h-11 rounded-xl bg-white border-gray-200 font-medium text-slate-700 shadow-sm hover:border-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">

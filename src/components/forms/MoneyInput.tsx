@@ -38,7 +38,7 @@ export function MoneyInput<T extends FieldValues>({
           placeholder={placeholder}
           type="text"
           className={cn(
-            "h-11 rounded-2xl bg-gray-50 border-gray-200 px-4 focus:bg-white transition-all font-medium",
+            "h-11 rounded-2xl bg-gray-50 border-gray-200 px-4 focus:bg-white transition-all",
             inputClassName
           )}
           disabled={disabled}

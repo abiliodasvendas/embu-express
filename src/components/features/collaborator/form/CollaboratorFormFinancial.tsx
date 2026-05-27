@@ -57,12 +57,12 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                 <FormField name="tipo_chave_pix" control={form.control} render={({ field }) => (
                     <FormItem>
                         <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo de Chave PIX</FormLabel>
-                        <Select 
+                        <Select
                             onValueChange={(val) => {
                                 field.onChange(val);
                                 form.setValue("chave_pix", "");
                                 form.clearErrors("chave_pix");
-                            }} 
+                            }}
                             value={field.value}
                         >
                             <FormControl>
@@ -95,10 +95,10 @@ export function CollaboratorFormFinancial({ empresas }: CollaboratorFormFinancia
                                         field.onChange(pixMask(e.target.value, tipoChavePix));
                                     }}
                                     maxLength={
-                                        tipoChavePix === PIX_TYPES.CPF ? 14 : 
-                                        tipoChavePix === PIX_TYPES.CNPJ ? 18 : 
-                                        tipoChavePix === PIX_TYPES.TELEFONE ? 15 :
-                                        tipoChavePix === PIX_TYPES.ALEATORIA ? 36 : 100
+                                        tipoChavePix === PIX_TYPES.CPF ? 14 :
+                                            tipoChavePix === PIX_TYPES.CNPJ ? 18 :
+                                                tipoChavePix === PIX_TYPES.TELEFONE ? 15 :
+                                                    tipoChavePix === PIX_TYPES.ALEATORIA ? 36 : 100
                                     }
                                     placeholder={tipoChavePix ? "Insira a chave" : "Selecione o tipo primeiro"}
                                 />

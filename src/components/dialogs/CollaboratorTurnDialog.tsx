@@ -856,7 +856,7 @@ export function CollaboratorTurnDialog({
                             <Input
                               type="date"
                               {...field}
-                              className="h-12 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-200 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-emerald-950"
+                              className="h-12 rounded-2xl bg-white/70 backdrop-blur-sm border-emerald-200 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all text-emerald-950"
                             />
                           </FormControl>
                           <FormMessage />

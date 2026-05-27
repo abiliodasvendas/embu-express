@@ -27,7 +27,6 @@ import {
 import { useDeleteCollaborator, useResetCollaboratorPassword, useUpdateCollaboratorStatus, useUpdateVinculo } from "@/hooks/api/useCollaboratorMutations";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
-import { FilterOptions } from "@/types/enums";
 import { ColaboradorCliente, Usuario } from "@/types/database";
 import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
@@ -167,6 +166,11 @@ export default function CollaboratorDetails() {
     hideDetails: true,
   });
 
+  const editAction = actions.find(a => a.label === "Editar");
+  const resetAction = actions.find(a => a.label === "Resetar Senha");
+  const statusAction = actions.find(a => ["Desativar", "Ativar", "Aprovar"].includes(a.label));
+  const deleteAction = actions.find(a => a.label === "Excluir");
+
   const { selectedMes, setSelectedMes, selectedAno, setSelectedAno } = useDateFilters({
     mesParam: "mes",
     anoParam: "ano",
@@ -198,7 +202,7 @@ export default function CollaboratorDetails() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6 animate-in fade-in duration-500">
+      <div className="space-y-6 animate-in fade-in duration-500">
         <Skeleton className="h-10 w-32" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Skeleton className="h-[400px] lg:col-span-1 border rounded-3xl" />
@@ -210,7 +214,7 @@ export default function CollaboratorDetails() {
 
   if (!collaborator) {
     return (
-      <div className="p-6 text-center">
+      <div className="text-center py-12">
         <p className="text-muted-foreground">Colaborador não encontrado.</p>
         <Button onClick={() => navigate("/colaboradores")} variant="link">Voltar para a lista</Button>
       </div>
@@ -293,55 +297,81 @@ export default function CollaboratorDetails() {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/colaboradores")}
-            className="hover:bg-gray-100 rounded-xl px-2"
-          >
-            <ChevronLeft className="h-5 w-5 mr-1" />
-            Voltar
-          </Button>
-          <div className="flex gap-2 items-center">
-            <ActionsDropdown actions={actions}>
-              <Button variant="outline" className="rounded-xl border-gray-200 shadow-sm text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1 px-3">
-                <span className="hidden sm:inline font-semibold">Ações</span>
-                <MoreVertical className="h-4 w-4 sm:hidden -mx-1" />
-                <ChevronDown className="h-4 w-4 hidden sm:block opacity-50 text-gray-500" />
-              </Button>
-            </ActionsDropdown>
-          </div>
-        </div>
-      </div>
-
-      {/* Identity Header */}
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Identity Header com Ações Embutidas */}
       <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white mb-2">
-        <CardContent className="p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-            <User className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-          </div>
-          <div className="flex-1 text-center sm:text-left space-y-1">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 justify-center sm:justify-start mb-1">
+        <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* Informações do Colaborador (Esquerda) */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-50 border border-gray-150 flex items-center justify-center shrink-0">
+              <User className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+            </div>
+            <div className="text-center sm:text-left space-y-2">
               <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
                 {collaborator.nome_completo}
               </h2>
-              <Badge
-                variant="secondary"
-                className={cn(
-                  "w-fit mx-auto sm:mx-0 px-3 py-1 rounded-full font-bold border text-[10px] uppercase tracking-wider",
-                  getStatusColor(collaborator.status)
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                {role?.nome && (
+                  <span className="text-xs font-bold text-primary uppercase tracking-[0.2em] bg-primary/5 px-3 py-1 rounded-lg">
+                    {role.nome}
+                  </span>
                 )}
-              >
-                {collaborator.status}
-              </Badge>
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "px-3 py-1 rounded-full font-bold border text-[10px] uppercase tracking-wider",
+                    getStatusColor(collaborator.status)
+                  )}
+                >
+                  {collaborator.status}
+                </Badge>
+              </div>
             </div>
-            {role?.nome && (
-              <p className="text-xs font-bold text-primary uppercase tracking-[0.2em] bg-primary/5 w-fit px-3 py-1 rounded-lg mx-auto sm:mx-0">
-                {role.nome}
-              </p>
+          </div>
+
+          {/* Ações (Direita) */}
+          <div className="flex flex-wrap gap-2 items-center justify-center md:justify-end">
+            {editAction && (
+              <Button
+                onClick={editAction.onClick}
+                className="rounded-xl flex items-center gap-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm h-10"
+              >
+                <Edit2 className="h-4 w-4" />
+                <span>Editar</span>
+              </Button>
+            )}
+
+            {statusAction && (
+              <Button
+                variant="outline"
+                onClick={statusAction.onClick}
+                className="rounded-xl flex items-center gap-1.5 px-4 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-semibold text-sm shadow-sm h-10"
+              >
+                {statusAction.icon}
+                <span>{statusAction.label}</span>
+              </Button>
+            )}
+
+            {resetAction && (
+              <Button
+                variant="outline"
+                onClick={resetAction.onClick}
+                className="rounded-xl border-gray-200 text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1.5 px-4 font-semibold text-sm shadow-sm h-10"
+              >
+                <Lock className="h-4 w-4" />
+                <span>Resetar Senha</span>
+              </Button>
+            )}
+
+            {deleteAction && (
+              <ActionsDropdown actions={[deleteAction]}>
+                <Button
+                  variant="outline"
+                  className="rounded-xl border-gray-200 shadow-sm text-gray-700 bg-white hover:bg-gray-50 flex items-center justify-center p-2.5 h-10 w-10"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </ActionsDropdown>
             )}
           </div>
         </CardContent>
@@ -559,8 +589,8 @@ export default function CollaboratorDetails() {
               <Can I={PERMISSIONS.USUARIOS.EDITAR}>
                 <Button
                   onClick={handleAddTurn}
-                  size="sm"
-                  className="rounded-2xl h-10 px-4 gap-2 shadow-md shadow-primary/10 font-black uppercase tracking-widest text-[10px] bg-primary hover:bg-primary/90 text-white border-none transition-all active:scale-95"
+                  variant="outline"
+                  className="rounded-xl flex items-center gap-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm h-10"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Novo Turno</span>
@@ -740,8 +770,8 @@ export default function CollaboratorDetails() {
                       financeiroVm.refetch();
                     }
                   })}
-                  className="rounded-2xl h-10 px-4 gap-2 shadow-md shadow-primary/10 font-black uppercase tracking-widest text-[10px] bg-primary hover:bg-primary/90 text-white border-none transition-all active:scale-95"
-                  size="sm"
+                  className="rounded-xl flex items-center gap-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm h-10"
+                  variant="outline"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Registrar</span>

@@ -13,15 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StatusUsuario } from "@/types/enums";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { Perfil } from "@/types/database";
-import { getPerfilLabel } from "@/utils/formatters";
+import { StatusUsuario } from "@/types/enums";
 import { cpfMask, dateMask, phoneMask, rgMask } from "@/utils/masks";
 import { onlyNumbers } from "@/utils/string";
 import { Eye, Mail, MapPin, User, Users } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { Switch } from "@/components/ui/switch";
 
 interface CollaboratorFormPersonalProps {
   roles: Perfil[] | undefined;
@@ -331,7 +330,7 @@ export function CollaboratorFormPersonal({
             <FormItem className="md:col-span-3 flex flex-row items-center justify-between rounded-2xl border border-gray-150 bg-white p-4 shadow-sm group hover:border-blue-200 transition-all duration-300">
               <div className="space-y-0.5 pr-4">
                 <FormLabel className="text-gray-805 font-bold text-sm tracking-wide select-none group-hover:text-blue-700 transition-colors cursor-pointer">
-                  Validar distância ao registrar atividade
+                  Validar localização ao registrar atividade
                 </FormLabel>
                 <p className="text-xs text-muted-foreground font-medium leading-normal opacity-85">
                   Obriga o colaborador a registrar atividade dentro do raio geográfico configurado da unidade.

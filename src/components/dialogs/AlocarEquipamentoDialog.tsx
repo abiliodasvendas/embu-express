@@ -15,22 +15,21 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { messages } from "@/constants/messages";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import {
-  useItensQuery,
   useAssociarItens,
+  useItensQuery,
 } from "@/hooks/api/useItensEquipamentos";
 import { cn } from "@/lib/utils";
+import { associarItemSchema } from "@/schemas/itensEquipamentosSchema";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Package, Users, Loader2, X, FileText, Check } from "lucide-react";
+import { Check, Loader2, Package, X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { associarItemSchema } from "@/schemas/itensEquipamentosSchema";
 
 interface AlocarEquipamentoDialogProps {
   open: boolean;
@@ -114,9 +113,9 @@ export function AlocarEquipamentoDialog({
             <Package className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            Alocar Equipamento
+            Alocar Item
           </DialogTitle>
-          <p className="text-xs text-white/70 mt-1">Associe equipamentos a um colaborador do sistema</p>
+          <p className="text-xs text-white/70 mt-1">Associe itens a um colaborador do sistema</p>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50/30">
@@ -259,7 +258,7 @@ export function AlocarEquipamentoDialog({
                 Alocando...
               </>
             ) : (
-              "Alocar Equipamentos"
+              "Alocar Itens"
             )}
           </Button>
         </div>

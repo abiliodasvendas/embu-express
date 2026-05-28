@@ -200,7 +200,7 @@ export function CollaboratorItemsView({ colaboradorId }: CollaboratorItemsViewPr
               variant="outline"
               onClick={handleDevolverTodos}
               disabled={devolverTodosMutation.isPending}
-              className="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50/50 hover:text-rose-700 flex items-center gap-1.5 font-semibold text-xs h-9 select-none"
+              className="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50/50 hover:text-rose-700 flex items-center gap-1.5 font-semibold h-9 select-none"
             >
               {devolverTodosMutation.isPending ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

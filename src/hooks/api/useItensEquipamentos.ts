@@ -74,6 +74,7 @@ export function useCreateItem() {
       itemEquipamentoApi.createItem(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["itens-equipamentos"] });
+      queryClient.invalidateQueries({ queryKey: ["itens-equipamentos", "lista"] });
       toast.success(messages.itemEquipamento.sucesso.criado);
     },
     onError: (error: ApiError) => {
@@ -91,6 +92,7 @@ export function useUpdateItem() {
       itemEquipamentoApi.updateItem(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["itens-equipamentos"] });
+      queryClient.invalidateQueries({ queryKey: ["itens-equipamentos", "lista"] });
       toast.success(messages.itemEquipamento.sucesso.atualizado);
     },
     onError: (error: ApiError) => {
@@ -107,6 +109,7 @@ export function useDeleteItem() {
     mutationFn: (id: number) => itemEquipamentoApi.deleteItem(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["itens-equipamentos"] });
+      queryClient.invalidateQueries({ queryKey: ["itens-equipamentos", "lista"] });
       toast.success(messages.itemEquipamento.sucesso.excluido);
     },
     onError: (error: ApiError) => {
@@ -134,6 +137,7 @@ export function useAssociarItens() {
       itemEquipamentoApi.associarItens(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["itens-equipamentos"] });
+      queryClient.invalidateQueries({ queryKey: ["itens-equipamentos", "lista"] });
       toast.success(messages.itemEquipamento.sucesso.alocado);
     },
     onError: (error: ApiError) => {
@@ -150,10 +154,28 @@ export function useDesassociarItem() {
     mutationFn: (id: number) => itemEquipamentoApi.desassociarItem(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["itens-equipamentos"] });
+      queryClient.invalidateQueries({ queryKey: ["itens-equipamentos", "lista"] });
       toast.success("Item devolvido com sucesso!");
     },
     onError: (error: ApiError) => {
       toast.error("Erro ao devolver item", {
+        description: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useDesassociarTodosItens() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (colaboradorId: string) => itemEquipamentoApi.desassociarTodosItens(colaboradorId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["itens-equipamentos"] });
+      queryClient.invalidateQueries({ queryKey: ["itens-equipamentos", "lista"] });
+      toast.success("Todos os itens foram devolvidos com sucesso!");
+    },
+    onError: (error: ApiError) => {
+      toast.error("Erro ao devolver itens", {
         description: error.response?.data?.message || error.message,
       });
     },

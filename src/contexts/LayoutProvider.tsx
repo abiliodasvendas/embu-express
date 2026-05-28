@@ -186,7 +186,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {editarCadastroDialogState.open && <EditarCadastroDialog isOpen={true} onClose={closeEditarCadastroDialog} />}
       {passwordGuardDialogState.open && passwordGuardDialogState.props && <PasswordGuardDialog open={true} onSuccess={() => { passwordGuardDialogState.props?.onSuccess?.(); closePasswordGuardDialog(); }} />}
       {locationTutorialDialogState.open && <LocationTutorialDialog isOpen={true} onClose={closeLocationTutorialDialog} />}
-      {alocarEquipamentoDialogState.open && <AlocarEquipamentoDialog open={true} onOpenChange={(open) => !open && closeAlocarEquipamentoDialog()} />}
+      {alocarEquipamentoDialogState.open && <AlocarEquipamentoDialog open={true} onOpenChange={(open) => !open && closeAlocarEquipamentoDialog()} {...alocarEquipamentoDialogState.props} />}
       {itemEquipamentoFormDialogState.open && <ItemEquipamentoFormDialog open={true} onOpenChange={(open) => !open && closeItemEquipamentoFormDialog()} itemToEdit={itemEquipamentoFormDialogState.props?.itemToEdit} />}
       {categoriasDialogState.open && <CategoriasDialog open={true} onOpenChange={(open) => !open && closeCategoriasDialog()} />}
       {alocadosPorItemDialogState.open && alocadosPorItemDialogState.props && <AlocadosPorItemDialog open={true} onOpenChange={(open) => !open && closeAlocadosPorItemDialog()} itemId={alocadosPorItemDialogState.props.itemId} itemName={alocadosPorItemDialogState.props.itemName} />}

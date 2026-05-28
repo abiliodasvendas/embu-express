@@ -37,4 +37,7 @@ export const itemEquipamentoApi = {
 
   desassociarItem: (id: number): Promise<{ success: boolean }> =>
     apiClient.delete(`/itens-equipamentos/alocacao/${id}`).then((res) => res.data),
+
+  desassociarTodosItens: (colaboradorId: string): Promise<{ success: boolean }> =>
+    apiClient.delete(`/itens-equipamentos/alocacao/colaborador/${colaboradorId}`).then((res) => res.data),
 };

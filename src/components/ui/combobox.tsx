@@ -33,6 +33,7 @@ interface ComboboxProps {
   className?: string
   modal?: boolean
   startIcon?: React.ReactNode
+  disabled?: boolean
 }
 
 export function Combobox({
@@ -44,7 +45,8 @@ export function Combobox({
   searchPlaceholder = "Buscar...",
   className,
   modal = false,
-  startIcon
+  startIcon,
+  disabled = false
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -55,10 +57,12 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          disabled={disabled}
           className={cn(
             "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 font-normal shadow-none px-3 text-left relative",
             startIcon && "pl-10",
             !value && "text-muted-foreground hover:text-muted-foreground",
+            disabled && "opacity-60 bg-gray-100 cursor-not-allowed pointer-events-none",
             className
           )}
         >

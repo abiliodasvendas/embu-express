@@ -2,17 +2,18 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useDesassociarItem,
+  useDesassociarTodosItens,
   useItensColaboradorQuery,
 } from "@/hooks/api/useItensEquipamentos";
-import { cn } from "@/lib/utils";
 import { ActionItem } from "@/types/actions";
 import { ColaboradorItem } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { Loader2, Package, RotateCcw } from "lucide-react";
+import { Loader2, Package, Plus, RotateCcw } from "lucide-react";
 
 interface CollaboratorItemsViewProps {
   colaboradorId: string;
@@ -127,9 +128,10 @@ const ItemTableRow = ({
 };
 
 export function CollaboratorItemsView({ colaboradorId }: CollaboratorItemsViewProps) {
-  const { data: itensAlocados = [], isLoading } = useItensColaboradorQuery(colaboradorId);
+  const { data: itensAlocados = [], isLoading, refetch } = useItensColaboradorQuery(colaboradorId);
   const devolverMutation = useDesassociarItem();
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const devolverTodosMutation = useDesassociarTodosItens();
+  const { openAlocarEquipamentoDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   const handleDevolver = (alocacaoId: number) => {
     openConfirmationDialog({
@@ -140,6 +142,24 @@ export function CollaboratorItemsView({ colaboradorId }: CollaboratorItemsViewPr
       onConfirm: async () => {
         try {
           await devolverMutation.mutateAsync(alocacaoId);
+        } catch {
+          // Erro tratado pela mutation
+        } finally {
+          safeCloseDialog(closeConfirmationDialog);
+        }
+      },
+    });
+  };
+
+  const handleDevolverTodos = () => {
+    openConfirmationDialog({
+      title: "Devolver Todos os Equipamentos",
+      description: "Tem certeza que deseja registrar a devolução de todos os equipamentos sob a responsabilidade deste colaborador?",
+      confirmText: "Sim, devolver todos",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await devolverTodosMutation.mutateAsync(colaboradorId);
         } catch {
           // Erro tratado pela mutation
         } finally {
@@ -173,6 +193,30 @@ export function CollaboratorItemsView({ colaboradorId }: CollaboratorItemsViewPr
               </span>
             </div>
           </CardTitle>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {itensAlocados.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={handleDevolverTodos}
+              disabled={devolverTodosMutation.isPending}
+              className="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50/50 hover:text-rose-700 flex items-center gap-1.5 font-semibold text-xs h-9 select-none"
+            >
+              {devolverTodosMutation.isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="w-3.5 h-3.5" />
+              )}
+              <span>Devolver Todos</span>
+            </Button>
+          )}
+          <Button
+            onClick={() => openAlocarEquipamentoDialog({ colaboradorId, onSuccess: refetch })}
+            className="rounded-xl flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold h-9 shadow-sm select-none"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Alocar Item</span>
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="p-8 flex-1">

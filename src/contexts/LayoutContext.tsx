@@ -91,6 +91,7 @@ export interface OpenFeriadoFormProps {
 }
 
 export interface OpenAlocarEquipamentoProps {
+  colaboradorId?: string;
   onSuccess?: () => void;
 }
 

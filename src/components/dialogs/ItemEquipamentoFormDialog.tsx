@@ -145,7 +145,6 @@ export function ItemEquipamentoFormDialog({
                       <div className="relative">
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
-                          placeholder="Ex: Jaqueta de Motoqueiro GG"
                           className={cn(
                             "pl-10 h-12 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 transition-all shadow-sm",
                             form.formState.errors.nome && "border-red-500 focus-visible:ring-red-200"

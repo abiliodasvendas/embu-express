@@ -34,6 +34,7 @@ import { z } from "zod";
 interface AlocarEquipamentoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  colaboradorId?: string;
 }
 
 type AlocacaoFormValues = z.infer<typeof associarItemSchema>;
@@ -41,6 +42,7 @@ type AlocacaoFormValues = z.infer<typeof associarItemSchema>;
 export function AlocarEquipamentoDialog({
   open,
   onOpenChange,
+  colaboradorId,
 }: AlocarEquipamentoDialogProps) {
   const { data: colaboradores = [] } = useCollaborators({});
   const { data: itens = [] } = useItensQuery();
@@ -49,7 +51,7 @@ export function AlocarEquipamentoDialog({
   const form = useForm<AlocacaoFormValues>({
     resolver: zodResolver(associarItemSchema),
     defaultValues: {
-      colaborador_id: "",
+      colaborador_id: colaboradorId || "",
       itens_ids: [],
       observacao: "",
     },
@@ -60,12 +62,12 @@ export function AlocarEquipamentoDialog({
   useEffect(() => {
     if (open) {
       form.reset({
-        colaborador_id: "",
+        colaborador_id: colaboradorId || "",
         itens_ids: [],
         observacao: "",
       });
     }
-  }, [open, form]);
+  }, [open, form, colaboradorId]);
 
   const onSubmit = async (values: AlocacaoFormValues) => {
     try {
@@ -142,6 +144,7 @@ export function AlocarEquipamentoDialog({
                           placeholder="Selecione um colaborador"
                           searchPlaceholder="Buscar colaborador..."
                           emptyText="Nenhum colaborador encontrado."
+                          disabled={!!colaboradorId}
                           className={cn(
                             "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all focus-visible:ring-primary/20",
                             form.formState.errors.colaborador_id && "border-red-500 focus:ring-red-200"
@@ -221,7 +224,6 @@ export function AlocarEquipamentoDialog({
                         <Textarea
                           {...field}
                           value={field.value || ""}
-                          placeholder="Ex: Entregue jaqueta tamanho G e capacete azul novos..."
                           className={cn(
                             "min-h-[80px] rounded-2xl bg-gray-50 border-gray-200 focus:bg-white transition-all resize-none p-4 text-xs font-medium"
                           )}

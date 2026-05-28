@@ -320,7 +320,7 @@ export const messages = {
     },
     ativar: {
       titulo: "Confirmar Ativação",
-      descricao: "Tem certeza que deseja aprovar/ativar?",
+      descricao: "Tem certeza que deseja ativar?",
       botao: "Ativar",
     },
   },

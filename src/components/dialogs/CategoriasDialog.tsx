@@ -6,18 +6,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { messages } from "@/constants/messages";
+import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCategoriasQuery,
   useCreateCategoria,
-  useUpdateCategoria,
   useDeleteCategoria,
+  useUpdateCategoria,
 } from "@/hooks/api/useItensEquipamentos";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { toast } from "@/utils/notifications/toast";
-import { Loader2, Plus, Trash2, X, Tag, Edit2, Check } from "lucide-react";
+import { Check, Edit2, Loader2, Plus, Tag, Trash2, X } from "lucide-react";
 import { useState } from "react";
-import { useLayout } from "@/contexts/LayoutContext";
 
 interface CategoriasDialogProps {
   open: boolean;
@@ -113,7 +111,6 @@ export function CategoriasDialog({ open, onOpenChange }: CategoriasDialogProps) 
         <div className="flex-1 overflow-y-auto px-6 py-6 bg-white space-y-4">
           <form onSubmit={handleAdd} className="flex gap-2 shrink-0">
             <Input
-              placeholder="Nova categoria... Ex: Jaquetas"
               value={novaCategoria}
               onChange={(e) => setNovaCategoria(e.target.value)}
               disabled={isMutating}

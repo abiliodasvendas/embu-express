@@ -154,17 +154,6 @@ const ItemTableRow = ({
           {item.total_alocado || 0}
         </span>
       </td>
-      <td className="px-6 py-4 align-middle">
-        <Badge
-          variant="secondary"
-          className={cn(
-            "text-[10px] font-bold px-2 py-0.5 rounded-md shadow-none",
-            item.ativo ? "bg-green-50 text-green-600" : "bg-slate-100 text-slate-500"
-          )}
-        >
-          {item.ativo ? "Ativo" : "Inativo"}
-        </Badge>
-      </td>
       <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
         <ActionsDropdown actions={actions} />
       </td>
@@ -328,9 +317,6 @@ export default function ItensEquipamentos() {
                           </th>
                           <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider w-[120px]">
                             Qtd. Alocada
-                          </th>
-                          <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider w-[120px]">
-                            Status
                           </th>
                           <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider w-[100px]">
                             Ações

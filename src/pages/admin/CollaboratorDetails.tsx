@@ -26,6 +26,7 @@ import {
   useRoles, useTimeMirrorViewModel
 } from "@/hooks";
 import { useDeleteCollaborator, useResetCollaboratorPassword, useUpdateCollaboratorStatus, useUpdateVinculo } from "@/hooks/api/useCollaboratorMutations";
+import { useItensColaboradorQuery } from "@/hooks/api/useItensEquipamentos";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
@@ -34,7 +35,7 @@ import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
 import { onlyNumbers } from "@/utils/string";
 import { format, parseISO } from "date-fns";
-import { Bike, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
+import { AlertTriangle, Bike, Briefcase, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -44,6 +45,8 @@ export default function CollaboratorDetails() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: collaborator, isLoading } = useCollaborator(id);
+  const { data: itensAlocados = [] } = useItensColaboradorQuery(id!);
+  const possuiItens = itensAlocados.length > 0;
   const { data: roles } = useRoles();
   const deleteVinculo = useDeleteVinculo();
   const updateVinculo = useUpdateVinculo();
@@ -104,7 +107,7 @@ export default function CollaboratorDetails() {
             setTimeout(() => {
               openSuccessRegistrationDialog({
                 collaborator: collab,
-                title: "Aprovação Realizada!",
+                title: "Colaborador Ativo!",
                 hideNewCollaboratorButton: true,
                 description: (
                   <>
@@ -288,6 +291,15 @@ export default function CollaboratorDetails() {
     }
   }
 
+  const getAvatarStatusColor = (status: string) => {
+    switch (status) {
+      case STATUS.ATIVO: return "border-green-200 text-green-700";
+      case STATUS.INATIVO: return "border-red-200 text-red-700";
+      case STATUS.PENDENTE: return "border-yellow-200 text-yellow-700";
+      default: return "border-gray-200 text-gray-600";
+    }
+  }
+
 
   const activeTab = searchParams.get("tab") || "dados";
 
@@ -304,8 +316,24 @@ export default function CollaboratorDetails() {
         <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Informações do Colaborador (Esquerda) */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-50 border border-gray-150 flex items-center justify-center shrink-0">
-              <User className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+            <div className="relative shrink-0 select-none">
+              <div
+                className={cn(
+                  "w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-50 border flex items-center justify-center transition-all duration-300",
+                  getAvatarStatusColor(collaborator.status)
+                )}
+              >
+                <User className="h-8 w-8 sm:h-10 sm:w-10 text-current" />
+              </div>
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "absolute -top-1.5 -right-1.5 px-2 py-0.5 rounded-full font-black border text-[9px] uppercase tracking-wider shadow-sm transition-all duration-300 cursor-default",
+                  getStatusColor(collaborator.status)
+                )}
+              >
+                {collaborator.status}
+              </Badge>
             </div>
             <div className="text-center sm:text-left space-y-2">
               <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
@@ -313,19 +341,34 @@ export default function CollaboratorDetails() {
               </h2>
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                 {role?.nome && (
-                  <span className="text-xs font-bold text-primary uppercase tracking-[0.2em] bg-primary/5 px-3 py-1 rounded-lg">
-                    {role.nome}
-                  </span>
+                  <Badge
+                    variant="secondary"
+                    className="bg-primary/5 text-primary border-primary/10 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
+                  >
+                    <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                    <span>{role.nome}</span>
+                  </Badge>
                 )}
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "px-3 py-1 rounded-full font-bold border text-[10px] uppercase tracking-wider",
-                    getStatusColor(collaborator.status)
-                  )}
-                >
-                  {collaborator.status}
-                </Badge>
+
+                {possuiItens && (
+                  collaborator.status !== STATUS.INATIVO ? (
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-50 text-blue-700 border-blue-100 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
+                    >
+                      <Package className="w-3.5 h-3.5 shrink-0" />
+                      <span>Possui Itens</span>
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="secondary"
+                      className="bg-rose-50 text-rose-700 border-rose-200 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none animate-pulse border-l-4 border-l-rose-500"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-600 animate-bounce" />
+                      <span>Pendência: Devolver Itens</span>
+                    </Badge>
+                  )
+                )}
               </div>
             </div>
           </div>

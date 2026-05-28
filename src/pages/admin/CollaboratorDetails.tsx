@@ -1,5 +1,7 @@
 import { Can } from "@/components/auth/Can";
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
+import { ScaleIndicators } from "@/components/common/ScaleIndicators";
+import { CollaboratorItemsView } from "@/components/features/collaborator/CollaboratorItemsView";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
 import { OccurrenceView } from "@/components/features/ocorrencias/OccurrenceView";
 import { TimeMirrorView } from "@/components/features/ponto/TimeMirrorView";
@@ -11,10 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { messages } from "@/constants/messages";
-import { PERMISSIONS, ROLES } from "@/constants/permissions.enum";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import { STATUS } from "@/constants/roles";
 import { useLayout } from "@/contexts/LayoutContext";
-import { isMotoboy } from "@/utils/business/roles";
 import {
   safeCloseDialog,
   useCollaborator,
@@ -28,13 +29,13 @@ import { useDeleteCollaborator, useResetCollaboratorPassword, useUpdateCollabora
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
+import { isMotoboy } from "@/utils/business/roles";
 import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
 import { onlyNumbers } from "@/utils/string";
 import { format, parseISO } from "date-fns";
-import { Bike, Calendar as CalendarIcon, CalendarOff, ChevronDown, ChevronLeft, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
+import { Bike, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -386,6 +387,10 @@ export default function CollaboratorDetails() {
           <TabsTrigger value="turnos" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <Clock className="h-4 w-4" />
             <span>Turnos</span>
+          </TabsTrigger>
+          <TabsTrigger value="itens" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
+            <Package className="h-4 w-4" />
+            <span>Itens</span>
           </TabsTrigger>
           <TabsTrigger value="ocorrencias" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <History className="h-4 w-4" />
@@ -900,6 +905,10 @@ export default function CollaboratorDetails() {
               />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="itens" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "itens" && "hidden")}>
+          <CollaboratorItemsView colaboradorId={id!} />
         </TabsContent>
       </Tabs>
 

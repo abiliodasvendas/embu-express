@@ -159,3 +159,13 @@ export function useDesassociarItem() {
     },
   });
 }
+
+export function useItensColaboradorQuery(colaboradorId: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ["itens-equipamentos", "colaborador", colaboradorId],
+    queryFn: () => itemEquipamentoApi.listItensColaborador(colaboradorId),
+    enabled: !!colaboradorId && enabled,
+    staleTime: 0,
+    gcTime: 0,
+  });
+}

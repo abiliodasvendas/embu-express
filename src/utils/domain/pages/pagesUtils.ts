@@ -11,7 +11,8 @@ import {
     FileText,
     Home,
     Settings,
-    Users
+    Users,
+    Package
 } from "lucide-react";
 
 export interface PageItem {
@@ -82,6 +83,13 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.FERIADOS,
         icon: Building,
         permissionKey: PERMISSIONS.CONFIGURACAO.VER,
+        category: MENU_CATEGORIES.CADASTROS
+    },
+    {
+        title: "Itens e Equipamentos",
+        href: ROUTES.PRIVATE.EQUIPAMENTOS,
+        icon: Package,
+        permissionKey: PERMISSIONS.EQUIPAMENTOS.VER,
         category: MENU_CATEGORIES.CADASTROS
     },
     {

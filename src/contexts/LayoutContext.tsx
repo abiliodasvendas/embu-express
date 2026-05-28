@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto } from '@/types/database';
+import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem } from '@/types/database';
 
 // --- Interfaces ---
 
@@ -90,6 +90,24 @@ export interface OpenFeriadoFormProps {
   onSuccess?: () => void;
 }
 
+export interface OpenAlocarEquipamentoProps {
+  onSuccess?: () => void;
+}
+
+export interface OpenItemEquipamentoFormProps {
+  itemToEdit?: ItemEquipamento | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenCategoriasProps {
+  onSuccess?: () => void;
+}
+
+export interface OpenAlocadosPorItemProps {
+  itemId: number;
+  itemName: string;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -153,6 +171,18 @@ export interface LayoutContextType {
 
   openLocationTutorialDialog: () => void;
   closeLocationTutorialDialog: () => void;
+
+  openAlocarEquipamentoDialog: (props: OpenAlocarEquipamentoProps) => void;
+  closeAlocarEquipamentoDialog: () => void;
+
+  openItemEquipamentoFormDialog: (props: OpenItemEquipamentoFormProps) => void;
+  closeItemEquipamentoFormDialog: () => void;
+
+  openCategoriasDialog: (props: OpenCategoriasProps) => void;
+  closeCategoriasDialog: () => void;
+
+  openAlocadosPorItemDialog: (props: OpenAlocadosPorItemProps) => void;
+  closeAlocadosPorItemDialog: () => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

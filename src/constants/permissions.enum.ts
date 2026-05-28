@@ -50,6 +50,10 @@ export const PERMISSIONS = {
         PAGAR: "financeiro:pagar",
         VER_MEU: 'financeiro:ver_meu', // App: Ver o próprio financeiro
     } as const,
+    EQUIPAMENTOS: {
+        VER: 'equipamentos:ver',
+        EDITAR: 'equipamentos:editar',
+    } as const,
 } as const;
 
 export const ROLES = {

@@ -398,6 +398,31 @@ export const messages = {
       excluido: "Feriado removido com sucesso.",
     },
   },
+  itemEquipamento: {
+    erro: {
+      carregar: "Erro ao carregar itens e equipamentos.",
+      criar: "Erro ao cadastrar item.",
+      atualizar: "Erro ao atualizar item.",
+      excluir: "Erro ao excluir item.",
+      alocar: "Erro ao realizar a alocação de itens.",
+      categoria: {
+        criar: "Erro ao cadastrar categoria.",
+        atualizar: "Erro ao atualizar categoria.",
+        excluir: "Erro ao excluir categoria.",
+      },
+    },
+    sucesso: {
+      criado: "Item cadastrado com sucesso.",
+      atualizado: "Item atualizado com sucesso.",
+      excluido: "Item removido com sucesso.",
+      alocado: "Equipamentos alocados com sucesso!",
+      categoria: {
+        criado: "Categoria cadastrada com sucesso.",
+        atualizado: "Categoria atualizada com sucesso.",
+        excluido: "Categoria removida com sucesso.",
+      },
+    },
+  },
 
   // ========== OCORRÊNCIAS ==========
   ocorrencia: {

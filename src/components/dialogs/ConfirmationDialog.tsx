@@ -93,12 +93,16 @@ export default function ConfirmationDialog({
         <div className="p-4 grid grid-cols-2 gap-3 bg-gray-50/50 border-t border-gray-50 mt-2">
           <AlertDialogCancel
             disabled={showLoading}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
             className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm"
           >
             {cancelText}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={async (e) => {
+              e.stopPropagation();
               e.preventDefault();
               if (onConfirm) {
                   const result = onConfirm();

@@ -20,6 +20,7 @@ export const ROUTES = {
         OCORRENCIAS: "/admin/ocorrencias",
         ESPELHO_ATIVIDADE: "/admin/espelho-atividade",
         RELATORIO_FINANCEIRO: "/admin/financeiro",
+        EQUIPAMENTOS: "/equipamentos",
         INICIO: "/inicio"
     }
 } as const;

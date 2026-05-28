@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps } from './LayoutContext';
+import { LayoutContext, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps } from './LayoutContext';
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
@@ -24,6 +24,10 @@ import { EndTurnDialog } from "@/components/dialogs/EndTurnDialog";
 import { OccurrenceDetailsDialog } from "@/components/dialogs/OccurrenceDetailsDialog";
 import { PasswordGuardDialog } from "@/components/dialogs/PasswordGuardDialog";
 import { LocationTutorialDialog } from "@/components/dialogs/LocationTutorialDialog";
+import { AlocarEquipamentoDialog } from "@/components/dialogs/AlocarEquipamentoDialog";
+import { ItemEquipamentoFormDialog } from "@/components/dialogs/ItemEquipamentoFormDialog";
+import { CategoriasDialog } from "@/components/dialogs/CategoriasDialog";
+import { AlocadosPorItemDialog } from "@/components/dialogs/AlocadosPorItemDialog";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
@@ -60,6 +64,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [editarCadastroDialogState, setEditarCadastroDialogState] = useState({ open: false });
   const [passwordGuardDialogState, setPasswordGuardDialogState] = useState<{ open: boolean; props?: OpenPasswordGuardProps }>({ open: false });
   const [locationTutorialDialogState, setLocationTutorialDialogState] = useState({ open: false });
+  const [alocarEquipamentoDialogState, setAlocarEquipamentoDialogState] = useState<{ open: boolean; props?: OpenAlocarEquipamentoProps }>({ open: false });
+  const [itemEquipamentoFormDialogState, setItemEquipamentoFormDialogState] = useState<{ open: boolean; props?: OpenItemEquipamentoFormProps }>({ open: false });
+  const [categoriasDialogState, setCategoriasDialogState] = useState<{ open: boolean; props?: OpenCategoriasProps }>({ open: false });
+  const [alocadosPorItemDialogState, setAlocadosPorItemDialogState] = useState<{ open: boolean; props?: OpenAlocadosPorItemProps }>({ open: false });
 
   // --- Actions ---
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => setConfirmationDialogState({ open: true, props });
@@ -119,6 +127,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openLocationTutorialDialog = () => setLocationTutorialDialogState({ open: true });
   const closeLocationTutorialDialog = () => setLocationTutorialDialogState({ open: false });
 
+  const openAlocarEquipamentoDialog = (props: OpenAlocarEquipamentoProps) => setAlocarEquipamentoDialogState({ open: true, props });
+  const closeAlocarEquipamentoDialog = () => closeDialog(() => setAlocarEquipamentoDialogState((prev) => ({ ...prev, open: false })));
+
+  const openItemEquipamentoFormDialog = (props: OpenItemEquipamentoFormProps) => setItemEquipamentoFormDialogState({ open: true, props });
+  const closeItemEquipamentoFormDialog = () => closeDialog(() => setItemEquipamentoFormDialogState((prev) => ({ ...prev, open: false })));
+
+  const openCategoriasDialog = (props: OpenCategoriasProps) => setCategoriasDialogState({ open: true, props });
+  const closeCategoriasDialog = () => closeDialog(() => setCategoriasDialogState((prev) => ({ ...prev, open: false })));
+
+  const openAlocadosPorItemDialog = (props: OpenAlocadosPorItemProps) => setAlocadosPorItemDialogState({ open: true, props });
+  const closeAlocadosPorItemDialog = () => closeDialog(() => setAlocadosPorItemDialogState((prev) => ({ ...prev, open: false })));
+
   return (
     <LayoutContext.Provider value={{
       pageTitle, setPageTitle, pageSubtitle, setPageSubtitle,
@@ -141,6 +161,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openEditarCadastroDialog, closeEditarCadastroDialog,
       openPasswordGuardDialog, closePasswordGuardDialog,
       openLocationTutorialDialog, closeLocationTutorialDialog,
+      openAlocarEquipamentoDialog, closeAlocarEquipamentoDialog,
+      openItemEquipamentoFormDialog, closeItemEquipamentoFormDialog,
+      openCategoriasDialog, closeCategoriasDialog,
+      openAlocadosPorItemDialog, closeAlocadosPorItemDialog,
     }}>
       {children}
       {confirmationDialogState.props && <ConfirmationDialog open={confirmationDialogState.open} onOpenChange={(open) => setConfirmationDialogState((prev) => ({ ...prev, open }))} title={confirmationDialogState.props.title} description={confirmationDialogState.props.description} onConfirm={confirmationDialogState.props.onConfirm} confirmText={confirmationDialogState.props.confirmText} cancelText={confirmationDialogState.props.cancelText} variant={confirmationDialogState.props.variant} isLoading={confirmationDialogState.props.isLoading} />}
@@ -162,6 +186,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {editarCadastroDialogState.open && <EditarCadastroDialog isOpen={true} onClose={closeEditarCadastroDialog} />}
       {passwordGuardDialogState.open && passwordGuardDialogState.props && <PasswordGuardDialog open={true} onSuccess={() => { passwordGuardDialogState.props?.onSuccess?.(); closePasswordGuardDialog(); }} />}
       {locationTutorialDialogState.open && <LocationTutorialDialog isOpen={true} onClose={closeLocationTutorialDialog} />}
+      {alocarEquipamentoDialogState.open && <AlocarEquipamentoDialog open={true} onOpenChange={(open) => !open && closeAlocarEquipamentoDialog()} />}
+      {itemEquipamentoFormDialogState.open && <ItemEquipamentoFormDialog open={true} onOpenChange={(open) => !open && closeItemEquipamentoFormDialog()} itemToEdit={itemEquipamentoFormDialogState.props?.itemToEdit} />}
+      {categoriasDialogState.open && <CategoriasDialog open={true} onOpenChange={(open) => !open && closeCategoriasDialog()} />}
+      {alocadosPorItemDialogState.open && alocadosPorItemDialogState.props && <AlocadosPorItemDialog open={true} onOpenChange={(open) => !open && closeAlocadosPorItemDialog()} itemId={alocadosPorItemDialogState.props.itemId} itemName={alocadosPorItemDialogState.props.itemName} />}
     </LayoutContext.Provider>
   );
 };

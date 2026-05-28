@@ -187,6 +187,7 @@ export function OccurrenceFormDialog({
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Combobox
+                                                        modal={true}
                                                         options={collaborators.map((c) => ({
                                                             value: c.id,
                                                             label: c.nome_completo,

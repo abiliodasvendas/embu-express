@@ -50,6 +50,7 @@ const Empresas = lazyLoad(() => import("./pages/admin/Empresas"));
 const Perfis = lazyLoad(() => import("./pages/admin/Perfis"));
 const Configuracoes = lazyLoad(() => import("./pages/admin/Configuracoes"));
 const Feriados = lazyLoad(() => import("./pages/admin/Feriados"));
+const ItensEquipamentos = lazyLoad(() => import("./pages/admin/ItensEquipamentos"));
 const Ocorrencias = lazyLoad(() => import("./pages/admin/Occurrences"));
 const TimeMirror = lazyLoad(() => import("./pages/admin/TimeMirror"));
 const FinancialReport = lazyLoad(() => import("./pages/admin/FinancialReport"));
@@ -264,6 +265,10 @@ const App = () => {
                     <Route element={<RequirePermission permissions={[PERMISSIONS.USUARIOS.VER]} />}>
                       <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />
                       <Route path={ROUTES.PRIVATE.COLABORADOR_DETAILS.replace(/^\//, "")} element={<CollaboratorDetails />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.EQUIPAMENTOS.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.EQUIPAMENTOS.replace("/", "")} element={<ItensEquipamentos />} />
                     </Route>
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.CLIENTES.VER]} />}>

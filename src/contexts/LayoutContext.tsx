@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem } from '@/types/database';
+import { OccurrenceFormData } from '@/schemas/occurrenceSchema';
 
 // --- Interfaces ---
 
@@ -67,6 +68,7 @@ export interface OpenSuccessRegistrationProps {
 export interface OpenOccurrenceFormProps {
   collaboratorId?: string;
   onSuccess?: () => void;
+  defaultValues?: Partial<OccurrenceFormData>;
 }
 
 export interface OpenOccurrenceDetailsProps {

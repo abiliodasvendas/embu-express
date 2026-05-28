@@ -8,6 +8,9 @@ import { getManagementStatus } from "@/utils/ponto";
 import { Card } from "@/components/ui/card";
 import { TimeRecordCard } from "./TimeRecordCard";
 import { safeCloseDialog } from "@/hooks";
+import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
+import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
+import { ocorrenciaService } from "@/services/api/ocorrencia.service";
 
 interface TimeTrackingListProps {
   records: RegistroPonto[];
@@ -77,8 +80,10 @@ export function TimeTrackingList({
   addManualAbsence,
   removeManualAbsence
 }: TimeTrackingListProps) {
-  const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog, openOccurrenceFormDialog } = useLayout();
   const { mutateAsync: deletePonto } = useDeletePonto();
+  const { mutateAsync: deleteOcorrencia } = useDeleteOcorrencia();
+  const { data: tiposOcorrencia = [] } = useTiposOcorrencia();
 
   const handleEdit = (record: RegistroPonto) => {
     openTimeRecordDialog({ record });
@@ -113,11 +118,51 @@ export function TimeTrackingList({
   const handleMarkAbsent = async (record: RegistroPonto) => {
     if (!addManualAbsence || !removeManualAbsence) return;
 
+    const tipoSemAtividade = tiposOcorrencia.find(t => 
+      t.descricao.toLowerCase().includes("sem atividade") || 
+      t.descricao.toLowerCase().includes("falta")
+    );
+
     const isAbsent = manualAbsenceIds.includes(record.usuario_id!);
     if (isAbsent) {
+      try {
+        const ocorrenciasExistentes = await ocorrenciaService.listOcorrencias({
+          usuario_id: record.usuario_id,
+          data_inicio: record.data_referencia,
+          data_fim: record.data_referencia,
+          tipo_id: tipoSemAtividade ? tipoSemAtividade.id : undefined,
+        });
+
+        if (ocorrenciasExistentes && ocorrenciasExistentes.length > 0) {
+          const oId = ocorrenciasExistentes[0].id;
+          if (oId) {
+            await deleteOcorrencia(oId);
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao remover ocorrência automática de Sem Atividade:", error);
+      }
+
       await removeManualAbsence.mutateAsync(record.usuario_id!);
     } else {
-      await addManualAbsence.mutateAsync(record.usuario_id!);
+      const defaultTipoId = tipoSemAtividade ? String(tipoSemAtividade.id) : "";
+
+      openOccurrenceFormDialog({
+        collaboratorId: record.usuario_id,
+        defaultValues: {
+          colaborador_id: record.usuario_id,
+          tipo_id: defaultTipoId,
+          data_ocorrencia: new Date().toISOString().split("T")[0],
+          colaborador_cliente_id: record.colaborador_cliente?.id
+            ? String(record.colaborador_cliente.id)
+            : "none",
+          observacao: "",
+          impacto_financeiro: false,
+        },
+        onSuccess: async () => {
+          await addManualAbsence.mutateAsync(record.usuario_id!);
+        }
+      });
     }
   };
 

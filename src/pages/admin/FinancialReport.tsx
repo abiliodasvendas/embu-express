@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCollaborators, useFinancialReportViewModel } from "@/hooks";
+import { useSearchParams } from "react-router-dom";
 import { useFinanceiroGeral } from "@/hooks/api/useFinanceiro";
 import { useUrlState } from "@/hooks/ui/useUrlState";
 import { FinancialReportView } from "@/components/features/financeiro/FinancialReportView";
@@ -90,6 +91,7 @@ const FinancialReportMobileItem = ({
 
 export function FinancialReport() {
     const { setPageTitle } = useLayout();
+    const [, setSearchParams] = useSearchParams();
     const vm = useFinancialReportViewModel();
     const [activeTab, setActiveTab] = useUrlState<string>({ key: "tab", defaultValue: "geral" });
     const [statusFilter, setStatusFilter] = useState<"todos" | "pendentes">("pendentes");
@@ -294,8 +296,12 @@ export function FinancialReport() {
                                         key={colab.colaborador_id}
                                         colab={colab}
                                         onSelect={() => {
-                                            vm.setUsuario(colab.colaborador_id);
-                                            setActiveTab("detalhado");
+                                            setSearchParams((prev) => {
+                                                const newParams = new URLSearchParams(prev);
+                                                newParams.set("usuario", colab.colaborador_id);
+                                                newParams.set("tab", "detalhado");
+                                                return newParams;
+                                            }, { replace: true });
                                         }}
                                     />
                                 )}
@@ -324,8 +330,12 @@ export function FinancialReport() {
                                                     key={colab.colaborador_id}
                                                     className="hover:bg-gray-50/80 transition-colors cursor-pointer"
                                                     onClick={() => {
-                                                        vm.setUsuario(colab.colaborador_id);
-                                                        setActiveTab("detalhado");
+                                                        setSearchParams((prev) => {
+                                                            const newParams = new URLSearchParams(prev);
+                                                            newParams.set("usuario", colab.colaborador_id);
+                                                            newParams.set("tab", "detalhado");
+                                                            return newParams;
+                                                        }, { replace: true });
                                                     }}
                                                 >
                                                     <td className="py-4 pl-6 align-middle">
@@ -374,8 +384,12 @@ export function FinancialReport() {
                                                             variant="outline"
                                                             className="rounded-xl border-gray-200 hover:border-emerald-600 hover:text-emerald-700 font-bold text-xs h-9 transition-all"
                                                             onClick={() => {
-                                                                vm.setUsuario(colab.colaborador_id);
-                                                                setActiveTab("detalhado");
+                                                                setSearchParams((prev) => {
+                                                                    const newParams = new URLSearchParams(prev);
+                                                                    newParams.set("usuario", colab.colaborador_id);
+                                                                    newParams.set("tab", "detalhado");
+                                                                    return newParams;
+                                                                }, { replace: true });
                                                             }}
                                                         >
                                                             <Eye className="h-3.5 w-3.5 mr-1.5" />

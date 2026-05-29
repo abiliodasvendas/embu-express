@@ -90,12 +90,12 @@ export default function CollaboratorDetails() {
 
 
   const handleToggleStatus = async (collab: Usuario, newStatus: string) => {
-    const confirmMessage = newStatus === STATUS.ATIVO ? messages.dialogo.ativar.descricao : messages.dialogo.desativar.descricao;
+    const confirmMessage = newStatus === STATUS.ATIVO ? messages.dialogo.ativar.descricao : "Tem certeza que deseja desligar este colaborador?";
 
     openConfirmationDialog({
-      title: newStatus === STATUS.ATIVO ? "Ativar Colaborador" : "Desativar Colaborador",
+      title: newStatus === STATUS.ATIVO ? "Ativar Colaborador" : "Desligar Colaborador",
       description: confirmMessage,
-      confirmText: "Confirmar",
+      confirmText: newStatus === STATUS.ATIVO ? "Confirmar" : "Desligar",
       variant: newStatus === STATUS.ATIVO ? "success" : "warning",
       onConfirm: async () => {
         try {
@@ -109,9 +109,10 @@ export default function CollaboratorDetails() {
                 collaborator: collab,
                 title: "Colaborador Ativo!",
                 hideNewCollaboratorButton: true,
+                hideTurnButton: collab.status !== STATUS.PENDENTE,
                 description: (
                   <>
-                    O colaborador <span className="text-gray-900 font-bold">{collab.nome_completo}</span> foi aprovado com sucesso.
+                    O cadastro do colaborador <span className="text-gray-900 font-bold">{collab.nome_completo}</span> foi ativado com sucesso.
                   </>
                 )
               });
@@ -172,7 +173,7 @@ export default function CollaboratorDetails() {
 
   const editAction = actions.find(a => a.label === "Editar");
   const resetAction = actions.find(a => a.label === "Resetar Senha");
-  const statusAction = actions.find(a => ["Desativar", "Ativar", "Aprovar"].includes(a.label));
+  const statusAction = actions.find(a => ["Desligar", "Ativar", "Aprovar"].includes(a.label));
   const deleteAction = actions.find(a => a.label === "Excluir");
 
   const { selectedMes, setSelectedMes, selectedAno, setSelectedAno } = useDateFilters({
@@ -637,8 +638,7 @@ export default function CollaboratorDetails() {
               <Can I={PERMISSIONS.USUARIOS.EDITAR}>
                 <Button
                   onClick={handleAddTurn}
-                  variant="outline"
-                  className="rounded-xl flex items-center gap-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm h-10"
+                  className="rounded-xl flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold h-9 shadow-sm select-none"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Novo Turno</span>
@@ -818,8 +818,7 @@ export default function CollaboratorDetails() {
                       financeiroVm.refetch();
                     }
                   })}
-                  className="rounded-xl flex items-center gap-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm h-10"
-                  variant="outline"
+                  className="rounded-xl flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold h-9 shadow-sm select-none"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Registrar</span>

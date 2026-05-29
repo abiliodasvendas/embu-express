@@ -100,9 +100,9 @@ export function useCollaboratorsViewModel() {
     const handleStatusChange = useCallback((collaborator: Collaborator, newStatus: string) => {
         const isActivating = newStatus === StatusUsuario.ATIVO;
         openConfirmationDialog({
-            title: isActivating ? "Ativar Colaborador" : "Desativar Colaborador",
-            description: `Tem certeza que deseja ${isActivating ? "ativar" : "desativar"} o colaborador "${collaborator.nome_completo}"?`,
-            confirmText: isActivating ? "Ativar" : "Desativar",
+            title: isActivating ? "Ativar Colaborador" : "Desligar Colaborador",
+            description: `Tem certeza que deseja ${isActivating ? "ativar" : "desligar"} o colaborador "${collaborator.nome_completo}"?`,
+            confirmText: isActivating ? "Ativar" : "Desligar",
             variant: isActivating ? "default" : "destructive",
             onConfirm: async () => {
                 await updateStatus.mutateAsync({
@@ -118,9 +118,10 @@ export function useCollaboratorsViewModel() {
                             collaborator: collaborator,
                             title: "Aprovação Realizada!",
                             hideNewCollaboratorButton: true,
+                            hideTurnButton: collaborator.status !== StatusUsuario.PENDENTE,
                             description: (
                                 <>
-                                    O colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi aprovado com sucesso.
+                                    O cadastro do colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi ativado com sucesso.
                                 </>
                             )
                         });

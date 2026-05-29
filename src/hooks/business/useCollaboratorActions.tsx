@@ -83,7 +83,7 @@ export function useCollaboratorActions({
         });
       } else if (status === StatusUsuario.ATIVO) {
         actions.push({
-          label: "Desativar",
+          label: "Desligar",
           icon: <Ban className="h-4 w-4" />,
           onClick: () => onStatusChange(collaborator, StatusUsuario.INATIVO),
           swipeColor: "bg-amber-600",

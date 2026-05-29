@@ -19,6 +19,7 @@ interface SuccessRegistrationDialogProps {
     description?: React.ReactNode;
     onOpenCollaboratorForm: () => void;
     hideNewCollaboratorButton?: boolean;
+    hideTurnButton?: boolean;
 }
 
 export function SuccessRegistrationDialog({
@@ -28,7 +29,8 @@ export function SuccessRegistrationDialog({
     title = "Cadastro Realizado!",
     description,
     onOpenCollaboratorForm,
-    hideNewCollaboratorButton = false
+    hideNewCollaboratorButton = false,
+    hideTurnButton = false
 }: SuccessRegistrationDialogProps) {
     const navigate = useNavigate();
 
@@ -45,6 +47,8 @@ export function SuccessRegistrationDialog({
         navigate(`${ROUTES.PRIVATE.COLABORADORES}/${collaborator.id}?openTurnDialog=true`);
     };
 
+    const hasButtons = !hideNewCollaboratorButton || !hideTurnButton;
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="w-[95vw] max-w-sm rounded-[2rem] border-0 shadow-2xl p-0 overflow-hidden bg-white gap-0 animate-in fade-in zoom-in-95 duration-200" hideCloseButton>
@@ -56,11 +60,11 @@ export function SuccessRegistrationDialog({
                     >
                         <X className="h-5 w-5" />
                     </button>
-
+ 
                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-emerald-50 border border-emerald-100 shadow-sm transition-all duration-500 animate-in zoom-in spin-in-12">
                         <CheckCircle2 className="w-8 h-8 text-emerald-600" />
                     </div>
-
+ 
                     <div className="space-y-2">
                         <DialogTitle className="text-xl font-black text-gray-900 leading-tight uppercase tracking-tight">
                             {title}
@@ -74,29 +78,40 @@ export function SuccessRegistrationDialog({
                         </DialogDescription>
                     </div>
                 </div>
-
+ 
                 <div className={cn(
                     "p-4 gap-3 bg-gray-50/50 border-t border-gray-50 mt-2",
-                    hideNewCollaboratorButton ? "flex" : "grid grid-cols-2"
+                    (!hideNewCollaboratorButton && !hideTurnButton) ? "grid grid-cols-2" : "flex"
                 )}>
                     {!hideNewCollaboratorButton && (
                         <Button
                             variant="outline"
                             onClick={handleNewCollaborator}
-                            className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs uppercase"
+                            className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs uppercase flex-1"
                         >
                             CADASTRAR COLABORADOR
                         </Button>
                     )}
-                    <Button
-                        onClick={handleAddTurn}
-                        className={cn(
-                            "h-11 rounded-xl font-bold shadow-lg transition-all text-white bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20 text-[10px] sm:text-xs",
-                            hideNewCollaboratorButton && "w-full"
-                        )}
-                    >
-                        VINCULAR TURNO
-                    </Button>
+                    {!hideTurnButton && (
+                        <Button
+                            onClick={handleAddTurn}
+                            className={cn(
+                                "h-11 rounded-xl font-bold shadow-lg transition-all text-white bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20 text-[10px] sm:text-xs flex-1",
+                                hideNewCollaboratorButton && "w-full"
+                            )}
+                        >
+                            VINCULAR TURNO
+                        </Button>
+                    )}
+                    {!hasButtons && (
+                        <Button
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                            className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs uppercase w-full"
+                        >
+                            FECHAR
+                        </Button>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

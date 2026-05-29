@@ -63,6 +63,7 @@ export interface OpenSuccessRegistrationProps {
   title?: string;
   description?: ReactNode;
   hideNewCollaboratorButton?: boolean;
+  hideTurnButton?: boolean;
 }
 
 export interface OpenOccurrenceFormProps {

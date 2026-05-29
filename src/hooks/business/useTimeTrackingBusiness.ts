@@ -16,8 +16,8 @@ export function useTimeTrackingBusiness({ records, date, collaborators, manualAb
         return records?.map(r => {
             const collaborator = collaborators?.find(c => c.id === r.usuario_id);
             
-            // Se o usuário está marcado manualmente como ausente, forçamos o status ABSENT
-            const isManuallyAbsent = manualAbsenceIds.includes(r.usuario_id);
+            // Se o usuário está marcado manualmente como ausente e não tem entrada registrada, forçamos o status ABSENT
+            const isManuallyAbsent = manualAbsenceIds.includes(r.usuario_id) && !r.entrada_hora;
             const status = isManuallyAbsent 
                 ? ManagementStatus.ABSENT 
                 : getManagementStatus(r, date) as ManagementStatus;

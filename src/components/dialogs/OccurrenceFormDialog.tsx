@@ -44,6 +44,7 @@ interface OccurrenceFormDialogProps {
     onOpenChange: (open: boolean) => void;
     collaboratorId?: string;
     onSuccess?: () => void;
+    defaultValues?: Partial<OccurrenceFormData>;
 }
 
 export function OccurrenceFormDialog({
@@ -51,6 +52,7 @@ export function OccurrenceFormDialog({
     onOpenChange,
     collaboratorId,
     onSuccess,
+    defaultValues,
 }: OccurrenceFormDialogProps) {
     const { data: collaborators = [] } = useCollaborators({});
     const { data: tipos = [] } = useTiposOcorrencia();
@@ -59,25 +61,45 @@ export function OccurrenceFormDialog({
     const form = useForm<OccurrenceFormData>({
         resolver: zodResolver(occurrenceSchema),
         defaultValues: {
-            colaborador_id: collaboratorId || "",
-            data_ocorrencia: "",
-            valor: 0,
-            impacto_financeiro: false,
-            tipo_lancamento: undefined as any,
-            colaborador_cliente_id: undefined as any,
-            observacao: "",
+            colaborador_id: collaboratorId || defaultValues?.colaborador_id || "",
+            tipo_id: defaultValues?.tipo_id || "",
+            data_ocorrencia: defaultValues?.data_ocorrencia || "",
+            valor: defaultValues?.valor || 0,
+            impacto_financeiro: defaultValues?.impacto_financeiro || false,
+            tipo_lancamento: defaultValues?.tipo_lancamento || undefined as any,
+            colaborador_cliente_id: defaultValues?.colaborador_cliente_id !== undefined ? defaultValues.colaborador_cliente_id : undefined as any,
+            observacao: defaultValues?.observacao || "",
         },
     });
 
     const selectedCollaboratorId = form.watch("colaborador_id");
     const { data: selectedDetailedCollaborator } = useCollaborator(selectedCollaboratorId);
 
-    // Update collaborator_id if it changes via props
+    // Update collaborator_id and defaultValues if they change via props
     useEffect(() => {
         if (collaboratorId) {
             form.setValue("colaborador_id", collaboratorId);
         }
-    }, [collaboratorId, form]);
+        if (defaultValues) {
+            Object.entries(defaultValues).forEach(([key, value]) => {
+                if (value !== undefined) {
+                    form.setValue(key as any, value);
+                }
+            });
+        }
+    }, [collaboratorId, defaultValues, form]);
+
+    // Garantir que o valor inicial do turno seja selecionado assim que a lista de links/turnos for carregada do backend
+    useEffect(() => {
+        if (selectedDetailedCollaborator?.links && defaultValues?.colaborador_cliente_id) {
+            const hasLink = selectedDetailedCollaborator.links.some(
+                (link: any) => String(link.id) === String(defaultValues.colaborador_cliente_id)
+            );
+            if (hasLink) {
+                form.setValue("colaborador_cliente_id", String(defaultValues.colaborador_cliente_id));
+            }
+        }
+    }, [selectedDetailedCollaborator, defaultValues?.colaborador_cliente_id, form]);
 
     const handleFillMagic = () => {
         const data = mockGenerator.occurrence(collaboratorId);
@@ -299,11 +321,21 @@ export function OccurrenceFormDialog({
                                                         <SelectItem value="none" className="cursor-pointer font-semibold text-primary italic">
                                                             Geral (Avulsa)
                                                         </SelectItem>
-                                                        {links.map((link: any) => (
-                                                            <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
-                                                                {link.cliente?.nome_fantasia || "Sem Cliente"}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {links.map((link: any) => {
+                                                             const hInicio = link.horarios?.[0]?.hora_inicio;
+                                                             const hFim = link.horarios?.[0]?.hora_fim;
+
+                                                             return (
+                                                                 <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
+                                                                     {link.cliente?.nome_fantasia || "Sem Cliente"}{" "}
+                                                                     {hInicio && hFim && (
+                                                                         <span className="text-[10px] text-gray-400 font-normal italic">
+                                                                             ({hInicio.slice(0, 5)} - {hFim.slice(0, 5)})
+                                                                         </span>
+                                                                     )}
+                                                                 </SelectItem>
+                                                             );
+                                                         })}
                                                     </SelectContent>
                                                 </Select>
                                                 <FormMessage />

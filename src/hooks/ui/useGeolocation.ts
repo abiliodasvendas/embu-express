@@ -60,18 +60,60 @@ export function useGeolocation() {
         return null;
       }
 
-      // 4. Try to get position
-      // In Android, enableHighAccuracy: true triggers the system prompt to enable GPS precision
       const position = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
-        timeout: 15000, // Reduced slightly for better UX
+        timeout: 15000,
         maximumAge: 0
       });
 
+      let finalPosition = position;
+      const locationAge = Date.now() - position.timestamp;
+
+      if (locationAge > 10000) {
+        try {
+          finalPosition = await new Promise<typeof position>((resolve) => {
+            let watchId = '';
+            const timeoutId = setTimeout(() => {
+              if (watchId) {
+                Geolocation.clearWatch({ id: watchId });
+              }
+              resolve(position);
+            }, 3500);
+
+            Geolocation.watchPosition(
+              {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+              },
+              (pos, err) => {
+                if (err) return;
+                if (pos) {
+                  const posAge = Date.now() - pos.timestamp;
+                  if (posAge < 5000) {
+                    clearTimeout(timeoutId);
+                    if (watchId) {
+                      Geolocation.clearWatch({ id: watchId });
+                    }
+                    resolve(pos);
+                  }
+                }
+              }
+            ).then(id => {
+              watchId = id;
+            }).catch(() => {
+              // Fallback se falhar
+            });
+          });
+        } catch (e) {
+          // Fallback se der erro
+        }
+      }
+
       const data: LocationData = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy,
+        latitude: finalPosition.coords.latitude,
+        longitude: finalPosition.coords.longitude,
+        accuracy: finalPosition.coords.accuracy,
       };
 
       setLocation(data);

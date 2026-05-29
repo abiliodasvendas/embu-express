@@ -1,6 +1,7 @@
 import { MoneyInput } from "@/components/forms/MoneyInput";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogClose,
@@ -394,38 +395,28 @@ export function CollaboratorTurnDialog({
                         control={form.control}
                         name="cliente_id"
                         render={({ field, fieldState }) => (
-                          <FormItem>
+                          <FormItem className="flex flex-col">
                             <FormLabel className="text-gray-600 font-bold ml-1 text-sm">
                               Cliente
                               <span className="text-red-500 ml-1">*</span>
                             </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger
-                                  className={cn(
-                                    "h-12 rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all",
-                                    fieldState.error &&
-                                    "border-red-500 focus:ring-red-500/20",
-                                  )}
-                                >
-                                  <SelectValue placeholder="Selecione o Cliente" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="rounded-2xl" side="bottom" sideOffset={4}>
-                                {clients?.map((client) => (
-                                  <SelectItem
-                                    key={client.id}
-                                    value={client.id.toString()}
-                                    className="rounded-xl cursor-pointer"
-                                  >
-                                    {client.nome_fantasia}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Combobox
+                                options={clients?.map((client) => ({
+                                  value: client.id.toString(),
+                                  label: client.nome_fantasia,
+                                })) || []}
+                                value={field.value}
+                                onSelect={field.onChange}
+                                placeholder="Selecione o Cliente"
+                                modal={true}
+                                className={cn(
+                                  "h-12 w-full rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 hover:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all font-medium text-slate-700 shadow-none",
+                                  fieldState.error &&
+                                  "border-red-500 focus:ring-red-500/20",
+                                )}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -435,45 +426,33 @@ export function CollaboratorTurnDialog({
                         control={form.control}
                         name="unidade_id"
                         render={({ field, fieldState }) => (
-                          <FormItem>
+                          <FormItem className="flex flex-col">
                             <FormLabel className="text-gray-600 font-bold ml-1 text-sm">
                               Unidade
                               <span className="text-red-500 ml-1">*</span>
                             </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                              disabled={!selectedClientId}
-                            >
-                              <FormControl>
-                                <SelectTrigger
-                                  className={cn(
-                                    "h-12 rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-60",
-                                    fieldState.error &&
-                                    "border-red-500 focus:ring-red-500/20",
-                                  )}
-                                >
-                                  <SelectValue
-                                    placeholder={
-                                      !selectedClientId
-                                        ? "Aguardando Cliente"
-                                        : "Selecione a Unidade"
-                                    }
-                                  />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="rounded-2xl" side="bottom" sideOffset={4}>
-                                {unidades?.map((unidade) => (
-                                  <SelectItem
-                                    key={unidade.id}
-                                    value={unidade.id.toString()}
-                                    className="rounded-xl cursor-pointer"
-                                  >
-                                    {unidade.nome_unidade}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Combobox
+                                options={unidades?.map((unidade) => ({
+                                  value: unidade.id.toString(),
+                                  label: unidade.nome_unidade,
+                                })) || []}
+                                value={field.value}
+                                onSelect={field.onChange}
+                                placeholder={
+                                  !selectedClientId
+                                    ? "Aguardando Cliente"
+                                    : "Selecione a Unidade"
+                                }
+                                disabled={!selectedClientId}
+                                modal={true}
+                                className={cn(
+                                  "h-12 w-full rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 hover:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all font-medium text-slate-700 shadow-none disabled:opacity-60",
+                                  fieldState.error &&
+                                  "border-red-500 focus:ring-red-500/20",
+                                )}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -484,38 +463,28 @@ export function CollaboratorTurnDialog({
                       control={form.control}
                       name="empresa_id"
                       render={({ field, fieldState }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col">
                           <FormLabel className="text-gray-600 font-bold ml-1 text-sm">
                             Empresa Contratante{" "}
                             <span className="text-red-500">*</span>
                           </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger
-                                className={cn(
-                                  "h-12 rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all",
-                                  fieldState.error &&
-                                  "border-red-500 focus:ring-red-500/20",
-                                )}
-                              >
-                                <SelectValue placeholder="Selecione a Empresa" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="rounded-2xl" side="bottom" sideOffset={4}>
-                              {empresas?.map((emp) => (
-                                <SelectItem
-                                  key={emp.id}
-                                  value={emp.id.toString()}
-                                  className="rounded-xl cursor-pointer"
-                                >
-                                  {emp.nome_fantasia}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <Combobox
+                              options={empresas?.map((emp) => ({
+                                value: emp.id.toString(),
+                                label: emp.nome_fantasia,
+                              })) || []}
+                              value={field.value}
+                              onSelect={field.onChange}
+                              placeholder="Selecione a Empresa"
+                              modal={true}
+                              className={cn(
+                                "h-12 w-full rounded-2xl bg-gray-50/50 border-gray-200 hover:bg-gray-50 hover:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all font-medium text-slate-700 shadow-none",
+                                fieldState.error &&
+                                "border-red-500 focus:ring-red-500/20",
+                              )}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}

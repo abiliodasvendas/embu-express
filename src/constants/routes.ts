@@ -19,6 +19,7 @@ export const ROUTES = {
         FERIADOS: "/feriados",
         OCORRENCIAS: "/admin/ocorrencias",
         ESPELHO_ATIVIDADE: "/admin/espelho-atividade",
+        MAPA_ATIVIDADE: "/admin/mapa-jornada",
         RELATORIO_FINANCEIRO: "/admin/financeiro",
         EQUIPAMENTOS: "/equipamentos",
         INICIO: "/inicio"

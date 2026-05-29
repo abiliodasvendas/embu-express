@@ -53,6 +53,7 @@ const Feriados = lazyLoad(() => import("./pages/admin/Feriados"));
 const ItensEquipamentos = lazyLoad(() => import("./pages/admin/ItensEquipamentos"));
 const Ocorrencias = lazyLoad(() => import("./pages/admin/Occurrences"));
 const TimeMirror = lazyLoad(() => import("./pages/admin/TimeMirror"));
+const CollaboratorMap = lazyLoad(() => import("./pages/admin/CollaboratorMap"));
 const FinancialReport = lazyLoad(() => import("./pages/admin/FinancialReport"));
 const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
 
@@ -257,6 +258,7 @@ const App = () => {
                     <Route element={<RequirePermission permissions={[PERMISSIONS.PONTO.ADMIN_VER]} />}>
                       <Route path={ROUTES.PRIVATE.INICIO.replace("/", "")} element={<Inicio />} />
                       <Route path={ROUTES.PRIVATE.CONTROLE_ATIVIDADE_DIARIO.replace("/", "")} element={<TimeTracking />} />
+                      <Route path={ROUTES.PRIVATE.MAPA_ATIVIDADE.replace("/", "")} element={<CollaboratorMap />} />
                     </Route>
 
                     {/* Rotas Pessoais/Administrativas (Híbridas) */}

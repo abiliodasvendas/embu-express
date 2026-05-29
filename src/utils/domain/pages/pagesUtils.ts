@@ -12,7 +12,8 @@ import {
     Home,
     Settings,
     Users,
-    Package
+    Package,
+    MapPin
 } from "lucide-react";
 
 export interface PageItem {
@@ -52,6 +53,13 @@ export const pagesItems: PageItem[] = [
         title: "Espelho de Atividade",
         href: ROUTES.PRIVATE.ESPELHO_ATIVIDADE,
         icon: FileText,
+        category: MENU_CATEGORIES.PONTO
+    },
+    {
+        title: "Mapa de Jornada",
+        href: ROUTES.PRIVATE.MAPA_ATIVIDADE,
+        icon: MapPin,
+        permissionKey: PERMISSIONS.PONTO.ADMIN_VER,
         category: MENU_CATEGORIES.PONTO
     },
     {

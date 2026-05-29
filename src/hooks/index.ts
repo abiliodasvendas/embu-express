@@ -55,6 +55,7 @@ export { useCreatePonto, useDeletePonto, useFinalizarPausa, useIniciarPausa, use
 export { useCreateOcorrencia, useDeleteOcorrencia, useUpdateOcorrencia } from "./api/useOcorrenciaMutations";
 export { useClientActions } from "./business/useClientActions";
 export { useCollaboratorActions } from "./business/useCollaboratorActions";
+export { useCollaboratorMap } from "./api/useCollaboratorMap";
 
 
 

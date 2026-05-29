@@ -30,6 +30,9 @@ export const pontoApi = {
   getEspelhoPonto: (usuarioId: string, mes: number, ano: number): Promise<EspelhoPontoMensal[]> =>
     apiClient.get(`/pontos/espelho-ponto/${usuarioId}`, { params: { mes, ano } }).then(res => res.data),
 
+  getGeolocalizacaoMensal: (usuarioId: string, mes: number, ano: number): Promise<any[]> =>
+    apiClient.get(`/pontos/geolocalizacao/${usuarioId}`, { params: { mes, ano } }).then(res => res.data),
+
   getById: (id: number): Promise<RegistroPonto> =>
     apiClient.get(`/pontos/${id}`).then(res => res.data),
 

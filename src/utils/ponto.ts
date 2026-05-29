@@ -54,7 +54,8 @@ export const getStatusColorClass = (status: string | null, type?: 'entrada' | 's
 
 export const formatTime = (isoString?: string | null) => {
     if (!isoString) return "--:--";
-    const date = new Date(isoString);
+    const normalized = isoString.includes(' ') ? isoString.replace(' ', 'T') : isoString;
+    const date = new Date(normalized);
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 };
 

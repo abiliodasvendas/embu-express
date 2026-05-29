@@ -11,6 +11,8 @@ import "leaflet/dist/leaflet.css";
 import { MapPin, Calendar, HelpCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { formatTime } from "@/utils/ponto";
+
 
 const unitIcon = L.icon({
     iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
@@ -28,12 +30,7 @@ const collaboratorIcon = L.icon({
     popupAnchor: [1, -34],
 });
 
-const formatHoraReal = (horaStr: string) => {
-    if (!horaStr || typeof horaStr !== 'string') return "";
-    const partes = horaStr.includes('T') ? horaStr.split('T') : horaStr.split(' ');
-    const horaParte = partes[1] || partes[0];
-    return horaParte.substring(0, 5);
-};
+
 
 function RecenterMap({ coords, points, selectedPoint }: { coords: [number, number] | null; points: [number, number][]; selectedPoint: { lat: number; lng: number; id: number } | null }) {
     const map = useMap();
@@ -225,7 +222,7 @@ export function CollaboratorMap() {
                                                 )}
                                             </div>
                                             <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg font-bold">
-                                                {formatHoraReal(p.entrada_hora)}
+                                                {formatTime(p.entrada_hora)}
                                             </span>
                                         </div>
                                     ))}
@@ -296,7 +293,7 @@ export function CollaboratorMap() {
                                                             </p>
                                                             <p className="text-slate-500 flex justify-between gap-4">
                                                                 <span>🟢 Registro Real:</span>
-                                                                <strong className="text-emerald-600 font-bold">{formatHoraReal(p.entrada_hora)}</strong>
+                                                                <strong className="text-emerald-600 font-bold">{formatTime(p.entrada_hora)}</strong>
                                                             </p>
                                                         </div>
                                                         {p.metadata?.accuracy && (

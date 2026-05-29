@@ -19,6 +19,7 @@ import { AndroidSettings, IOSSettings, NativeSettings } from 'capacitor-native-s
 import { AnimatePresence, motion } from "framer-motion";
 import { Briefcase, Info, MapPin, Pause, Play, RefreshCw, Settings, ShieldAlert, Square } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
+import { formatTime } from "@/utils/ponto";
 
 export default function RegistrarPonto() {
     const vm = useRegistrarPontoViewModel();
@@ -303,9 +304,7 @@ export default function RegistrarPonto() {
                                 <Card className="rounded-3xl border-none bg-slate-50/50 p-5 text-center ring-1 ring-slate-100 shadow-sm">
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{messages.ponto.labels.entrada}</span>
                                     <span className="text-xl font-black text-slate-700">
-                                        {vm.pontoAtivo?.entrada_hora
-                                            ? new Date(vm.pontoAtivo.entrada_hora.replace(' ', 'T')).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                                            : '--:--'}
+                                        {formatTime(vm.pontoAtivo?.entrada_hora)}
                                     </span>
                                 </Card>
                                 <Card className="rounded-3xl border-none bg-slate-50/50 p-5 text-center ring-1 ring-slate-100 shadow-sm">

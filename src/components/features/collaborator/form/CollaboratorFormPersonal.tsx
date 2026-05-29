@@ -322,32 +322,6 @@ export function CollaboratorFormPersonal({
           )}
         />
 
-        {/* Flag de validação flexível de Geofencing */}
-        <FormField
-          control={control}
-          name="validar_localizacao"
-          render={({ field }) => (
-            <FormItem className="md:col-span-3 flex flex-row items-center justify-between rounded-2xl border border-gray-150 bg-white p-4 shadow-sm group hover:border-blue-200 transition-all duration-300">
-              <div className="space-y-0.5 pr-4">
-                <FormLabel className="text-gray-805 font-bold text-sm tracking-wide select-none group-hover:text-blue-700 transition-colors cursor-pointer">
-                  Validar localização ao registrar atividade
-                </FormLabel>
-                <p className="text-xs text-muted-foreground font-medium leading-normal opacity-85">
-                  Obriga o colaborador a registrar atividade dentro do raio geográfico configurado da unidade.
-                  Desative para abrir uma exceção (ex: boy interno).
-                </p>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="data-[state=checked]:bg-blue-600"
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
         {(isNewCollaborator || watch("senha_padrao")) && (
           <div className="md:col-span-3 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-center gap-4">
             <div className="bg-blue-100 p-2 rounded-2xl">

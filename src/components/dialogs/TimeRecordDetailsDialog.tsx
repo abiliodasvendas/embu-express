@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatKm } from "@/utils/masks";
-import { formatMinutes, getStatusColorClass, getStatusLabel } from "@/utils/ponto";
+import { formatMinutes, getStatusColorClass, getStatusLabel, formatTime } from "@/utils/ponto";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Building2, CalendarClock, Clock, Edit2, MapPin, Pause, User, X, AlertTriangle } from "lucide-react";
@@ -31,10 +31,7 @@ export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: Tim
         return format(new Date(year, month - 1, day), "d 'de' MMMM, yyyy", { locale: ptBR });
     };
 
-    const formatTime = (timeIso?: string | null) => {
-        if (!timeIso) return "--:--";
-        return format(new Date(timeIso), "HH:mm");
-    };
+
 
     const handleClose = () => {
         safeCloseDialog(onClose);

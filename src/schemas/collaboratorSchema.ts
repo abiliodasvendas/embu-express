@@ -32,7 +32,6 @@ const commonSchema = z.object({
   telefone_recado: z.string().optional(),
   status: z.enum([StatusUsuario.ATIVO, StatusUsuario.INATIVO, StatusUsuario.PENDENTE]).default(StatusUsuario.PENDENTE),
   senha_padrao: z.boolean().optional(),
-  validar_localizacao: z.boolean().optional().default(true),
   data_inicio: z.string().optional(),
   perfil_id: z.string().min(1, messages.validacao.campoObrigatorio),
   tipo_chave_pix: z.string().optional(),

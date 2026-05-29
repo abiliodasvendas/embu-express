@@ -33,6 +33,7 @@ import {
 import { useClientSelection } from "@/hooks/ui/useClientSelection";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente } from "@/types/database";
+import { Switch } from "@/components/ui/switch";
 import { getLocalDate } from "@/utils/date";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { timeMask } from "@/utils/masks";
@@ -43,6 +44,7 @@ import {
   Clock,
   DollarSign,
   Loader2,
+  MapPin,
   Wand2,
   X,
 } from "lucide-react";
@@ -104,7 +106,7 @@ export function CollaboratorTurnDialog({
       valor_adiantamento: 0 as any,
       taxa_entrega: 0 as any,
       data_inicio: "",
-
+      validar_localizacao: true,
       horarios: [],
     },
   });
@@ -128,7 +130,7 @@ export function CollaboratorTurnDialog({
           ),
           taxa_entrega: formatCurrency(turnToEdit.taxa_entrega || 0),
           data_inicio: turnToEdit.data_inicio || "",
-
+          validar_localizacao: turnToEdit.validar_localizacao !== false,
           horarios:
             turnToEdit.horarios?.map((h) => ({
               dia_semana: h.dia_semana,
@@ -149,7 +151,7 @@ export function CollaboratorTurnDialog({
           valor_adiantamento: "" as any,
           taxa_entrega: "" as any,
           data_inicio: "",
-
+          validar_localizacao: true,
           horarios: [],
         });
       }
@@ -244,6 +246,7 @@ export function CollaboratorTurnDialog({
         cliente_id: parseInt(parsedValues.cliente_id),
         unidade_id: parseInt(parsedValues.unidade_id),
         empresa_id: parseInt(parsedValues.empresa_id),
+        validar_localizacao: parsedValues.validar_localizacao,
         horarios: parsedValues.horarios,
       };
 
@@ -514,6 +517,37 @@ export function CollaboratorTurnDialog({
                             </SelectContent>
                           </Select>
                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-blue-500" /> Configurações de Localização
+                  </h3>
+                  <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+                    <FormField
+                      control={form.control}
+                      name="validar_localizacao"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-2xl border border-gray-50 bg-gray-50/30 p-4 shadow-inner group hover:border-blue-200 transition-all duration-300">
+                          <div className="space-y-0.5 pr-4">
+                            <FormLabel className="text-gray-700 font-bold text-sm tracking-wide select-none group-hover:text-blue-700 transition-colors cursor-pointer">
+                              Validar localização ao registrar atividade
+                            </FormLabel>
+                            <p className="text-xs text-muted-foreground font-medium leading-normal opacity-85">
+                              Obriga o colaborador a registrar atividade dentro do raio geográfico configurado da unidade deste turno.
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              className="data-[state=checked]:bg-blue-600"
+                            />
+                          </FormControl>
                         </FormItem>
                       )}
                     />

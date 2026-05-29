@@ -83,7 +83,6 @@ export interface Usuario {
   moto_ano?: string | null;
   moto_placa?: string | null;
   valor_mei?: number | null;
-  validar_localizacao?: boolean;
   perfil?: Perfil;
   links?: ColaboradorCliente[];
   foto_url?: string;
@@ -218,6 +217,7 @@ export interface ColaboradorCliente {
   unidade?: Unidade;
   empresa?: Empresa;
   horarios?: any[];
+  validar_localizacao?: boolean;
   created_at?: string;
   updated_at?: string;
 }

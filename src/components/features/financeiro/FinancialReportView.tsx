@@ -526,7 +526,7 @@ export function FinancialReportView({
                             {resumo.valores_fixos?.bonus > 0 && (
                               <div className="flex justify-between text-[13px] items-center">
                                 <span className="text-gray-500 font-medium">
-                                  Bônus (Efetivo)
+                                  Bônus de Atividade
                                 </span>
                                 <span className="font-bold text-emerald-600">
                                   {formatCurrency(resumo.valores_fixos.bonus)}

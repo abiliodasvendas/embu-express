@@ -414,12 +414,12 @@ export function FinancialReportView({
                               })()}
                             </Badge>
                           )}
-                          {resumo.dias_trabalhados < resumo.dias_base_mes && resumo.valores_fixos?.bonus_config > 0 && (
+                          {resumo.ausencias > 0 && resumo.valores_fixos?.bonus_config > 0 && (
                             <Badge
                               variant="secondary"
                               className="bg-amber-50 text-amber-600 hover:bg-amber-50 text-[10px] font-bold px-2.5 py-0.5 rounded-lg border-amber-100"
                             >
-                              Sem bônus (Escala não atingida)
+                              Sem bônus (Falta registrada)
                             </Badge>
                           )}
                         </div>

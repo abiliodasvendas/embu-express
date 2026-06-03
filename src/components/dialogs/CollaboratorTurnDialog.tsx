@@ -880,7 +880,7 @@ export function CollaboratorTurnDialog({
                         render={({ field }) => (
                           <MoneyInput
                             field={field}
-                            label="Bônus Zero Falta"
+                            label="Bônus de Atividade"
                             labelClassName="text-emerald-800 font-bold ml-1 text-xs uppercase tracking-wider"
                           />
                         )}

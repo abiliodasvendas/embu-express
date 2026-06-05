@@ -1,7 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps } from './LayoutContext';
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
+import { LayoutContext, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps } from './LayoutContext';
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
 
 // Dialogs
@@ -28,6 +26,8 @@ import { AlocarEquipamentoDialog } from "@/components/dialogs/AlocarEquipamentoD
 import { ItemEquipamentoFormDialog } from "@/components/dialogs/ItemEquipamentoFormDialog";
 import { CategoriasDialog } from "@/components/dialogs/CategoriasDialog";
 import { AlocadosPorItemDialog } from "@/components/dialogs/AlocadosPorItemDialog";
+import { CreateTicketDialog } from "@/components/dialogs/CreateTicketDialog";
+import { TicketDetailsDialog } from "@/components/dialogs/TicketDetailsDialog";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
@@ -40,9 +40,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       document.title = `${pageTitle} | Embu Express`;
     }
   }, [pageTitle]);
-
-  const { user } = useSession();
-  const { profile } = useProfile(user?.id);
 
   // --- Dialog States ---
   const [confirmationDialogState, setConfirmationDialogState] = useState<{ open: boolean; props?: OpenConfirmationDialogProps }>({ open: false });
@@ -68,6 +65,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [itemEquipamentoFormDialogState, setItemEquipamentoFormDialogState] = useState<{ open: boolean; props?: OpenItemEquipamentoFormProps }>({ open: false });
   const [categoriasDialogState, setCategoriasDialogState] = useState<{ open: boolean; props?: OpenCategoriasProps }>({ open: false });
   const [alocadosPorItemDialogState, setAlocadosPorItemDialogState] = useState<{ open: boolean; props?: OpenAlocadosPorItemProps }>({ open: false });
+  const [createTicketDialogState, setCreateTicketDialogState] = useState<{ open: boolean; props?: OpenCreateTicketProps }>({ open: false });
+  const [ticketDetailsDialogState, setTicketDetailsDialogState] = useState<{ open: boolean; props?: OpenTicketDetailsProps }>({ open: false });
 
   // --- Actions ---
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => setConfirmationDialogState({ open: true, props });
@@ -139,6 +138,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openAlocadosPorItemDialog = (props: OpenAlocadosPorItemProps) => setAlocadosPorItemDialogState({ open: true, props });
   const closeAlocadosPorItemDialog = () => closeDialog(() => setAlocadosPorItemDialogState((prev) => ({ ...prev, open: false })));
 
+  const openCreateTicketDialog = (props: OpenCreateTicketProps) => setCreateTicketDialogState({ open: true, props });
+  const closeCreateTicketDialog = () => closeDialog(() => setCreateTicketDialogState((prev) => ({ ...prev, open: false })));
+
+  const openTicketDetailsDialog = (props: OpenTicketDetailsProps) => setTicketDetailsDialogState({ open: true, props });
+  const closeTicketDetailsDialog = () => closeDialog(() => setTicketDetailsDialogState((prev) => ({ ...prev, open: false })));
+
   return (
     <LayoutContext.Provider value={{
       pageTitle, setPageTitle, pageSubtitle, setPageSubtitle,
@@ -165,6 +170,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openItemEquipamentoFormDialog, closeItemEquipamentoFormDialog,
       openCategoriasDialog, closeCategoriasDialog,
       openAlocadosPorItemDialog, closeAlocadosPorItemDialog,
+      openCreateTicketDialog, closeCreateTicketDialog,
+      openTicketDetailsDialog, closeTicketDetailsDialog,
     }}>
       {children}
       {confirmationDialogState.props && <ConfirmationDialog open={confirmationDialogState.open} onOpenChange={(open) => setConfirmationDialogState((prev) => ({ ...prev, open }))} title={confirmationDialogState.props.title} description={confirmationDialogState.props.description} onConfirm={confirmationDialogState.props.onConfirm} confirmText={confirmationDialogState.props.confirmText} cancelText={confirmationDialogState.props.cancelText} variant={confirmationDialogState.props.variant} isLoading={confirmationDialogState.props.isLoading} />}
@@ -190,6 +197,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {itemEquipamentoFormDialogState.open && <ItemEquipamentoFormDialog open={true} onOpenChange={(open) => !open && closeItemEquipamentoFormDialog()} itemToEdit={itemEquipamentoFormDialogState.props?.itemToEdit} />}
       {categoriasDialogState.open && <CategoriasDialog open={true} onOpenChange={(open) => !open && closeCategoriasDialog()} />}
       {alocadosPorItemDialogState.open && alocadosPorItemDialogState.props && <AlocadosPorItemDialog open={true} onOpenChange={(open) => !open && closeAlocadosPorItemDialog()} itemId={alocadosPorItemDialogState.props.itemId} itemName={alocadosPorItemDialogState.props.itemName} />}
+      {createTicketDialogState.open && <CreateTicketDialog open={true} onOpenChange={(open) => !open && closeCreateTicketDialog()} ticketToEdit={createTicketDialogState.props?.ticketToEdit} onSuccess={() => { createTicketDialogState.props?.onSuccess?.(); closeCreateTicketDialog(); }} />}
+      {ticketDetailsDialogState.open && ticketDetailsDialogState.props?.ticketId && <TicketDetailsDialog open={true} onOpenChange={(open) => !open && closeTicketDetailsDialog()} ticketId={ticketDetailsDialogState.props.ticketId} onSuccess={() => { ticketDetailsDialogState.props?.onSuccess?.(); closeTicketDetailsDialog(); }} />}
     </LayoutContext.Provider>
   );
 };

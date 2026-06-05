@@ -22,6 +22,7 @@ export const ROUTES = {
         MAPA_ATIVIDADE: "/admin/mapa-jornada",
         RELATORIO_FINANCEIRO: "/admin/financeiro",
         EQUIPAMENTOS: "/equipamentos",
+        CHAMADOS: "/chamados",
         INICIO: "/inicio"
     }
 } as const;

@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem } from '@/types/database';
+import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem, Ticket } from '@/types/database';
 import { OccurrenceFormData } from '@/schemas/occurrenceSchema';
 
 // --- Interfaces ---
@@ -112,6 +112,16 @@ export interface OpenAlocadosPorItemProps {
   itemName: string;
 }
 
+export interface OpenCreateTicketProps {
+  ticketToEdit?: Ticket | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenTicketDetailsProps {
+  ticketId: string;
+  onSuccess?: () => void;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -187,6 +197,12 @@ export interface LayoutContextType {
 
   openAlocadosPorItemDialog: (props: OpenAlocadosPorItemProps) => void;
   closeAlocadosPorItemDialog: () => void;
+
+  openCreateTicketDialog: (props: OpenCreateTicketProps) => void;
+  closeCreateTicketDialog: () => void;
+
+  openTicketDetailsDialog: (props: OpenTicketDetailsProps) => void;
+  closeTicketDetailsDialog: () => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

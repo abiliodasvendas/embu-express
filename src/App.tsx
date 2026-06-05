@@ -51,6 +51,7 @@ const Perfis = lazyLoad(() => import("./pages/admin/Perfis"));
 const Configuracoes = lazyLoad(() => import("./pages/admin/Configuracoes"));
 const Feriados = lazyLoad(() => import("./pages/admin/Feriados"));
 const ItensEquipamentos = lazyLoad(() => import("./pages/admin/ItensEquipamentos"));
+const TicketsKanban = lazyLoad(() => import("./pages/admin/TicketsKanban"));
 const Ocorrencias = lazyLoad(() => import("./pages/admin/Occurrences"));
 const TimeMirror = lazyLoad(() => import("./pages/admin/TimeMirror"));
 const CollaboratorMap = lazyLoad(() => import("./pages/admin/CollaboratorMap"));
@@ -271,6 +272,10 @@ const App = () => {
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.EQUIPAMENTOS.VER]} />}>
                       <Route path={ROUTES.PRIVATE.EQUIPAMENTOS.replace("/", "")} element={<ItensEquipamentos />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.CHAMADOS.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.CHAMADOS.replace("/", "")} element={<TicketsKanban />} />
                     </Route>
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.CLIENTES.VER]} />}>

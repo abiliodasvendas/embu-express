@@ -183,7 +183,7 @@ export const messages = {
 
   // ========== VALIDAÇÕES ==========
   validacao: {
-    campoObrigatorio: "Campo obrigatório.",
+    campoObrigatorio: "Campo obrigatório",
     senhasNaoCoincidem: "As senhas não coincidem.",
     formularioComErros: "Corrija os erros no formulário.",
   },
@@ -465,6 +465,23 @@ export const messages = {
       encerrar: "Turno encerrado com sucesso!",
     },
   },
+  // ========== CHAMADOS ==========
+  chamado: {
+    erro: {
+      carregar: "Erro ao carregar chamados.",
+      criar: "Erro ao abrir chamado.",
+      atualizar: "Erro ao atualizar chamado.",
+      excluir: "Erro ao remover chamado.",
+      comentar: "Erro ao adicionar comentário.",
+    },
+    sucesso: {
+      criado: "Chamado aberto com sucesso!",
+      atualizado: "Chamado atualizado com sucesso!",
+      excluido: "Chamado removido com sucesso!",
+      comentado: "Comentário adicionado com sucesso!",
+    },
+  },
+
   // ========== GEOLOCALIZAÇÃO ==========
   geolocation: {
     erro: {

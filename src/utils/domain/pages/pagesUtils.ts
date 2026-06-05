@@ -3,7 +3,6 @@ import { PermissionKey, PERMISSIONS } from "@/constants/permissions.enum";
 import { ROUTES } from "@/constants/routes";
 import {
     AlertCircle,
-    AlertTriangle,
     Banknote,
     Briefcase,
     Building,
@@ -13,7 +12,8 @@ import {
     Settings,
     Users,
     Package,
-    MapPin
+    MapPin,
+    MessageSquare
 } from "lucide-react";
 
 export interface PageItem {
@@ -111,5 +111,11 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.CONFIGURACOES,
         icon: Settings,
         permissionKey: PERMISSIONS.CONFIGURACAO.VER,
+    },
+    {
+        title: "Suporte e Chamados",
+        href: ROUTES.PRIVATE.CHAMADOS,
+        icon: MessageSquare,
+        permissionKey: PERMISSIONS.CHAMADOS.VER,
     },
 ];

@@ -53,3 +53,41 @@ export enum ManagementStatus {
   WAITING = 'WAITING',
   ABSENT = 'ABSENT'
 }
+
+export enum TicketType {
+  BUG = 'BUG',
+  FEATURE = 'FEATURE',
+  IMPROVEMENT = 'IMPROVEMENT'
+}
+
+export const TICKET_TYPE_LABELS: Record<TicketType, string> = {
+  [TicketType.BUG]: "Erro (Bug)",
+  [TicketType.FEATURE]: "Nova Funcionalidade",
+  [TicketType.IMPROVEMENT]: "Ajustes/Alterações"
+};
+
+export enum TicketStatus {
+  OPEN = 'OPEN',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE',
+  CANCELED = 'CANCELED'
+}
+
+export const TICKET_STATUS_LABELS: Record<TicketStatus, string> = {
+  [TicketStatus.OPEN]: "Aberto",
+  [TicketStatus.IN_PROGRESS]: "Em Andamento",
+  [TicketStatus.DONE]: "Concluído",
+  [TicketStatus.CANCELED]: "Cancelado"
+};
+
+export enum TicketPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH'
+}
+
+export const TICKET_PRIORITY_LABELS: Record<TicketPriority, string> = {
+  [TicketPriority.LOW]: "Baixa",
+  [TicketPriority.MEDIUM]: "Média",
+  [TicketPriority.HIGH]: "Alta"
+};

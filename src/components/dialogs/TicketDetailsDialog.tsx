@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTicket, useTicketComments } from "@/hooks/api/useTickets";
 import { useCreateTicketComment, useUpdateTicket } from "@/hooks/api/useTicketMutations";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { Loader2, MessageSquare, Send, Calendar, User, CornerDownRight, Image as ImageIcon, X } from "lucide-react";
+import { Loader2, MessageSquare, Send, Calendar, User, CornerDownRight, Image as ImageIcon, X, Pencil, Check, Upload } from "lucide-react";
 import { TicketType, TicketStatus, TicketPriority, TICKET_TYPE_LABELS, TICKET_STATUS_LABELS, TICKET_PRIORITY_LABELS } from "@/types/enums";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogClose,
@@ -44,11 +47,19 @@ export function TicketDetailsDialog({
   const [commentText, setCommentText] = useState("");
   const [localStatus, setLocalStatus] = useState<TicketStatus>(ticket?.status || TicketStatus.OPEN);
   const [localPriority, setLocalPriority] = useState<TicketPriority>(ticket?.priority || TicketPriority.LOW);
+  const [localTitle, setLocalTitle] = useState<string>(ticket?.title || "");
+  const [localDescription, setLocalDescription] = useState<string>(ticket?.description || "");
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (ticket) {
       setLocalStatus(ticket.status);
       setLocalPriority(ticket.priority);
+      setLocalTitle(ticket.title);
+      setLocalDescription(ticket.description);
     }
   }, [ticket]);
 
@@ -76,6 +87,75 @@ export function TicketDetailsDialog({
     onSuccess?.();
   };
 
+  const handleSaveTitle = async () => {
+    if (!ticket) return;
+    if (!localTitle.trim() || localTitle === ticket.title) {
+      setIsEditingTitle(false);
+      return;
+    }
+    await updateMutation.mutateAsync({ id: ticketId, data: { title: localTitle } });
+    setIsEditingTitle(false);
+    onSuccess?.();
+  };
+
+  const handleSaveDescription = async () => {
+    if (!ticket) return;
+    if (localDescription === ticket.description) {
+      setIsEditingDescription(false);
+      return;
+    }
+    await updateMutation.mutateAsync({ id: ticketId, data: { description: localDescription } });
+    setIsEditingDescription(false);
+    onSuccess?.();
+  };
+
+  const handleUploadAttachment = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!ticket) return;
+    if (!e.target.files || e.target.files.length === 0) return;
+    const filesArray = Array.from(e.target.files);
+
+    setUploadingAttachment(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (const file of filesArray) {
+        const fileExt = file.name.split(".").pop();
+        const filePath = `${crypto.randomUUID()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("ticket-attachments")
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from("ticket-attachments")
+          .getPublicUrl(filePath);
+
+        if (data?.publicUrl) {
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        const currentAttachments = ticket.attachments || [];
+        const newAttachments = [...currentAttachments, ...uploadedUrls];
+
+        await updateMutation.mutateAsync({
+          id: ticketId,
+          data: { attachments: newAttachments }
+        });
+
+        onSuccess?.();
+      }
+    } catch (error: any) {
+      toast.error("Erro ao enviar anexo(s)", {
+        description: error.message
+      });
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim()) return;
@@ -90,9 +170,9 @@ export function TicketDetailsDialog({
       case TicketType.BUG:
         return "bg-red-50 text-red-600 border-red-100";
       case TicketType.FEATURE:
-        return "bg-green-50 text-green-600 border-green-100";
+        return "bg-blue-50 text-green-600 border-green-100";
       case TicketType.IMPROVEMENT:
-        return "bg-purple-50 text-purple-600 border-purple-100";
+        return "bg-orange-50 text-orange-600 border-orange-100";
       default:
         return "bg-blue-50 text-blue-600 border-blue-100";
     }
@@ -122,9 +202,49 @@ export function TicketDetailsDialog({
               </Badge>
               <span className="text-xs text-gray-400 font-medium">#{ticket.id.slice(0, 8)}</span>
             </div>
-            <DialogTitle className="text-xl font-bold text-gray-900 truncate">
-              {ticket.title}
-            </DialogTitle>
+            {isEditingTitle ? (
+              <div className="flex items-center gap-2 mt-1">
+                <Input
+                  value={localTitle}
+                  onChange={(e) => setLocalTitle(e.target.value)}
+                  className="h-9 font-bold text-gray-950 bg-gray-50 border-gray-200 focus:bg-white text-base py-1 px-2.5 rounded-xl shadow-none"
+                  autoFocus
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleSaveTitle}
+                  disabled={updateMutation.isPending || !localTitle.trim()}
+                  className="h-9 w-9 text-green-600 hover:bg-green-50 rounded-full shrink-0"
+                >
+                  <Check className="h-5 w-5" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    setLocalTitle(ticket.title);
+                    setIsEditingTitle(false);
+                  }}
+                  disabled={updateMutation.isPending}
+                  className="h-9 w-9 text-gray-400 hover:bg-gray-100 rounded-full shrink-0"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            ) : (
+              <DialogTitle className="text-xl font-bold text-gray-900 truncate flex items-center gap-2 group">
+                <span>{ticket.title}</span>
+                {canEditPriority && (
+                  <button
+                    onClick={() => setIsEditingTitle(true)}
+                    className="opacity-40 hover:opacity-100 focus:opacity-100 text-gray-400 hover:text-gray-600 p-1 rounded transition-opacity"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                )}
+              </DialogTitle>
+            )}
           </div>
           <DialogClose className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors">
             <X className="h-5 w-5" />
@@ -213,11 +333,95 @@ export function TicketDetailsDialog({
           </div>
 
           <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
-            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Descrição</h4>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
+            <div className="flex items-center group">
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-2">Descrição</h4>
+              {canEditPriority && !isEditingDescription && (
+                <button
+                  onClick={() => setIsEditingDescription(true)}
+                  className="opacity-40 hover:opacity-100 focus:opacity-100 text-gray-400 hover:text-gray-600 p-1 rounded transition-opacity flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span>Editar</span>
+                </button>
+              )}
+            </div>
+
+            {isEditingDescription ? (
+              <div className="space-y-2">
+                <Textarea
+                  ref={(el) => {
+                    if (el) {
+                      const length = el.value.length;
+                      el.focus();
+                      el.setSelectionRange(length, length);
+                    }
+                  }}
+                  value={localDescription}
+                  onChange={(e) => setLocalDescription(e.target.value)}
+                  className="min-h-[120px] rounded-xl bg-gray-50 border-gray-200 focus:bg-white resize-none p-4 text-sm shadow-none"
+                />
+                <div className="flex items-center gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setLocalDescription(ticket.description);
+                      setIsEditingDescription(false);
+                    }}
+                    disabled={updateMutation.isPending}
+                    className="h-8 rounded-lg text-xs font-medium"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveDescription}
+                    disabled={updateMutation.isPending}
+                    className="h-8 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {updateMutation.isPending ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      "Salvar"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
+            )}
 
             <div className="space-y-2 mt-4 pt-4 border-t border-gray-50">
-              <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Anexos:</h5>
+              <div className="flex items-center justify-between">
+                <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Anexos:</h5>
+                {canEditPriority && (
+                  <div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleUploadAttachment}
+                      className="hidden"
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingAttachment}
+                      className="h-7 text-[10px] font-bold text-blue-600 hover:bg-blue-50 px-2 rounded-lg flex items-center gap-1 uppercase tracking-wider cursor-pointer"
+                    >
+                      {uploadingAttachment ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Upload className="h-3 w-3" />
+                      )}
+                      <span>Adicionar Anexos</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               {ticket.attachments && ticket.attachments.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {ticket.attachments.map((url, index) => (

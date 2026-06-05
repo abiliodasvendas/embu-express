@@ -198,7 +198,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {categoriasDialogState.open && <CategoriasDialog open={true} onOpenChange={(open) => !open && closeCategoriasDialog()} />}
       {alocadosPorItemDialogState.open && alocadosPorItemDialogState.props && <AlocadosPorItemDialog open={true} onOpenChange={(open) => !open && closeAlocadosPorItemDialog()} itemId={alocadosPorItemDialogState.props.itemId} itemName={alocadosPorItemDialogState.props.itemName} />}
       {createTicketDialogState.open && <CreateTicketDialog open={true} onOpenChange={(open) => !open && closeCreateTicketDialog()} ticketToEdit={createTicketDialogState.props?.ticketToEdit} onSuccess={() => { createTicketDialogState.props?.onSuccess?.(); closeCreateTicketDialog(); }} />}
-      {ticketDetailsDialogState.open && ticketDetailsDialogState.props?.ticketId && <TicketDetailsDialog open={true} onOpenChange={(open) => !open && closeTicketDetailsDialog()} ticketId={ticketDetailsDialogState.props.ticketId} onSuccess={() => { ticketDetailsDialogState.props?.onSuccess?.(); closeTicketDetailsDialog(); }} />}
+      {ticketDetailsDialogState.open && ticketDetailsDialogState.props?.ticketId && <TicketDetailsDialog open={true} onOpenChange={(open) => !open && closeTicketDetailsDialog()} ticketId={ticketDetailsDialogState.props.ticketId} onSuccess={() => { ticketDetailsDialogState.props?.onSuccess?.(); }} />}
     </LayoutContext.Provider>
   );
 };

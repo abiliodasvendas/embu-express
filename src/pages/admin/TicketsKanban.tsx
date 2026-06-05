@@ -9,9 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { Search, Plus, X, Bug, Lightbulb, HelpCircle, AlertTriangle, ArrowUpDown } from "lucide-react";
+import { Search, Plus, X, Bug, Lightbulb, HelpCircle, AlertTriangle, ArrowUpDown, Loader2 } from "lucide-react";
 import { Ticket } from "@/types/database";
 import { TicketType, TicketStatus, TicketPriority, TICKET_TYPE_LABELS, TICKET_PRIORITY_LABELS } from "@/types/enums";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type ColumnType = TicketStatus.OPEN | TicketStatus.IN_PROGRESS | TicketStatus.DONE;
 
@@ -21,6 +30,7 @@ export default function TicketsKanban() {
   const updateMutation = useUpdateTicket();
   const { isAdmin, isSuperAdmin } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState<TicketPriority | "ALL">("ALL");
 
   const isUserAdmin = isAdmin || isSuperAdmin;
 
@@ -66,11 +76,15 @@ export default function TicketsKanban() {
 
   const filteredTickets = useMemo(() => {
     return tickets.filter((t) => {
-      const matchTitle = t.title.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchDesc = t.description.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchTitle || matchDesc;
+      const matchSearch =
+        t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchPriority = priorityFilter === "ALL" || t.priority === priorityFilter;
+
+      return matchSearch && matchPriority;
     });
-  }, [tickets, searchTerm]);
+  }, [tickets, searchTerm, priorityFilter]);
 
   const columns: { id: ColumnType; title: string; color: string; bg: string; border: string }[] = [
     {
@@ -161,6 +175,20 @@ export default function TicketsKanban() {
                 )}
               </div>
 
+              <div className="w-full md:w-48 shrink-0">
+                <Select value={priorityFilter} onValueChange={(val) => setPriorityFilter(val as any)}>
+                  <SelectTrigger className="h-11 rounded-xl bg-white border-gray-100 focus:ring-blue-500/20">
+                    <SelectValue placeholder="Prioridade" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="ALL">Todas Prioridades</SelectItem>
+                    <SelectItem value={TicketPriority.LOW}>{TICKET_PRIORITY_LABELS[TicketPriority.LOW]}</SelectItem>
+                    <SelectItem value={TicketPriority.MEDIUM}>{TICKET_PRIORITY_LABELS[TicketPriority.MEDIUM]}</SelectItem>
+                    <SelectItem value={TicketPriority.HIGH}>{TICKET_PRIORITY_LABELS[TicketPriority.HIGH]}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Button
                 onClick={handleAdd}
                 className="bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap w-full md:w-auto"
@@ -182,13 +210,19 @@ export default function TicketsKanban() {
                       key={col.id}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, col.id)}
-                      className={`rounded-2xl border ${col.border} ${col.bg} p-4 flex flex-col min-h-[300px] md:min-h-[500px]`}
+                      className={`rounded-2xl border ${col.border} ${col.bg} p-4 flex flex-col min-h-[300px] md:min-h-[500px] transition-all duration-200 ${updateMutation.isPending ? "opacity-60 pointer-events-none" : ""
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-4 px-1 shrink-0">
                         <span className={`font-bold text-sm ${col.color}`}>{col.title}</span>
-                        <Badge variant="outline" className={`border-none ${col.color} bg-white text-xs font-bold px-2 py-0.5 rounded-full shadow-none`}>
-                          {colTickets.length}
-                        </Badge>
+                        <div className="flex items-center gap-1.5">
+                          {updateMutation.isPending && (
+                            <Loader2 className={`h-3.5 w-3.5 animate-spin ${col.color}`} />
+                          )}
+                          <Badge variant="outline" className={`border-none ${col.color} bg-white text-xs font-bold px-2 py-0.5 rounded-full shadow-none`}>
+                            {colTickets.length}
+                          </Badge>
+                        </div>
                       </div>
 
                       <div className="flex-1 overflow-y-auto space-y-3 scrollbar-none">
@@ -218,10 +252,11 @@ export default function TicketsKanban() {
                                 </p>
 
                                 <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-50 text-[10px] text-gray-400">
-                                  <span className="font-medium truncate max-w-[100px]">
-                                    {t.author?.nome_completo ? `Por ${t.author.nome_completo.trim().split(" ")[0]}` : "Usuário"}
+                                  <span className="font-medium truncate max-w-[160px]">
+                                    {`${t.author.nome_completo.trim().split(" ")[0]} - `}
+                                    {t.created_at ? format(new Date(t.created_at), "dd/MM HH:mm", { locale: ptBR }) : ""}
                                   </span>
-                                  <Badge variant="outline" className={`text-[9px] font-bold uppercase ${getPriorityBadgeClass(t.priority)}`}>
+                                  <Badge variant="outline" className={`text-[9px] font-bold uppercase ${getPriorityBadgeClass(t.priority)} shrink-0`}>
                                     {TICKET_PRIORITY_LABELS[t.priority]}
                                   </Badge>
                                 </div>

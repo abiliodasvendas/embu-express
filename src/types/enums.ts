@@ -74,10 +74,10 @@ export enum TicketStatus {
 }
 
 export const TICKET_STATUS_LABELS: Record<TicketStatus, string> = {
+  [TicketStatus.CANCELED]: "Cancelado",
   [TicketStatus.OPEN]: "Aberto",
   [TicketStatus.IN_PROGRESS]: "Em Andamento",
-  [TicketStatus.DONE]: "Concluído",
-  [TicketStatus.CANCELED]: "Cancelado"
+  [TicketStatus.DONE]: "Concluído"
 };
 
 export enum TicketPriority {

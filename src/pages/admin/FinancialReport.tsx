@@ -19,7 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
-    Wallet, CheckCircle2, Eye, Loader2, Calendar, Users
+    Wallet, CheckCircle2, Eye, Loader2, Calendar, Users, LayoutDashboard, User
 } from "lucide-react";
 import { meses } from "@/utils/formatters/constants";
 import { StatusGeralFechamento } from "@/services/api/financeiro.api";
@@ -94,10 +94,11 @@ export function FinancialReport() {
     const [, setSearchParams] = useSearchParams();
     const vm = useFinancialReportViewModel();
     const [activeTab, setActiveTab] = useUrlState<string>({ key: "tab", defaultValue: "geral" });
-    const [statusFilter, setStatusFilter] = useState<"todos" | "pendentes">("pendentes");
+    const [adiantamentoFilter, setAdiantamentoFilter] = useState<"todos" | "pendente" | "confirmado">("pendente");
+    const [fechamentoFilter, setFechamentoFilter] = useState<"todos" | "pendente" | "confirmado">("pendente");
 
     useEffect(() => {
-        setPageTitle("Relatório Financeiro");
+        setPageTitle("Fechamento Financeiro");
     }, [setPageTitle]);
 
     const { data: collaborators = [] } = useCollaborators({}, { enabled: vm.canViewAll });
@@ -120,9 +121,20 @@ export function FinancialReport() {
     }, [statusGeral]);
 
     const colaboradoresFiltrados = useMemo(() => {
-        if (statusFilter === "todos") return statusGeral;
-        return statusGeral.filter(colab => !colab.adiantamento_confirmado || !colab.pago);
-    }, [statusGeral, statusFilter]);
+        return statusGeral.filter(colab => {
+            const matchAdiantamento =
+                adiantamentoFilter === "todos" ||
+                (adiantamentoFilter === "confirmado" && colab.adiantamento_confirmado) ||
+                (adiantamentoFilter === "pendente" && !colab.adiantamento_confirmado);
+
+            const matchFechamento =
+                fechamentoFilter === "todos" ||
+                (fechamentoFilter === "confirmado" && colab.pago) ||
+                (fechamentoFilter === "pendente" && !colab.pago);
+
+            return matchAdiantamento && matchFechamento;
+        });
+    }, [statusGeral, adiantamentoFilter, fechamentoFilter]);
 
     return (
         <div className="space-y-6 pb-24 animate-in fade-in duration-500">
@@ -193,22 +205,22 @@ export function FinancialReport() {
 
             {vm.canViewAll ? (
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <div className="flex justify-between items-center bg-gray-50 p-1.5 rounded-2xl max-w-md border border-gray-200/50">
-                        <TabsList className="bg-transparent border-none w-full grid grid-cols-2">
-                            <TabsTrigger
-                                value="geral"
-                                className="rounded-xl font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm"
-                            >
-                                Visão Geral
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="detalhado"
-                                className="rounded-xl font-bold transition-all data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm"
-                            >
-                                Detalhamento Individual
-                            </TabsTrigger>
-                        </TabsList>
-                    </div>
+                    <TabsList className="flex w-full justify-start overflow-x-auto lg:w-max h-12 rounded-2xl bg-gray-100 p-1 no-scrollbar scroll-smooth whitespace-nowrap">
+                        <TabsTrigger
+                            value="geral"
+                            className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4"
+                        >
+                            <LayoutDashboard className="h-4 w-4 text-current" />
+                            <span>Visão Geral</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="detalhado"
+                            className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4"
+                        >
+                            <User className="h-4 w-4 text-current" />
+                            <span>Detalhamento Individual</span>
+                        </TabsTrigger>
+                    </TabsList>
 
                     <TabsContent value="geral" className="space-y-6 outline-none">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -257,24 +269,43 @@ export function FinancialReport() {
                             </Card>
                         </div>
 
-                        <div className="flex items-center justify-between px-2">
-                            <div className="flex items-center gap-3 bg-gray-150/50 p-1 rounded-xl border border-gray-200/50 max-w-xs">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setStatusFilter("pendentes")}
-                                    className={statusFilter === "pendentes" ? "bg-white text-emerald-700 shadow-sm font-bold rounded-lg h-9 px-4" : "text-gray-500 font-bold rounded-lg h-9 px-4"}
+                        <div className="flex flex-wrap items-center gap-4 px-2">
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">
+                                    Adiantamento
+                                </span>
+                                <Select
+                                    value={adiantamentoFilter}
+                                    onValueChange={(v) => setAdiantamentoFilter(v as any)}
                                 >
-                                    Pendentes
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setStatusFilter("todos")}
-                                    className={statusFilter === "todos" ? "bg-white text-emerald-700 shadow-sm font-bold rounded-lg h-9 px-4" : "text-gray-500 font-bold rounded-lg h-9 px-4"}
+                                    <SelectTrigger className="h-10 w-[145px] rounded-xl border-none bg-gray-100 font-bold text-xs text-gray-700 focus:ring-2 focus:ring-emerald-500/20">
+                                        <SelectValue placeholder="Adiantamento" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl border-gray-100 shadow-xl">
+                                        <SelectItem value="todos" className="text-xs font-bold focus:bg-emerald-50 focus:text-emerald-700 rounded-lg m-0.5">Todos</SelectItem>
+                                        <SelectItem value="pendente" className="text-xs font-bold focus:bg-emerald-50 focus:text-emerald-700 rounded-lg m-0.5">Pendente</SelectItem>
+                                        <SelectItem value="confirmado" className="text-xs font-bold focus:bg-emerald-50 focus:text-emerald-700 rounded-lg m-0.5">Confirmado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">
+                                    Fechamento
+                                </span>
+                                <Select
+                                    value={fechamentoFilter}
+                                    onValueChange={(v) => setFechamentoFilter(v as any)}
                                 >
-                                    Todos
-                                </Button>
+                                    <SelectTrigger className="h-10 w-[145px] rounded-xl border-none bg-gray-100 font-bold text-xs text-gray-700 focus:ring-2 focus:ring-emerald-500/20">
+                                        <SelectValue placeholder="Fechamento" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl border-gray-100 shadow-xl">
+                                        <SelectItem value="todos" className="text-xs font-bold focus:bg-emerald-50 focus:text-emerald-700 rounded-lg m-0.5">Todos</SelectItem>
+                                        <SelectItem value="pendente" className="text-xs font-bold focus:bg-emerald-50 focus:text-emerald-700 rounded-lg m-0.5">Pendente</SelectItem>
+                                        <SelectItem value="confirmado" className="text-xs font-bold focus:bg-emerald-50 focus:text-emerald-700 rounded-lg m-0.5">Pago</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 

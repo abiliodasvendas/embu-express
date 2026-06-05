@@ -56,6 +56,7 @@ const Ocorrencias = lazyLoad(() => import("./pages/admin/Occurrences"));
 const TimeMirror = lazyLoad(() => import("./pages/admin/TimeMirror"));
 const CollaboratorMap = lazyLoad(() => import("./pages/admin/CollaboratorMap"));
 const FinancialReport = lazyLoad(() => import("./pages/admin/FinancialReport"));
+const Reports = lazyLoad(() => import("./pages/admin/Reports"));
 const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
 
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -296,7 +297,10 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.OCORRENCIAS.replace("/", "")} element={<Ocorrencias />} />
                     </Route>
 
-                    <Route path={ROUTES.PRIVATE.RELATORIO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.FINANCEIRO.EXTRATO]} />}>
+                      <Route path={ROUTES.PRIVATE.RELATORIOS.replace("/", "")} element={<Reports />} />
+                    </Route>
+                    <Route path={ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.CONFIGURACAO.VER]} />}>
                       <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />

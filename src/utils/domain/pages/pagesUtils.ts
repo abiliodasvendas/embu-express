@@ -69,8 +69,13 @@ export const pagesItems: PageItem[] = [
         permissionKey: PERMISSIONS.CLIENTES.VER,
     },
     {
-        title: "Relatório Financeiro",
-        href: ROUTES.PRIVATE.RELATORIO_FINANCEIRO,
+        title: "Fechamento Financeiro",
+        href: ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO,
+        icon: Banknote,
+    },
+    {
+        title: "Relatórios",
+        href: ROUTES.PRIVATE.RELATORIOS,
         icon: Banknote,
     },
     {

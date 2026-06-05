@@ -20,7 +20,8 @@ export const ROUTES = {
         OCORRENCIAS: "/admin/ocorrencias",
         ESPELHO_ATIVIDADE: "/admin/espelho-atividade",
         MAPA_ATIVIDADE: "/admin/mapa-jornada",
-        RELATORIO_FINANCEIRO: "/admin/financeiro",
+        RELATORIOS: "/relatorios",
+        FECHAMENTO_FINANCEIRO: "/fechamento-financeiro",
         EQUIPAMENTOS: "/equipamentos",
         CHAMADOS: "/chamados",
         INICIO: "/inicio"

@@ -182,9 +182,9 @@ export default function TicketsKanban() {
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
                     <SelectItem value="ALL">Todas Prioridades</SelectItem>
-                    <SelectItem value={TicketPriority.LOW}>{TICKET_PRIORITY_LABELS[TicketPriority.LOW]}</SelectItem>
-                    <SelectItem value={TicketPriority.MEDIUM}>{TICKET_PRIORITY_LABELS[TicketPriority.MEDIUM]}</SelectItem>
-                    <SelectItem value={TicketPriority.HIGH}>{TICKET_PRIORITY_LABELS[TicketPriority.HIGH]}</SelectItem>
+                    <SelectItem value={TicketPriority.LOW}>Prioridade {TICKET_PRIORITY_LABELS[TicketPriority.LOW]}</SelectItem>
+                    <SelectItem value={TicketPriority.MEDIUM}>Prioridade {TICKET_PRIORITY_LABELS[TicketPriority.MEDIUM]}</SelectItem>
+                    <SelectItem value={TicketPriority.HIGH}>Prioridade {TICKET_PRIORITY_LABELS[TicketPriority.HIGH]}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

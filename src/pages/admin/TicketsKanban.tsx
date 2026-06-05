@@ -31,6 +31,7 @@ export default function TicketsKanban() {
   const { isAdmin, isSuperAdmin } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | "ALL">("ALL");
+  const [typeFilter, setTypeFilter] = useState<TicketType | "ALL">("ALL");
 
   const isUserAdmin = isAdmin || isSuperAdmin;
 
@@ -81,10 +82,11 @@ export default function TicketsKanban() {
         t.description.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchPriority = priorityFilter === "ALL" || t.priority === priorityFilter;
+      const matchType = typeFilter === "ALL" || t.type === typeFilter;
 
-      return matchSearch && matchPriority;
+      return matchSearch && matchPriority && matchType;
     });
-  }, [tickets, searchTerm, priorityFilter]);
+  }, [tickets, searchTerm, priorityFilter, typeFilter]);
 
   const columns: { id: ColumnType; title: string; color: string; bg: string; border: string }[] = [
     {
@@ -173,6 +175,20 @@ export default function TicketsKanban() {
                     <X className="h-4 w-4" />
                   </button>
                 )}
+              </div>
+
+              <div className="w-full md:w-48 shrink-0">
+                <Select value={typeFilter} onValueChange={(val) => setTypeFilter(val as any)}>
+                  <SelectTrigger className="h-11 rounded-xl bg-white border-gray-100 focus:ring-blue-500/20">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="ALL">Todos Tipos</SelectItem>
+                    <SelectItem value={TicketType.BUG}>{TICKET_TYPE_LABELS[TicketType.BUG]}</SelectItem>
+                    <SelectItem value={TicketType.FEATURE}>{TICKET_TYPE_LABELS[TicketType.FEATURE]}</SelectItem>
+                    <SelectItem value={TicketType.IMPROVEMENT}>{TICKET_TYPE_LABELS[TicketType.IMPROVEMENT]}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="w-full md:w-48 shrink-0">

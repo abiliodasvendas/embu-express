@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTicket, useTicketComments } from "@/hooks/api/useTickets";
 import { useCreateTicketComment, useUpdateTicket } from "@/hooks/api/useTicketMutations";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -42,18 +42,37 @@ export function TicketDetailsDialog({
   const createCommentMutation = useCreateTicketComment();
   const updateMutation = useUpdateTicket();
   const [commentText, setCommentText] = useState("");
+  const [localStatus, setLocalStatus] = useState<TicketStatus>(ticket?.status || TicketStatus.OPEN);
+  const [localPriority, setLocalPriority] = useState<TicketPriority>(ticket?.priority || TicketPriority.LOW);
+
+  useEffect(() => {
+    if (ticket) {
+      setLocalStatus(ticket.status);
+      setLocalPriority(ticket.priority);
+    }
+  }, [ticket]);
 
   const isUserAdmin = isAdmin || isSuperAdmin;
   const isAuthor = ticket?.author_id === profile?.id;
   const canEditPriority = isUserAdmin || isAuthor;
 
-  const handleStatusChange = async (newStatus: TicketStatus) => {
-    await updateMutation.mutateAsync({ id: ticketId, data: { status: newStatus } });
-    onSuccess?.();
+  const handleStatusChange = (newStatus: TicketStatus) => {
+    setLocalStatus(newStatus);
   };
 
-  const handlePriorityChange = async (newPriority: TicketPriority) => {
-    await updateMutation.mutateAsync({ id: ticketId, data: { priority: newPriority } });
+  const handlePriorityChange = (newPriority: TicketPriority) => {
+    setLocalPriority(newPriority);
+  };
+
+  const handleSave = async () => {
+    if (!ticket) return;
+    const data: Partial<typeof ticket> = {};
+    if (localStatus !== ticket.status) data.status = localStatus;
+    if (localPriority !== ticket.priority) data.priority = localPriority;
+
+    if (Object.keys(data).length === 0) return;
+
+    await updateMutation.mutateAsync({ id: ticketId, data });
     onSuccess?.();
   };
 
@@ -135,11 +154,11 @@ export function TicketDetailsDialog({
 
             <hr className="border-gray-100" />
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
+              <div className="col-span-1 sm:col-span-5 space-y-1">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</p>
                 {isUserAdmin ? (
-                  <Select onValueChange={handleStatusChange} value={ticket.status}>
+                  <Select onValueChange={handleStatusChange} value={localStatus}>
                     <SelectTrigger className="h-10 rounded-xl bg-gray-50 border-gray-100 text-xs font-bold">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
@@ -157,10 +176,10 @@ export function TicketDetailsDialog({
                 )}
               </div>
 
-              <div className="space-y-1">
+              <div className="col-span-1 sm:col-span-5 space-y-1">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Prioridade</p>
                 {canEditPriority ? (
-                  <Select onValueChange={handlePriorityChange} value={ticket.priority}>
+                  <Select onValueChange={handlePriorityChange} value={localPriority}>
                     <SelectTrigger className="h-10 rounded-xl bg-gray-50 border-gray-100 text-xs font-bold">
                       <SelectValue placeholder="Selecione a prioridade" />
                     </SelectTrigger>
@@ -175,6 +194,20 @@ export function TicketDetailsDialog({
                     {TICKET_PRIORITY_LABELS[ticket.priority]}
                   </span>
                 )}
+              </div>
+
+              <div className="col-span-1 sm:col-span-2 flex justify-end">
+                <Button
+                  onClick={handleSave}
+                  disabled={updateMutation.isPending || (localStatus === ticket.status && localPriority === ticket.priority)}
+                  className="w-full h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm flex items-center justify-center transition-all disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200"
+                >
+                  {updateMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <span>Salvar</span>
+                  )}
+                </Button>
               </div>
             </div>
           </div>

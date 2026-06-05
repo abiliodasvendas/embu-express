@@ -710,7 +710,7 @@ export default function CollaboratorDetails() {
                           </div>
                           {link.data_fim && new Date(link.data_fim + 'T00:00:00') < new Date() && (
                             <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-700 font-bold text-[10px] shrink-0">
-                              Encerrado
+                              Encerrado em: {new Date(link.data_fim + 'T12:00:00').toLocaleDateString('pt-BR')}
                             </Badge>
                           )}
                         </div>

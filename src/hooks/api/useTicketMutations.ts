@@ -28,9 +28,9 @@ export function useUpdateTicket() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Ticket> }) =>
       ticketService.updateTicket(id, data),
-    onSuccess: (_data, variables) => {
+    onSuccess: (updatedTicket, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
-      queryClient.invalidateQueries({ queryKey: ["ticket", variables.id] });
+      queryClient.setQueryData(["ticket", variables.id], updatedTicket);
       toast.success(messages.chamado.sucesso.atualizado);
     },
     onError: (error: ApiError) => {

@@ -163,10 +163,10 @@ export function TicketDetailsDialog({
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
+                      <SelectItem value={TicketStatus.CANCELED} className="font-bold text-gray-500">{TICKET_STATUS_LABELS[TicketStatus.CANCELED]}</SelectItem>
                       <SelectItem value={TicketStatus.OPEN} className="font-bold text-blue-600">{TICKET_STATUS_LABELS[TicketStatus.OPEN]}</SelectItem>
                       <SelectItem value={TicketStatus.IN_PROGRESS} className="font-bold text-yellow-600">{TICKET_STATUS_LABELS[TicketStatus.IN_PROGRESS]}</SelectItem>
                       <SelectItem value={TicketStatus.DONE} className="font-bold text-green-600">{TICKET_STATUS_LABELS[TicketStatus.DONE]}</SelectItem>
-                      <SelectItem value={TicketStatus.CANCELED} className="font-bold text-gray-500">{TICKET_STATUS_LABELS[TicketStatus.CANCELED]}</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (

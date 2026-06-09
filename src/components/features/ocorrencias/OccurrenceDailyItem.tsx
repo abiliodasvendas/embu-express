@@ -12,11 +12,14 @@ interface OccurrenceDailyItemProps {
   showCollaborator?: boolean;
 }
 
+import { usePermissions } from "@/hooks/business/usePermissions";
+
 export function OccurrenceDailyItem({
   occurrence: oc,
   onClick,
   showCollaborator = true,
 }: OccurrenceDailyItemProps) {
+  const { isSuperAdmin } = usePermissions();
   return (
     <div
       onClick={() => onClick(oc)}
@@ -41,13 +44,18 @@ export function OccurrenceDailyItem({
               {oc.colaborador?.nome_completo}
             </div>
           )}
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
               {format(parseISO(oc.data_ocorrencia), "dd 'de' MMM", { locale: ptBR })}
             </span>
             <Badge variant="outline" className="text-[9px] h-3.5 px-1.5 border-gray-100 text-gray-400 font-bold bg-white/50">
               {oc.tipo?.descricao || 'Ocorrência'}
             </Badge>
+            {isSuperAdmin && oc.criado_por_usuario?.nome_completo && (
+              <span className="text-[10px] text-gray-400 font-medium italic">
+                (Registrado por {oc.criado_por_usuario.nome_completo.split(' ')[0]})
+              </span>
+            )}
           </div>
           <p className="text-sm font-semibold text-gray-700 truncate pr-4 italic">
             {oc.observacao || 'Sem observação'}

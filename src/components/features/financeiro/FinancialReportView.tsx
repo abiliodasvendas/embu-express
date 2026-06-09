@@ -62,7 +62,7 @@ export function FinancialReportView({
   selectedYear: propYear,
 }: FinancialReportViewProps) {
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  const { can } = usePermissions();
+  const { can, isSuperAdmin } = usePermissions();
   const {
     selectedMes: internalMonth,
     setSelectedMes: setSelectedMonth,
@@ -661,6 +661,11 @@ export function FinancialReportView({
                                           "PPP",
                                           { locale: ptBR },
                                         )}
+                                        {isSuperAdmin && occ.criado_por_usuario?.nome_completo && (
+                                          <span className="ml-2 normal-case font-medium italic">
+                                            (Registrado por {occ.criado_por_usuario.nome_completo.split(' ')[0]})
+                                          </span>
+                                        )}
                                       </p>
                                     </div>
                                   </div>
@@ -801,6 +806,11 @@ export function FinancialReportView({
                                         new Date(occ.data_ocorrencia + "T12:00:00"),
                                         "PPP",
                                         { locale: ptBR },
+                                      )}
+                                      {isSuperAdmin && occ.criado_por_usuario?.nome_completo && (
+                                        <span className="ml-2 normal-case font-medium italic">
+                                          (Registrado por {occ.criado_por_usuario.nome_completo.split(' ')[0]})
+                                        </span>
                                       )}
                                     </p>
                                   </div>

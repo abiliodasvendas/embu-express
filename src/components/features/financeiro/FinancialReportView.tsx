@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CALENDARIO_STATUS,
   FINANCEIRO_STATUS,
@@ -45,8 +46,10 @@ import {
   User,
   Wallet,
   X,
+  Clock,
+  History,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface FinancialReportViewProps {
   usuarioId?: string;
@@ -93,6 +96,8 @@ export function FinancialReportView({
     () => meses.map((label, index) => ({ value: index + 1, label })),
     [],
   );
+
+  const [activeTab, setActiveTab] = useState("turnos");
 
   return (
     <PullToRefreshWrapper
@@ -376,13 +381,19 @@ export function FinancialReportView({
             </div>
 
             {/* Turn Breakdown Section */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 ml-2">
-                <div className="h-1 w-8 bg-emerald-600 rounded-full" />
-                <h3 className="text-xl font-black text-gray-800 tracking-tight">
-                  {getMessage("financeiro.labels.detalhamentoTurno")}
-                </h3>
-              </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 mt-8">
+              <TabsList className="flex w-full justify-start overflow-x-auto lg:w-max h-12 rounded-2xl bg-gray-100 p-1 no-scrollbar scroll-smooth whitespace-nowrap">
+                <TabsTrigger value="turnos" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4 font-bold text-gray-600 data-[state=active]:text-emerald-700">
+                  <Clock className="h-4 w-4" />
+                  <span>Turnos</span>
+                </TabsTrigger>
+                <TabsTrigger value="avulsos" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4 font-bold text-gray-600 data-[state=active]:text-emerald-700">
+                  <History className="h-4 w-4" />
+                  <span>Avulsos</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="turnos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
 
               {extrato.resumo_por_cliente?.map((resumo: ResumoClienteFinanceiro, idx: number) => (
                 <Card
@@ -729,13 +740,15 @@ export function FinancialReportView({
                   </CardContent>
                 </Card>
               ))}
+              </TabsContent>
 
+              <TabsContent value="avulsos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
               {/* Lançamentos Avulsos no Mês (Incluindo MEI se houver) */}
               {(extrato.totais?.total_mei > 0 ||
                 (extrato.ocorrencias as Ocorrencia[]).filter(
                   (o) => !o.colaborador_cliente_id && o.impacto_financeiro,
                 ).length > 0) && (
-                  <div className="mt-12 space-y-6">
+                  <div className="space-y-6">
                     <div className="flex items-center gap-3 ml-2">
                       <div className="h-1 w-8 bg-emerald-600 rounded-full" />
                       <h3 className="text-xl font-black text-gray-800 tracking-tight">
@@ -865,7 +878,8 @@ export function FinancialReportView({
                     </Card>
                   </div>
                 )}
-            </div>
+              </TabsContent>
+            </Tabs>
           </div>
         ) : (
           <UnifiedEmptyState

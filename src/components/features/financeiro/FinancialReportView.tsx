@@ -341,20 +341,20 @@ export function FinancialReportView({
                 </CardContent>
               </Card>
 
-              {/* Subtotal Turnos */}
+              {/* Subtotal Convênios */}
               <Card className="col-span-1 md:col-span-1 border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                  <Calendar className="h-16 w-16" />
+                  <Store className="h-16 w-16" />
                 </div>
                 <CardContent className="p-4 md:p-8 relative z-10">
                   <p className="text-gray-100/70 uppercase font-black tracking-widest text-[8px] md:text-[10px] mb-2">
-                    Total de Turnos
+                    Convênios
                   </p>
                   <h2 className="text-lg md:text-2xl font-black mb-1">
-                    {formatCurrency(extrato.totais?.total_turnos || 0)}
+                    - {formatCurrency(0)}
                   </h2>
                   <p className="hidden md:block text-[10px] text-gray-100/60 font-medium">
-                    Soma dos turnos (contrato + ocorrências)
+                    Descontos de oficinas e parceiros
                   </p>
                 </CardContent>
               </Card>

@@ -60,6 +60,10 @@ export const PERMISSIONS = {
         STATUS: 'chamados:status',
         DELETAR: 'chamados:deletar',
     } as const,
+    CONVENIOS: {
+        VER: 'convenios:ver',
+        EDITAR: 'convenios:editar',
+    } as const,
 } as const;
 
 export const ROLES = {

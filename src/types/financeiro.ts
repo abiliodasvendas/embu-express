@@ -1,3 +1,5 @@
+import { LancamentoConvenio } from "./database";
+
 export interface ResumoClienteFinanceiro {
     cliente_id: number;
     nome_fantasia?: string;
@@ -69,4 +71,5 @@ export interface ExtratoMensal {
     totais: FinanceiroTotais;
     id_fechamento?: number;
     data_pagamento?: string;
+    lancamentos_convenios?: LancamentoConvenio[];
 }

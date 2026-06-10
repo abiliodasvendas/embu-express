@@ -17,13 +17,15 @@ export const ROUTES = {
         PERFIS: "/perfis",
         CONFIGURACOES: "/configuracoes",
         FERIADOS: "/feriados",
-        OCORRENCIAS: "/admin/ocorrencias",
-        ESPELHO_ATIVIDADE: "/admin/espelho-atividade",
-        MAPA_ATIVIDADE: "/admin/mapa-jornada",
+        OCORRENCIAS: "/ocorrencias",
+        ESPELHO_ATIVIDADE: "/espelho-atividade",
+        MAPA_ATIVIDADE: "/mapa-jornada",
         RELATORIOS: "/relatorios",
         FECHAMENTO_FINANCEIRO: "/fechamento-financeiro",
         EQUIPAMENTOS: "/equipamentos",
         CHAMADOS: "/chamados",
+        CONVENIOS: "/convenios",
+        CONVENIO_DETAILS: "/convenios/:id",
         INICIO: "/inicio"
     }
 } as const;

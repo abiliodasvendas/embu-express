@@ -37,6 +37,8 @@ const PublicClientLayout = lazyLoad(() => import("./layouts/PublicClientLayout")
 const PublicTimeTracking = lazyLoad(() => import("./pages/public/PublicTimeTracking"));
 const PublicTimeMirror = lazyLoad(() => import("./pages/public/PublicTimeMirror"));
 const PrivacyPolicy = lazyLoad(() => import("./pages/public/PrivacyPolicy"));
+const ConvenioPublicPortal = lazyLoad(() => import("./pages/public/ConvenioPublicPortal"));
+
 
 // Admin - Embu Express
 const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
@@ -53,6 +55,8 @@ const Feriados = lazyLoad(() => import("./pages/admin/Feriados"));
 const ItensEquipamentos = lazyLoad(() => import("./pages/admin/ItensEquipamentos"));
 const TicketsKanban = lazyLoad(() => import("./pages/admin/TicketsKanban"));
 const Ocorrencias = lazyLoad(() => import("./pages/admin/Occurrences"));
+const Convenios = lazyLoad(() => import("./pages/admin/Convenios"));
+const ConvenioDetails = lazyLoad(() => import("./pages/admin/ConvenioDetails"));
 const TimeMirror = lazyLoad(() => import("./pages/admin/TimeMirror"));
 const CollaboratorMap = lazyLoad(() => import("./pages/admin/CollaboratorMap"));
 const FinancialReport = lazyLoad(() => import("./pages/admin/FinancialReport"));
@@ -223,6 +227,11 @@ const App = () => {
                   </Route>
 
                   <Route
+                    path="/public/co/:token"
+                    element={<ConvenioPublicPortal />}
+                  />
+
+                  <Route
                     path="/login"
                     element={
                       <AppGate>
@@ -299,6 +308,11 @@ const App = () => {
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.FINANCEIRO.EXTRATO]} />}>
                       <Route path={ROUTES.PRIVATE.RELATORIOS.replace("/", "")} element={<Reports />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.CONVENIOS.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.CONVENIOS.replace("/", "")} element={<Convenios />} />
+                      <Route path={ROUTES.PRIVATE.CONVENIO_DETAILS.replace(/^\//, "")} element={<ConvenioDetails />} />
                     </Route>
                     <Route path={ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
 

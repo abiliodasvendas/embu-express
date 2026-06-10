@@ -42,6 +42,7 @@ interface ClientsToolbarProps {
   onApplyFilters: (filters: { status?: string }) => void;
   hasActiveFilters?: boolean;
   onClear?: () => void;
+  hideRegisterButton?: boolean;
 }
 
 const FilterContent = ({
@@ -88,6 +89,7 @@ export function ClientsToolbar({
   onApplyFilters,
   hasActiveFilters,
   onClear,
+  hideRegisterButton,
 }: ClientsToolbarProps) {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -244,8 +246,9 @@ export function ClientsToolbar({
           </div>
         )}
 
-        <Can I={PERMISSIONS.CLIENTES.CRIAR}>
-          <Button
+        {!hideRegisterButton && (
+          <Can I={PERMISSIONS.CLIENTES.CRIAR}>
+            <Button
             onClick={onRegister}
             className={cn(
               "bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap",
@@ -254,8 +257,9 @@ export function ClientsToolbar({
           >
             <Plus className="h-4 w-4" />
             <span>{isMobile ? "Cadastrar" : "Cadastrar Cliente"}</span>
-          </Button>
-        </Can>
+            </Button>
+          </Can>
+        )}
       </div>
     </div>
   );

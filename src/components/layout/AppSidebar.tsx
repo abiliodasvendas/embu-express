@@ -47,11 +47,13 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
       if (!category) {
         blocks.push({ type: 'link', item });
       } else {
-        const lastBlock = blocks[blocks.length - 1];
-        if (lastBlock?.type === 'group' && lastBlock.category === category) {
-          lastBlock.items.push(item);
+        const existingBlock = blocks.find(
+          (b) => b.type === "group" && b.category === category
+        );
+        if (existingBlock && existingBlock.type === "group") {
+          existingBlock.items.push(item);
         } else {
-          blocks.push({ type: 'group', category, items: [item] });
+          blocks.push({ type: "group", category, items: [item] });
         }
       }
     });

@@ -5,10 +5,12 @@ import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
-import { safeCloseDialog } from "@/hooks";
+import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
   useDeleteClient,
   useToggleClientStatus,
@@ -40,7 +42,8 @@ import {
   Trash2,
   Users,
   XCircle,
-  Zap
+  Zap,
+  MoreVertical
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -192,6 +195,16 @@ export default function ClientDetails() {
     onDelete: handleDelete,
   }).filter(action => action.label !== "Editar");
 
+  const getStatusColor = (status: boolean) => {
+    return status
+      ? "bg-green-100 text-green-700 border-green-200"
+      : "bg-red-100 text-red-700 border-red-200";
+  };
+
+  const getAvatarStatusColor = (status: boolean) => {
+    return status ? "border-green-200 text-green-700" : "border-red-200 text-red-700";
+  };
+
   if (isClientLoading) {
     return (
       <div className="p-6 space-y-6 animate-pulse">
@@ -243,53 +256,103 @@ export default function ClientDetails() {
   return (
     <div className="bg-[#f8f9fa] min-h-full transition-all duration-500">
       <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        {/* Top Navigation & Actions Row */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
-          <div className="flex flex-col gap-1">
-            <Breadcrumbs
-              items={[
-                { label: "Clientes", href: "/clientes" },
-                { label: client.nome_fantasia },
-              ]}
-            />
-            <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
-                {client.nome_fantasia}
-              </h1>
-              <StatusBadge status={client.ativo} className="text-xs uppercase tracking-wider" />
+
+
+        {/* Identity Header com Ações Embutidas */}
+        <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white mb-2">
+          <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            {/* Informações do Cliente (Esquerda) */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+              <div className="relative shrink-0 select-none">
+                <div
+                  className={cn(
+                    "w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-50 border flex items-center justify-center transition-all duration-300",
+                    getAvatarStatusColor(client.ativo)
+                  )}
+                >
+                  <Building2 className="h-8 w-8 sm:h-10 sm:w-10 text-current" />
+                </div>
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "absolute -top-1.5 -right-1.5 px-2 py-0.5 rounded-full font-black border text-[9px] uppercase tracking-wider shadow-sm transition-all duration-300 cursor-default",
+                    getStatusColor(client.ativo)
+                  )}
+                >
+                  {client.ativo ? "ATIVO" : "INATIVO"}
+                </Badge>
+              </div>
+              <div className="text-center sm:text-left space-y-2">
+                <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
+                  {client.nome_fantasia}
+                </h2>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  {client.razao_social && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/5 text-primary border-primary/10 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
+                    >
+                      <Users className="w-3.5 h-3.5 shrink-0" />
+                      <span>{client.razao_social}</span>
+                    </Badge>
+                  )}
+                  {client.cnpj && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-gray-50 text-gray-700 border-gray-200 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
+                    >
+                      <span>CNPJ: {cnpjMask(client.cnpj)}</span>
+                    </Badge>
+                  )}
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-50 text-blue-700 border-blue-100 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
+                  >
+                    <span>{stats.totalUnits} {stats.totalUnits === 1 ? "Unidade" : "Unidades"}</span>
+                  </Badge>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-gray-600 hover:bg-gray-100 transition-all active:scale-95"
-              onClick={() => openClientFormDialog({ editingClient: client })}
-            >
-              <Edit2 className="h-4 w-4" />
-              Editar
-            </button>
-
-            <button
-              type="button"
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-white bg-gradient-to-br from-[#0055c0] to-[#136dec] shadow-md hover:shadow-lg transition-all active:scale-95"
-              onClick={handleAddUnidade}
-            >
-              <Plus className="h-4 w-4" />
-              Adicionar Unidade
-            </button>
-
-            <ActionsDropdown actions={clientActions}>
-              <button
-                type="button"
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
+            {/* Ações (Direita) */}
+            <div className="flex flex-wrap gap-2 items-center justify-center md:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/clientes")}
+                className="rounded-xl flex items-center gap-1.5 px-4 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-semibold text-sm shadow-sm h-10"
               >
-                Ações
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </button>
-            </ActionsDropdown>
-          </div>
-        </div>
+                <ChevronLeft className="h-4 w-4" />
+                <span>Voltar</span>
+              </Button>
+
+              <Button
+                onClick={() => openClientFormDialog({ editingClient: client })}
+                className="rounded-xl flex items-center gap-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm h-10"
+              >
+                <Edit2 className="h-4 w-4" />
+                <span>Editar</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleToggleStatus}
+                className="rounded-xl flex items-center gap-1.5 px-4 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-semibold text-sm shadow-sm h-10"
+              >
+                <Zap className="h-4 w-4" />
+                <span>{client.ativo ? "Desativar" : "Ativar"}</span>
+              </Button>
+
+              <ActionsDropdown actions={clientActions}>
+                <Button
+                  variant="outline"
+                  className="rounded-xl border-gray-200 shadow-sm text-gray-700 bg-white hover:bg-gray-50 flex items-center justify-center p-2.5 h-10 w-10"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </ActionsDropdown>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* LEFT SIDEBAR: CLIENT PROFILE */}
@@ -416,6 +479,15 @@ export default function ClientDetails() {
                 <h3 className="text-xl font-extrabold text-gray-900">
                   Unidades / Filiais
                 </h3>
+                {unidades && unidades.length > 0 && (
+                  <Button
+                    onClick={handleAddUnidade}
+                    className="bg-blue-600 hover:bg-blue-700 h-9 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 text-xs py-1.5 px-4"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Adicionar Unidade</span>
+                  </Button>
+                )}
               </div>
 
               {isUnidadesLoading ? (

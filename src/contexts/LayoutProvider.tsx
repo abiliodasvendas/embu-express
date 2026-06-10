@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps } from './LayoutContext';
+import { LayoutContext, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps } from './LayoutContext';
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
 
 // Dialogs
@@ -28,6 +28,8 @@ import { CategoriasDialog } from "@/components/dialogs/CategoriasDialog";
 import { AlocadosPorItemDialog } from "@/components/dialogs/AlocadosPorItemDialog";
 import { CreateTicketDialog } from "@/components/dialogs/CreateTicketDialog";
 import { TicketDetailsDialog } from "@/components/dialogs/TicketDetailsDialog";
+import { ConvenioFormDialog } from "@/components/dialogs/ConvenioFormDialog";
+
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
@@ -67,6 +69,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [alocadosPorItemDialogState, setAlocadosPorItemDialogState] = useState<{ open: boolean; props?: OpenAlocadosPorItemProps }>({ open: false });
   const [createTicketDialogState, setCreateTicketDialogState] = useState<{ open: boolean; props?: OpenCreateTicketProps }>({ open: false });
   const [ticketDetailsDialogState, setTicketDetailsDialogState] = useState<{ open: boolean; props?: OpenTicketDetailsProps }>({ open: false });
+  const [convenioFormDialogState, setConvenioFormDialogState] = useState<{ open: boolean; props?: OpenConvenioFormProps }>({ open: false });
+
 
   // --- Actions ---
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => setConfirmationDialogState({ open: true, props });
@@ -144,6 +148,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openTicketDetailsDialog = (props: OpenTicketDetailsProps) => setTicketDetailsDialogState({ open: true, props });
   const closeTicketDetailsDialog = () => closeDialog(() => setTicketDetailsDialogState((prev) => ({ ...prev, open: false })));
 
+  const openConvenioFormDialog = (props: OpenConvenioFormProps) => setConvenioFormDialogState({ open: true, props });
+  const closeConvenioFormDialog = () => closeDialog(() => setConvenioFormDialogState((prev) => ({ ...prev, open: false })));
+
+
   return (
     <LayoutContext.Provider value={{
       pageTitle, setPageTitle, pageSubtitle, setPageSubtitle,
@@ -172,6 +180,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openAlocadosPorItemDialog, closeAlocadosPorItemDialog,
       openCreateTicketDialog, closeCreateTicketDialog,
       openTicketDetailsDialog, closeTicketDetailsDialog,
+      openConvenioFormDialog, closeConvenioFormDialog,
     }}>
       {children}
       {confirmationDialogState.props && <ConfirmationDialog open={confirmationDialogState.open} onOpenChange={(open) => setConfirmationDialogState((prev) => ({ ...prev, open }))} title={confirmationDialogState.props.title} description={confirmationDialogState.props.description} onConfirm={confirmationDialogState.props.onConfirm} confirmText={confirmationDialogState.props.confirmText} cancelText={confirmationDialogState.props.cancelText} variant={confirmationDialogState.props.variant} isLoading={confirmationDialogState.props.isLoading} />}
@@ -199,6 +208,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {alocadosPorItemDialogState.open && alocadosPorItemDialogState.props && <AlocadosPorItemDialog open={true} onOpenChange={(open) => !open && closeAlocadosPorItemDialog()} itemId={alocadosPorItemDialogState.props.itemId} itemName={alocadosPorItemDialogState.props.itemName} />}
       {createTicketDialogState.open && <CreateTicketDialog open={true} onOpenChange={(open) => !open && closeCreateTicketDialog()} ticketToEdit={createTicketDialogState.props?.ticketToEdit} onSuccess={() => { createTicketDialogState.props?.onSuccess?.(); closeCreateTicketDialog(); }} />}
       {ticketDetailsDialogState.open && ticketDetailsDialogState.props?.ticketId && <TicketDetailsDialog open={true} onOpenChange={(open) => !open && closeTicketDetailsDialog()} ticketId={ticketDetailsDialogState.props.ticketId} onSuccess={() => { ticketDetailsDialogState.props?.onSuccess?.(); }} />}
+      {convenioFormDialogState.open && <ConvenioFormDialog open={true} onOpenChange={(open) => !open && closeConvenioFormDialog()} convenioToEdit={convenioFormDialogState.props?.convenioToEdit} />}
     </LayoutContext.Provider>
   );
 };

@@ -13,7 +13,8 @@ import {
     Users,
     Package,
     MapPin,
-    MessageSquare
+    MessageSquare,
+    Handshake
 } from "lucide-react";
 
 export interface PageItem {
@@ -110,6 +111,13 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.PERFIS,
         icon: Users,
         permissionKey: PERMISSIONS.PERFIS.VER,
+        category: MENU_CATEGORIES.CADASTROS
+    },
+    {
+        title: "Convênios",
+        href: ROUTES.PRIVATE.CONVENIOS,
+        icon: Handshake,
+        permissionKey: PERMISSIONS.CONVENIOS.VER,
     },
     {
         title: "Configurações",

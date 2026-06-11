@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { PageItem, pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink, useLocation } from "react-router-dom";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { ChevronRight, LayoutGrid, ClipboardList, Layers } from "lucide-react";
+import { ChevronRight, LayoutGrid, ClipboardList, Layers, Users } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -18,6 +18,7 @@ interface AppSidebarProps {
 const CATEGORY_ICONS: Record<string, any> = {
   [MENU_CATEGORIES.PONTO]: ClipboardList,
   [MENU_CATEGORIES.CADASTROS]: Layers,
+  [MENU_CATEGORIES.COLABORADORES]: Users,
 };
 
 export function AppSidebar({ onLinkClick }: AppSidebarProps) {

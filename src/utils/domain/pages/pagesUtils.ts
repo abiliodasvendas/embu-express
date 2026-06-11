@@ -38,10 +38,11 @@ export const pagesItems: PageItem[] = [
         icon: Clock,
     },
     {
-        title: "Colaboradores",
+        title: "Ver Todos",
         href: ROUTES.PRIVATE.COLABORADORES,
         icon: Users,
         permissionKey: PERMISSIONS.USUARIOS.VER,
+        category: MENU_CATEGORIES.COLABORADORES,
     },
     {
         title: "Controle de Atividade",
@@ -73,6 +74,7 @@ export const pagesItems: PageItem[] = [
         title: "Fechamento Financeiro",
         href: ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO,
         icon: Banknote,
+        category: MENU_CATEGORIES.COLABORADORES,
     },
     {
         title: "Relatórios",
@@ -84,6 +86,7 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.OCORRENCIAS,
         icon: AlertCircle,
         permissionKey: PERMISSIONS.OCORRENCIAS.VER,
+        category: MENU_CATEGORIES.COLABORADORES,
     },
     {
         title: "Empresas",

@@ -952,7 +952,7 @@ export default function CollaboratorDetails() {
                   className="rounded-xl flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-9 shadow-sm select-none"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Novo Lançamento</span>
+                  <span>Registrar Ocorrência</span>
                 </Button>
               </div>
             </CardHeader>

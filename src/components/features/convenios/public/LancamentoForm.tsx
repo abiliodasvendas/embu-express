@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { ParcelasPreview } from "@/components/common/ParcelasPreview";
 import {
   useCreatePublicLancamento,
   useUpdatePublicLancamento,
@@ -79,6 +80,8 @@ export function LancamentoForm({
       valor: 0,
       descricao: "",
       moto_embu: false,
+      is_parcelado: false,
+      quantidade_parcelas: undefined,
     },
   });
 
@@ -99,6 +102,8 @@ export function LancamentoForm({
           valor: 0,
           descricao: "",
           moto_embu: false,
+          is_parcelado: false,
+          quantidade_parcelas: undefined,
         });
       }
     }
@@ -112,6 +117,8 @@ export function LancamentoForm({
         valor: values.valor,
         descricao: values.descricao || null,
         moto_embu: values.moto_embu,
+        is_parcelado: values.is_parcelado,
+        quantidade_parcelas: values.quantidade_parcelas,
       };
 
       if (convenioId) {
@@ -269,7 +276,7 @@ export function LancamentoForm({
                   render={({ field }) => (
                     <FormItem className="space-y-1.5">
                       <FormLabel className="text-gray-700 font-bold text-sm">
-                        Valor total (R$) <span className="text-red-500">*</span>
+                        Valor <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <MoneyInput
@@ -283,6 +290,83 @@ export function LancamentoForm({
                   )}
                 />
               </div>
+
+              {!isEditing && (
+                <>
+                  <div className="pt-2">
+                    <FormField
+                      control={form.control}
+                      name="is_parcelado"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-3.5">
+                          <div className="space-y-0.5 pr-2">
+                            <FormLabel className="text-gray-700 font-bold text-sm">
+                              Lançamento Parcelado?
+                            </FormLabel>
+                            <p className="text-xs text-gray-500">
+                              Gera automaticamente lançamentos para os próximos meses.
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked);
+                                if (!checked) {
+                                  form.setValue("quantidade_parcelas", undefined);
+                                }
+                              }}
+                              className="data-[state=checked]:bg-blue-600"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {form.watch("is_parcelado") && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <FormField
+                        control={form.control}
+                        name="quantidade_parcelas"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1.5 w-full">
+                            <FormLabel className="text-gray-700 font-bold text-sm">
+                              Quantidade de Parcelas <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min={2}
+                                step={1}
+                                {...field}
+                                value={field.value || ""}
+                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                                placeholder="Ex: 4"
+                                className={cn(
+                                  "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
+                                  form.formState.errors.quantidade_parcelas && "border-red-500 focus:ring-red-200"
+                                )}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  {form.watch("is_parcelado") && form.watch("quantidade_parcelas") ? (
+                    <div className="pt-2">
+                      <ParcelasPreview
+                        dataBase={form.watch("data_lancamento")}
+                        quantidadeParcelas={form.watch("quantidade_parcelas") || 0}
+                        valorTotal={form.watch("valor")}
+                      />
+                    </div>
+                  ) : null}
+                </>
+              )}
 
               <FormField
                 control={form.control}
@@ -303,6 +387,8 @@ export function LancamentoForm({
                   </FormItem>
                 )}
               />
+
+
             </form>
           </Form>
         </div>

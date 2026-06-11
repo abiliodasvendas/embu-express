@@ -30,6 +30,7 @@ import { useItensColaboradorQuery } from "@/hooks/api/useItensEquipamentos";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { cn } from "@/lib/utils";
 import { ColaboradorCliente, Usuario } from "@/types/database";
+import { OccurrenceFormMode } from "@/types/enums";
 import { isMotoboy } from "@/utils/business/roles";
 import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
@@ -263,8 +264,8 @@ export default function CollaboratorDetails() {
 
   const handleReactivateTurn = (link: ColaboradorCliente) => {
     openConfirmationDialog({
-      title: "Reativar Vínculo",
-      description: `Deseja realmente reativar o vínculo com o cliente "${link.cliente?.nome_fantasia}"? O colaborador voltará a poder registrar atividade.`,
+      title: "Reativar Turno",
+      description: `Deseja realmente reativar o turno? O colaborador voltará a poder registrar atividade.`,
       confirmText: "Reativar",
       variant: "success",
       onConfirm: async () => {
@@ -814,6 +815,7 @@ export default function CollaboratorDetails() {
                 <Button
                   onClick={() => openOccurrenceFormDialog({
                     collaboratorId: id,
+                    mode: OccurrenceFormMode.GENERAL,
                     onSuccess: () => {
                       financeiroVm.refetch();
                     }
@@ -832,6 +834,7 @@ export default function CollaboratorDetails() {
                 selectedMonth={filters.selectedMes}
                 selectedYear={filters.selectedAno}
                 showFilters={false}
+                impactoFinanceiro={false}
                 onOccurrenceDeleted={() => financeiroVm.refetch()}
               />
             </CardContent>
@@ -936,6 +939,21 @@ export default function CollaboratorDetails() {
                     ))}
                   </SelectContent>
                 </Select>
+                <div className="h-8 w-[1px] bg-gray-200 hidden sm:block mx-1" />
+
+                <Button
+                  onClick={() => openOccurrenceFormDialog({
+                    collaboratorId: id,
+                    mode: OccurrenceFormMode.FINANCIAL,
+                    onSuccess: () => {
+                      financeiroVm.refetch();
+                    }
+                  })}
+                  className="rounded-xl flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-9 shadow-sm select-none"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Novo Lançamento</span>
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="px-8 pb-8 pt-6">

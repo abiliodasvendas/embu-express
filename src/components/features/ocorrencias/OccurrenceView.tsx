@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { FilterOptions } from "@/types/enums";
-import { useOccurrenceViewModel } from "@/hooks";
+import { safeCloseDialog, useOccurrenceViewModel } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { History } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -20,6 +20,7 @@ interface OccurrenceViewProps {
   selectedYear?: number;
   showFilters?: boolean;
   onOccurrenceDeleted?: () => void;
+  impactoFinanceiro?: boolean;
 }
 
 export function OccurrenceView({
@@ -29,6 +30,7 @@ export function OccurrenceView({
   selectedYear,
   showFilters = true,
   onOccurrenceDeleted,
+  impactoFinanceiro,
 }: OccurrenceViewProps) {
   const { openConfirmationDialog, closeConfirmationDialog, openOccurrenceDetailsDialog, closeOccurrenceDetailsDialog } = useLayout();
   const deleteMutation = useDeleteOcorrencia();
@@ -127,29 +129,39 @@ export function OccurrenceView({
             <div className="space-y-4">
               {[1, 2, 3].map(i => <div key={i} className="h-20 bg-gray-50 animate-pulse rounded-2xl" />)}
             </div>
-          ) : vm.occurrences.length > 0 ? (
-            <div className="relative space-y-0">
-              <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-gray-100" />
+          ) : (() => {
+            const displayOccurrences = impactoFinanceiro !== undefined
+              ? vm.occurrences.filter(oc => oc.impacto_financeiro === impactoFinanceiro)
+              : vm.occurrences;
 
-              {vm.occurrences.map((oc) => (
-                <OccurrenceDailyItem
-                  key={oc.id}
-                  occurrence={oc}
-                  showCollaborator={!usuarioId}
-                  onClick={(occurrence) => openOccurrenceDetailsDialog({
-                    occurrence,
-                    onDelete: () => handleDelete(occurrence)
-                  })}
+            if (displayOccurrences.length === 0) {
+              return (
+                <UnifiedEmptyState
+                  icon={History}
+                  title="Nenhuma ocorrência"
+                  description="Não há registros para os filtros selecionados."
                 />
-              ))}
-            </div>
-          ) : (
-            <UnifiedEmptyState
-              icon={History}
-              title="Nenhuma ocorrência"
-              description="Não há registros para os filtros selecionados."
-            />
-          )}
+              );
+            }
+
+            return (
+              <div className="relative space-y-0">
+                <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-gray-100" />
+
+                {displayOccurrences.map((oc) => (
+                  <OccurrenceDailyItem
+                    key={oc.id}
+                    occurrence={oc}
+                    showCollaborator={!usuarioId}
+                    onClick={(occurrence) => openOccurrenceDetailsDialog({
+                      occurrence,
+                      onDelete: () => handleDelete(occurrence)
+                    })}
+                  />
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </PullToRefreshWrapper>

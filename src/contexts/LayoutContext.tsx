@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem, Ticket, Convenio } from '@/types/database';
 import { OccurrenceFormData } from '@/schemas/occurrenceSchema';
+import { OccurrenceFormMode } from '@/types/enums';
 
 // --- Interfaces ---
 
@@ -70,6 +71,7 @@ export interface OpenOccurrenceFormProps {
   collaboratorId?: string;
   onSuccess?: () => void;
   defaultValues?: Partial<OccurrenceFormData>;
+  mode?: OccurrenceFormMode;
 }
 
 export interface OpenOccurrenceDetailsProps {

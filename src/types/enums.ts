@@ -17,6 +17,11 @@ export enum StatusOcorrencia {
   REPROVADA = 'reprovada'
 }
 
+export enum OccurrenceFormMode {
+  GENERAL = 'general',
+  FINANCIAL = 'financial'
+}
+
 export enum StatusVisualPonto {
   VERDE = "VERDE",
   AMARELO = "AMARELO",

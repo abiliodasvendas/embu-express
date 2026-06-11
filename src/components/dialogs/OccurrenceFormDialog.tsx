@@ -26,7 +26,9 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
+import { OccurrenceFormMode } from "@/types/enums";
 import { messages } from "@/constants/messages";
+import { ParcelasPreview } from "@/components/common/ParcelasPreview";
 import { useCollaborator, useCollaborators } from "@/hooks/api/useCollaborators";
 import { useCreateOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
@@ -44,7 +46,8 @@ interface OccurrenceFormDialogProps {
     onOpenChange: (open: boolean) => void;
     collaboratorId?: string;
     onSuccess?: () => void;
-    defaultValues?: Partial<OccurrenceFormData>;
+    defaultValues?: Partial<OccurrenceFormData> & { id?: number };
+    mode?: OccurrenceFormMode;
 }
 
 export function OccurrenceFormDialog({
@@ -53,10 +56,12 @@ export function OccurrenceFormDialog({
     collaboratorId,
     onSuccess,
     defaultValues,
+    mode,
 }: OccurrenceFormDialogProps) {
     const { data: collaborators = [] } = useCollaborators({});
     const { data: tipos = [] } = useTiposOcorrencia();
     const createMutation = useCreateOcorrencia();
+    const isEditing = !!defaultValues?.id;
 
     const form = useForm<OccurrenceFormData>({
         resolver: zodResolver(occurrenceSchema),
@@ -65,10 +70,12 @@ export function OccurrenceFormDialog({
             tipo_id: defaultValues?.tipo_id || "",
             data_ocorrencia: defaultValues?.data_ocorrencia || "",
             valor: defaultValues?.valor || 0,
-            impacto_financeiro: defaultValues?.impacto_financeiro || false,
+            impacto_financeiro: mode === OccurrenceFormMode.FINANCIAL ? true : (mode === OccurrenceFormMode.GENERAL ? false : (defaultValues?.impacto_financeiro || false)),
             tipo_lancamento: defaultValues?.tipo_lancamento || undefined as any,
             colaborador_cliente_id: defaultValues?.colaborador_cliente_id !== undefined ? defaultValues.colaborador_cliente_id : undefined as any,
             observacao: defaultValues?.observacao || "",
+            is_parcelado: defaultValues?.is_parcelado || false,
+            quantidade_parcelas: defaultValues?.quantidade_parcelas || undefined,
         },
     });
 
@@ -118,10 +125,12 @@ export function OccurrenceFormDialog({
                 tipo_id: Number(data.tipo_id),
                 data_ocorrencia: data.data_ocorrencia,
                 valor: data.valor,
-                impacto_financeiro: data.impacto_financeiro,
+                impacto_financeiro: Boolean(data.impacto_financeiro),
                 tipo_lancamento: data.tipo_lancamento as typeof LANCAMENTO_TIPO.ENTRADA | typeof LANCAMENTO_TIPO.SAIDA | undefined,
                 observacao: data.observacao,
                 colaborador_cliente_id: data.colaborador_cliente_id ? Number(data.colaborador_cliente_id) : undefined,
+                is_parcelado: data.is_parcelado,
+                quantidade_parcelas: data.quantidade_parcelas ? Number(data.quantidade_parcelas) : undefined,
             });
             onSuccess?.();
             form.reset();
@@ -137,7 +146,7 @@ export function OccurrenceFormDialog({
         if (selectedTipoId) {
             const tipo = tipos.find((t) => String(t.id) === selectedTipoId);
             if (tipo) {
-                const hasImpact = !!tipo.impacto_financeiro;
+                const hasImpact = mode === OccurrenceFormMode.FINANCIAL ? true : (mode === OccurrenceFormMode.GENERAL ? false : !!tipo.impacto_financeiro);
                 form.setValue("impacto_financeiro", hasImpact);
 
                 if (hasImpact) {
@@ -148,14 +157,16 @@ export function OccurrenceFormDialog({
                         form.setValue("tipo_lancamento", tipo.tipo_lancamento);
                     }
                 } else {
-                    // Limpa os campos financeiros se o tipo não tiver impacto por padrão
+                    // Limpa os campos financeiros se o tipo não tiver impacto por padrão e o mode permitir
                     form.setValue("valor", 0);
                     form.setValue("tipo_lancamento", undefined as any);
                     form.setValue("colaborador_cliente_id", undefined as any);
+                    form.setValue("is_parcelado", false);
+                    form.setValue("quantidade_parcelas", undefined);
                 }
             }
         }
-    }, [selectedTipoId, tipos, form]);
+    }, [selectedTipoId, tipos, form, mode]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -314,7 +325,7 @@ export function OccurrenceFormDialog({
                                                                 form.formState.errors.colaborador_cliente_id && "border-red-500 focus:ring-red-200"
                                                             )}
                                                         >
-                                                            <SelectValue placeholder="Selecione o vínculo ou 'Geral'" />
+                                                            <SelectValue placeholder="Selecione o turno ou 'Geral'" />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent className="rounded-xl shadow-xl" side="bottom" sideOffset={4}>
@@ -322,20 +333,20 @@ export function OccurrenceFormDialog({
                                                             Geral (Avulsa)
                                                         </SelectItem>
                                                         {links.map((link: any) => {
-                                                             const hInicio = link.horarios?.[0]?.hora_inicio;
-                                                             const hFim = link.horarios?.[0]?.hora_fim;
+                                                            const hInicio = link.horarios?.[0]?.hora_inicio;
+                                                            const hFim = link.horarios?.[0]?.hora_fim;
 
-                                                             return (
-                                                                 <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
-                                                                     {link.cliente?.nome_fantasia || "Sem Cliente"}{" "}
-                                                                     {hInicio && hFim && (
-                                                                         <span className="text-[10px] text-gray-400 font-normal italic">
-                                                                             ({hInicio.slice(0, 5)} - {hFim.slice(0, 5)})
-                                                                         </span>
-                                                                     )}
-                                                                 </SelectItem>
-                                                             );
-                                                         })}
+                                                            return (
+                                                                <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
+                                                                    {link.cliente?.nome_fantasia || "Sem Cliente"}{" "}
+                                                                    {hInicio && hFim && (
+                                                                        <span className="text-[10px] text-gray-400 font-normal italic">
+                                                                            ({hInicio.slice(0, 5)} - {hFim.slice(0, 5)})
+                                                                        </span>
+                                                                    )}
+                                                                </SelectItem>
+                                                            );
+                                                        })}
                                                     </SelectContent>
                                                 </Select>
                                                 <FormMessage />
@@ -344,51 +355,34 @@ export function OccurrenceFormDialog({
                                     }}
                                 />
 
-                                <FormField
-                                    control={form.control}
-                                    name="observacao"
-                                    render={({ field }) => (
-                                        <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                Observação <span className="text-red-500">*</span>
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    {...field}
-                                                    placeholder="Detalhes adicionais da ocorrência..."
-                                                    className={cn(
-                                                        "min-h-[100px] rounded-2xl bg-gray-50 border-gray-200 focus:bg-white transition-all resize-none p-4",
-                                                        form.formState.errors.observacao && "border-red-500 focus:ring-red-200"
-                                                    )}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
 
-                                <FormField
-                                    control={form.control}
-                                    name="impacto_financeiro"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-blue-50 bg-blue-50/30 p-4 shadow-sm">
-                                            <div className="space-y-0.5">
-                                                <FormLabel className="text-sm font-bold text-gray-700">
-                                                    Gera impacto financeiro?
-                                                </FormLabel>
-                                                <p className="text-[10px] text-gray-500 font-medium leading-tight">
-                                                    Se ativado, este valor será considerado no fechamento.
-                                                </p>
-                                            </div>
-                                            <FormControl>
-                                                <Switch
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
+                                {(!mode || mode === OccurrenceFormMode.FINANCIAL) && (
+                                    <FormField
+                                        control={form.control}
+                                        name="impacto_financeiro"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-xl border border-blue-50 bg-blue-50/30 p-4 shadow-sm">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel className="text-sm font-bold text-gray-700">
+                                                        Gera impacto financeiro?
+                                                    </FormLabel>
+                                                    <p className="text-[10px] text-gray-500 font-medium leading-tight">
+                                                        {mode === OccurrenceFormMode.FINANCIAL
+                                                            ? "Obrigatório para lançamentos na aba financeira."
+                                                            : "Se ativado, este valor será considerado no fechamento."}
+                                                    </p>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                        disabled={mode === OccurrenceFormMode.FINANCIAL}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
 
                                 {form.watch("impacto_financeiro") && (
                                     <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -445,8 +439,108 @@ export function OccurrenceFormDialog({
                                                 )}
                                             />
                                         </div>
+
+                                        {mode === OccurrenceFormMode.FINANCIAL && !isEditing && (
+                                            <>
+                                                <div className="pt-4">
+                                                    <FormField
+                                                        control={form.control}
+                                                        name="is_parcelado"
+                                                        render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-3.5">
+                                                                <div className="space-y-0.5 pr-2">
+                                                                    <FormLabel className="text-gray-700 font-bold text-sm">
+                                                                        Ocorrência Parcelada?
+                                                                    </FormLabel>
+                                                                    <p className="text-xs text-gray-500">
+                                                                        Gera automaticamente ocorrências para os próximos meses.
+                                                                    </p>
+                                                                </div>
+                                                                <FormControl>
+                                                                    <Switch
+                                                                        checked={field.value}
+                                                                        onCheckedChange={(checked) => {
+                                                                            field.onChange(checked);
+                                                                            if (!checked) {
+                                                                                form.setValue("quantidade_parcelas", undefined);
+                                                                            }
+                                                                        }}
+                                                                        className="data-[state=checked]:bg-blue-600"
+                                                                    />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
+
+                                                {form.watch("is_parcelado") && (
+                                                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="quantidade_parcelas"
+                                                            render={({ field }) => (
+                                                            <FormItem className="space-y-1.5 w-full">
+                                                                    <FormLabel className="text-gray-700 font-bold text-sm">
+                                                                        Quantidade de Parcelas <span className="text-red-500">*</span>
+                                                                    </FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            type="number"
+                                                                            min={2}
+                                                                            step={1}
+                                                                            {...field}
+                                                                            value={field.value || ""}
+                                                                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                                                                            placeholder="Ex: 4"
+                                                                            className={cn(
+                                                                                "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
+                                                                                form.formState.errors.quantidade_parcelas && "border-red-500 focus:ring-red-200"
+                                                                            )}
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {form.watch("is_parcelado") && form.watch("quantidade_parcelas") ? (
+                                                    <div className="pt-2">
+                                                        <ParcelasPreview
+                                                            dataBase={form.watch("data_ocorrencia")}
+                                                            quantidadeParcelas={form.watch("quantidade_parcelas") || 0}
+                                                            valorTotal={form.watch("valor")}
+                                                        />
+                                                    </div>
+                                                ) : null}
+                                            </>
+                                        )}
                                     </div>
                                 )}
+
+                                <FormField
+                                    control={form.control}
+                                    name="observacao"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                                                Observação <span className="text-red-500">*</span>
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    {...field}
+                                                    placeholder="Detalhes adicionais da ocorrência..."
+                                                    className={cn(
+                                                        "min-h-[100px] rounded-2xl bg-gray-50 border-gray-200 focus:bg-white transition-all resize-none p-4",
+                                                        form.formState.errors.observacao && "border-red-500 focus:ring-red-200"
+                                                    )}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
                         </form>
                     </Form>

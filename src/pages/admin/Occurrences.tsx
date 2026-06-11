@@ -5,6 +5,7 @@ import { Plus, Settings } from "lucide-react";
 import { useEffect } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { OccurrenceFormMode } from "@/types/enums";
 
 export function Occurrences() {
     const {
@@ -36,7 +37,7 @@ export function Occurrences() {
                             <span className="hidden sm:inline">Gerenciar Tipos</span>
                         </Button>
                         <Button
-                            onClick={() => openOccurrenceFormDialog({})}
+                            onClick={() => openOccurrenceFormDialog({ mode: OccurrenceFormMode.GENERAL })}
                             className="bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap"
                             size="sm"
                         >

@@ -3,7 +3,7 @@ import { useDeletePonto } from "@/hooks/api/usePontoMutations";
 import { useTimeRecordActions } from "@/hooks/business/useTimeRecordActions";
 import { useLayout } from "@/contexts/LayoutContext";
 import { RegistroPonto } from "@/types/database";
-import { ManagementStatus } from "@/types/enums";
+import { ManagementStatus, OccurrenceFormMode } from "@/types/enums";
 import { getManagementStatus } from "@/utils/ponto";
 import { Card } from "@/components/ui/card";
 import { TimeRecordCard } from "./TimeRecordCard";
@@ -149,6 +149,7 @@ export function TimeTrackingList({
 
       openOccurrenceFormDialog({
         collaboratorId: record.usuario_id,
+        mode: OccurrenceFormMode.GENERAL,
         defaultValues: {
           colaborador_id: record.usuario_id,
           tipo_id: defaultTipoId,

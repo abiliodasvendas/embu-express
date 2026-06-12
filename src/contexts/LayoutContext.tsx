@@ -77,6 +77,7 @@ export interface OpenOccurrenceFormProps {
 export interface OpenOccurrenceDetailsProps {
   occurrence: Ocorrencia | null;
   onDelete?: (id: number) => void | Promise<void>;
+  onEdit?: (occurrence: Ocorrencia) => void;
 }
 
 export interface OpenEndTurnProps {

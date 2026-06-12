@@ -18,6 +18,7 @@ interface OccurrenceDetailsDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onDelete?: (id: number) => void | Promise<void>;
+    onEdit?: (occurrence: Ocorrencia) => void;
 }
 
 export function OccurrenceDetailsDialog({
@@ -25,6 +26,7 @@ export function OccurrenceDetailsDialog({
     open,
     onOpenChange,
     onDelete,
+    onEdit,
 }: OccurrenceDetailsDialogProps) {
     if (!occurrence) return null;
 
@@ -179,10 +181,18 @@ export function OccurrenceDetailsDialog({
                             Excluir
                         </Button>
                     )}
+                    {onEdit && (
+                        <Button
+                            onClick={() => occurrence && onEdit(occurrence)}
+                            className="flex-1 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-sm"
+                        >
+                            Editar
+                        </Button>
+                    )}
                     <Button
                         variant="outline"
                         onClick={() => onOpenChange(false)}
-                        className={cn("h-11 rounded-xl border-gray-200 font-bold text-gray-700 hover:bg-white shadow-sm", onDelete ? "flex-1" : "w-full")}
+                        className={cn("h-11 rounded-xl border-gray-200 font-bold text-gray-700 hover:bg-white shadow-sm", (onDelete || onEdit) ? "flex-1" : "w-full")}
                     >
                         Fechar
                     </Button>

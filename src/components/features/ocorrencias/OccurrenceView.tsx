@@ -3,7 +3,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { Card, CardContent } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
-import { FilterOptions } from "@/types/enums";
+import { FilterOptions, OccurrenceFormMode } from "@/types/enums";
 import { safeCloseDialog, useOccurrenceViewModel } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { History } from "lucide-react";
@@ -12,7 +12,6 @@ import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import { OccurrenceDailyItem } from "./OccurrenceDailyItem";
 
-import { useEffect } from "react";
 interface OccurrenceViewProps {
   usuarioId?: string;
   mode?: "daily" | "monthly";
@@ -32,7 +31,7 @@ export function OccurrenceView({
   onOccurrenceDeleted,
   impactoFinanceiro,
 }: OccurrenceViewProps) {
-  const { openConfirmationDialog, closeConfirmationDialog, openOccurrenceDetailsDialog, closeOccurrenceDetailsDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openOccurrenceDetailsDialog, closeOccurrenceDetailsDialog, openOccurrenceFormDialog } = useLayout();
   const deleteMutation = useDeleteOcorrencia();
   const { data: collaborators = [] } = useCollaborators({}, { enabled: !usuarioId });
 
@@ -58,6 +57,29 @@ export function OccurrenceView({
         vm.refetch();
         onOccurrenceDeleted?.();
       },
+    });
+  };
+
+  const handleEdit = (occurrence: any) => {
+    openOccurrenceFormDialog({
+      collaboratorId: occurrence.colaborador_id,
+      mode: occurrence.impacto_financeiro ? OccurrenceFormMode.FINANCIAL : OccurrenceFormMode.GENERAL,
+      defaultValues: {
+        id: occurrence.id,
+        colaborador_id: occurrence.colaborador_id,
+        tipo_id: String(occurrence.tipo_id),
+        data_ocorrencia: occurrence.data_ocorrencia,
+        valor: occurrence.valor,
+        impacto_financeiro: occurrence.impacto_financeiro,
+        tipo_lancamento: occurrence.tipo_lancamento,
+        colaborador_cliente_id: occurrence.colaborador_cliente_id ? String(occurrence.colaborador_cliente_id) : "none",
+        observacao: occurrence.observacao,
+      },
+      onSuccess: () => {
+        closeOccurrenceDetailsDialog();
+        vm.refetch();
+        onOccurrenceDeleted?.();
+      }
     });
   };
 
@@ -155,7 +177,8 @@ export function OccurrenceView({
                     showCollaborator={!usuarioId}
                     onClick={(occurrence) => openOccurrenceDetailsDialog({
                       occurrence,
-                      onDelete: () => handleDelete(occurrence)
+                      onDelete: !occurrence.is_virtual ? () => handleDelete(occurrence) : undefined,
+                      onEdit: !occurrence.is_virtual ? () => handleEdit(occurrence) : undefined,
                     })}
                   />
                 ))}

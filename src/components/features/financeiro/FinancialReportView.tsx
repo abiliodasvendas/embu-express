@@ -23,11 +23,13 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks";
 import { useFinanceiro } from "@/hooks/api/useFinanceiro";
 import { useFinanceiroMutations } from "@/hooks/api/useFinanceiroMutations";
+import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useDateFilters } from "@/hooks/ui/useFilters";
 import { cn } from "@/lib/utils";
 import { Ocorrencia } from "@/types/database";
 import { ResumoClienteFinanceiro } from "@/types/financeiro";
+import { OccurrenceFormMode } from "@/types/enums";
 import { meses } from "@/utils/formatters/constants";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateTimeToBR } from "@/utils/formatters/date";
@@ -65,8 +67,46 @@ export function FinancialReportView({
   selectedMonth: propMonth,
   selectedYear: propYear,
 }: FinancialReportViewProps) {
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { openConfirmationDialog, closeConfirmationDialog, openOccurrenceDetailsDialog, closeOccurrenceDetailsDialog, openOccurrenceFormDialog } = useLayout();
   const { can, isSuperAdmin } = usePermissions();
+  const deleteOcorrenciaMutation = useDeleteOcorrencia();
+
+  const handleDeleteOcorrencia = (occurrence: any) => {
+    openConfirmationDialog({
+      title: "Remover Ocorrência",
+      description: `Deseja realmente remover esta ocorrência de ${occurrence.tipo?.descricao}?`,
+      confirmText: "Remover",
+      variant: "destructive",
+      onConfirm: async () => {
+        await deleteOcorrenciaMutation.mutateAsync(occurrence.id);
+        closeOccurrenceDetailsDialog();
+        safeCloseDialog(closeConfirmationDialog);
+        refetch();
+      },
+    });
+  };
+
+  const handleEditOcorrencia = (occurrence: any) => {
+    openOccurrenceFormDialog({
+      collaboratorId: occurrence.colaborador_id,
+      mode: occurrence.impacto_financeiro ? OccurrenceFormMode.FINANCIAL : OccurrenceFormMode.GENERAL,
+      defaultValues: {
+        id: occurrence.id,
+        colaborador_id: occurrence.colaborador_id,
+        tipo_id: String(occurrence.tipo_id),
+        data_ocorrencia: occurrence.data_ocorrencia,
+        valor: occurrence.valor,
+        impacto_financeiro: occurrence.impacto_financeiro,
+        tipo_lancamento: occurrence.tipo_lancamento,
+        colaborador_cliente_id: occurrence.colaborador_cliente_id ? String(occurrence.colaborador_cliente_id) : "none",
+        observacao: occurrence.observacao,
+      },
+      onSuccess: () => {
+        closeOccurrenceDetailsDialog();
+        refetch();
+      }
+    });
+  };
   const {
     selectedMes: internalMonth,
     setSelectedMes: setSelectedMonth,
@@ -638,7 +678,12 @@ export function FinancialReportView({
                                   .map((occ, oIdx) => (
                                     <div
                                       key={oIdx}
-                                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ gap-3"
+                                      onClick={() => openOccurrenceDetailsDialog({
+                                        occurrence: occ,
+                                        onDelete: !occ.is_virtual ? () => handleDeleteOcorrencia(occ) : undefined,
+                                        onEdit: !occ.is_virtual ? () => handleEditOcorrencia(occ) : undefined,
+                                      })}
+                                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ gap-3 cursor-pointer"
                                     >
                                       <div className="flex items-start sm:items-center gap-4 flex-1">
                                         <div
@@ -802,7 +847,12 @@ export function FinancialReportView({
                             .map((occ, oIdx: number) => (
                               <div
                                 key={oIdx}
-                                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ gap-3"
+                                onClick={() => openOccurrenceDetailsDialog({
+                                  occurrence: occ,
+                                  onDelete: !occ.is_virtual ? () => handleDeleteOcorrencia(occ) : undefined,
+                                  onEdit: !occ.is_virtual ? () => handleEditOcorrencia(occ) : undefined,
+                                })}
+                                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 transition-all hover:shadow-md group/occ gap-3 cursor-pointer"
                               >
                                 <div className="flex items-start sm:items-center gap-4 flex-1">
                                   <div

@@ -30,7 +30,7 @@ import { OccurrenceFormMode } from "@/types/enums";
 import { messages } from "@/constants/messages";
 import { ParcelasPreview } from "@/components/common/ParcelasPreview";
 import { useCollaborator, useCollaborators } from "@/hooks/api/useCollaborators";
-import { useCreateOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
+import { useCreateOcorrencia, useUpdateOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
 import { cn } from "@/lib/utils";
 import { OccurrenceFormData, occurrenceSchema } from "@/schemas/occurrenceSchema";
@@ -61,6 +61,7 @@ export function OccurrenceFormDialog({
     const { data: collaborators = [] } = useCollaborators({});
     const { data: tipos = [] } = useTiposOcorrencia();
     const createMutation = useCreateOcorrencia();
+    const updateMutation = useUpdateOcorrencia();
     const isEditing = !!defaultValues?.id;
 
     const form = useForm<OccurrenceFormData>({
@@ -120,22 +121,40 @@ export function OccurrenceFormDialog({
 
     const onSubmit = async (data: OccurrenceFormData) => {
         try {
-            await createMutation.mutateAsync({
-                colaborador_id: data.colaborador_id,
-                tipo_id: Number(data.tipo_id),
-                data_ocorrencia: data.data_ocorrencia,
-                valor: data.valor,
-                impacto_financeiro: Boolean(data.impacto_financeiro),
-                tipo_lancamento: data.tipo_lancamento as typeof LANCAMENTO_TIPO.ENTRADA | typeof LANCAMENTO_TIPO.SAIDA | undefined,
-                observacao: data.observacao,
-                colaborador_cliente_id: data.colaborador_cliente_id ? Number(data.colaborador_cliente_id) : undefined,
-                is_parcelado: data.is_parcelado,
-                quantidade_parcelas: data.quantidade_parcelas ? Number(data.quantidade_parcelas) : undefined,
-            });
+            if (isEditing && defaultValues?.id) {
+                await updateMutation.mutateAsync({
+                    id: defaultValues.id,
+                    data: {
+                        colaborador_id: data.colaborador_id,
+                        tipo_id: Number(data.tipo_id),
+                        data_ocorrencia: data.data_ocorrencia,
+                        valor: data.valor,
+                        impacto_financeiro: Boolean(data.impacto_financeiro),
+                        tipo_lancamento: data.tipo_lancamento as typeof LANCAMENTO_TIPO.ENTRADA | typeof LANCAMENTO_TIPO.SAIDA | undefined,
+                        observacao: data.observacao,
+                        colaborador_cliente_id: data.colaborador_cliente_id ? Number(data.colaborador_cliente_id) : undefined,
+                        is_parcelado: data.is_parcelado,
+                        quantidade_parcelas: data.quantidade_parcelas ? Number(data.quantidade_parcelas) : undefined,
+                    } as any
+                });
+            } else {
+                await createMutation.mutateAsync({
+                    colaborador_id: data.colaborador_id,
+                    tipo_id: Number(data.tipo_id),
+                    data_ocorrencia: data.data_ocorrencia,
+                    valor: data.valor,
+                    impacto_financeiro: Boolean(data.impacto_financeiro),
+                    tipo_lancamento: data.tipo_lancamento as typeof LANCAMENTO_TIPO.ENTRADA | typeof LANCAMENTO_TIPO.SAIDA | undefined,
+                    observacao: data.observacao,
+                    colaborador_cliente_id: data.colaborador_cliente_id ? Number(data.colaborador_cliente_id) : undefined,
+                    is_parcelado: data.is_parcelado,
+                    quantidade_parcelas: data.quantidade_parcelas ? Number(data.quantidade_parcelas) : undefined,
+                });
+            }
             onSuccess?.();
             form.reset();
         } catch (error) {
-            toast.error(messages.ocorrencia.erro.salvar, { description: error.response?.data?.message || error.message });
+            toast.error(isEditing ? messages.ocorrencia.erro.atualizar : messages.ocorrencia.erro.salvar, { description: error.response?.data?.message || error.message });
         }
     };
 
@@ -200,9 +219,11 @@ export function OccurrenceFormDialog({
                         <AlertCircle className="w-5 h-5 text-white" />
                     </div>
                     <DialogTitle className="text-xl font-bold text-white">
-                        Lançar Ocorrência
+                        {isEditing ? "Editar Ocorrência" : "Lançar Ocorrência"}
                     </DialogTitle>
-                    <p className="text-xs text-white/70 mt-1">Registre uma ocorrência para um colaborador</p>
+                    <p className="text-xs text-white/70 mt-1">
+                        {isEditing ? "Edite os dados desta ocorrência" : "Registre uma ocorrência para um colaborador"}
+                    </p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
@@ -558,15 +579,15 @@ export function OccurrenceFormDialog({
                     <Button
                         type="submit"
                         form="occurrence-form"
-                        disabled={createMutation.isPending}
+                        disabled={createMutation.isPending || updateMutation.isPending}
                         className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
                     >
-                        {createMutation.isPending ? (
+                        {createMutation.isPending || updateMutation.isPending ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Registrando...
+                                {isEditing ? "Salvando..." : "Registrando..."}
                             </>
-                        ) : "Registrar Ocorrência"}
+                        ) : isEditing ? "Salvar Alterações" : "Registrar Ocorrência"}
                     </Button>
                 </div>
             </DialogContent>

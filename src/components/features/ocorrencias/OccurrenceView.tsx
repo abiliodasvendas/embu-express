@@ -5,7 +5,6 @@ import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { FilterOptions, OccurrenceFormMode } from "@/types/enums";
 import { safeCloseDialog, useOccurrenceViewModel } from "@/hooks";
-import { cn } from "@/lib/utils";
 import { History } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";

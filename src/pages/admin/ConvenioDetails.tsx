@@ -606,12 +606,12 @@ export default function ConvenioDetails() {
 
                       {isExpanded && (
                         <div className="border-t border-gray-100 bg-gray-50/20 px-5 py-4">
-                          <div className="overflow-x-auto">
-                            <table className="w-full table-fixed text-left">
+                          <div className="overflow-x-auto pb-2">
+                            <table className="w-full min-w-[700px] table-fixed text-left">
                               <thead>
                                 <tr className="text-left border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                                   <th className="pb-3 pl-2 w-[100px]">Data</th>
-                                  {group.isFrota && <th className="pb-3 pl-2 w-[180px]">Colaborador</th>}
+                                  {group.isFrota && <th className="pb-3 pl-2 w-[220px]">Colaborador</th>}
                                   <th className="pb-3 w-[110px]">Valor</th>
                                   <th className="pb-3 pr-2">Descrição</th>
                                   {canEdit && <th className="pb-3 text-right pr-2 w-[90px]">Ações</th>}
@@ -624,8 +624,10 @@ export default function ConvenioDetails() {
                                       {formatLocalDate(l.data_lancamento)}
                                     </td>
                                     {group.isFrota && (
-                                      <td className="py-3.5 pl-2 font-bold text-gray-900 whitespace-nowrap text-left">
-                                        {l.colaborador?.nome_completo || "Desconhecido"}
+                                      <td className="py-3.5 pl-2 pr-2 font-bold text-gray-900 whitespace-nowrap text-left">
+                                        <div className="truncate max-w-[200px]" title={l.colaborador?.nome_completo}>
+                                          {l.colaborador?.nome_completo || "Desconhecido"}
+                                        </div>
                                       </td>
                                     )}
                                     <td className="py-3.5 font-bold text-gray-900 whitespace-nowrap">
@@ -685,12 +687,12 @@ export default function ConvenioDetails() {
             </div>
           ) : (
             <Card className="border border-gray-100 shadow-sm bg-white rounded-2xl overflow-hidden p-5">
-              <div className="overflow-x-auto">
-                <table className="w-full table-fixed text-left">
+              <div className="overflow-x-auto pb-2">
+                <table className="w-full min-w-[700px] table-fixed text-left">
                   <thead>
                     <tr className="text-left border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                       <th className="pb-3 pl-2 w-[100px]">Data</th>
-                      <th className="pb-3 w-[180px]">Colaborador</th>
+                      <th className="pb-3 w-[220px]">Colaborador</th>
                       <th className="pb-3 w-[110px]">Valor</th>
                       <th className="pb-3 pr-2">Descrição</th>
                       {canEdit && <th className="pb-3 text-right pr-2 w-[90px]">Ações</th>}
@@ -702,11 +704,11 @@ export default function ConvenioDetails() {
                         <td className="py-3.5 pl-2 font-medium text-gray-500 whitespace-nowrap">
                           {formatLocalDate(l.data_lancamento)}
                         </td>
-                        <td className="py-3.5 font-bold text-gray-900 whitespace-nowrap text-left">
-                          <div className="flex flex-col gap-0.5">
-                            <span>{l.colaborador?.nome_completo || "Desconhecido"}</span>
+                        <td className="py-3.5 pr-2 font-bold text-gray-900 whitespace-nowrap text-left">
+                          <div className="flex flex-col gap-0.5 truncate max-w-[200px]" title={l.colaborador?.nome_completo}>
+                            <span className="truncate">{l.colaborador?.nome_completo || "Desconhecido"}</span>
                             {l.moto_embu && (
-                              <span className="text-[9px] text-sky-700 font-bold uppercase tracking-wider">
+                              <span className="text-[9px] text-sky-700 font-bold uppercase tracking-wider truncate">
                                 Veículo Embu Express
                               </span>
                             )}

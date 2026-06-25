@@ -18,7 +18,7 @@ export const colaboradorApi = {
     apiClient.patch(`/usuarios/${id}/status`, { status }).then(res => res.data),
 
   resetPassword: (id: string): Promise<{ success: boolean; message: string }> =>
-    apiClient.post(`/usuarios/${id}/reset-password`).then(res => res.data),
+    apiClient.post(`/usuarios/${id}/reset-password`, {}).then(res => res.data),
 
   deleteColaborador: (id: string): Promise<void> =>
     apiClient.delete(`/usuarios/${id}`).then(res => res.data),

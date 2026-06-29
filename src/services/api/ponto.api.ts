@@ -44,6 +44,6 @@ export const pontoApi = {
     apiClient.post(`/pontos/manual-absence`, { date, userId }).then(res => res.data),
 
   removeManualAbsence: (date: string, userId: string): Promise<void> =>
-    apiClient.delete(`/pontos/manual-absence`, { data: { date, userId } }).then(res => res.data),
+    apiClient.delete(`/pontos/manual-absence`, { params: { date, userId } }).then(res => res.data),
 };
 

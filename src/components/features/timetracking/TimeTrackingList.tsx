@@ -125,25 +125,31 @@ export function TimeTrackingList({
 
     const isAbsent = manualAbsenceIds.includes(record.usuario_id!);
     if (isAbsent) {
-      try {
-        const ocorrenciasExistentes = await ocorrenciaService.listOcorrencias({
-          usuario_id: record.usuario_id,
-          data_inicio: record.data_referencia,
-          data_fim: record.data_referencia,
-          tipo_id: tipoSemAtividade ? tipoSemAtividade.id : undefined,
-        });
+      if (tipoSemAtividade) {
+        try {
+          const ocorrenciasExistentes = await ocorrenciaService.listOcorrencias({
+            usuario_id: record.usuario_id,
+            data_inicio: record.data_referencia,
+            data_fim: record.data_referencia,
+            tipo_id: tipoSemAtividade.id,
+          });
 
-        if (ocorrenciasExistentes && ocorrenciasExistentes.length > 0) {
-          const oId = ocorrenciasExistentes[0].id;
-          if (oId) {
-            await deleteOcorrencia(oId);
+          if (ocorrenciasExistentes && ocorrenciasExistentes.length > 0) {
+            const oId = ocorrenciasExistentes[0].id;
+            if (oId) {
+              await deleteOcorrencia(oId);
+            }
           }
+        } catch (error) {
+          console.error("Erro ao remover ocorrência automática de Sem Atividade:", error);
         }
-      } catch (error) {
-        console.error("Erro ao remover ocorrência automática de Sem Atividade:", error);
       }
 
-      await removeManualAbsence.mutateAsync(record.usuario_id!);
+      try {
+        await removeManualAbsence.mutateAsync(record.usuario_id!);
+      } catch (error) {
+        console.error("Erro ao remover ausência manual:", error);
+      }
     } else {
       const defaultTipoId = tipoSemAtividade ? String(tipoSemAtividade.id) : "";
 
@@ -153,7 +159,7 @@ export function TimeTrackingList({
         defaultValues: {
           colaborador_id: record.usuario_id,
           tipo_id: defaultTipoId,
-          data_ocorrencia: new Date().toISOString().split("T")[0],
+          data_ocorrencia: record.data_referencia || new Date().toISOString().split("T")[0],
           colaborador_cliente_id: record.colaborador_cliente?.id
             ? String(record.colaborador_cliente.id)
             : "none",

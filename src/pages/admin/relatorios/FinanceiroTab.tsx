@@ -81,7 +81,7 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-amber-500">{formatarMoeda(data.restaPagar)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Valores em aberto (ao vivo)</p>
+                        <p className="text-xs text-muted-foreground mt-1">Valores em aberto</p>
                     </CardContent>
                 </Card>
 

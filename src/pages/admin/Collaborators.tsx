@@ -53,6 +53,12 @@ export function Collaborators() {
                                     onEdit={vm.handleEdit}
                                     onStatusChange={vm.handleStatusChange}
                                     onDelete={vm.handleDelete}
+                                    page={vm.page}
+                                    pageSize={vm.pageSize}
+                                    total={vm.total}
+                                    totalPages={vm.totalPages}
+                                    onPageChange={vm.setPage}
+                                    onPageSizeChange={vm.setPageSize}
                                 />
                             ) : (
                                 <UnifiedEmptyState

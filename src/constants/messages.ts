@@ -123,7 +123,7 @@ export const messages = {
       kmServico: "KM em Serviço",
       kmPausa: "KM em Pausa",
       detalhesPonto: "Detalhes da Atividade",
-      jornadaMensal: "Jornada Mensal",
+      jornadaMensal: "Atividade Mensal",
       ausencias: "Sem Atividade",
       rodagemKm: "Rodagem (KM)",
       saldoAtual: "Saldo Atual",

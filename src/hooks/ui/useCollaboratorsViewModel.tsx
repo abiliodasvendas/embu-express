@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useLayout } from '@/contexts/LayoutContext';
-import { useSearchFilters, useStatusFilters, useCategoryFilters, useHierarchyFilters, useFiltersManager, useBatchFilters } from './useFilters';
+import { useSearchFilters, useStatusFilters, useCategoryFilters, useHierarchyFilters, useFiltersManager, useUrlState } from './useFilters';
 import { StatusUsuario, FilterOptions } from '@/types/enums';
 import { messages } from '@/constants/messages';
 import {
@@ -26,34 +27,99 @@ export function useCollaboratorsViewModel() {
         openSuccessRegistrationDialog,
     } = useLayout();
 
-    // 1. Filters (Modularizado)
-    const { searchTerm, setSearchTerm } = useSearchFilters();
-    const { selectedStatus, setSelectedStatus } = useStatusFilters("status");
-    const { selectedCategoria: selectedRole, setSelectedCategoria: setSelectedRole } = useCategoryFilters("cargo");
+    const [, setSearchParams] = useSearchParams();
+
+    const updateUrlParams = useCallback((updates: Record<string, string | number | boolean | null | undefined>) => {
+        setSearchParams((prev) => {
+            const newParams = new URLSearchParams(prev);
+            Object.entries(updates).forEach(([paramKey, val]) => {
+                if (val === null || val === undefined || val === "" || val === FilterOptions.TODOS || (paramKey === "page" && Number(val) === 1)) {
+                    newParams.delete(paramKey);
+                } else {
+                    newParams.set(paramKey, String(val));
+                }
+            });
+            return newParams;
+        }, { replace: true });
+    }, [setSearchParams]);
+
+    const [page] = useUrlState<number>({ key: "page", defaultValue: 1 });
+    const [pageSize] = useUrlState<number>({ key: "pageSize", defaultValue: 10 });
+
+    const setPage = useCallback((newPage: number) => {
+        updateUrlParams({ page: newPage });
+    }, [updateUrlParams]);
+
+    const setPageSize = useCallback((newPageSize: number) => {
+        updateUrlParams({ pageSize: newPageSize, page: 1 });
+    }, [updateUrlParams]);
+
+    const { searchTerm } = useSearchFilters();
+    const { selectedStatus } = useStatusFilters("status");
+    const { selectedCategoria: selectedRole } = useCategoryFilters("cargo");
     const {
-        selectedCliente: selectedClient, setSelectedCliente: setSelectedClient,
-        selectedEmpresa, setSelectedEmpresa
+        selectedCliente: selectedClient,
+        selectedEmpresa
     } = useHierarchyFilters({
         clienteParam: "cliente",
         empresaParam: "empresa"
     });
 
-    const activeParams = ["search", "status", "cargo", "cliente", "empresa"];
-    const { hasActiveFilters, clearFilters } = useFiltersManager(activeParams);
-    const setFilters = useBatchFilters({
-        statusParam: "status",
-        categoriaParam: "cargo",
-        clienteParam: "cliente",
-        empresaParam: "empresa"
-    });
+    const activeParams = ["search", "status", "cargo", "cliente", "empresa", "page", "pageSize"];
+    const { hasActiveFilters } = useFiltersManager(activeParams);
 
-    // 2. Data Queries
+    const setSearchTerm = useCallback((val: string | null | undefined) => {
+        updateUrlParams({ search: val, page: 1 });
+    }, [updateUrlParams]);
+
+    const setSelectedStatus = useCallback((val: string | null | undefined) => {
+        updateUrlParams({ status: val, page: 1 });
+    }, [updateUrlParams]);
+
+    const setSelectedRole = useCallback((val: string | null | undefined) => {
+        updateUrlParams({ cargo: val, page: 1 });
+    }, [updateUrlParams]);
+
+    const setSelectedClient = useCallback((val: string | null | undefined) => {
+        updateUrlParams({ cliente: val, page: 1 });
+    }, [updateUrlParams]);
+
+    const setSelectedEmpresa = useCallback((val: string | null | undefined) => {
+        updateUrlParams({ empresa: val, page: 1 });
+    }, [updateUrlParams]);
+
+    const clearFilters = useCallback(() => {
+        updateUrlParams({
+            search: "",
+            status: "",
+            cargo: "",
+            cliente: "",
+            empresa: "",
+            page: 1,
+        });
+    }, [updateUrlParams]);
+
+    const handleApplyFilters = useCallback((newFilters: {
+        status?: string;
+        categoria?: string;
+        cliente?: string;
+        empresa?: string;
+    }) => {
+        updateUrlParams({
+            status: newFilters.status,
+            cargo: newFilters.categoria,
+            cliente: newFilters.cliente,
+            empresa: newFilters.empresa,
+            page: 1,
+        });
+    }, [updateUrlParams]);
+
     const { data: roles = [] } = useRoles();
     const { data: clients = [] } = useClientSelection();
     const { data: empresas = [] } = useEmpresas({ ativo: "true" });
 
     const {
-        data: collaborators = [],
+        data: collaboratorsResponse,
         isLoading,
         refetch,
     } = useCollaborators({
@@ -62,14 +128,32 @@ export function useCollaboratorsViewModel() {
         perfil_id: selectedRole === FilterOptions.TODOS ? undefined : selectedRole,
         cliente_id: selectedClient === FilterOptions.TODOS ? undefined : selectedClient,
         empresa_id: selectedEmpresa === FilterOptions.TODOS ? undefined : selectedEmpresa,
+        page,
+        pageSize,
     });
 
-    // 3. Mutations
+    const collaborators = useMemo(() => {
+        if (!collaboratorsResponse) return [];
+        if (Array.isArray(collaboratorsResponse)) return collaboratorsResponse;
+        return collaboratorsResponse.data || [];
+    }, [collaboratorsResponse]);
+
+    const total = useMemo(() => {
+        if (!collaboratorsResponse) return 0;
+        if (Array.isArray(collaboratorsResponse)) return collaboratorsResponse.length;
+        return collaboratorsResponse.total || 0;
+    }, [collaboratorsResponse]);
+
+    const totalPages = useMemo(() => {
+        if (!collaboratorsResponse) return 1;
+        if (Array.isArray(collaboratorsResponse)) return 1;
+        return collaboratorsResponse.totalPages || 1;
+    }, [collaboratorsResponse]);
+
     const createCollaborator = useCreateCollaborator();
     const deleteCollaborator = useDeleteCollaborator();
     const updateStatus = useUpdateCollaboratorStatus();
 
-    // 4. Actions Handlers
     const handleRegister = useCallback(() => {
         openCollaboratorFormDialog({
             mode: "create",
@@ -131,20 +215,6 @@ export function useCollaboratorsViewModel() {
         });
     }, [updateStatus, openConfirmationDialog, closeConfirmationDialog, openSuccessRegistrationDialog]);
 
-    const handleApplyFilters = useCallback((newFilters: {
-        status?: string;
-        categoria?: string;
-        cliente?: string;
-        empresa?: string;
-    }) => {
-        setFilters({
-            status: newFilters.status,
-            categoria: newFilters.categoria,
-            cliente: newFilters.cliente,
-            empresa: newFilters.empresa,
-        });
-    }, [setFilters]);
-
     const isActionLoading = useMemo(() =>
         deleteCollaborator.isPending ||
         updateStatus.isPending ||
@@ -152,7 +222,6 @@ export function useCollaboratorsViewModel() {
         , [deleteCollaborator.isPending, updateStatus.isPending, createCollaborator.isPending]);
 
     return {
-        // Data
         collaborators,
         roles,
         clients,
@@ -160,7 +229,13 @@ export function useCollaboratorsViewModel() {
         isLoading,
         isActionLoading,
 
-        // State/Filters
+        page,
+        pageSize,
+        total,
+        totalPages,
+        setPage,
+        setPageSize,
+
         searchTerm,
         selectedStatus,
         selectedRole,
@@ -168,7 +243,6 @@ export function useCollaboratorsViewModel() {
         selectedEmpresa,
         hasActiveFilters,
 
-        // Handlers
         setSearchTerm,
         setSelectedStatus,
         setSelectedRole,
@@ -178,7 +252,6 @@ export function useCollaboratorsViewModel() {
         clearFilters,
         refetch,
 
-        // Actions
         handleRegister,
         handleEdit,
         handleDelete,

@@ -118,7 +118,7 @@ export function TimeMirrorDailyCard({
                                     e.stopPropagation();
                                     onDelete(day.ponto_id as number);
                                 }}
-                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all print:hidden"
                                 title="Excluir marcação"
                             >
                                 <Trash2 className="w-4 h-4" />

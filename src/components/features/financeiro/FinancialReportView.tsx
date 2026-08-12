@@ -51,12 +51,17 @@ import {
   Clock,
   History,
   Store,
+  Receipt,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { parseISO } from "date-fns";
+import { PrintReportHeader } from "@/components/common/PrintReportHeader";
 
 interface FinancialReportViewProps {
   usuarioId?: string;
   colaboradorNome?: string;
+  cpf?: string;
+  cargo?: string;
   selectedMonth?: number;
   selectedYear?: number;
 }
@@ -64,6 +69,8 @@ interface FinancialReportViewProps {
 export function FinancialReportView({
   usuarioId,
   colaboradorNome,
+  cpf,
+  cargo,
   selectedMonth: propMonth,
   selectedYear: propYear,
 }: FinancialReportViewProps) {
@@ -138,6 +145,118 @@ export function FinancialReportView({
     [],
   );
 
+  const lancamentosConsolidados = useMemo(() => {
+    if (!extrato) return [];
+    const items: Array<{
+      id: string;
+      grupo: string;
+      descricao: string;
+      tipo: "ENTRADA" | "SAIDA";
+      valor: number;
+    }> = [];
+
+    // 1. Turnos / Contratos (Detalhamento transparente de cada componente)
+    (extrato.resumo_por_cliente || []).forEach((resumo, idx) => {
+      const baseBrutaFixa = (resumo.valores_fixos?.contrato || 0) + (resumo.valores_fixos?.ajuda_custo || 0) + (resumo.valores_fixos?.aluguel || 0);
+      const valorDia = resumo.dias_base_mes > 0 ? baseBrutaFixa / resumo.dias_base_mes : 0;
+      const valorBrutoVigente = valorDia * resumo.dias_esperados_turno;
+
+      if (valorBrutoVigente > 0) {
+        items.push({
+          id: `turno-base-${idx}`,
+          grupo: `Turno (${resumo.nome_fantasia || 'Cliente'})`,
+          descricao: `Base Contratual Proporcional (${resumo.dias_esperados_turno}/${resumo.dias_base_mes} dias de Atividade)`,
+          tipo: "ENTRADA",
+          valor: parseFloat(valorBrutoVigente.toFixed(2)),
+        });
+      }
+
+      if (resumo.ausencias > 0) {
+        const valorAusencia = valorDia * resumo.ausencias;
+        items.push({
+          id: `turno-ausencia-${idx}`,
+          grupo: `Turno (${resumo.nome_fantasia || 'Cliente'})`,
+          descricao: `Dedução por Sem Atividade (${resumo.ausencias} dia(s))`,
+          tipo: "SAIDA",
+          valor: parseFloat(valorAusencia.toFixed(2)),
+        });
+      }
+
+      if (resumo.valores_fixos?.bonus > 0) {
+        items.push({
+          id: `turno-bonus-${idx}`,
+          grupo: `Turno (${resumo.nome_fantasia || 'Cliente'})`,
+          descricao: `Bônus de Atividade / Assiduidade`,
+          tipo: "ENTRADA",
+          valor: resumo.valores_fixos.bonus,
+        });
+      }
+
+      if (resumo.valores_fixos?.adiantamento > 0) {
+        items.push({
+          id: `turno-adiantamento-${idx}`,
+          grupo: `Turno (${resumo.nome_fantasia || 'Cliente'})`,
+          descricao: `Desconto de Adiantamento Mensal Confirmado`,
+          tipo: "SAIDA",
+          valor: resumo.valores_fixos.adiantamento,
+        });
+      }
+
+      // Ocorrências manuais vinculadas a este turno
+      (extrato.ocorrencias || [])
+        .filter((occ: any) => occ.colaborador_cliente_id === resumo.id_vinculo && occ.impacto_financeiro && !occ.is_virtual)
+        .forEach((occ: any, oIdx: number) => {
+          const dataBr = occ.data_ocorrencia ? format(parseISO(occ.data_ocorrencia), "dd/MM/yyyy") : "";
+          items.push({
+            id: `turno-occ-${idx}-${occ.id || oIdx}`,
+            grupo: `Turno (${resumo.nome_fantasia || 'Cliente'})`,
+            descricao: `${occ.tipo?.descricao || occ.observacao || 'Ocorrência'}${occ.observacao && occ.tipo?.descricao ? ' - ' + occ.observacao : ''}${dataBr ? ' (' + dataBr + ')' : ''}`,
+            tipo: occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "ENTRADA" : "SAIDA",
+            valor: Number(occ.valor || 0),
+          });
+        });
+    });
+
+    // 2. MEI Pro-Rata
+    if (extrato.mei_consolidado && extrato.mei_consolidado.valor_calculado > 0) {
+      items.push({
+        id: "mei",
+        grupo: "MEI",
+        descricao: `Ajuda de Custo MEI Pro-Rata (${extrato.mei_consolidado.dias_trabalhados}/${extrato.mei_consolidado.dias_base} dias)`,
+        tipo: "ENTRADA",
+        valor: extrato.mei_consolidado.valor_calculado,
+      });
+    }
+
+    // 3. Ocorrências Avulsas (Gerais)
+    (extrato.ocorrencias || [])
+      .filter((occ: any) => !occ.colaborador_cliente_id && occ.impacto_financeiro && !occ.is_virtual)
+      .forEach((occ: any, idx: number) => {
+        const dataBr = occ.data_ocorrencia ? format(parseISO(occ.data_ocorrencia), "dd/MM/yyyy") : "";
+        items.push({
+          id: `ocorrencia-avulsa-${occ.id || idx}`,
+          grupo: "Ocorrência Avulsa",
+          descricao: `${occ.tipo?.descricao || occ.observacao || 'Ocorrência'}${occ.observacao && occ.tipo?.descricao ? ' - ' + occ.observacao : ''}${dataBr ? ' (' + dataBr + ')' : ''}`,
+          tipo: occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "ENTRADA" : "SAIDA",
+          valor: Number(occ.valor || 0),
+        });
+      });
+
+    // 4. Convênios (Parceiros/Oficinas)
+    (extrato.lancamentos_convenios || []).forEach((l: any, idx: number) => {
+      const dataBr = l.data_lancamento ? format(parseISO(l.data_lancamento), "dd/MM/yyyy") : "";
+      items.push({
+        id: `convenio-${l.id || idx}`,
+        grupo: "Convênio",
+        descricao: `${l.convenio?.nome || 'Oficina/Parceiro'}${l.observacao ? ' - ' + l.observacao : ''}${dataBr ? ' (' + dataBr + ')' : ''}`,
+        tipo: "SAIDA",
+        valor: Number(l.valor || 0),
+      });
+    });
+
+    return items;
+  }, [extrato]);
+
   const [activeTab, setActiveTab] = useState("turnos");
 
   return (
@@ -149,7 +268,7 @@ export function FinancialReportView({
       <div className="space-y-6">
         {/* Filtros de Período - Ocultar se passados via props */}
         {!propMonth && !propYear && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50 p-4 rounded-[2rem] border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50 p-4 rounded-[2rem] border border-gray-100 print:hidden">
             <div className="flex items-center gap-3 ml-2">
               <div className="p-2 bg-white rounded-xl shadow-sm border border-gray-100 shrink-0">
                 <Calendar className="h-5 w-5 text-emerald-600" />
@@ -219,48 +338,194 @@ export function FinancialReportView({
           <ListSkeleton />
         ) : extrato ? (
           <div className="animate-in fade-in duration-500 space-y-8">
-            {/* Status e Ações */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 gap-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge
-                  className={cn(
-                    "rounded-full px-4 py-1.5 font-bold text-xs uppercase tracking-widest",
-                    extrato.status === FINANCEIRO_STATUS.PAGO
-                      ? "bg-emerald-500 text-white"
-                      : "bg-white text-emerald-600 hover:bg-emerald-50 border-emerald-500 border",
-                  )}
-                >
-                  {extrato.status === FINANCEIRO_STATUS.RASCUNHO ? "EM ABERTO" : extrato.status}
-                </Badge>
-                {extrato.data_pagamento && (
-                  <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Pago em:{" "}
-                    {formatDateTimeToBR(extrato.data_pagamento, {
-                      includeTime: true,
-                    })}
+            {/* Visão de Impressão Exclusiva (1 Folha A4 Consolidada - Clean & Flat) */}
+            <div className="hidden print:block space-y-4">
+              <PrintReportHeader
+                titulo="Fechamento Financeiro Mensal"
+                colaboradorNome={colaboradorNome}
+                cpf={cpf}
+                cargo={cargo}
+                mes={selectedMonth}
+                ano={selectedYear}
+              />
+
+              {/* KPIs Compactos de Impressão */}
+              <div className="grid grid-cols-3 gap-3 border border-gray-200 rounded-xl p-3 bg-white">
+                <div className="border-r border-gray-100 pr-2">
+                  <span className="text-[9px] font-bold text-gray-500 uppercase block">Saldo Líquido a Pagar</span>
+                  <span className={cn("text-sm font-black", (extrato.totais?.saldo_final || 0) >= 0 ? "text-emerald-700" : "text-red-600")}>
+                    {formatCurrency(extrato.totais?.saldo_final || 0)}
                   </span>
-                )}
+                </div>
+                <div className="border-r border-gray-100 pr-2">
+                  <span className="text-[9px] font-bold text-gray-500 uppercase block">Convênios</span>
+                  <span className="text-sm font-black text-gray-800">
+                    - {formatCurrency(extrato.lancamentos_convenios?.reduce((acc, l) => acc + Number(l.valor), 0) || 0)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-gray-500 uppercase block">Total Avulso + MEI</span>
+                  <span className="text-sm font-black text-gray-800">
+                    {formatCurrency((extrato.totais?.total_avulso || 0) + (extrato.totais?.total_mei || 0))}
+                  </span>
+                </div>
               </div>
 
-              {extrato.status === FINANCEIRO_STATUS.RASCUNHO &&
-                can(PERMISSIONS.FINANCEIRO.PAGAR) && (
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                    {!extrato.adiantamento_confirmado ? (
-                      <Button
-                        variant="outline"
-                        className="rounded-2xl border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold h-11 px-6 shadow-sm transition-all w-full sm:w-auto"
-                        disabled={confirmarAdiantamentoMutation.isPending}
-                        onClick={() => {
-                          const valorTotalAdiantamento = extrato.totais?.total_adiantamento ??
-                            extrato.resumo_por_cliente?.reduce((acc: number, r: ResumoClienteFinanceiro) => acc + Number(r.valores_fixos?.adiantamento_config || 0), 0) ?? 0;
+              {/* Tabela de Extrato Consolidado da Impressão */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                <div className="px-3 py-2 border-b border-gray-200 bg-gray-50/70 flex justify-between items-center">
+                  <h3 className="font-black text-gray-900 text-xs uppercase">Extrato Consolidado do Mês</h3>
+                  <span className="text-[9px] font-bold text-gray-500">{lancamentosConsolidados.length} lançamento(s)</span>
+                </div>
+                {lancamentosConsolidados.length === 0 ? (
+                  <div className="py-4 text-center text-xs text-gray-500 font-medium">
+                    Nenhum lançamento financeiro registrado para este período.
+                  </div>
+                ) : (
+                  <table className="w-full text-left border-collapse text-[10px]">
+                    <thead>
+                      <tr className="border-b border-gray-200 text-gray-500 font-bold uppercase text-[8px] bg-gray-50/80">
+                        <th className="py-1.5 px-2">Grupo / Origem</th>
+                        <th className="py-1.5 px-2">Descrição do Lançamento</th>
+                        <th className="py-1.5 px-2 text-center">Tipo</th>
+                        <th className="py-1.5 px-2 text-right">Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 font-medium">
+                      {lancamentosConsolidados.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50/50">
+                          <td className="py-1.5 px-2 font-bold text-gray-900 uppercase text-[9px] tracking-wide whitespace-nowrap">
+                            {item.grupo}
+                          </td>
+                          <td className="py-1.5 px-2 text-gray-700">{item.descricao}</td>
+                          <td className="py-1.5 px-2 text-center whitespace-nowrap">
+                            <span className={cn(
+                              "px-1.5 py-0.5 rounded-full font-bold text-[7px] uppercase tracking-wider border",
+                              item.tipo === "ENTRADA" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
+                            )}>
+                              {item.tipo}
+                            </span>
+                          </td>
+                          <td className={cn(
+                            "py-1.5 px-2 text-right font-black whitespace-nowrap",
+                            item.tipo === "ENTRADA" ? "text-emerald-600" : "text-red-600"
+                          )}>
+                            {item.tipo === "ENTRADA" ? "+" : "-"} {formatCurrency(item.valor)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t-2 border-gray-900 font-black text-xs bg-gray-50/80">
+                        <td colSpan={3} className="py-2.5 px-2 text-gray-900 uppercase">
+                          Saldo Final a Pagar
+                        </td>
+                        <td className={cn(
+                          "py-2.5 px-2 text-right text-xs",
+                          (extrato.totais?.saldo_final || 0) >= 0 ? "text-emerald-600" : "text-red-600"
+                        )}>
+                          {formatCurrency(extrato.totais?.saldo_final || 0)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                )}
+              </div>
+            </div>
 
+            {/* Visão de Tela Interativa (Oculta na Impressão) */}
+            <div className="print:hidden space-y-8">
+              {/* Status e Ações */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 gap-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge
+                    className={cn(
+                      "rounded-full px-4 py-1.5 font-bold text-xs uppercase tracking-widest",
+                      extrato.status === FINANCEIRO_STATUS.PAGO
+                        ? "bg-emerald-500 text-white"
+                        : "bg-white text-emerald-600 hover:bg-emerald-50 border-emerald-500 border",
+                    )}
+                  >
+                    {extrato.status === FINANCEIRO_STATUS.RASCUNHO ? "EM ABERTO" : extrato.status}
+                  </Badge>
+                  {extrato.data_pagamento && (
+                    <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Pago em:{" "}
+                      {formatDateTimeToBR(extrato.data_pagamento, {
+                        includeTime: true,
+                      })}
+                    </span>
+                  )}
+                </div>
+
+                {extrato.status === FINANCEIRO_STATUS.RASCUNHO &&
+                  can(PERMISSIONS.FINANCEIRO.PAGAR) && (
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                      {!extrato.adiantamento_confirmado ? (
+                        <Button
+                          variant="outline"
+                          className="rounded-2xl border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold h-11 px-6 shadow-sm transition-all w-full sm:w-auto"
+                          disabled={confirmarAdiantamentoMutation.isPending}
+                          onClick={() => {
+                            const valorTotalAdiantamento = extrato.totais?.total_adiantamento ??
+                              extrato.resumo_por_cliente?.reduce((acc: number, r: ResumoClienteFinanceiro) => acc + Number(r.valores_fixos?.adiantamento_config || 0), 0) ?? 0;
+
+                            openConfirmationDialog({
+                              title: getMessage("financeiro.confirmacao.adiantamento.titulo"),
+                              description: `${getMessage("financeiro.confirmacao.adiantamento.descricao")} (${formatCurrency(valorTotalAdiantamento)})`,
+                              confirmText: getMessage("financeiro.confirmacao.adiantamento.botao"),
+                              onConfirm: async () => {
+                                await confirmarAdiantamentoMutation.mutateAsync({
+                                  usuarioId,
+                                  mes: selectedMonth,
+                                  ano: selectedYear,
+                                });
+                                safeCloseDialog(closeConfirmationDialog);
+                              },
+                            });
+                          }}
+                        >
+                          <Wallet className="h-4 w-4 mr-2" />
+                          {getMessage("financeiro.confirmacao.adiantamento.titulo")}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 font-bold h-11 px-6 transition-all w-full sm:w-auto"
+                          disabled={desconfirmarAdiantamentoMutation.isPending}
+                          onClick={() => {
+                            openConfirmationDialog({
+                              title: getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo"),
+                              description: getMessage("financeiro.confirmacao.desfazer_adiantamento.descricao"),
+                              confirmText: getMessage("financeiro.confirmacao.desfazer_adiantamento.botao"),
+                              variant: "destructive",
+                              onConfirm: async () => {
+                                await desconfirmarAdiantamentoMutation.mutateAsync({
+                                  usuarioId,
+                                  mes: selectedMonth,
+                                  ano: selectedYear,
+                                });
+                                safeCloseDialog(closeConfirmationDialog);
+                              },
+                            });
+                          }}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          {getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo")}
+                        </Button>
+                      )}
+
+                      <Button
+                        className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 px-8 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 w-full sm:w-auto"
+                        disabled={handlePaymentMutation.isPending}
+                        onClick={() => {
                           openConfirmationDialog({
-                            title: getMessage("financeiro.confirmacao.adiantamento.titulo"),
-                            description: `${getMessage("financeiro.confirmacao.adiantamento.descricao")} (${formatCurrency(valorTotalAdiantamento)})`,
-                            confirmText: getMessage("financeiro.confirmacao.adiantamento.botao"),
+                            title: getMessage("financeiro.confirmacao.titulo"),
+                            description: `${getMessage("financeiro.confirmacao.descricao")} (${formatCurrency(extrato.totais?.saldo_final || 0)})`,
+                            confirmText: getMessage("financeiro.confirmacao.botao"),
                             onConfirm: async () => {
-                              await confirmarAdiantamentoMutation.mutateAsync({
+                              await handlePaymentMutation.mutateAsync({
                                 usuarioId,
                                 mes: selectedMonth,
                                 ano: selectedYear,
@@ -270,22 +535,27 @@ export function FinancialReportView({
                           });
                         }}
                       >
-                        <Wallet className="h-4 w-4 mr-2" />
-                        {getMessage("financeiro.confirmacao.adiantamento.titulo")}
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        {getMessage("financeiro.confirmacao.botao")}
                       </Button>
-                    ) : (
+                    </div>
+                  )}
+
+                {extrato.status === FINANCEIRO_STATUS.PAGO &&
+                  can(PERMISSIONS.FINANCEIRO.PAGAR) && (
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                       <Button
                         variant="ghost"
                         className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 font-bold h-11 px-6 transition-all w-full sm:w-auto"
-                        disabled={desconfirmarAdiantamentoMutation.isPending}
+                        disabled={desfazerPagamentoMutation.isPending}
                         onClick={() => {
                           openConfirmationDialog({
-                            title: getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo"),
-                            description: getMessage("financeiro.confirmacao.desfazer_adiantamento.descricao"),
-                            confirmText: getMessage("financeiro.confirmacao.desfazer_adiantamento.botao"),
+                            title: getMessage("financeiro.confirmacao.reabrir.titulo"),
+                            description: getMessage("financeiro.confirmacao.reabrir.descricao"),
+                            confirmText: getMessage("financeiro.confirmacao.reabrir.botao"),
                             variant: "destructive",
                             onConfirm: async () => {
-                              await desconfirmarAdiantamentoMutation.mutateAsync({
+                              await desfazerPagamentoMutation.mutateAsync({
                                 usuarioId,
                                 mes: selectedMonth,
                                 ano: selectedYear,
@@ -296,134 +566,80 @@ export function FinancialReportView({
                         }}
                       >
                         <X className="h-4 w-4 mr-2" />
-                        {getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo")}
+                        Desfazer Pagamento
                       </Button>
-                    )}
+                    </div>
+                  )}
+              </div>
 
-                    <Button
-                      className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 px-8 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 w-full sm:w-auto"
-                      disabled={handlePaymentMutation.isPending}
-                      onClick={() => {
-                        openConfirmationDialog({
-                          title: getMessage("financeiro.confirmacao.titulo"),
-                          description: `${getMessage("financeiro.confirmacao.descricao")} (${formatCurrency(extrato.totais?.saldo_final || 0)})`,
-                          confirmText: getMessage("financeiro.confirmacao.botao"),
-                          onConfirm: async () => {
-                            await handlePaymentMutation.mutateAsync({
-                              usuarioId,
-                              mes: selectedMonth,
-                              ano: selectedYear,
-                            });
-                            safeCloseDialog(closeConfirmationDialog);
-                          },
-                        });
-                      }}
-                    >
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      {getMessage("financeiro.confirmacao.botao")}
-                    </Button>
+              {/* Dashboard Header Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                {/* Main Balance */}
+                <Card className="col-span-2 md:col-span-1 border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-emerald-600 to-teal-700 text-white overflow-hidden relative group">
+                  <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                    <Banknote className="h-24 w-24" />
                   </div>
-                )}
+                  <CardContent className="p-6 md:p-8 relative z-10">
+                    <p className="text-emerald-100/70 uppercase font-black tracking-widest text-[10px] mb-2">
+                      Saldo Líquido a Pagar
+                    </p>
+                    <h2 className="text-3xl md:text-4xl font-black mb-3">
+                      {formatCurrency(extrato.totais?.saldo_final || 0)}
+                    </h2>
+                    <div className="inline-flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-xl text-[10px] font-bold backdrop-blur-sm border border-white/10">
+                      <Info className="h-3.5 w-3.5" />
+                      <span>
+                        {extrato.status === FINANCEIRO_STATUS.RASCUNHO
+                          ? "Cálculo em tempo real"
+                          : "Valores confirmados"}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {extrato.status === FINANCEIRO_STATUS.PAGO &&
-                can(PERMISSIONS.FINANCEIRO.PAGAR) && (
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                    <Button
-                      variant="ghost"
-                      className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 font-bold h-11 px-6 transition-all w-full sm:w-auto"
-                      disabled={desfazerPagamentoMutation.isPending}
-                      onClick={() => {
-                        openConfirmationDialog({
-                          title: getMessage("financeiro.confirmacao.reabrir.titulo"),
-                          description: getMessage("financeiro.confirmacao.reabrir.descricao"),
-                          confirmText: getMessage("financeiro.confirmacao.reabrir.botao"),
-                          variant: "destructive",
-                          onConfirm: async () => {
-                            await desfazerPagamentoMutation.mutateAsync({
-                              usuarioId,
-                              mes: selectedMonth,
-                              ano: selectedYear,
-                            });
-                            safeCloseDialog(closeConfirmationDialog);
-                          },
-                        });
-                      }}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Desfazer Pagamento
-                    </Button>
+                {/* Subtotal Convênios */}
+                <Card className="col-span-1 md:col-span-1 border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                    <Store className="h-16 w-16" />
                   </div>
-                )}
-            </div>
+                  <CardContent className="p-4 md:p-8 relative z-10">
+                    <p className="text-gray-100/70 uppercase font-black tracking-widest text-[8px] md:text-[10px] mb-2">
+                      Convênios
+                    </p>
+                    <h2 className="text-lg md:text-2xl font-black mb-1">
+                      - {formatCurrency(extrato.lancamentos_convenios?.reduce((acc, l) => acc + Number(l.valor), 0) || 0)}
+                    </h2>
+                    <p className="hidden md:block text-[10px] text-gray-100/60 font-medium">
+                      Descontos de oficinas e parceiros
+                    </p>
+                  </CardContent>
+                </Card>
 
-            {/* Dashboard Header Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {/* Main Balance */}
-              <Card className="col-span-2 md:col-span-1 border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-emerald-600 to-teal-700 text-white overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                  <Banknote className="h-24 w-24" />
-                </div>
-                <CardContent className="p-6 md:p-8 relative z-10">
-                  <p className="text-emerald-100/70 uppercase font-black tracking-widest text-[10px] mb-2">
-                    Saldo Líquido a Pagar
-                  </p>
-                  <h2 className="text-3xl md:text-4xl font-black mb-3">
-                    {formatCurrency(extrato.totais?.saldo_final || 0)}
-                  </h2>
-                  <div className="inline-flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-xl text-[10px] font-bold backdrop-blur-sm border border-white/10">
-                    <Info className="h-3.5 w-3.5" />
-                    <span>
-                      {extrato.status === FINANCEIRO_STATUS.RASCUNHO
-                        ? "Cálculo em tempo real"
-                        : "Valores confirmados"}
-                    </span>
+                {/* Subtotal Avulso */}
+                <Card className="col-span-1 md:col-span-1 border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                    <CreditCard className="h-16 w-16" />
                   </div>
-                </CardContent>
-              </Card>
+                  <CardContent className="p-4 md:p-8 relative z-10">
+                    <p className="text-gray-100/70 uppercase font-black tracking-widest text-[8px] md:text-[10px] mb-2">
+                      Total Avulso
+                    </p>
+                    <h2 className="text-lg md:text-2xl font-black mb-1">
+                      {formatCurrency(
+                        (extrato.totais?.total_avulso || 0) +
+                        (extrato.totais?.total_mei || 0),
+                      )}
+                    </h2>
+                    <p className="hidden md:block text-[10px] text-gray-100/60 font-medium">
+                      Lançamentos avulsos + MEI
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              {/* Subtotal Convênios */}
-              <Card className="col-span-1 md:col-span-1 border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                  <Store className="h-16 w-16" />
-                </div>
-                <CardContent className="p-4 md:p-8 relative z-10">
-                  <p className="text-gray-100/70 uppercase font-black tracking-widest text-[8px] md:text-[10px] mb-2">
-                    Convênios
-                  </p>
-                  <h2 className="text-lg md:text-2xl font-black mb-1">
-                    - {formatCurrency(extrato.lancamentos_convenios?.reduce((acc, l) => acc + Number(l.valor), 0) || 0)}
-                  </h2>
-                  <p className="hidden md:block text-[10px] text-gray-100/60 font-medium">
-                    Descontos de oficinas e parceiros
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Subtotal Avulso */}
-              <Card className="col-span-1 md:col-span-1 border-none shadow-md rounded-[2.5rem] bg-gray-600 text-white overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                  <CreditCard className="h-16 w-16" />
-                </div>
-                <CardContent className="p-4 md:p-8 relative z-10">
-                  <p className="text-gray-100/70 uppercase font-black tracking-widest text-[8px] md:text-[10px] mb-2">
-                    Total Avulso
-                  </p>
-                  <h2 className="text-lg md:text-2xl font-black mb-1">
-                    {formatCurrency(
-                      (extrato.totais?.total_avulso || 0) +
-                      (extrato.totais?.total_mei || 0),
-                    )}
-                  </h2>
-                  <p className="hidden md:block text-[10px] text-gray-100/60 font-medium">
-                    Lançamentos avulsos + MEI
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Turn Breakdown Section */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 mt-8">
-              <TabsList className="flex w-full justify-start overflow-x-auto lg:w-max h-12 rounded-2xl bg-gray-100 p-1 no-scrollbar scroll-smooth whitespace-nowrap">
+              {/* Turn Breakdown Section */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 mt-8">
+              <TabsList className="flex w-full justify-start overflow-x-auto lg:w-max h-12 rounded-2xl bg-gray-100 p-1 no-scrollbar scroll-smooth whitespace-nowrap print:hidden">
                 <TabsTrigger value="turnos" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4 font-bold text-gray-600 data-[state=active]:text-emerald-700">
                   <Clock className="h-4 w-4" />
                   <span>Turnos</span>
@@ -436,9 +652,13 @@ export function FinancialReportView({
                   <History className="h-4 w-4" />
                   <span>Avulsos</span>
                 </TabsTrigger>
+                <TabsTrigger value="consolidado" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4 font-bold text-gray-600 data-[state=active]:text-emerald-700">
+                  <Receipt className="h-4 w-4" />
+                  <span>Consolidado (Listona)</span>
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="turnos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <TabsContent value="turnos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
                 {extrato.resumo_por_cliente && extrato.resumo_por_cliente.length > 0 ? (
                   extrato.resumo_por_cliente.map((resumo: ResumoClienteFinanceiro, idx: number) => (
                     <Card
@@ -803,7 +1023,7 @@ export function FinancialReportView({
                 )}
               </TabsContent>
 
-              <TabsContent value="avulsos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <TabsContent value="avulsos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
                 {/* Lançamentos Avulsos no Mês (Incluindo MEI se houver) */}
                 {(extrato.totais?.total_mei > 0 ||
                   (extrato.ocorrencias as Ocorrencia[]).filter(
@@ -956,7 +1176,7 @@ export function FinancialReportView({
                 )}
               </TabsContent>
 
-              <TabsContent value="convenios" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <TabsContent value="convenios" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
                 {extrato.lancamentos_convenios && extrato.lancamentos_convenios.length > 0 ? (
                   <Card className="border-none shadow-lg rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 transition-all hover:shadow-xl group">
                     <CardContent className="p-6 md:p-10">
@@ -1021,8 +1241,81 @@ export function FinancialReportView({
                   </div>
                 )}
               </TabsContent>
+
+              <TabsContent value="consolidado" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white border border-gray-100">
+                  <CardContent className="p-6 md:p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="font-black text-gray-900 text-lg uppercase tracking-tight flex items-center gap-2">
+                        <Receipt className="h-5 w-5 text-emerald-600" />
+                        Extrato Consolidado do Mês
+                      </h3>
+                      <span className="text-xs font-bold text-gray-400">
+                        {lancamentosConsolidados.length} lançamento(s)
+                      </span>
+                    </div>
+
+                    {lancamentosConsolidados.length === 0 ? (
+                      <div className="py-8 text-center text-sm text-gray-500 font-medium">
+                        Nenhum lançamento financeiro registrado para este período.
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="border-b-2 border-gray-200 text-gray-400 font-bold uppercase tracking-wider text-[10px] bg-gray-50/50">
+                              <th className="py-3 px-4">Grupo / Origem</th>
+                              <th className="py-3 px-4">Descrição do Lançamento</th>
+                              <th className="py-3 px-4 text-center">Tipo</th>
+                              <th className="py-3 px-4 text-right">Valor</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 font-medium">
+                            {lancamentosConsolidados.map((item) => (
+                              <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="py-3 px-4 font-bold text-gray-900 uppercase text-xs tracking-wide whitespace-nowrap">
+                                  {item.grupo}
+                                </td>
+                                <td className="py-3 px-4 text-gray-700">{item.descricao}</td>
+                                <td className="py-3 px-4 text-center whitespace-nowrap">
+                                  <span className={cn(
+                                    "px-2 py-0.5 rounded-full font-bold text-[9px] uppercase tracking-wider border",
+                                    item.tipo === "ENTRADA" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
+                                  )}>
+                                    {item.tipo}
+                                  </span>
+                                </td>
+                                <td className={cn(
+                                  "py-3 px-4 text-right font-black whitespace-nowrap",
+                                  item.tipo === "ENTRADA" ? "text-emerald-600" : "text-red-600"
+                                )}>
+                                  {item.tipo === "ENTRADA" ? "+" : "-"} {formatCurrency(item.valor)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr className="border-t-2 border-gray-900 font-black text-sm bg-gray-50/80">
+                              <td colSpan={3} className="py-4 px-4 text-gray-900 uppercase">
+                                Saldo Final a Pagar
+                              </td>
+                              <td className={cn(
+                                "py-4 px-4 text-right text-base",
+                                (extrato.totais?.saldo_final || 0) >= 0 ? "text-emerald-600" : "text-red-600"
+                              )}>
+                                {formatCurrency(extrato.totais?.saldo_final || 0)}
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
             </Tabs>
           </div>
+        </div>
         ) : (
           <UnifiedEmptyState
             icon={AlertCircle}

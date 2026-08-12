@@ -204,7 +204,7 @@ export function CreateTicketDialog({
                       <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Título</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Ex: Erro no relatório de ponto"
+                          placeholder="Ex: Erro no relatório de atividade"
                           {...field}
                           className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
                         />

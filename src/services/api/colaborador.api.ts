@@ -1,8 +1,9 @@
 import { Perfil, Usuario, ColaboradorCliente } from "@/types/database";
+import { PaginatedResponse } from "@/types/api";
 import { apiClient } from "./client";
 
 export const colaboradorApi = {
-  listColaboradores: (filtros?: Record<string, any>): Promise<Usuario[]> =>
+  listColaboradores: (filtros?: Record<string, any>): Promise<PaginatedResponse<Usuario> | Usuario[]> =>
     apiClient.get(`/usuarios`, { params: filtros }).then(res => res.data),
 
   getColaborador: (id: string): Promise<Usuario> =>

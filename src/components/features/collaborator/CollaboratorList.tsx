@@ -5,12 +5,27 @@ import { StatusUsuario } from "@/types/enums";
 import { useCollaboratorActions } from "@/hooks/business/useCollaboratorActions";
 import { Usuario } from "@/types/database";
 import { useNavigate } from "react-router-dom";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface CollaboratorListProps {
   collaborators: Usuario[];
   onEdit: (collaborator: Usuario) => void;
   onStatusChange: (collaborator: Usuario, newStatus: string) => void;
   onDelete: (collaborator: Usuario) => void;
+  page?: number;
+  pageSize?: number;
+  total?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 const getAvatarStyles = (status: string) => {
@@ -91,7 +106,6 @@ const CollaboratorMobileItem = ({
   );
 };
 
-
 const CollaboratorTableRow = ({
   collaborator,
   onEdit,
@@ -148,57 +162,153 @@ const CollaboratorTableRow = ({
   );
 };
 
+const getPageNumbers = (current: number, totalPages: number): (number | string)[] => {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  if (current <= 2) {
+    return [1, 2, 3, '...', totalPages];
+  }
+  if (current >= totalPages - 1) {
+    return [1, '...', totalPages - 2, totalPages - 1, totalPages];
+  }
+  return [1, '...', current, '...', totalPages];
+};
+
 export function CollaboratorList({
   collaborators,
   onEdit,
   onStatusChange,
   onDelete,
+  page = 1,
+  pageSize = 10,
+  total = 0,
+  totalPages = 1,
+  onPageChange,
+  onPageSizeChange,
 }: CollaboratorListProps) {
+  const fromItem = total > 0 ? (page - 1) * pageSize + 1 : 0;
+  const toItem = Math.min(page * pageSize, total);
+  const pageNumbers = getPageNumbers(page, totalPages);
+
   return (
-    <ResponsiveDataList
-      data={collaborators}
-      mobileContainerClassName="space-y-3"
-      mobileItemRenderer={(collaborator) => (
-        <CollaboratorMobileItem
-          key={collaborator.id}
-          collaborator={collaborator}
-          onEdit={onEdit}
-          onStatusChange={onStatusChange}
-          onDelete={onDelete}
-        />
+    <div className="space-y-4">
+      <ResponsiveDataList
+        data={collaborators}
+        mobileContainerClassName="space-y-3"
+        mobileItemRenderer={(collaborator) => (
+          <CollaboratorMobileItem
+            key={collaborator.id}
+            collaborator={collaborator}
+            onEdit={onEdit}
+            onStatusChange={onStatusChange}
+            onDelete={onDelete}
+          />
+        )}
+      >
+        <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white shadow-sm">
+          <table className="w-full">
+            <thead className="bg-gray-50/50">
+              <tr className="border-b border-gray-100 text-left">
+                <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Colaborador
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Cargo
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {collaborators.map((collaborator) => (
+                <CollaboratorTableRow
+                  key={collaborator.id}
+                  collaborator={collaborator}
+                  onEdit={onEdit}
+                  onStatusChange={onStatusChange}
+                  onDelete={onDelete}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </ResponsiveDataList>
+
+      {total > 0 && onPageChange && (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm w-full overflow-hidden">
+          <div className="flex items-center justify-between w-full md:w-auto gap-2 text-xs text-gray-500 font-medium px-1">
+            <span className="text-[11px] sm:text-xs">
+              Mostrando <span className="font-bold text-gray-900">{fromItem}</span> a{" "}
+              <span className="font-bold text-gray-900">{toItem}</span> de{" "}
+              <span className="font-bold text-gray-900">{total}</span>
+            </span>
+
+            {onPageSizeChange && (
+              <div className="flex items-center gap-1.5 border-l border-gray-100 pl-2.5">
+                <span className="text-[11px] sm:text-xs">Exibir:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                  className="bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          <Pagination className="mx-0 w-full md:w-auto flex justify-center">
+            <PaginationContent className="flex-wrap justify-center gap-1">
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page > 1) onPageChange(page - 1);
+                  }}
+                  className={page <= 1 ? "pointer-events-none opacity-40" : "cursor-pointer"}
+                />
+              </PaginationItem>
+
+              {pageNumbers.map((item, index) => (
+                <PaginationItem key={index}>
+                  {item === "..." ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      isActive={item === page}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onPageChange(Number(item));
+                      }}
+                      className="cursor-pointer font-bold text-xs h-8 w-8 sm:h-9 sm:w-9"
+                    >
+                      {item}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page < totalPages) onPageChange(page + 1);
+                  }}
+                  className={page >= totalPages ? "pointer-events-none opacity-40" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
-    >
-      <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white shadow-sm">
-        <table className="w-full">
-          <thead className="bg-gray-50/50">
-            <tr className="border-b border-gray-100 text-left">
-              <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Colaborador
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Cargo
-              </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {collaborators.map((collaborator) => (
-              <CollaboratorTableRow
-                key={collaborator.id}
-                collaborator={collaborator}
-                onEdit={onEdit}
-                onStatusChange={onStatusChange}
-                onDelete={onDelete}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </ResponsiveDataList>
+    </div>
   );
 }

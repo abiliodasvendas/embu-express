@@ -190,9 +190,8 @@ export function CollaboratorsToolbar({
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Local state for debouncing search
   const [localSearch, setLocalSearch] = useState(searchTerm);
-  const debouncedSearch = useDebounce(localSearch, 500);
+  const debouncedSearch = useDebounce(localSearch, 400);
 
   // Local state for mobile filters (deferred application)
   const [mobileStatus, setMobileStatus] = useState(selectedStatus);
@@ -201,16 +200,17 @@ export function CollaboratorsToolbar({
   const [mobileEmpresa, setMobileEmpresa] = useState(selectedEmpresa);
 
   useEffect(() => {
-    onSearchChange(debouncedSearch);
-  }, [debouncedSearch, onSearchChange]);
-
-  // Sync local search when searchTerm changes externally
-  useEffect(() => {
-    if (searchTerm !== localSearch) {
-      setLocalSearch(searchTerm);
+    const trimmed = debouncedSearch.trim();
+    if (trimmed.length === 0) {
+      if (searchTerm !== "") {
+        onSearchChange("");
+      }
+    } else if (trimmed.length >= 3) {
+      if (searchTerm !== trimmed) {
+        onSearchChange(trimmed);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
+  }, [debouncedSearch, searchTerm, onSearchChange]);
 
   // Sync mobile local state when opening sheet or when props change
   useEffect(() => {
@@ -254,6 +254,7 @@ export function CollaboratorsToolbar({
   };
 
   const clearMobileFilters = () => {
+    setLocalSearch("");
     setMobileStatus(FilterOptions.TODOS);
     setMobileRole(FilterOptions.TODOS);
     setMobileClient(FilterOptions.TODOS);

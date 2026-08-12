@@ -36,7 +36,7 @@ import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
 import { onlyNumbers } from "@/utils/string";
 import { format, parseISO } from "date-fns";
-import { AlertTriangle, Bike, Briefcase, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, RotateCcw, Trash2, User, Wallet } from "lucide-react";
+import { AlertTriangle, Bike, Briefcase, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, Printer, RotateCcw, Trash2, User, Wallet } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -201,11 +201,6 @@ export default function CollaboratorDetails() {
     syncWithUrl: true,
   });
 
-
-  const monthOptions = useMemo(() =>
-    meses.map((label, index) => ({ value: index + 1, label })),
-    []);
-
   if (isLoading) {
     return (
       <div className="space-y-6 animate-in fade-in duration-500">
@@ -314,7 +309,7 @@ export default function CollaboratorDetails() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Identity Header com Ações Embutidas */}
-      <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white mb-2">
+      <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white mb-2 print:hidden">
         <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Informações do Colaborador (Esquerda) */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
@@ -424,7 +419,7 @@ export default function CollaboratorDetails() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="flex w-full justify-start overflow-x-auto lg:w-max h-12 rounded-2xl bg-gray-100 p-1 no-scrollbar scroll-smooth whitespace-nowrap">
+        <TabsList className="flex w-full justify-start overflow-x-auto lg:w-max h-12 rounded-2xl bg-gray-100 p-1 no-scrollbar scroll-smooth whitespace-nowrap print:hidden">
           <TabsTrigger value="dados" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4">
             <User className="h-4 w-4" />
             <span>Dados</span>
@@ -842,8 +837,8 @@ export default function CollaboratorDetails() {
         </TabsContent>
 
         <TabsContent value="ponto" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "ponto" && "hidden")}>
-          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4">
+          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px] print:shadow-none print:border-none print:p-0">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4 print:hidden">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
                   <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -856,7 +851,7 @@ export default function CollaboratorDetails() {
                 </CardTitle>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
+              <div className="flex flex-wrap items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
                 <Select value={String(filters.selectedMes)} onValueChange={(v) => filters.setSelectedMes?.(Number(v))}>
                   <SelectTrigger className="h-11 w-[120px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue />
@@ -879,7 +874,7 @@ export default function CollaboratorDetails() {
                   </SelectContent>
                 </Select>
                 <Select value={pontoVm.filters.selectedTurno} onValueChange={(v) => pontoVm.setShift?.(v)} disabled={pontoVm.availableShifts.length === 0}>
-                  <SelectTrigger className="h-11 w-[270px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  <SelectTrigger className="h-11 w-[200px] sm:w-[250px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     <SelectValue placeholder={pontoVm.availableShifts.length === 0 ? "Sem turnos" : "Selecione..."} />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
@@ -888,11 +883,24 @@ export default function CollaboratorDetails() {
                     ))}
                   </SelectContent>
                 </Select>
+
+                <Button
+                  onClick={() => window.print()}
+                  variant="outline"
+                  className="rounded-2xl flex items-center gap-1.5 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-bold text-xs h-11 px-4 shadow-sm select-none"
+                  title="Imprimir ou Salvar PDF"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span>Imprimir PDF</span>
+                </Button>
               </div>
             </CardHeader>
-            <CardContent className="px-8 pb-8 pt-6">
+            <CardContent className="px-8 pb-8 pt-6 print:p-0">
               <TimeMirrorView
                 usuarioId={id}
+                colaboradorNome={collaborator?.nome_completo}
+                cpf={collaborator?.cpf ? cpfMask(collaborator.cpf) : undefined}
+                cargo={role?.nome}
                 selectedMonth={filters.selectedMes}
                 selectedYear={filters.selectedAno}
                 selectedShift={pontoVm.filters.selectedTurno}
@@ -903,8 +911,8 @@ export default function CollaboratorDetails() {
         </TabsContent>
 
         <TabsContent value="financeiro" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "financeiro" && "hidden")}>
-          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px]">
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4">
+          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px] print:shadow-none print:border-none print:p-0">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4 print:hidden">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
                   <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -917,7 +925,7 @@ export default function CollaboratorDetails() {
                 </CardTitle>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
+              <div className="flex flex-wrap items-center gap-2 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
                 <Select value={String(filters.selectedMes)} onValueChange={(v) => filters.setSelectedMes?.(Number(v))}>
                   <SelectTrigger className="h-11 w-[130px] rounded-2xl border-none bg-white shadow-sm font-bold text-xs text-gray-700 focus:ring-2 focus:ring-primary/20 transition-all">
                     <SelectValue />
@@ -954,12 +962,24 @@ export default function CollaboratorDetails() {
                   <Plus className="h-3.5 w-3.5" />
                   <span>Registrar Ocorrência</span>
                 </Button>
+
+                <Button
+                  onClick={() => window.print()}
+                  variant="outline"
+                  className="rounded-2xl flex items-center gap-1.5 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-bold text-xs h-11 px-4 shadow-sm select-none"
+                  title="Imprimir ou Salvar PDF"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span>Imprimir PDF</span>
+                </Button>
               </div>
             </CardHeader>
-            <CardContent className="px-8 pb-8 pt-6">
+            <CardContent className="px-8 pb-8 pt-6 print:p-0">
               <FinancialReportView
                 usuarioId={id}
                 colaboradorNome={collaborator?.nome_completo}
+                cpf={collaborator?.cpf ? cpfMask(collaborator.cpf) : undefined}
+                cargo={role?.nome}
                 selectedMonth={filters.selectedMes}
                 selectedYear={filters.selectedAno}
               />

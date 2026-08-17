@@ -27,7 +27,7 @@ const commonSchema = z.object({
   rg: z.string().optional(),
   data_nascimento: dateSchema(false),
   nome_mae: z.string().optional(),
-  endereco_completo: z.string().optional(),
+  endereco_completo: z.string().min(5, messages.validacao.campoObrigatorio),
   telefone: phoneSchema,
   telefone_recado: z.string().optional(),
   status: z.enum([StatusUsuario.ATIVO, StatusUsuario.INATIVO, StatusUsuario.PENDENTE]).default(StatusUsuario.PENDENTE),

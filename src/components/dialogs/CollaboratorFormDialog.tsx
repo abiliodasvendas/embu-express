@@ -96,7 +96,7 @@ export function CollaboratorFormDialog({
     toast.error(messages.validacao.formularioComErros);
     // Garantir que as seções com erro fiquem abertas
     const sectionsWithError = new Set<string>();
-    if (errors.nome_completo || errors.email || errors.cpf || errors.rg || errors.data_nascimento) sectionsWithError.add("personal");
+    if (errors.nome_completo || errors.email || errors.cpf || errors.rg || errors.data_nascimento || errors.endereco_completo || errors.telefone) sectionsWithError.add("personal");
     if (errors.cnh_registro || errors.cnh_vencimento || errors.cnh_categoria) sectionsWithError.add("cnh");
     if (errors.moto_modelo || errors.moto_cor || errors.moto_ano || errors.moto_placa) sectionsWithError.add("moto");
     if (errors.cnpj || errors.valor_mei || errors.tipo_chave_pix || errors.chave_pix) sectionsWithError.add("financial");

@@ -277,7 +277,7 @@ export function CollaboratorFormPersonal({
           render={({ field }) => (
             <FormItem className="md:col-span-2">
               <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                Endereço Completo
+                Endereço Completo <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
                 <div className="relative">

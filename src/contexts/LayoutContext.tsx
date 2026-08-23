@@ -130,6 +130,12 @@ export interface OpenConvenioFormProps {
   onSuccess?: () => void;
 }
 
+export interface OpenConfirmarAdiantamentoDialogProps {
+  valorSugerido: number;
+  onConfirm: (valor: number) => Promise<void>;
+  isLoading?: boolean;
+}
+
 export interface LayoutContextType {
 
   pageTitle: string;
@@ -140,6 +146,10 @@ export interface LayoutContextType {
   // Dialogs
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
   closeConfirmationDialog: () => void;
+
+  openConfirmarAdiantamentoDialog: (props: OpenConfirmarAdiantamentoDialogProps) => void;
+  closeConfirmarAdiantamentoDialog: () => void;
+
 
   openCollaboratorFormDialog: (props: OpenCollaboratorFormProps) => void;
   closeCollaboratorFormDialog: () => void;

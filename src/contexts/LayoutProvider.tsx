@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, OpenConfirmationDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps } from './LayoutContext';
+import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps } from './LayoutContext';
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
 
 // Dialogs
@@ -7,6 +7,8 @@ import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { CollaboratorFormDialog } from "@/components/dialogs/CollaboratorFormDialog";
 import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import ConfirmarAdiantamentoDialog from "@/components/dialogs/ConfirmarAdiantamentoDialog";
+
 import { TimeRecordDialog } from "@/components/dialogs/TimeRecordDialog";
 import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
 import { FeriadoFormDialog } from "@/components/dialogs/FeriadoFormDialog";
@@ -45,6 +47,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   // --- Dialog States ---
   const [confirmationDialogState, setConfirmationDialogState] = useState<{ open: boolean; props?: OpenConfirmationDialogProps }>({ open: false });
+  const [confirmarAdiantamentoDialogState, setConfirmarAdiantamentoDialogState] = useState<{ open: boolean; props?: OpenConfirmarAdiantamentoDialogProps }>({ open: false });
   const [collaboratorFormDialogState, setCollaboratorFormDialogState] = useState<{ open: boolean; props?: OpenCollaboratorFormProps }>({ open: false });
   const [clientFormDialogState, setClientFormDialogState] = useState<{ open: boolean; props?: OpenClientFormProps }>({ open: false });
   const [empresaFormDialogState, setEmpresaFormDialogState] = useState<{ open: boolean; props?: OpenEmpresaFormProps }>({ open: false });
@@ -75,6 +78,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   // --- Actions ---
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => setConfirmationDialogState({ open: true, props });
   const closeConfirmationDialog = () => closeDialog(() => setConfirmationDialogState((prev) => ({ ...prev, open: false })));
+
+  const openConfirmarAdiantamentoDialog = (props: OpenConfirmarAdiantamentoDialogProps) => setConfirmarAdiantamentoDialogState({ open: true, props });
+  const closeConfirmarAdiantamentoDialog = () => closeDialog(() => setConfirmarAdiantamentoDialogState((prev) => ({ ...prev, open: false })));
+
 
   const openCollaboratorFormDialog = (props: OpenCollaboratorFormProps) => setCollaboratorFormDialogState({ open: true, props });
   const closeCollaboratorFormDialog = () => closeDialog(() => setCollaboratorFormDialogState((prev) => ({ ...prev, open: false })));
@@ -156,6 +163,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     <LayoutContext.Provider value={{
       pageTitle, setPageTitle, pageSubtitle, setPageSubtitle,
       openConfirmationDialog, closeConfirmationDialog,
+      openConfirmarAdiantamentoDialog, closeConfirmarAdiantamentoDialog,
       openCollaboratorFormDialog, closeCollaboratorFormDialog,
       openClientFormDialog, closeClientFormDialog,
       openEmpresaFormDialog, closeEmpresaFormDialog,
@@ -184,6 +192,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     }}>
       {children}
       {confirmationDialogState.props && <ConfirmationDialog open={confirmationDialogState.open} onOpenChange={(open) => setConfirmationDialogState((prev) => ({ ...prev, open }))} title={confirmationDialogState.props.title} description={confirmationDialogState.props.description} onConfirm={confirmationDialogState.props.onConfirm} confirmText={confirmationDialogState.props.confirmText} cancelText={confirmationDialogState.props.cancelText} variant={confirmationDialogState.props.variant} isLoading={confirmationDialogState.props.isLoading} />}
+      {confirmarAdiantamentoDialogState.props && <ConfirmarAdiantamentoDialog open={confirmarAdiantamentoDialogState.open} onOpenChange={(open) => setConfirmarAdiantamentoDialogState((prev) => ({ ...prev, open }))} valorSugerido={confirmarAdiantamentoDialogState.props.valorSugerido} onConfirm={confirmarAdiantamentoDialogState.props.onConfirm} isLoading={confirmarAdiantamentoDialogState.props.isLoading} />}
+
       {collaboratorFormDialogState.open && <CollaboratorFormDialog open={true} onOpenChange={(open) => !open && setCollaboratorFormDialogState(prev => ({ ...prev, open: false }))} onSuccess={(data) => { collaboratorFormDialogState.props?.onSuccess?.(data); setCollaboratorFormDialogState(prev => ({ ...prev, open: false })); }} collaboratorToEdit={collaboratorFormDialogState.props?.editingCollaborator} />}
       {clientFormDialogState.open && <ClientFormDialog isOpen={true} onClose={closeClientFormDialog} editingClient={clientFormDialogState.props?.editingClient} onSuccess={() => { clientFormDialogState.props?.onSuccess?.(); closeClientFormDialog(); }} />}
       {empresaFormDialogState.open && <EmpresaFormDialog open={true} onOpenChange={(open) => !open && closeEmpresaFormDialog()} empresaToEdit={empresaFormDialogState.props?.empresaToEdit} />}

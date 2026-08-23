@@ -22,8 +22,8 @@ export function useFinanceiroMutations() {
     });
 
     const confirmarAdiantamentoMutation = useMutation({
-        mutationFn: ({ usuarioId, mes, ano }: { usuarioId: string; mes: number; ano: number }) =>
-            financeiroApi.confirmarAdiantamento(usuarioId, mes, ano),
+        mutationFn: ({ usuarioId, mes, ano, valor }: { usuarioId: string; mes: number; ano: number; valor?: number }) =>
+            financeiroApi.confirmarAdiantamento(usuarioId, mes, ano, valor),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
             toast.success("Adiantamentos confirmados com sucesso!");
@@ -34,6 +34,7 @@ export function useFinanceiroMutations() {
             });
         }
     });
+
 
     const desconfirmarAdiantamentoMutation = useMutation({
         mutationFn: ({ usuarioId, mes, ano }: { usuarioId: string; mes: number; ano: number }) =>

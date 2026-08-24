@@ -51,11 +51,9 @@ export function useTimeTrackingBusiness({ records, date, collaborators, manualAb
         return counts;
     }, [processedRecords]);
 
-    // 3. Extract unique shifts from all collaborators (not just those with records)
     const uniqueShifts = useMemo(() => {
         const shifts = new Set<string>();
         
-        // From existing records
         processedRecords.forEach(r => {
             const entryShift = r.detalhes_calculo?.entrada?.turno_base;
             const exitShift = r.detalhes_calculo?.saida?.turno_base;
@@ -64,10 +62,15 @@ export function useTimeTrackingBusiness({ records, date, collaborators, manualAb
             }
         });
 
-        // From all collaborators (to ensure all scheduled shifts are visible)
         collaborators?.forEach(c => {
             c.links?.forEach((link: any) => {
-                if (link.hora_inicio && link.hora_fim) {
+                if (link.horarios && Array.isArray(link.horarios)) {
+                    link.horarios.forEach((h: any) => {
+                        if (h.hora_inicio && h.hora_fim) {
+                            shifts.add(`${h.hora_inicio.substring(0, 5)} - ${h.hora_fim.substring(0, 5)}`);
+                        }
+                    });
+                } else if (link.hora_inicio && link.hora_fim) {
                     shifts.add(`${link.hora_inicio.substring(0, 5)} - ${link.hora_fim.substring(0, 5)}`);
                 }
             });

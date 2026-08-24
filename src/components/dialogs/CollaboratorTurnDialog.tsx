@@ -99,7 +99,7 @@ export function CollaboratorTurnDialog({
       ajuda_custo: 0 as any,
       valor_adiantamento: 0 as any,
       taxa_entrega: 0 as any,
-      data_inicio: "",
+      data_inicio: getLocalDate(),
       validar_localizacao: true,
       horarios: [],
     },
@@ -109,7 +109,6 @@ export function CollaboratorTurnDialog({
 
   useEffect(() => {
     if (open) {
-
       if (turnToEdit) {
         form.reset({
           cliente_id: turnToEdit.cliente_id?.toString() || "",
@@ -123,7 +122,7 @@ export function CollaboratorTurnDialog({
             turnToEdit.valor_adiantamento || 0,
           ),
           taxa_entrega: formatCurrency(turnToEdit.taxa_entrega || 0),
-          data_inicio: turnToEdit.data_inicio || "",
+          data_inicio: turnToEdit.data_inicio || getLocalDate(),
           validar_localizacao: turnToEdit.validar_localizacao !== false,
           horarios:
             turnToEdit.horarios?.map((h) => ({
@@ -144,7 +143,7 @@ export function CollaboratorTurnDialog({
           ajuda_custo: "" as any,
           valor_adiantamento: "" as any,
           taxa_entrega: "" as any,
-          data_inicio: "",
+          data_inicio: getLocalDate(),
           validar_localizacao: true,
           horarios: [],
         });

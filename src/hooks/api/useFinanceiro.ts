@@ -6,7 +6,7 @@ export function useFinanceiro(usuarioId: string | undefined, mes: number, ano: n
         queryKey: ["financeiro-extrato", usuarioId, mes, ano],
         queryFn: () => financeiroApi.getExtratoMensal(usuarioId!, mes, ano),
         enabled: !!usuarioId && !!mes && !!ano,
-        staleTime: 0,
+        staleTime: 15 * 1000,
         refetchOnMount: true,
         refetchOnWindowFocus: false,
     });
@@ -17,8 +17,8 @@ export function useFinanceiroGeral(mes: number, ano: number, enabled: boolean = 
         queryKey: ["financeiro-status-geral", mes, ano],
         queryFn: () => financeiroApi.getStatusGeral(mes, ano),
         enabled: !!mes && !!ano && enabled,
-        staleTime: 0,
-        gcTime: 0,
+        staleTime: 30 * 1000,
+        gcTime: 5 * 60 * 1000,
         refetchOnMount: true,
         refetchOnWindowFocus: false,
     });

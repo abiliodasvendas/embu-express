@@ -3,7 +3,6 @@ import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { CollaboratorCard } from "@/components/common/CollaboratorCard";
 import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +20,7 @@ import { useDeleteUnidade } from "@/hooks/api/useUnidadeMutations";
 import { useUnidades } from "@/hooks/api/useUnidades";
 import { useClientActions } from "@/hooks/business/useClientActions";
 import { cn } from "@/lib/utils";
-import { Client, ColaboradorCliente, Unidade } from "@/types/database";
+import { Client, ColaboradorCliente, Unidade, Usuario } from "@/types/database";
 import { DIAS_SEMANA } from "@/utils/formatters/constants";
 import { cnpjMask } from "@/utils/masks";
 import { AnimatePresence, motion } from "framer-motion";
@@ -52,8 +51,6 @@ export default function ClientDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isCopied, setIsCopied] = useState(false);
-  const [isUnidadeDialogOpen, setIsUnidadeDialogOpen] = useState(false);
-  const [editingUnidade, setEditingUnidade] = useState<Unidade | null>(null);
 
   // Pagination states
   const [unitPage, setUnitPage] = useState(1);
@@ -84,13 +81,19 @@ export default function ClientDetails() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openClientFormDialog,
+    openUnidadeFormDialog,
     setPageTitle,
   } = useLayout();
 
+  const collaboratorsList = useMemo(() => {
+    if (!collaborators) return [];
+    if (Array.isArray(collaborators)) return collaborators;
+    return (collaborators as { data?: Usuario[] }).data || [];
+  }, [collaborators]);
+
   // Optimized collaborators mapping for pagination
   const flattenedCollaborators = useMemo(() => {
-    if (!collaborators) return [];
-    return collaborators.flatMap((collab) => {
+    return collaboratorsList.flatMap((collab) => {
       const clientLinks =
         collab.links?.filter(
           (l: ColaboradorCliente) => l.cliente_id?.toString() === id,
@@ -101,7 +104,7 @@ export default function ClientDetails() {
         uniqueKey: `${collab.id}-${linkIdx}`
       }));
     });
-  }, [collaborators, id]);
+  }, [collaboratorsList, id]);
 
   const stats = useMemo(() => {
     const totalUnits = unidades?.length || 0;
@@ -166,13 +169,11 @@ export default function ClientDetails() {
   };
 
   const handleEditUnidade = (unidade: Unidade) => {
-    setEditingUnidade(unidade);
-    setIsUnidadeDialogOpen(true);
+    openUnidadeFormDialog({ clienteId: Number(id), editingUnidade: unidade });
   };
 
   const handleAddUnidade = () => {
-    setEditingUnidade(null);
-    setIsUnidadeDialogOpen(true);
+    openUnidadeFormDialog({ clienteId: Number(id), editingUnidade: null });
   };
 
   const handleDeleteUnidade = (unidade: Unidade) => {
@@ -287,21 +288,21 @@ export default function ClientDetails() {
                   {client.nome_fantasia}
                 </h2>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  {client.razao_social && (
+                  {unidades?.[0]?.razao_social && (
                     <Badge
                       variant="secondary"
                       className="bg-primary/5 text-primary border-primary/10 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
                     >
                       <Users className="w-3.5 h-3.5 shrink-0" />
-                      <span>{client.razao_social}</span>
+                      <span>{unidades[0].razao_social}</span>
                     </Badge>
                   )}
-                  {client.cnpj && (
+                  {unidades?.[0]?.cnpj && (
                     <Badge
                       variant="secondary"
                       className="bg-gray-50 text-gray-700 border-gray-200 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
                     >
-                      <span>CNPJ: {cnpjMask(client.cnpj)}</span>
+                      <span>CNPJ: {cnpjMask(unidades[0].cnpj)}</span>
                     </Badge>
                   )}
                   <Badge
@@ -716,14 +717,6 @@ export default function ClientDetails() {
           </main>
         </div>
       </div>
-
-      {/* DIALOGS */}
-      <UnidadeFormDialog
-        isOpen={isUnidadeDialogOpen}
-        onClose={() => setIsUnidadeDialogOpen(false)}
-        clienteId={Number(id)}
-        editingUnidade={editingUnidade}
-      />
     </div>
   );
 }

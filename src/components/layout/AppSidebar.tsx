@@ -22,22 +22,29 @@ const CATEGORY_ICONS: Record<string, any> = {
 };
 
 export function AppSidebar({ onLinkClick }: AppSidebarProps) {
-  const { can, isSuperAdmin } = usePermissions();
+  const { can, isSuperAdmin, roleName } = usePermissions();
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   const filteredItems = useMemo(() => {
     return pagesItems.filter(item => {
       if (isSuperAdmin) return true;
+
+      if (item.allowedRoles && item.allowedRoles.length > 0) {
+        const normalizedRole = roleName?.toLowerCase();
+        const hasRole = item.allowedRoles.some(r => r.toLowerCase() === normalizedRole);
+        if (!hasRole) return false;
+      }
+
       if (!item.permissionKey) return true;
 
       if (Array.isArray(item.permissionKey)) {
-        return item.permissionKey.some(pk => can(pk as any));
+        return item.permissionKey.some(pk => can(pk));
       }
 
-      return can(item.permissionKey as any);
+      return can(item.permissionKey);
     });
-  }, [can, isSuperAdmin]);
+  }, [can, isSuperAdmin, roleName]);
 
   const menuBlocks = useMemo(() => {
     const blocks: Array<{ type: 'link'; item: PageItem } | { type: 'group'; category: string; items: PageItem[] }> = [];

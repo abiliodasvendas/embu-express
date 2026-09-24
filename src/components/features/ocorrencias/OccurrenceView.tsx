@@ -10,6 +10,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import { OccurrenceDailyItem } from "./OccurrenceDailyItem";
+import { useMemo } from "react";
 
 interface OccurrenceViewProps {
   usuarioId?: string;
@@ -32,7 +33,12 @@ export function OccurrenceView({
 }: OccurrenceViewProps) {
   const { openConfirmationDialog, closeConfirmationDialog, openOccurrenceDetailsDialog, closeOccurrenceDetailsDialog, openOccurrenceFormDialog } = useLayout();
   const deleteMutation = useDeleteOcorrencia();
-  const { data: collaborators = [] } = useCollaborators({}, { enabled: !usuarioId });
+  const { data: collaboratorsResponse } = useCollaborators({}, { enabled: !usuarioId });
+  const collaborators = useMemo(() => {
+    if (!collaboratorsResponse) return [];
+    if (Array.isArray(collaboratorsResponse)) return collaboratorsResponse;
+    return collaboratorsResponse.data || [];
+  }, [collaboratorsResponse]);
 
   const vm = useOccurrenceViewModel({
     usuarioId,

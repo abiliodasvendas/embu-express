@@ -125,11 +125,19 @@ export function usePublicConvenio(token: string) {
     });
 }
 
+export interface PublicCollaboratorConvenio {
+    id: string;
+    nome_completo: string;
+    bloqueado?: boolean;
+    motivo_bloqueio?: string;
+    saldo_disponivel?: number;
+}
+
 export function usePublicCollaborators(token: string) {
     return useQuery({
         queryKey: ["public_collaborators", token],
         queryFn: async () => {
-            const { data } = await api.get<{ id: string; nome_completo: string }[]>(`/convenios/public/${token}/colaboradores`);
+            const { data } = await api.get<PublicCollaboratorConvenio[]>(`/convenios/public/${token}/colaboradores`);
             return data;
         },
         enabled: !!token

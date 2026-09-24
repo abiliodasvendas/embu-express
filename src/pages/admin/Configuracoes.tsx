@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Settings, Save, Clock, AlertTriangle, CircleDollarSign, MapPin } from "lucide-react";
+import { Settings, Save, Clock, AlertTriangle, CircleDollarSign, MapPin, Percent } from "lucide-react";
 import { apiClient } from "@/services/api/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -63,6 +63,7 @@ export default function Configuracoes() {
     const configHeExcessiva = configs?.find(c => c.chave === "limite_he_excessiva_min");
     const configFeriado = configs?.find(c => c.chave === "valor_adicional_feriado");
     const configGeofencing = configs?.find(c => c.chave === "raio_geofencing_metros");
+    const configConvenioLimite = configs?.find(c => c.chave === "percentual_limite_convenio");
 
     return (
         <div className="space-y-6 pb-24 max-w-7xl mx-auto animate-in fade-in duration-500">
@@ -120,6 +121,14 @@ export default function Configuracoes() {
                     />
                 )}
 
+                {configConvenioLimite && (
+                    <PercentConfigCard
+                        config={configConvenioLimite}
+                        onSave={(valor) => mutation.mutate({ chave: configConvenioLimite.chave, valor })}
+                        isSaving={mutation.isPending && mutation.variables?.chave === configConvenioLimite.chave}
+                    />
+                )}
+
                 <div className="col-span-1 md:col-span-2 mt-2">
                     <ToleranceTimeline draftValues={draftValues} />
                 </div>
@@ -153,7 +162,7 @@ function BaseConfigCard({
     unit,
     children
 }: BaseConfigCardProps) {
-    const unitLabel = unit === "R$" ? "Reais" : unit === "m" ? "Metros" : "Minutos";
+    const unitLabel = unit === "R$" ? "Reais" : unit === "m" ? "Metros" : unit === "%" ? "Porcentagem" : "Minutos";
 
     return (
         <Card className="rounded-3xl border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
@@ -347,6 +356,44 @@ function GeofencingConfigCard({ config, onSave, isSaving }: GeofencingConfigCard
                     Mínimo recomendado: {MIN_RECOMMENDED_METERS}m (para evitar erros de GPS)
                 </p>
             )}
+        </BaseConfigCard>
+    );
+}
+
+interface PercentConfigCardProps {
+    config: ConfigItem;
+    onSave: (value: string) => void;
+    isSaving: boolean;
+}
+
+function PercentConfigCard({ config, onSave, isSaving }: PercentConfigCardProps) {
+    const [value, setValue] = useState(config.valor);
+
+    useEffect(() => {
+        setValue(config.valor);
+    }, [config.valor]);
+
+    const hasChanged = value !== config.valor;
+
+    return (
+        <BaseConfigCard
+            title="Limite de Comprometimento com Convênios"
+            description="Percentual máximo dos rendimentos do colaborador permitido para convênios e manutenções no mês. Ao atingir este teto, o sistema bloqueia novos lançamentos automaticamente."
+            icon={Percent}
+            example="Ex: Se definido como 30%, um colaborador com R$ 2.000,00 a receber terá um limite mensal de R$ 600,00 para manutenções e convênios."
+            hasChanged={hasChanged}
+            isSaving={isSaving}
+            onSave={() => onSave(value)}
+            unit="%"
+        >
+            <Input
+                type="number"
+                min="0"
+                max="100"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                className="bg-gray-50 border-gray-200 focus:bg-white transition-colors rounded-xl pr-12 h-12 text-lg font-medium"
+            />
         </BaseConfigCard>
     );
 }

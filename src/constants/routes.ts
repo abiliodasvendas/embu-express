@@ -26,6 +26,8 @@ export const ROUTES = {
         CHAMADOS: "/chamados",
         CONVENIOS: "/convenios",
         CONVENIO_DETAILS: "/convenios/:id",
+        FATURAMENTO: "/faturamento",
+        RESERVAS: "/retaguarda-reservas",
         INICIO: "/inicio"
     }
 } as const;

@@ -6,12 +6,13 @@ import { Navigate, Outlet } from "react-router-dom";
 
 interface RequirePermissionProps {
     permissions?: PermissionKey[];
+    allowedRoles?: readonly string[] | string[];
     requireAdminPanel?: boolean;
     useOrCondition?: boolean;
 }
 
-export function RequirePermission({ permissions, requireAdminPanel, useOrCondition = false }: RequirePermissionProps) {
-    const { roleName, isLoading, canViewAdminPanel, can } = usePermissions();
+export function RequirePermission({ permissions, allowedRoles, requireAdminPanel, useOrCondition = false }: RequirePermissionProps) {
+    const { roleName, isLoading, canViewAdminPanel, can, isSuperAdmin } = usePermissions();
 
     if (isLoading) {
         return (
@@ -21,14 +22,23 @@ export function RequirePermission({ permissions, requireAdminPanel, useOrConditi
         );
     }
 
-    // Se nao tem role (nao logado ou erro), manda pro login
     if (!roleName) {
         return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
     }
 
     let hasAccess = true;
 
-    if (requireAdminPanel && !canViewAdminPanel) hasAccess = false;
+    if (requireAdminPanel && !canViewAdminPanel) {
+        hasAccess = false;
+    }
+
+    if (allowedRoles && allowedRoles.length > 0) {
+        const normalizedUserRole = roleName.toLowerCase();
+        const hasRole = isSuperAdmin || allowedRoles.some(r => r.toLowerCase() === normalizedUserRole);
+        if (!hasRole) {
+            hasAccess = false;
+        }
+    }
 
     if (permissions && permissions.length > 0) {
         if (useOrCondition) {

@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem, Ticket, Convenio } from '@/types/database';
+import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem, Ticket, Convenio, FaturaCliente, TransferenciaIntercompany, DespesaOperacional, MovimentacaoAvulsa, Unidade, LancamentoConvenio, FaturaFornecedorConvenio } from '@/types/database';
 import { OccurrenceFormData } from '@/schemas/occurrenceSchema';
 import { OccurrenceFormMode } from '@/types/enums';
 
@@ -70,7 +70,7 @@ export interface OpenSuccessRegistrationProps {
 export interface OpenOccurrenceFormProps {
   collaboratorId?: string;
   onSuccess?: () => void;
-  defaultValues?: Partial<OccurrenceFormData>;
+  defaultValues?: Partial<OccurrenceFormData> & { id?: number };
   mode?: OccurrenceFormMode;
 }
 
@@ -134,6 +134,65 @@ export interface OpenConfirmarAdiantamentoDialogProps {
   valorSugerido: number;
   onConfirm: (valor: number) => Promise<void>;
   isLoading?: boolean;
+}
+
+export interface OpenFaturaFormProps {
+  faturaToEdit?: FaturaCliente | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenLoteRecebimentoProps {
+  onSuccess?: () => void;
+}
+
+export interface OpenAcertoIntercompanyProps {
+  transferencia: TransferenciaIntercompany;
+  onSuccess?: () => void;
+}
+
+export interface OpenAlocacaoTemporariaProps {
+  onSuccess?: () => void;
+}
+
+export interface OpenContasBancariasProps {
+  empresaIdInicial?: number;
+}
+
+export interface OpenDespesaFormProps {
+  despesaToEdit?: DespesaOperacional | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenMovimentacaoAvulsaFormProps {
+  movimentacaoToEdit?: MovimentacaoAvulsa | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenUnidadeFormProps {
+  clienteId: number;
+  editingUnidade?: Unidade | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenLancamentoConvenioFormProps {
+  convenioId?: string;
+  token?: string;
+  lancamentoToEdit?: LancamentoConvenio | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenFaturaFornecedorDialogProps {
+  convenioId: string;
+  convenioNome?: string;
+  mesCompetencia: number;
+  anoCompetencia: number;
+  faturaToEdit?: FaturaFornecedorConvenio | null;
+  onSuccess?: () => void;
+}
+
+export interface OpenGerenciarBloqueioConvenioProps {
+  colaboradorId: string;
+  colaboradorNome: string;
 }
 
 export interface LayoutContextType {
@@ -225,6 +284,39 @@ export interface LayoutContextType {
 
   openConvenioFormDialog: (props: OpenConvenioFormProps) => void;
   closeConvenioFormDialog: () => void;
+
+  openFaturaFormDialog: (props: OpenFaturaFormProps) => void;
+  closeFaturaFormDialog: () => void;
+
+  openLoteRecebimentoDialog: (props: OpenLoteRecebimentoProps) => void;
+  closeLoteRecebimentoDialog: () => void;
+
+  openAcertoIntercompanyDialog: (props: OpenAcertoIntercompanyProps) => void;
+  closeAcertoIntercompanyDialog: () => void;
+
+  openAlocacaoTemporariaDialog: (props: OpenAlocacaoTemporariaProps) => void;
+  closeAlocacaoTemporariaDialog: () => void;
+
+  openContasBancariasDialog: (props?: OpenContasBancariasProps) => void;
+  closeContasBancariasDialog: () => void;
+
+  openDespesaFormDialog: (props?: OpenDespesaFormProps) => void;
+  closeDespesaFormDialog: () => void;
+
+  openMovimentacaoAvulsaDialog: (props?: OpenMovimentacaoAvulsaFormProps) => void;
+  closeMovimentacaoAvulsaDialog: () => void;
+
+  openUnidadeFormDialog: (props: OpenUnidadeFormProps) => void;
+  closeUnidadeFormDialog: () => void;
+
+  openLancamentoConvenioDialog: (props: OpenLancamentoConvenioFormProps) => void;
+  closeLancamentoConvenioDialog: () => void;
+
+  openFaturaFornecedorDialog: (props: OpenFaturaFornecedorDialogProps) => void;
+  closeFaturaFornecedorDialog: () => void;
+
+  openGerenciarBloqueioConvenioDialog: (props: OpenGerenciarBloqueioConvenioProps) => void;
+  closeGerenciarBloqueioConvenioDialog: () => void;
 }
 
 

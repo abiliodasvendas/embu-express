@@ -1,5 +1,5 @@
 import { MENU_CATEGORIES, MenuCategory } from "@/constants/menu.constants";
-import { PermissionKey, PERMISSIONS } from "@/constants/permissions.enum";
+import { PermissionKey, PERMISSIONS, ROLES } from "@/constants/permissions.enum";
 import { ROUTES } from "@/constants/routes";
 import {
     AlertCircle,
@@ -14,14 +14,18 @@ import {
     Package,
     MapPin,
     MessageSquare,
-    Handshake
+    Handshake,
+    Receipt,
+    ShieldCheck,
+    LucideIcon
 } from "lucide-react";
 
 export interface PageItem {
     title: string;
     href: string;
-    icon: any;
+    icon: LucideIcon;
     permissionKey?: PermissionKey | PermissionKey[];
+    allowedRoles?: readonly string[] | string[];
     category?: MenuCategory;
 }
 
@@ -74,6 +78,21 @@ export const pagesItems: PageItem[] = [
         title: "Fechamento Financeiro",
         href: ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO,
         icon: Banknote,
+        category: MENU_CATEGORIES.COLABORADORES,
+    },
+    {
+        title: "Faturamento & Clientes",
+        href: ROUTES.PRIVATE.FATURAMENTO,
+        icon: Receipt,
+        permissionKey: PERMISSIONS.FATURAMENTO.VER,
+        allowedRoles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
+    },
+    {
+        title: "Retaguarda Operacional",
+        href: ROUTES.PRIVATE.RESERVAS,
+        icon: ShieldCheck,
+        permissionKey: PERMISSIONS.RETAGUARDA.VER,
+        allowedRoles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
         category: MENU_CATEGORIES.COLABORADORES,
     },
     {

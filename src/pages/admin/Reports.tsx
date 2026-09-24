@@ -3,11 +3,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { FinanceiroTab } from "./relatorios/FinanceiroTab";
+import { DreTab } from "./relatorios/DreTab";
+import { FluxoCaixaTab } from "./relatorios/FluxoCaixaTab";
 import { useLayout, useDateFilters } from "@/hooks";
-import { Calendar, Wallet } from "lucide-react";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
+import { Calendar, Wallet, BarChart3, TrendingUp } from "lucide-react";
 
 export default function Reports() {
     const { setPageTitle } = useLayout();
+    const { can, isAnyAdmin } = usePermissions();
+
+    const canViewDre = isAnyAdmin || can(PERMISSIONS.DRE.VER);
+    const canViewFluxoCaixa = isAnyAdmin || can(PERMISSIONS.FLUXO_CAIXA.VER);
 
     useEffect(() => {
         setPageTitle("Relatórios");
@@ -17,7 +25,11 @@ export default function Reports() {
     const anoAtual = hoje.getFullYear();
     const mesAtual = hoje.getMonth() + 1;
 
-    const [selectedTab, setSelectedTab] = useState("financeiro");
+    const [selectedTab, setSelectedTab] = useState(() => {
+        if (canViewDre) return "dre";
+        if (canViewFluxoCaixa) return "fluxo-caixa";
+        return "financeiro";
+    });
     const { selectedMes: mes, setSelectedMes: setMes, selectedAno: ano, setSelectedAno: setAno } = useDateFilters({
         mesParam: "mes",
         anoParam: "ano",
@@ -100,15 +112,49 @@ export default function Reports() {
 
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full space-y-6">
                 <TabsList className="flex w-full justify-start overflow-x-auto lg:w-max h-12 rounded-2xl bg-gray-100 p-1 no-scrollbar scroll-smooth whitespace-nowrap">
+                    {canViewDre && (
+                        <TabsTrigger
+                            value="dre"
+                            className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4"
+                        >
+                            <BarChart3 className="h-4 w-4 text-current" />
+                            <span>Resultado Real do Mês (Lucro da Empresa)</span>
+                        </TabsTrigger>
+                    )}
+                    {canViewFluxoCaixa && (
+                        <TabsTrigger
+                            value="fluxo-caixa"
+                            className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4"
+                        >
+                            <TrendingUp className="h-4 w-4 text-current" />
+                            <span>Fluxo de Caixa Diário</span>
+                        </TabsTrigger>
+                    )}
                     <TabsTrigger
                         value="financeiro"
                         className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 shrink-0 px-4"
                     >
                         <Wallet className="h-4 w-4 text-current" />
-                        <span>Financeiro</span>
+                        <span>Folha de Pagamento</span>
                     </TabsTrigger>
-                    {/* Futuras abas podem ser adicionadas aqui */}
                 </TabsList>
+
+                {canViewDre && (
+                    <TabsContent value="dre">
+                        {selectedTab === "dre" && (
+                            <DreTab mes={mes} ano={ano} />
+                        )}
+                    </TabsContent>
+                )}
+
+                {canViewFluxoCaixa && (
+                    <TabsContent value="fluxo-caixa">
+                        {selectedTab === "fluxo-caixa" && (
+                            <FluxoCaixaTab mes={mes} ano={ano} />
+                        )}
+                    </TabsContent>
+                )}
+
                 <TabsContent value="financeiro">
                     {selectedTab === "financeiro" && (
                         <FinanceiroTab mes={mes} ano={ano} />

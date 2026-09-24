@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --noEmit",
     "build:dev": "vite build --mode development",
     "build:android": "vite build --mode production && npx cap sync android",
     "build:android:clean": "vite build --mode production && npx cap sync android",

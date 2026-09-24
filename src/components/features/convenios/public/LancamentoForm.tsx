@@ -27,6 +27,8 @@ import {
   useUpdateAdminLancamento,
 } from "@/hooks/api/useConvenios";
 import { useActiveCollaborators } from "@/hooks/api/useCollaborators";
+import { useElegibilidadeConvenio } from "@/hooks/api/useBloqueiosConvenios";
+import { Banner } from "@/components/ui/Banner";
 import { cn } from "@/lib/utils";
 import { LancamentoConvenio } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -159,10 +161,25 @@ export function LancamentoForm({
     }
   };
 
-  const collaboratorOptions = collaborators.map((c) => ({
-    value: c.id,
-    label: c.nome_completo,
-  }));
+  const selectedColaboradorId = form.watch("colaborador_id");
+  const isMotoEmbu = form.watch("moto_embu");
+
+  const selectedPublicCollab = token ? publicCollaborators.find((c) => c.id === selectedColaboradorId) : undefined;
+  const isPublicBlocked = !!token && !isMotoEmbu && !!selectedPublicCollab?.bloqueado;
+
+  const { data: elegibilidadeAdmin } = useElegibilidadeConvenio(
+    convenioId && selectedColaboradorId ? selectedColaboradorId : undefined,
+    convenioId
+  );
+  const isAdminWarning = !!convenioId && !isMotoEmbu && !!elegibilidadeAdmin?.bloqueado;
+
+  const collaboratorOptions = collaborators.map((c) => {
+    const isBlocked = "bloqueado" in c && Boolean((c as { bloqueado?: boolean }).bloqueado);
+    return {
+      value: c.id,
+      label: isBlocked ? `🔴 [BLOQUEADO] ${c.nome_completo}` : c.nome_completo,
+    };
+  });
 
   return (
     <Dialog
@@ -242,6 +259,28 @@ export function LancamentoForm({
                       />
                     </FormControl>
                     <FormMessage />
+                    {isPublicBlocked && (
+                      <Banner
+                        variant="destructive"
+                        title="Lançamento Não Autorizado"
+                        description={
+                          selectedPublicCollab?.motivo_bloqueio ||
+                          "Este colaborador está com o convênio suspenso no momento. Não realize o serviço pelo convênio."
+                        }
+                        className="mt-2"
+                      />
+                    )}
+                    {isAdminWarning && (
+                      <Banner
+                        variant="warning"
+                        title="Atenção: Colaborador com Restrição"
+                        description={
+                          elegibilidadeAdmin?.motivo ||
+                          "Este colaborador possui restrição ativa de convênio. Como operador administrativo, você pode prosseguir para registrar como exceção."
+                        }
+                        className="mt-2"
+                      />
+                    )}
                   </FormItem>
                 )}
               />
@@ -406,11 +445,18 @@ export function LancamentoForm({
           <Button
             type="submit"
             form="lancamento-form"
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+            disabled={isLoading || isPublicBlocked}
+            className={cn(
+              "w-full h-11 rounded-xl font-bold text-white shadow-lg transition-all",
+              isPublicBlocked
+                ? "bg-red-500 hover:bg-red-500 cursor-not-allowed opacity-80 shadow-red-500/20"
+                : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20 hover:-translate-y-0.5"
+            )}
           >
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
+            ) : isPublicBlocked ? (
+              "Bloqueado para Lançamento"
             ) : (
               "Salvar"
             )}

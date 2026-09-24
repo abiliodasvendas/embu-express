@@ -11,6 +11,7 @@ interface EmpresaListProps {
   onEdit: (empresa: Empresa) => void;
   onToggleStatus: (empresa: Empresa) => void;
   onDelete: (empresa: Empresa) => void;
+  onGerenciarContas?: (empresa: Empresa) => void;
 }
 
 const EmpresaMobileItem = ({
@@ -18,13 +19,15 @@ const EmpresaMobileItem = ({
   onEdit,
   onToggleStatus,
   onDelete,
+  onGerenciarContas,
 }: {
   empresa: Empresa;
   onEdit: (empresa: Empresa) => void;
   onToggleStatus: (empresa: Empresa) => void;
   onDelete: (empresa: Empresa) => void;
+  onGerenciarContas?: (empresa: Empresa) => void;
 }) => {
-  const actions = useEmpresaActions({ empresa, onEdit, onToggleStatus, onDelete });
+  const actions = useEmpresaActions({ empresa, onEdit, onToggleStatus, onDelete, onGerenciarContas });
 
   return (
     <div
@@ -68,13 +71,15 @@ const EmpresaTableRow = ({
   onEdit,
   onToggleStatus,
   onDelete,
+  onGerenciarContas,
 }: {
   empresa: Empresa;
   onEdit: (empresa: Empresa) => void;
   onToggleStatus: (empresa: Empresa) => void;
   onDelete: (empresa: Empresa) => void;
+  onGerenciarContas?: (empresa: Empresa) => void;
 }) => {
-  const actions = useEmpresaActions({ empresa, onEdit, onToggleStatus, onDelete });
+  const actions = useEmpresaActions({ empresa, onEdit, onToggleStatus, onDelete, onGerenciarContas });
 
   return (
     <tr
@@ -112,6 +117,7 @@ export function EmpresaList({
   onEdit,
   onToggleStatus,
   onDelete,
+  onGerenciarContas,
 }: EmpresaListProps) {
   return (
     <ResponsiveDataList
@@ -124,6 +130,7 @@ export function EmpresaList({
           onEdit={onEdit}
           onToggleStatus={onToggleStatus}
           onDelete={onDelete}
+          onGerenciarContas={onGerenciarContas}
         />
       )}
     >
@@ -156,6 +163,7 @@ export function EmpresaList({
                 onEdit={onEdit}
                 onToggleStatus={onToggleStatus}
                 onDelete={onDelete}
+                onGerenciarContas={onGerenciarContas}
               />
             ))}
           </tbody>

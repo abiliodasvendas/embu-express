@@ -22,7 +22,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function Empresas() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEmpresaFormDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEmpresaFormDialog, openContasBancariasDialog } = useLayout();
 
   const { searchTerm, setSearchTerm } = useSearchFilters();
   const { selectedStatus, setSelectedStatus } = useStatusFilters();
@@ -53,6 +53,10 @@ export function Empresas() {
 
   const handleRegister = () => {
     openEmpresaFormDialog({});
+  };
+
+  const handleGerenciarContas = (empresa: Empresa) => {
+    openContasBancariasDialog({ empresaIdInicial: empresa.id });
   };
 
   const handleDelete = async (empresa: Empresa) => {
@@ -122,6 +126,7 @@ export function Empresas() {
                   onEdit={handleEdit}
                   onToggleStatus={handleToggleStatus}
                   onDelete={handleDelete}
+                  onGerenciarContas={handleGerenciarContas}
                 />
               ) : (
                 <UnifiedEmptyState

@@ -36,10 +36,11 @@ import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
 import { onlyNumbers } from "@/utils/string";
 import { format, parseISO } from "date-fns";
-import { AlertTriangle, Bike, Briefcase, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, Printer, RotateCcw, Trash2, User, Wallet } from "lucide-react";
+import { AlertTriangle, Bike, Briefcase, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, Printer, RotateCcw, Trash2, User, Wallet, Store, ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useBloqueiosColaborador } from "@/hooks/api/useBloqueiosConvenios";
 
 export default function CollaboratorDetails() {
   const { id } = useParams();
@@ -47,6 +48,7 @@ export default function CollaboratorDetails() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: collaborator, isLoading } = useCollaborator(id);
   const { data: itensAlocados = [] } = useItensColaboradorQuery(id!);
+  const { data: bloqueioData } = useBloqueiosColaborador(id);
   const possuiItens = itensAlocados.length > 0;
   const { data: roles } = useRoles();
   const deleteVinculo = useDeleteVinculo();
@@ -62,6 +64,7 @@ export default function CollaboratorDetails() {
     openSuccessRegistrationDialog,
     openOccurrenceFormDialog,
     openEndTurnDialog,
+    openGerenciarBloqueioConvenioDialog,
     setPageTitle,
   } = useLayout();
 
@@ -366,6 +369,32 @@ export default function CollaboratorDetails() {
                     </Badge>
                   )
                 )}
+
+                {bloqueioData?.bloqueio_geral ? (
+                  <Badge
+                    variant="secondary"
+                    className="bg-rose-50 text-rose-700 border-rose-200 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+                    <span>Todos Convênios Bloqueados</span>
+                  </Badge>
+                ) : (bloqueioData?.convenios_bloqueados_ids?.length ?? 0) > 0 ? (
+                  <Badge
+                    variant="secondary"
+                    className="bg-amber-50 text-amber-700 border-amber-200 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
+                  >
+                    <Store className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                    <span>Convênio Bloqueio Parcial ({bloqueioData?.convenios_bloqueados_ids.length})</span>
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="secondary"
+                    className="bg-emerald-50 text-emerald-700 border-emerald-100 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-none"
+                  >
+                    <Store className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                    <span>Todos Convênios Liberados</span>
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -392,6 +421,20 @@ export default function CollaboratorDetails() {
                 <span>{statusAction.label}</span>
               </Button>
             )}
+
+            <Button
+              variant="outline"
+              onClick={() =>
+                openGerenciarBloqueioConvenioDialog({
+                  colaboradorId: id!,
+                  colaboradorNome: collaborator.nome_completo,
+                })
+              }
+              className="rounded-xl border-gray-200 text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1.5 px-4 font-semibold text-sm shadow-sm h-10"
+            >
+              <Store className="h-4 w-4 text-blue-600" />
+              <span>Convênios</span>
+            </Button>
 
             {resetAction && (
               <Button

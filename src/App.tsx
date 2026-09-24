@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { PERMISSIONS } from "./constants/permissions.enum";
+import { PERMISSIONS, ROLES } from "./constants/permissions.enum";
 import { ROUTES } from "./constants/routes";
 import AppLayout from "@/layouts/AppLayout";
 import { apiClient } from "@/services/api/client";
@@ -61,6 +61,8 @@ const TimeMirror = lazyLoad(() => import("./pages/admin/TimeMirror"));
 const CollaboratorMap = lazyLoad(() => import("./pages/admin/CollaboratorMap"));
 const FinancialReport = lazyLoad(() => import("./pages/admin/FinancialReport"));
 const Reports = lazyLoad(() => import("./pages/admin/Reports"));
+const Faturamento = lazyLoad(() => import("./pages/admin/Faturamento"));
+const RetaguardaReservas = lazyLoad(() => import("./pages/admin/RetaguardaReservas"));
 const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
 
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
@@ -310,11 +312,21 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.RELATORIOS.replace("/", "")} element={<Reports />} />
                     </Route>
 
+                    <Route element={<RequirePermission allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} permissions={[PERMISSIONS.FATURAMENTO.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.FATURAMENTO.replace("/", "")} element={<Faturamento />} />
+                    </Route>
+
+                    <Route element={<RequirePermission allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} permissions={[PERMISSIONS.RETAGUARDA.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.RESERVAS.replace("/", "")} element={<RetaguardaReservas />} />
+                    </Route>
+
                     <Route element={<RequirePermission permissions={[PERMISSIONS.CONVENIOS.VER]} />}>
                       <Route path={ROUTES.PRIVATE.CONVENIOS.replace("/", "")} element={<Convenios />} />
                       <Route path={ROUTES.PRIVATE.CONVENIO_DETAILS.replace(/^\//, "")} element={<ConvenioDetails />} />
                     </Route>
-                    <Route path={ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
+                    <Route element={<RequirePermission allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} />}>
+                      <Route path={ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
+                    </Route>
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.CONFIGURACAO.VER]} />}>
                       <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />

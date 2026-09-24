@@ -73,7 +73,10 @@ export function ConvenioFormDialog({
         await updateConvenio.mutateAsync({ id: convenioToEdit.id, ...values });
         toast.success("Convênio atualizado com sucesso!");
       } else {
-        await createConvenio.mutateAsync(values);
+        await createConvenio.mutateAsync({
+          nome: values.nome,
+          ativo: values.ativo,
+        });
         toast.success("Convênio criado com sucesso!");
       }
       onOpenChange(false);

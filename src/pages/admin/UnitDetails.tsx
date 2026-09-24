@@ -3,7 +3,6 @@ import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { CollaboratorCard } from "@/components/common/CollaboratorCard";
 import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -35,15 +34,14 @@ import { useNavigate, useParams } from "react-router-dom";
 export default function UnitDetails() {
   const { id: clientId, unitId } = useParams();
   const navigate = useNavigate();
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } =
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openUnidadeFormDialog } =
     useLayout();
-  const [isUnidadeDialogOpen, setIsUnidadeDialogOpen] = useState(false);
 
   const { data: clients } = useClients({ includeId: clientId });
   const client = clients?.find((c) => c.id.toString() === clientId);
 
   const { data: unit, isLoading: isUnitLoading } = useUnidade(unitId);
-  const { data: collaborators, isLoading: isCollabsLoading } = useCollaborators(
+  const { data: collaboratorsResponse, isLoading: isCollabsLoading } = useCollaborators(
     { cliente_id: clientId },
     { enabled: !!clientId },
   );
@@ -58,11 +56,14 @@ export default function UnitDetails() {
   }, [unit, setPageTitle]);
 
   const unitCollaborators = useMemo(() => {
-    if (!collaborators || !unitId) return [];
-    return collaborators.filter((collab) =>
+    if (!collaboratorsResponse || !unitId) return [];
+    const list = Array.isArray(collaboratorsResponse)
+      ? collaboratorsResponse
+      : (collaboratorsResponse as { data?: any[] }).data || [];
+    return list.filter((collab) =>
       collab.links?.some((link: any) => link.unidade_id?.toString() === unitId),
     );
-  }, [collaborators, unitId]);
+  }, [collaboratorsResponse, unitId]);
 
   const handleToggleStatus = async () => {
     if (!unit) return;
@@ -171,7 +172,7 @@ export default function UnitDetails() {
             <button
               type="button"
               className="flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-gray-600 hover:bg-gray-100 transition-all active:scale-95"
-              onClick={() => setIsUnidadeDialogOpen(true)}
+              onClick={() => openUnidadeFormDialog({ clienteId: Number(clientId), editingUnidade: unit })}
             >
               <Edit2 className="h-4 w-4" />
               Editar
@@ -424,14 +425,6 @@ export default function UnitDetails() {
           </main>
         </div>
       </div>
-
-      {/* DIALOGS */}
-      <UnidadeFormDialog
-        isOpen={isUnidadeDialogOpen}
-        onClose={() => setIsUnidadeDialogOpen(false)}
-        clienteId={Number(clientId)}
-        editingUnidade={unit}
-      />
     </div>
   );
 }

@@ -15,10 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { messages } from "@/constants/messages";
 import { useCreateClient, useUpdateClient } from "@/hooks";
+import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { cn } from "@/lib/utils";
 import { Client } from "@/types/database";
+import { MoneyInput } from "@/components/ui/MoneyInput";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -28,6 +31,9 @@ import {
   Loader2,
   Wand2,
   X,
+  Calculator,
+  ShieldAlert,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
@@ -48,9 +54,9 @@ export function ClientFormDialog({
   isOpen,
   onClose,
   editingClient = null,
-  onSuccess, // Add this if missing
-  profile, // Add this if missing
-  allowBatchCreation = false, // Add this if missing
+  onSuccess,
+  profile,
+  allowBatchCreation = false,
 }: ClientFormDialogProps) {
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-cliente",
@@ -61,12 +67,17 @@ export function ClientFormDialog({
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
   const navigate = useNavigate();
+  const { data: empresas = [] } = useEmpresas();
 
   const form = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
       nome_fantasia: "",
       ativo: true,
+      empresa_emissora_padrao_id: null,
+      tipo_cobranca: "DIARIA_MOTOBOY",
+      valor_base: 0,
+      valor_diaria_glosa: 0,
     },
   });
 
@@ -76,12 +87,20 @@ export function ClientFormDialog({
         form.reset({
           nome_fantasia: editingClient.nome_fantasia,
           ativo: editingClient.ativo,
+          empresa_emissora_padrao_id: editingClient.empresa_emissora_padrao_id ?? null,
+          tipo_cobranca: editingClient.tipo_cobranca || "DIARIA_MOTOBOY",
+          valor_base: editingClient.valor_base || 0,
+          valor_diaria_glosa: editingClient.valor_diaria_glosa || 0,
         });
         setOpenAccordionItems(["dados-cliente"]);
       } else {
         form.reset({
           nome_fantasia: "",
           ativo: true,
+          empresa_emissora_padrao_id: null,
+          tipo_cobranca: "DIARIA_MOTOBOY",
+          valor_base: 0,
+          valor_diaria_glosa: 0,
         });
         setOpenAccordionItems(["dados-cliente"]);
       }
@@ -208,6 +227,126 @@ export function ClientFormDialog({
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="empresa_emissora_padrao_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
+                        Empresa do Grupo que Emite a Nota (Padrão)
+                      </FormLabel>
+                      <Select
+                        value={field.value ? String(field.value) : "none"}
+                        onValueChange={(val) => field.onChange(val === "none" ? null : Number(val))}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
+                            <SelectValue placeholder="Selecione o CNPJ emissor padrão (opcional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-xl border-gray-100 shadow-xl">
+                          <SelectItem value="none" className="text-gray-500">
+                            Nenhuma (Selecionar no faturamento)
+                          </SelectItem>
+                          {empresas.map((emp) => (
+                            <SelectItem key={emp.id} value={String(emp.id)} className="font-medium">
+                              {emp.nome_fantasia || emp.razao_social} {emp.codigo ? `(${emp.codigo})` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-4">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Calculator className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs font-bold uppercase tracking-wider">
+                      Regras Contratuais de Cobrança & Glosa
+                    </span>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="tipo_cobranca"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-80">
+                          Tipo de Cobrança do Contrato
+                        </FormLabel>
+                        <Select
+                          value={field.value || "DIARIA_MOTOBOY"}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-10 rounded-xl bg-white border-gray-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="rounded-xl border-gray-100 shadow-xl">
+                            <SelectItem value="DIARIA_MOTOBOY" className="font-medium text-xs">
+                              Diária por Motoboy Trabalhado
+                            </SelectItem>
+                            <SelectItem value="FIXO_MENSAL" className="font-medium text-xs">
+                              Fixo Mensal por Posto (Dedicação Exclusiva)
+                            </SelectItem>
+                            <SelectItem value="TAXA_ENTREGA" className="font-medium text-xs">
+                              Taxa por Entrega / Encomenda
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="valor_base"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-80">
+                            Valor Base do Contrato (R$)
+                          </FormLabel>
+                          <FormControl>
+                            <MoneyInput
+                              value={field.value || 0}
+                              onChange={field.onChange}
+                              placeholder="0,00"
+                              className="h-10 rounded-xl bg-white border-gray-200"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="valor_diaria_glosa"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-80">
+                            Diária de Glosa por Falta sem Cobertura (R$)
+                          </FormLabel>
+                          <FormControl>
+                            <MoneyInput
+                              value={field.value || 0}
+                              onChange={field.onChange}
+                              placeholder="0,00"
+                              className="h-10 rounded-xl bg-white border-gray-200"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
                 <FormField
                   control={form.control}

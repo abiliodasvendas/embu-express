@@ -27,7 +27,7 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2, Package, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -44,7 +44,12 @@ export function AlocarEquipamentoDialog({
   onOpenChange,
   colaboradorId,
 }: AlocarEquipamentoDialogProps) {
-  const { data: colaboradores = [] } = useCollaborators({});
+  const { data: colaboradoresResponse } = useCollaborators({});
+  const colaboradores = useMemo(() => {
+    if (!colaboradoresResponse) return [];
+    if (Array.isArray(colaboradoresResponse)) return colaboradoresResponse;
+    return colaboradoresResponse.data || [];
+  }, [colaboradoresResponse]);
   const { data: itens = [] } = useItensQuery();
   const associarMutation = useAssociarItens();
 

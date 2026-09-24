@@ -31,3 +31,114 @@ export const CALENDARIO_STATUS = {
 } as const;
 
 export type CalendarioStatus = keyof typeof CALENDARIO_STATUS;
+
+export const STATUS_FATURA = {
+    EM_MEDICAO: 'EM_MEDICAO',
+    AGUARDANDO_APROVACAO: 'AGUARDANDO_APROVACAO',
+    EMITIDA_PENDENTE: 'EMITIDA_PENDENTE',
+    PAGO_PARCIAL: 'PAGO_PARCIAL',
+    LIQUIDADA: 'LIQUIDADA',
+    CANCELADA: 'CANCELADA',
+} as const;
+
+export type StatusFaturaType = typeof STATUS_FATURA[keyof typeof STATUS_FATURA];
+
+export const STATUS_INTERCOMPANY = {
+    PENDENTE_ACERTO: 'PENDENTE_ACERTO',
+    COMPENSADO: 'COMPENSADO',
+} as const;
+
+export type StatusIntercompanyType = typeof STATUS_INTERCOMPANY[keyof typeof STATUS_INTERCOMPANY];
+
+export const TIPO_COBRANCA_CLIENTE = {
+    DIARIA_MOTOBOY: 'DIARIA_MOTOBOY',
+    FIXO_MENSAL: 'FIXO_MENSAL',
+    PRODUCAO_ENTREGA: 'PRODUCAO_ENTREGA',
+} as const;
+
+export type TipoCobrancaClienteType = typeof TIPO_COBRANCA_CLIENTE[keyof typeof TIPO_COBRANCA_CLIENTE];
+
+export const CATEGORIA_DESPESA = {
+    DESPESA_FIXA: 'DESPESA_FIXA',
+    TRIBUTO_DAS: 'TRIBUTO_DAS',
+    PARCELAMENTO_FISCAL: 'PARCELAMENTO_FISCAL',
+    INVESTIMENTO_FINANCIAMENTO: 'INVESTIMENTO_FINANCIAMENTO',
+    DESPESA_FINANCEIRA: 'DESPESA_FINANCEIRA',
+    PROLABORE: 'PROLABORE',
+    INVESTIMENTO_PATRIMONIAL: 'INVESTIMENTO_PATRIMONIAL',
+    CARTAO_CREDITO: 'CARTAO_CREDITO',
+    DESPESA_ADMINISTRATIVA: 'DESPESA_ADMINISTRATIVA',
+    DESPESA_FROTA_DOCUMENTO: 'DESPESA_FROTA_DOCUMENTO',
+} as const;
+
+export type CategoriaDespesaType = typeof CATEGORIA_DESPESA[keyof typeof CATEGORIA_DESPESA];
+
+export const CATEGORIA_DESPESA_LABELS: Record<CategoriaDespesaType, string> = {
+    DESPESA_FIXA: 'Despesa Operacional Fixa',
+    DESPESA_ADMINISTRATIVA: 'Despesa Administrativa / Escritório / Contas',
+    CARTAO_CREDITO: 'Cartão de Crédito Corporativo',
+    DESPESA_FROTA_DOCUMENTO: 'Frota: Documentação e IPVA',
+    TRIBUTO_DAS: 'Tributo DAS / Simples Nacional',
+    PROLABORE: 'Retirada de Pró-labore dos Sócios',
+    PARCELAMENTO_FISCAL: 'Parcelamentos Fiscais / Dívidas',
+    INVESTIMENTO_PATRIMONIAL: 'Investimentos e Patrimônio',
+    INVESTIMENTO_FINANCIAMENTO: 'Amortização de Empréstimos / Financiamentos',
+    DESPESA_FINANCEIRA: 'Juros e Tarifas Financeiras',
+};
+
+export const STATUS_DESPESA = {
+    PENDENTE: 'PENDENTE',
+    ADIADA: 'ADIADA',
+    PAGO: 'PAGO',
+    CANCELADO: 'CANCELADO',
+} as const;
+
+export type StatusDespesaType = typeof STATUS_DESPESA[keyof typeof STATUS_DESPESA];
+
+export const TIPO_MOVIMENTACAO_AVULSA = {
+    ENTRADA: 'ENTRADA',
+    SAIDA: 'SAIDA',
+} as const;
+
+export type TipoMovimentacaoAvulsaType = typeof TIPO_MOVIMENTACAO_AVULSA[keyof typeof TIPO_MOVIMENTACAO_AVULSA];
+
+export const CATEGORIA_MOVIMENTACAO_AVULSA = {
+    FRETE_ESPORADICO: 'FRETE_ESPORADICO',
+    RENDIMENTO_APLICACAO: 'RENDIMENTO_APLICACAO',
+    REEMBOLSO_CLIENTE: 'REEMBOLSO_CLIENTE',
+    DOACAO_APORTE: 'DOACAO_APORTE',
+    OUTRAS_ENTRADAS: 'OUTRAS_ENTRADAS',
+    DESPESA_OPERACIONAL_AVULSA: 'DESPESA_OPERACIONAL_AVULSA',
+    REEMBOLSO_DESPESA: 'REEMBOLSO_DESPESA',
+    TARIFA_BANCARIA: 'TARIFA_BANCARIA',
+    OUTRAS_SAIDAS: 'OUTRAS_SAIDAS',
+} as const;
+
+export type CategoriaMovimentacaoAvulsaType = typeof CATEGORIA_MOVIMENTACAO_AVULSA[keyof typeof CATEGORIA_MOVIMENTACAO_AVULSA];
+
+export const CATEGORIA_MOVIMENTACAO_AVULSA_LABELS: Record<CategoriaMovimentacaoAvulsaType, string> = {
+    FRETE_ESPORADICO: 'Frete Esporádico / À Vista',
+    RENDIMENTO_APLICACAO: 'Rendimento de Aplicação',
+    REEMBOLSO_CLIENTE: 'Reembolso de Cliente',
+    DOACAO_APORTE: 'Aporte / Doação / Capital',
+    OUTRAS_ENTRADAS: 'Outras Entradas',
+    DESPESA_OPERACIONAL_AVULSA: 'Despesa Operacional Direta',
+    REEMBOLSO_DESPESA: 'Reembolso de Despesa',
+    TARIFA_BANCARIA: 'Tarifa / Custo Bancário',
+    OUTRAS_SAIDAS: 'Outras Saídas',
+};
+
+export const NIVEL_RISCO_VALE = {
+    NORMAL: 'NORMAL',
+    RISCO_MEDIO: 'RISCO_MEDIO',
+    RISCO_ALTO: 'RISCO_ALTO',
+    TRATADO_SEGURO: 'TRATADO_SEGURO',
+    AJUSTADO_MARGEM_CRITICA: 'AJUSTADO_MARGEM_CRITICA',
+} as const;
+
+export type NivelRiscoValeType = typeof NIVEL_RISCO_VALE[keyof typeof NIVEL_RISCO_VALE];
+
+export const CLIENTES_ESPECIAIS = {
+    INTERNO: 'INTERNO',
+} as const;
+

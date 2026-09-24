@@ -6,6 +6,15 @@ export interface DashboardFinanceiroResponse {
     valorPago: number;
     restaPagar: number;
     pendentesCount: number;
+    pagosCount: number;
+    totalColaboradores: number;
+    totalFolhaBruta: number;
+    totalDescontoFaltas: number;
+    totalDescontoConvenios: number;
+    totalAdiantamentoPago: number;
+    totalAdiantamentoPrevisto: number;
+    colaboradoresAdiantamentoCount: number;
+    saldoFinalFolha: number;
 }
 
 export function useFinanceiroDashboard(mes: number, ano: number) {
@@ -17,6 +26,7 @@ export function useFinanceiroDashboard(mes: number, ano: number) {
             });
             return data;
         },
-        enabled: !!mes && !!ano
+        enabled: !!mes && !!ano,
+        staleTime: 60 * 1000,
     });
 }

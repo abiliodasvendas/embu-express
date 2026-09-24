@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useConvenio, useConvenioLancamentos, useDeleteAdminLancamento, useUpdateConvenio } from "@/hooks/api/useConvenios";
-import { LancamentoConvenio } from "@/hooks/api/useConvenios";
+import { useConvenioAuditoria, useAtualizarStatusFaturaFornecedor } from "@/hooks/api/useConvenioAuditoria";
+import { LancamentoConvenio, StatusFaturaFornecedorConvenio } from "@/types/database";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
-import { LancamentoForm } from "@/components/features/convenios/public/LancamentoForm";
 import { toast } from "@/utils/notifications/toast";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
@@ -33,9 +33,15 @@ import {
   ExternalLink,
   Search,
   Power,
+  AlertTriangle,
+  Receipt,
+  ShieldCheck,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ConvenioAuditoriaSection } from "@/components/features/convenios/ConvenioAuditoriaSection";
 
 interface GroupedLancamento {
   name: string;
@@ -50,6 +56,8 @@ export default function ConvenioDetails() {
   const {
     setPageTitle,
     openConvenioFormDialog,
+    openLancamentoConvenioDialog,
+    openFaturaFornecedorDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
   } = useLayout();
@@ -58,14 +66,14 @@ export default function ConvenioDetails() {
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
-  const [activeTab, setActiveTab] = useState<"colaboradores" | "todos">("todos");
-  const [isLancamentoFormOpen, setIsLancamentoFormOpen] = useState(false);
-  const [selectedLancamento, setSelectedLancamento] = useState<LancamentoConvenio | null>(null);
+  const [activeTab, setActiveTab] = useState<"colaboradores" | "todos" | "auditoria">("todos");
   const [isCopied, setIsCopied] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [auditoriaSubTab, setAuditoriaSubTab] = useState<"todos" | "motoboys" | "frota" | "sem_vinculo">("todos");
 
   const deleteLancamento = useDeleteAdminLancamento();
   const updateConvenio = useUpdateConvenio();
+  const atualizarStatusFatura = useAtualizarStatusFaturaFornecedor(id || "");
 
   const handleToggleStatus = () => {
     if (!convenio) return;
@@ -99,6 +107,8 @@ export default function ConvenioDetails() {
   const { data: convenio, isLoading: isConvenioLoading } = useConvenio(id || "");
   const { data: lancamentos = [], isLoading: isLancamentosLoading } =
     useConvenioLancamentos(id || "", ano, mes);
+  const { data: auditoria, isLoading: isAuditoriaLoading } =
+    useConvenioAuditoria(id || "", mes, ano);
 
   const handleDeleteLancamento = (lancamento: LancamentoConvenio) => {
     openConfirmationDialog({
@@ -199,13 +209,20 @@ export default function ConvenioDetails() {
 
   const groupedLancamentos = useMemo((): GroupedLancamento[] => {
     const groups: Record<string, GroupedLancamento> = {};
+    const DAVID_CAITITE_ID = "e7c2c19c-3b36-402a-9e73-9a3c3c3c3c3c";
 
     filteredLancamentos.forEach((l) => {
-      if (l.moto_embu || !l.colaborador_id) {
-        const key = "veiculo";
+      const isMotoEmbuOuEmpresa =
+        l.moto_embu ||
+        !l.colaborador_id ||
+        l.colaborador_id === DAVID_CAITITE_ID ||
+        Boolean(l.colaborador?.nome_completo && l.colaborador.nome_completo.toUpperCase().includes("DAVID CAITIT"));
+
+      if (isMotoEmbuOuEmpresa) {
+        const key = "moto_embu";
         if (!groups[key]) {
           groups[key] = {
-            name: "Veículo Embu Express",
+            name: "Moto Embu",
             isFrota: true,
             total: 0,
             items: [],
@@ -215,7 +232,7 @@ export default function ConvenioDetails() {
         groups[key].total += Number(l.valor);
       } else {
         const key = l.colaborador_id;
-        const name = l.colaborador?.nome_completo;
+        const name = l.colaborador?.nome_completo || "Colaborador";
         if (!groups[key]) {
           groups[key] = {
             name,
@@ -491,22 +508,24 @@ export default function ConvenioDetails() {
             </h3>
 
             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Pesquisar..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-1.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 shadow-sm transition-all"
-                />
-              </div>
+              {activeTab !== "auditoria" && (
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Pesquisar..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-1.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 shadow-sm transition-all"
+                  />
+                </div>
+              )}
 
-              <div className="flex bg-gray-100 p-1 rounded-xl max-w-xs w-full sm:w-auto">
+              <div className="flex bg-gray-100 p-1 rounded-xl w-full sm:w-auto">
                 <button
                   onClick={() => setActiveTab("todos")}
                   className={cn(
-                    "px-4 py-1.5 text-xs font-bold rounded-lg transition-all",
+                    "px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all",
                     activeTab === "todos"
                       ? "bg-white text-blue-600 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
@@ -517,7 +536,7 @@ export default function ConvenioDetails() {
                 <button
                   onClick={() => setActiveTab("colaboradores")}
                   className={cn(
-                    "px-4 py-1.5 text-xs font-bold rounded-lg transition-all",
+                    "px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all",
                     activeTab === "colaboradores"
                       ? "bg-white text-blue-600 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
@@ -525,14 +544,26 @@ export default function ConvenioDetails() {
                 >
                   Por Colaborador
                 </button>
+                <button
+                  onClick={() => setActiveTab("auditoria")}
+                  className={cn(
+                    "px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5",
+                    activeTab === "auditoria"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  )}
+                >
+                  <Receipt className="h-3.5 w-3.5" />
+                  Auditoria Dia 15
+                  {auditoria?.tem_risco_glosa && (
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  )}
+                </button>
               </div>
 
-              {canEdit && (
+              {canEdit && activeTab !== "auditoria" && (
                 <Button
-                  onClick={() => {
-                    setSelectedLancamento(null);
-                    setIsLancamentoFormOpen(true);
-                  }}
+                  onClick={() => openLancamentoConvenioDialog({ convenioId: id, lancamentoToEdit: null })}
                   className="bg-blue-600 hover:bg-blue-700 h-9 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 text-xs py-1.5 px-4"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -547,6 +578,28 @@ export default function ConvenioDetails() {
               <Skeleton className="h-16 rounded-xl" />
               <Skeleton className="h-16 rounded-xl" />
             </div>
+          ) : activeTab === "auditoria" ? (
+            <ConvenioAuditoriaSection
+              auditoria={auditoria}
+              isLoading={isAuditoriaLoading}
+              convenioId={id!}
+              convenioNome={convenio?.nome}
+              mes={mes}
+              ano={ano}
+              canEdit={canEdit}
+              onOpenFaturaDialog={() =>
+                openFaturaFornecedorDialog({
+                  convenioId: id!,
+                  convenioNome: convenio?.nome,
+                  mesCompetencia: mes,
+                  anoCompetencia: ano,
+                  faturaToEdit: auditoria?.fatura_fornecedor,
+                })
+              }
+              onOpenLancamentoDialog={(l) =>
+                openLancamentoConvenioDialog({ convenioId: id, lancamentoToEdit: l })
+              }
+            />
           ) : activeTab === "colaboradores" ? (
             groupedLancamentos.length === 0 ? (
               <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
@@ -643,10 +696,7 @@ export default function ConvenioDetails() {
                                             variant="ghost"
                                             size="icon"
                                             className="h-8 w-8 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                                            onClick={() => {
-                                              setSelectedLancamento(l);
-                                              setIsLancamentoFormOpen(true);
-                                            }}
+                                            onClick={() => openLancamentoConvenioDialog({ convenioId: id, lancamentoToEdit: l })}
                                           >
                                             <Edit2 className="h-4 w-4" />
                                           </Button>
@@ -727,10 +777,7 @@ export default function ConvenioDetails() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                                onClick={() => {
-                                  setSelectedLancamento(l);
-                                  setIsLancamentoFormOpen(true);
-                                }}
+                                onClick={() => openLancamentoConvenioDialog({ convenioId: id, lancamentoToEdit: l })}
                               >
                                 <Edit2 className="h-4 w-4" />
                               </Button>
@@ -754,13 +801,6 @@ export default function ConvenioDetails() {
           )}
         </section>
       </div>
-
-      <LancamentoForm
-        open={isLancamentoFormOpen}
-        onOpenChange={setIsLancamentoFormOpen}
-        convenioId={id}
-        lancamentoToEdit={selectedLancamento}
-      />
     </div>
   );
 }

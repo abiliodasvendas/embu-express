@@ -37,7 +37,7 @@ import { OccurrenceFormData, occurrenceSchema } from "@/schemas/occurrenceSchema
 import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2, Wand2, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -58,7 +58,12 @@ export function OccurrenceFormDialog({
     defaultValues,
     mode,
 }: OccurrenceFormDialogProps) {
-    const { data: collaborators = [] } = useCollaborators({});
+    const { data: collaboratorsResponse } = useCollaborators({});
+    const collaborators = useMemo(() => {
+        if (!collaboratorsResponse) return [];
+        if (Array.isArray(collaboratorsResponse)) return collaboratorsResponse;
+        return collaboratorsResponse.data || [];
+    }, [collaboratorsResponse]);
     const { data: tipos = [] } = useTiposOcorrencia();
     const createMutation = useCreateOcorrencia();
     const updateMutation = useUpdateOcorrencia();

@@ -11,8 +11,10 @@ import {
   usePublicConvenio,
   usePublicLancamentosMes,
   useDeletePublicLancamento,
+  usePublicCollaborators,
 } from "@/hooks/api/useConvenios";
 import { LancamentoConvenio } from "@/types/database";
+import { Banner } from "@/components/ui/Banner";
 import {
   Wrench,
   ChevronLeft,
@@ -28,6 +30,9 @@ import {
   ChevronDown,
   Users,
   Search,
+  ShieldAlert,
+  ShieldCheck,
+  UserX,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
@@ -49,7 +54,7 @@ export function ConvenioPublicPortal() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedLancamento, setSelectedLancamento] = useState<LancamentoConvenio | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<LancamentoConvenio | null>(null);
-  const [activeTab, setActiveTab] = useState<"colaboradores" | "recentes">("recentes");
+  const [activeTab, setActiveTab] = useState<"colaboradores" | "recentes" | "bloqueados">("recentes");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -64,6 +69,9 @@ export function ConvenioPublicPortal() {
 
   const { data: lancamentos = [], isLoading: isLoadingLancamentos } =
     usePublicLancamentosMes(token || "", ano, mes);
+
+  const { data: publicCollabs = [], isLoading: isLoadingCollabs } =
+    usePublicCollaborators(token || "");
 
   const deleteLancamentoMutation = useDeletePublicLancamento();
 
@@ -129,6 +137,16 @@ export function ConvenioPublicPortal() {
       return a.name.localeCompare(b.name);
     });
   }, [filteredLancamentos]);
+
+  const bloqueados = useMemo(() => {
+    return publicCollabs.filter((c) => c.bloqueado);
+  }, [publicCollabs]);
+
+  const filteredBloqueados = useMemo(() => {
+    if (!searchQuery.trim()) return bloqueados;
+    const query = searchQuery.toLowerCase();
+    return bloqueados.filter((c) => c.nome_completo.toLowerCase().includes(query));
+  }, [bloqueados, searchQuery]);
 
   const handlePrevMonth = () => {
     setCurrentDate((prev) => {
@@ -331,11 +349,11 @@ export function ConvenioPublicPortal() {
         </div>
 
         <div className="space-y-4">
-          <div className="flex bg-gray-100 p-1 rounded-2xl w-full">
+          <div className="flex bg-gray-100 p-1 rounded-2xl w-full gap-1">
             <button
               onClick={() => setActiveTab("recentes")}
               className={cn(
-                "flex-1 py-2 text-xs font-bold rounded-xl transition-all",
+                "flex-1 py-2 text-xs font-bold rounded-xl transition-all text-center",
                 activeTab === "recentes"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-500 hover:text-gray-800"
@@ -346,7 +364,7 @@ export function ConvenioPublicPortal() {
             <button
               onClick={() => setActiveTab("colaboradores")}
               className={cn(
-                "flex-1 py-2 text-xs font-bold rounded-xl transition-all",
+                "flex-1 py-2 text-xs font-bold rounded-xl transition-all text-center",
                 activeTab === "colaboradores"
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-500 hover:text-gray-800"
@@ -354,20 +372,94 @@ export function ConvenioPublicPortal() {
             >
               Por Colaborador
             </button>
+            <button
+              onClick={() => setActiveTab("bloqueados")}
+              className={cn(
+                "flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 text-center",
+                activeTab === "bloqueados"
+                  ? "bg-white text-rose-600 shadow-sm"
+                  : "text-gray-500 hover:text-gray-800"
+              )}
+            >
+              <ShieldAlert className="h-3.5 w-3.5" />
+              <span>Bloqueados</span>
+              {bloqueados.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-200">
+                  {bloqueados.length}
+                </span>
+              )}
+            </button>
           </div>
 
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Pesquisar..."
+              placeholder={activeTab === "bloqueados" ? "Pesquisar colaborador bloqueado..." : "Pesquisar..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-100 rounded-2xl text-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm transition-all"
             />
           </div>
 
-          {isLoadingLancamentos ? (
+          {activeTab === "bloqueados" ? (
+            isLoadingCollabs ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-24 bg-white animate-pulse rounded-3xl border border-gray-100" />
+                ))}
+              </div>
+            ) : filteredBloqueados.length > 0 ? (
+              <div className="space-y-3">
+                {filteredBloqueados.map((collab) => (
+                  <Card
+                    key={collab.id}
+                    className="border border-rose-100/80 shadow-sm shadow-rose-50/50 hover:shadow-md transition-all rounded-3xl overflow-hidden bg-white"
+                  >
+                    <CardContent className="p-4 flex flex-col gap-3">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 font-bold shrink-0">
+                            <UserX className="h-5 w-5" />
+                          </div>
+                          <div className="text-left">
+                            <h3 className="font-extrabold text-gray-800 text-sm leading-snug">
+                              {collab.nome_completo}
+                            </h3>
+                            <p className="text-[10px] text-gray-400 font-semibold uppercase">
+                              Colaborador
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className="bg-rose-50 text-rose-700 hover:bg-rose-50 border-rose-200 rounded-full font-bold shadow-none px-2.5 py-0.5 text-[10px] uppercase tracking-wider">
+                          Suspenso
+                        </Badge>
+                      </div>
+
+                      <Banner
+                        variant="warning"
+                        description="Este colaborador está com o convênio suspenso no momento. Não realize o serviço pelo convênio."
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white text-center py-10 px-6">
+                <div className="mx-auto bg-emerald-50 w-12 h-12 rounded-full flex items-center justify-center mb-4 text-emerald-600">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-gray-700">
+                  {searchQuery ? "Nenhum colaborador encontrado" : "Nenhum colaborador bloqueado"}
+                </h3>
+                <p className="text-gray-400 text-xs mt-1.5 leading-relaxed">
+                  {searchQuery
+                    ? "Nenhum colaborador bloqueado corresponde aos termos pesquisados."
+                    : "Todos os colaboradores da Embu Express estão autorizados para atendimento neste convênio."}
+                </p>
+              </Card>
+            )
+          ) : isLoadingLancamentos ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-24 bg-white animate-pulse rounded-3xl border border-gray-100" />

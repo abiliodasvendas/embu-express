@@ -101,7 +101,12 @@ export function FinancialReport() {
         setPageTitle("Fechamento Financeiro");
     }, [setPageTitle]);
 
-    const { data: collaborators = [] } = useCollaborators({}, { enabled: vm.canViewAll });
+    const { data: collaboratorsResponse } = useCollaborators({}, { enabled: vm.canViewAll });
+    const collaborators = useMemo(() => {
+        if (!collaboratorsResponse) return [];
+        if (Array.isArray(collaboratorsResponse)) return collaboratorsResponse;
+        return collaboratorsResponse.data || [];
+    }, [collaboratorsResponse]);
 
     const {
         data: statusGeral = [],

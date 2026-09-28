@@ -142,9 +142,7 @@ export function FinancialReportView({
     let totalTurnos = 0;
     const resumoPorCliente = (rawExtrato.resumo_por_cliente || []).map((r) => {
       const baseFixa = (r.valores_fixos?.contrato || 0) + (r.valores_fixos?.ajuda_custo || 0) + (r.valores_fixos?.aluguel || 0);
-      const bonus = r.valores_fixos?.bonus || 0;
-      const creditos = r.creditos_ocorrencia || 0;
-      const valorSemDesconto = parseFloat((baseFixa + bonus + creditos).toFixed(2));
+      const valorSemDesconto = parseFloat(baseFixa.toFixed(2));
       totalTurnos += valorSemDesconto;
 
       return {
@@ -154,10 +152,15 @@ export function FinancialReportView({
         dias_esperados_turno: r.dias_base_mes || r.dias_esperados_turno,
         dias_trabalhados: r.dias_base_mes || r.dias_esperados_turno,
         debitos_ocorrencia: 0,
+        creditos_ocorrencia: 0,
         valor_calculado: valorSemDesconto,
+        saldo_fixo_original: valorSemDesconto,
         valores_fixos: {
           ...r.valores_fixos,
+          bonus: 0,
+          bonus_config: 0,
           adiantamento: 0,
+          adiantamento_config: 0,
         },
         calendario_visual: (r.calendario_visual || []).map((c) => ({
           ...c,
@@ -166,31 +169,25 @@ export function FinancialReportView({
       };
     });
 
-    const ocorrenciasFiltradas = (rawExtrato.ocorrencias || []).filter(
-      (o: any) => o.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA
-    );
-    const ocorrenciasAvulsas = rawExtrato.ocorrencias_avulsas
-      ? {
-          creditos: rawExtrato.ocorrencias_avulsas.creditos || 0,
-          debitos: 0,
-          saldo: rawExtrato.ocorrencias_avulsas.creditos || 0,
-        }
-      : { creditos: 0, debitos: 0, saldo: 0 };
-
-    const totalMei = rawExtrato.mei_consolidado?.valor_calculado || 0;
-    const totalAvulso = ocorrenciasAvulsas.saldo;
-    const saldoFinal = parseFloat((totalTurnos + totalMei + totalAvulso).toFixed(2));
+    const saldoFinal = parseFloat(totalTurnos.toFixed(2));
 
     return {
       ...rawExtrato,
       resumo_por_cliente: resumoPorCliente,
-      ocorrencias: ocorrenciasFiltradas,
-      ocorrencias_avulsas: ocorrenciasAvulsas,
+      ocorrencias: [],
+      ocorrencias_avulsas: { creditos: 0, debitos: 0, saldo: 0 },
       lancamentos_convenios: [],
+      mei_consolidado: {
+        valor_original: 0,
+        valor_calculado: 0,
+        dias_base: rawExtrato.mei_consolidado?.dias_base || 26,
+        dias_trabalhados: rawExtrato.mei_consolidado?.dias_base || 26,
+        datas_trabalhadas: [],
+      },
       totais: {
-        total_turnos: parseFloat(totalTurnos.toFixed(2)),
-        total_mei: totalMei,
-        total_avulso: totalAvulso,
+        total_turnos: saldoFinal,
+        total_mei: 0,
+        total_avulso: 0,
         total_adiantamento: 0,
         saldo_final: saldoFinal,
       },

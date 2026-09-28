@@ -129,70 +129,10 @@ export function FinancialReportView({
   const selectedYear = propYear ?? internalYear;
 
   const {
-    data: rawExtrato,
+    data: extrato,
     isLoading,
     refetch,
   } = useFinanceiro(usuarioId || undefined, selectedMonth, selectedYear);
-
-  // GAMBIARRA TEMPORARIA - COMPROVACAO DE RENDA (REMOVER AMANHA)
-  const extrato = useMemo(() => {
-    if (!rawExtrato) return rawExtrato;
-    if (usuarioId !== "ec6c085a-35cf-4422-a41f-e97f5c6ed7e1") return rawExtrato;
-
-    let totalTurnos = 0;
-    const resumoPorCliente = (rawExtrato.resumo_por_cliente || []).map((r) => {
-      const baseFixa = (r.valores_fixos?.contrato || 0) + (r.valores_fixos?.ajuda_custo || 0) + (r.valores_fixos?.aluguel || 0);
-      const valorSemDesconto = parseFloat(baseFixa.toFixed(2));
-      totalTurnos += valorSemDesconto;
-
-      return {
-        ...r,
-        ausencias: 0,
-        datas_ausencia: [],
-        dias_esperados_turno: r.dias_base_mes || r.dias_esperados_turno,
-        dias_trabalhados: r.dias_base_mes || r.dias_esperados_turno,
-        debitos_ocorrencia: 0,
-        creditos_ocorrencia: 0,
-        valor_calculado: valorSemDesconto,
-        saldo_fixo_original: valorSemDesconto,
-        valores_fixos: {
-          ...r.valores_fixos,
-          bonus: 0,
-          bonus_config: 0,
-          adiantamento: 0,
-          adiantamento_config: 0,
-        },
-        calendario_visual: (r.calendario_visual || []).map((c) => ({
-          ...c,
-          status: (c.status === "SEM_ATIVIDADE" ? "TRABALHADO" : c.status) as any,
-        })),
-      };
-    });
-
-    const saldoFinal = parseFloat(totalTurnos.toFixed(2));
-
-    return {
-      ...rawExtrato,
-      resumo_por_cliente: resumoPorCliente,
-      ocorrencias: [],
-      ocorrencias_avulsas: { creditos: 0, debitos: 0, saldo: 0 },
-      lancamentos_convenios: [],
-      mei_consolidado: {
-        valor_original: 0,
-        valor_calculado: 0,
-        dias_base: rawExtrato.mei_consolidado?.dias_base || 26,
-        dias_trabalhados: rawExtrato.mei_consolidado?.dias_base || 26,
-        datas_trabalhadas: [],
-      },
-      totais: {
-        total_turnos: saldoFinal,
-        total_mei: 0,
-        total_avulso: 0,
-        total_adiantamento: 0,
-        saldo_final: saldoFinal,
-      },
-    };
-  }, [rawExtrato, usuarioId]);
 
   const {
     handlePaymentMutation,
@@ -402,7 +342,7 @@ export function FinancialReportView({
             {/* Visão de Impressão Exclusiva (1 Folha A4 Consolidada - Clean & Flat) */}
             <div className="hidden print:block space-y-4">
               <PrintReportHeader
-                titulo={usuarioId === "ec6c085a-35cf-4422-a41f-e97f5c6ed7e1" ? "Demonstrativo de Rendimentos Mensal" : "Fechamento Financeiro Mensal"}
+                titulo="Fechamento Financeiro Mensal"
                 colaboradorNome={colaboradorNome}
                 cpf={cpf}
                 cargo={cargo}

@@ -324,9 +324,7 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.CONVENIOS.replace("/", "")} element={<Convenios />} />
                       <Route path={ROUTES.PRIVATE.CONVENIO_DETAILS.replace(/^\//, "")} element={<ConvenioDetails />} />
                     </Route>
-                    <Route element={<RequirePermission allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} />}>
-                      <Route path={ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
-                    </Route>
+                    <Route path={ROUTES.PRIVATE.FECHAMENTO_FINANCEIRO.replace("/", "")} element={<FinancialReport />} />
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.CONFIGURACAO.VER]} />}>
                       <Route path={ROUTES.PRIVATE.CONFIGURACOES.replace("/", "")} element={<Configuracoes />} />

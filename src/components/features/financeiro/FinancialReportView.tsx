@@ -421,7 +421,7 @@ export function FinancialReportView({
                 <div className="border-r border-gray-100 pr-2">
                   <span className="text-[9px] font-bold text-gray-500 uppercase block">Convênios</span>
                   <span className="text-sm font-black text-gray-800">
-                    - {formatCurrency(extrato.lancamentos_convenios?.reduce((acc: number, l) => acc + Number(l.valor), 0) || 0)}
+                    - {formatCurrency((extrato.lancamentos_convenios || []).reduce((acc: number, l) => acc + Number(l.valor), 0) || 0)}
                   </span>
                 </div>
                 <div>
@@ -668,7 +668,7 @@ export function FinancialReportView({
                       Convênios
                     </p>
                     <h2 className="text-lg md:text-2xl font-black mb-1">
-                      - {formatCurrency(extrato.lancamentos_convenios?.reduce((acc: number, l) => acc + Number(l.valor), 0) || 0)}
+                      - {formatCurrency((extrato.lancamentos_convenios || []).reduce((acc: number, l) => acc + Number(l.valor), 0) || 0)}
                     </h2>
                     <p className="hidden md:block text-[10px] text-gray-100/60 font-medium">
                       Descontos de oficinas e parceiros
@@ -1282,7 +1282,7 @@ export function FinancialReportView({
                               </span>
                               <p className="text-lg font-black text-red-600">
                                 - {formatCurrency(
-                                  extrato.lancamentos_convenios.reduce((acc: number, l) => acc + Number(l.valor), 0)
+                                  (extrato.lancamentos_convenios || []).reduce((acc: number, l) => acc + Number(l.valor), 0)
                                 )}
                               </p>
                             </div>

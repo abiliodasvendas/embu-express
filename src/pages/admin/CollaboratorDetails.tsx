@@ -204,6 +204,14 @@ export default function CollaboratorDetails() {
     syncWithUrl: true,
   });
 
+  const activeLinks = useMemo(() => {
+    return (collaborator?.links || []).filter((l) => !l.data_fim);
+  }, [collaborator?.links]);
+
+  const closedLinks = useMemo(() => {
+    return (collaborator?.links || []).filter((l) => Boolean(l.data_fim));
+  }, [collaborator?.links]);
+
   if (isLoading) {
     return (
       <div className="space-y-6 animate-in fade-in duration-500">
@@ -226,14 +234,6 @@ export default function CollaboratorDetails() {
   }
 
   const role = roles?.find(r => r.id === Number(collaborator.perfil_id));
-
-  const activeLinks = useMemo(() => {
-    return (collaborator?.links || []).filter((l) => !l.data_fim);
-  }, [collaborator?.links]);
-
-  const closedLinks = useMemo(() => {
-    return (collaborator?.links || []).filter((l) => Boolean(l.data_fim));
-  }, [collaborator?.links]);
 
   const handleEditTurn = (turn: ColaboradorCliente) => {
     openCollaboratorTurnDialog({

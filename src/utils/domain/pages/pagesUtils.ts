@@ -92,7 +92,6 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.RESERVAS,
         icon: ShieldCheck,
         permissionKey: PERMISSIONS.RETAGUARDA.VER,
-        allowedRoles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
         category: MENU_CATEGORIES.COLABORADORES,
     },
     {

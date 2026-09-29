@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useLayout, useDateFilters } from "@/hooks";
 import { useRetaguarda } from "@/hooks/api/useRetaguarda";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import {
   Bike,
   ShieldAlert,
@@ -22,6 +24,8 @@ import {
 
 export default function RetaguardaReservas() {
   const { setPageTitle, openAlocacaoTemporariaDialog } = useLayout();
+  const { can, isAnyAdmin } = usePermissions();
+  const canAlocar = isAnyAdmin || can(PERMISSIONS.RETAGUARDA.ALOCAR);
 
   useEffect(() => {
     setPageTitle("Retaguarda Operacional & Risco de Folha");
@@ -123,14 +127,16 @@ export default function RetaguardaReservas() {
             </Select>
           </div>
 
-          <Button
-            size="sm"
-            onClick={() => openAlocacaoTemporariaDialog({ onSuccess: () => refetch() })}
-            className="h-9 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold"
-          >
-            <Plus className="h-4 w-4" />
-            Registrar Cobertura
-          </Button>
+          {canAlocar && (
+            <Button
+              size="sm"
+              onClick={() => openAlocacaoTemporariaDialog({ onSuccess: () => refetch() })}
+              className="h-9 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+            >
+              <Plus className="h-4 w-4" />
+              Registrar Cobertura
+            </Button>
+          )}
         </div>
       </div>
 

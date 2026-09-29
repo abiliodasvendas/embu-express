@@ -316,7 +316,7 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.FATURAMENTO.replace("/", "")} element={<Faturamento />} />
                     </Route>
 
-                    <Route element={<RequirePermission allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} permissions={[PERMISSIONS.RETAGUARDA.VER]} />}>
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.RETAGUARDA.VER]} />}>
                       <Route path={ROUTES.PRIVATE.RESERVAS.replace("/", "")} element={<RetaguardaReservas />} />
                     </Route>
 

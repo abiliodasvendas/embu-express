@@ -70,7 +70,7 @@ export default function ClientDetails() {
     Number(id),
   );
   const { data: collaborators, isLoading: isCollabsLoading } = useCollaborators(
-    { cliente_id: id },
+    { cliente_id: id, status: "ATIVO" },
   );
 
   const toggleStatus = useToggleClientStatus();
@@ -91,19 +91,20 @@ export default function ClientDetails() {
     return (collaborators as { data?: Usuario[] }).data || [];
   }, [collaborators]);
 
-  // Optimized collaborators mapping for pagination
   const flattenedCollaborators = useMemo(() => {
-    return collaboratorsList.flatMap((collab) => {
-      const clientLinks =
-        collab.links?.filter(
-          (l: ColaboradorCliente) => l.cliente_id?.toString() === id,
-        ) || [];
-      return clientLinks.map((link: ColaboradorCliente, linkIdx: number) => ({
-        ...collab,
-        link,
-        uniqueKey: `${collab.id}-${linkIdx}`
-      }));
-    });
+    return collaboratorsList
+      .filter((collab) => collab.status === "ATIVO")
+      .flatMap((collab) => {
+        const clientLinks =
+          collab.links?.filter(
+            (l: ColaboradorCliente) => l.cliente_id?.toString() === id && !l.data_fim,
+          ) || [];
+        return clientLinks.map((link: ColaboradorCliente, linkIdx: number) => ({
+          ...collab,
+          link,
+          uniqueKey: `${collab.id}-${linkIdx}`
+        }));
+      });
   }, [collaboratorsList, id]);
 
   const stats = useMemo(() => {

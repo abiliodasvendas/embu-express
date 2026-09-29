@@ -49,6 +49,9 @@ const CollaboratorMobileItem = ({
 }) => {
   const actions = useCollaboratorActions({ collaborator, onEdit, onStatusChange, onDelete });
   const navigate = useNavigate();
+  const activeLinks = collaborator.status === StatusUsuario.ATIVO
+    ? (collaborator.links || []).filter((link) => !link.data_fim)
+    : [];
 
   return (
     <div
@@ -86,13 +89,13 @@ const CollaboratorMobileItem = ({
           </div>
         </div>
         <div className="space-y-3">
-          {collaborator.links && collaborator.links.length > 0 && (
+          {activeLinks.length > 0 && (
             <div className="flex flex-col items-end">
               <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider text-right w-full">
-                {(collaborator.links.length > 1) ? "Clientes" : "Cliente"}
+                {activeLinks.length > 1 ? "Clientes" : "Cliente"}
               </p>
               <div className="flex flex-col gap-0.5 w-full">
-                {collaborator.links.slice(0, 2).map((link) => (
+                {activeLinks.slice(0, 2).map((link) => (
                   <p key={link.id} className="font-medium text-gray-700 text-[11px] text-right leading-tight truncate">
                     {link.cliente?.nome_fantasia}
                   </p>
@@ -119,6 +122,9 @@ const CollaboratorTableRow = ({
 }) => {
   const actions = useCollaboratorActions({ collaborator, onEdit, onStatusChange, onDelete });
   const navigate = useNavigate();
+  const activeLinks = collaborator.status === StatusUsuario.ATIVO
+    ? (collaborator.links || []).filter((link) => !link.data_fim)
+    : [];
 
   return (
     <tr
@@ -136,16 +142,18 @@ const CollaboratorTableRow = ({
             <p className="font-bold text-gray-900 text-sm">
               {collaborator.nome_completo}
             </p>
-            <div className="flex items-center gap-1.5 mt-0.5 leading-none">
-              {collaborator.links?.slice(0, 2).map((link, i) => (
-                <div key={link.id} className="flex items-center gap-1.5">
-                  {i > 0 && <span className="text-gray-300 scale-75">•</span>}
-                  <span className="text-[10px] text-gray-400 font-medium">
-                    {link.cliente?.nome_fantasia}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {activeLinks.length > 0 && (
+              <div className="flex items-center gap-1.5 mt-0.5 leading-none">
+                {activeLinks.slice(0, 2).map((link, i) => (
+                  <div key={link.id} className="flex items-center gap-1.5">
+                    {i > 0 && <span className="text-gray-300 scale-75">•</span>}
+                    <span className="text-[10px] text-gray-400 font-medium">
+                      {link.cliente?.nome_fantasia}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </td>

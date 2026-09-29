@@ -227,6 +227,13 @@ export default function CollaboratorDetails() {
 
   const role = roles?.find(r => r.id === Number(collaborator.perfil_id));
 
+  const activeLinks = useMemo(() => {
+    return (collaborator?.links || []).filter((l) => !l.data_fim);
+  }, [collaborator?.links]);
+
+  const closedLinks = useMemo(() => {
+    return (collaborator?.links || []).filter((l) => Boolean(l.data_fim));
+  }, [collaborator?.links]);
 
   const handleEditTurn = (turn: ColaboradorCliente) => {
     openCollaboratorTurnDialog({
@@ -660,8 +667,8 @@ export default function CollaboratorDetails() {
           </div>
         </TabsContent>
 
-        <TabsContent value="turnos" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "turnos" && "hidden")}>
-          <Card className="border-0 shadow-sm rounded-3xl min-h-[500px] flex flex-col pt-4">
+        <TabsContent value="turnos" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6", activeTab !== "turnos" && "hidden")}>
+          <Card className="border-0 shadow-sm rounded-3xl min-h-[300px] flex flex-col pt-4">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-50 pb-6 pt-8 px-8 gap-4">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
@@ -670,7 +677,7 @@ export default function CollaboratorDetails() {
                   </div>
                   <div>
                     <span className="block">Turnos Ativos</span>
-                    <span className="text-xs text-muted-foreground font-medium mt-0.5">Vínculos diretos com clientes e horários.</span>
+                    <span className="text-xs text-muted-foreground font-medium mt-0.5">Vínculos diretos com clientes e horários em vigor.</span>
                   </div>
                 </CardTitle>
               </div>
@@ -685,19 +692,19 @@ export default function CollaboratorDetails() {
               </Can>
             </CardHeader>
             <CardContent className="p-8 flex-1">
-              {!collaborator.links || collaborator.links.length === 0 ? (
+              {activeLinks.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center py-12">
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
                     <Clock className="h-8 w-8 text-gray-300" />
                   </div>
-                  <h3 className="font-bold text-gray-700">Nenhum turno configurado</h3>
+                  <h3 className="font-bold text-gray-700">Nenhum turno ativo</h3>
                   <p className="text-sm text-muted-foreground max-w-xs mx-auto mt-2">
-                    Este colaborador ainda não tem turnos atribuídos.
+                    Este colaborador não possui vínculos ou turnos ativos no momento.
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {collaborator.links.map((link, index) => (
+                  {activeLinks.map((link, index) => (
                     <div
                       key={link.id || index}
                       className="group border border-gray-100 p-5 rounded-2xl hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all relative bg-gray-50/10"
@@ -711,15 +718,9 @@ export default function CollaboratorDetails() {
                             <Button onClick={() => handleEditTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-primary rounded-lg">
                               <Edit2 className="h-3.5 w-3.5" />
                             </Button>
-                            {!link.data_fim ? (
-                              <Button onClick={() => handleEndTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-amber-500 rounded-lg" title="Encerrar Vínculo">
-                                <CalendarOff className="h-3.5 w-3.5" />
-                              </Button>
-                            ) : (
-                              <Button onClick={() => handleReactivateTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-green-500 rounded-lg" title="Reativar Vínculo">
-                                <RotateCcw className="h-3.5 w-3.5" />
-                              </Button>
-                            )}
+                            <Button onClick={() => handleEndTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-amber-500 rounded-lg" title="Encerrar Vínculo">
+                              <CalendarOff className="h-3.5 w-3.5" />
+                            </Button>
                             <Button onClick={() => handleDeleteTurn(link.id)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500 rounded-lg">
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -747,11 +748,6 @@ export default function CollaboratorDetails() {
                               )}
                             </div>
                           </div>
-                          {link.data_fim && new Date(link.data_fim + 'T00:00:00') < new Date() && (
-                            <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-700 font-bold text-[10px] shrink-0">
-                              Encerrado em: {new Date(link.data_fim + 'T12:00:00').toLocaleDateString('pt-BR')}
-                            </Badge>
-                          )}
                         </div>
 
                         <div className="flex items-center gap-6">
@@ -806,6 +802,124 @@ export default function CollaboratorDetails() {
               )}
             </CardContent>
           </Card>
+
+          {closedLinks.length > 0 && (
+            <Card className="border border-dashed border-gray-200 shadow-none rounded-3xl bg-gray-50/50 flex flex-col pt-4">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-5 pt-6 px-8 gap-4">
+                <div>
+                  <CardTitle className="text-lg flex items-center gap-2 text-gray-700">
+                    <div className="h-9 w-9 rounded-xl bg-gray-200/70 flex items-center justify-center shrink-0">
+                      <CalendarOff className="h-4.5 w-4.5 text-gray-500" />
+                    </div>
+                    <div>
+                      <span className="block font-bold">Histórico de Turnos Encerrados</span>
+                      <span className="text-xs text-muted-foreground font-medium mt-0.5">Vínculos finalizados anteriormente ({closedLinks.length}).</span>
+                    </div>
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="p-8 flex-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {closedLinks.map((link, index) => (
+                    <div
+                      key={link.id || index}
+                      className="group border border-gray-200/80 p-5 rounded-2xl transition-all relative bg-white/80 shadow-sm"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="p-2.5 bg-gray-100 shadow-sm border border-gray-200 rounded-xl">
+                          <Bike className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <Can I={PERMISSIONS.USUARIOS.EDITAR}>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button onClick={() => handleReactivateTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-emerald-600 rounded-lg" title="Reativar Vínculo">
+                              <RotateCcw className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button onClick={() => handleDeleteTurn(link.id)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500 rounded-lg">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </Can>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-gray-700 leading-tight">
+                              {link.cliente?.nome_fantasia}
+                            </h4>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <p className="text-[11px] text-gray-400 font-medium capitalize">
+                                {link.unidade?.nome_unidade?.toLowerCase()}
+                              </p>
+                              {link.horarios?.[0] && (
+                                <>
+                                  <span className="text-gray-300 text-[10px]">•</span>
+                                  <span className="text-[11px] font-medium text-gray-500">
+                                    {link.horarios[0].hora_inicio.substring(0, 5)} - {link.horarios[0].hora_fim.substring(0, 5)}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          {link.data_fim && (
+                            <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-700 font-bold text-[10px] shrink-0">
+                              Encerrado em: {new Date(link.data_fim + 'T12:00:00').toLocaleDateString('pt-BR')}
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-6">
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1.5">Escala Semanal</p>
+                            <div className="flex flex-wrap gap-1 opacity-70">
+                              {link.horarios && link.horarios.length > 0 ? (
+                                <ScaleIndicators
+                                  activeDays={link.horarios.map(h => h.dia_semana)}
+                                  availableDays={link.unidade?.escala_semanal}
+                                  size="sm"
+                                  variant="condensed"
+                                />
+                              ) : (
+                                <Badge variant="outline" className="bg-gray-100 text-gray-500 font-bold text-[9px]">
+                                  Sem horário
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Empresa</p>
+                            <p className="text-sm font-medium text-gray-500 mt-0.5">
+                              {link.empresa?.nome_fantasia || link.empresa?.razao_social || 'EE'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Taxa Entrega</p>
+                            <p className="text-sm font-bold text-gray-600 mt-0.5">
+                              {link.taxa_entrega ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(link.taxa_entrega) : '-'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {link.valor_contrato && (
+                          <div className="pt-3 mt-3 border-t border-dashed border-gray-200 flex justify-between items-center opacity-80">
+                            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Valor Total</span>
+                            <span className="text-sm font-bold text-gray-600">
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                                (link.valor_contrato || 0) +
+                                (link.valor_aluguel || 0) +
+                                (link.valor_bonus || 0) +
+                                (link.ajuda_custo || 0)
+                              )}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="ocorrencias" forceMount className={cn("mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "ocorrencias" && "hidden")}>

@@ -27,7 +27,7 @@ import {
   useUpdateAdminLancamento,
 } from "@/hooks/api/useConvenios";
 import { useActiveCollaborators } from "@/hooks/api/useCollaborators";
-import { useElegibilidadeConvenio } from "@/hooks/api/useBloqueiosConvenios";
+import { useElegibilidadeConvenio, usePublicElegibilidadeConvenio } from "@/hooks/api/useBloqueiosConvenios";
 import { Banner } from "@/components/ui/Banner";
 import { cn } from "@/lib/utils";
 import { LancamentoConvenio } from "@/types/database";
@@ -163,15 +163,34 @@ export function LancamentoForm({
 
   const selectedColaboradorId = form.watch("colaborador_id");
   const isMotoEmbu = form.watch("moto_embu");
+  const dataLancamento = form.watch("data_lancamento");
+  const valorLancamento = form.watch("valor");
+
+  const [anoRef, mesRef] = (dataLancamento || "").split("-").map((v) => parseInt(v, 10));
 
   const selectedPublicCollab = token ? publicCollaborators.find((c) => c.id === selectedColaboradorId) : undefined;
-  const isPublicBlocked = !!token && !isMotoEmbu && !!selectedPublicCollab?.bloqueado;
+  const isManualPublicBlocked = !!token && !isMotoEmbu && !!selectedPublicCollab?.bloqueado;
 
   const { data: elegibilidadeAdmin } = useElegibilidadeConvenio(
     convenioId && selectedColaboradorId ? selectedColaboradorId : undefined,
-    convenioId
+    convenioId,
+    mesRef || undefined,
+    anoRef || undefined,
+    valorLancamento || 0
   );
   const isAdminWarning = !!convenioId && !isMotoEmbu && !!elegibilidadeAdmin?.bloqueado;
+
+  const { data: elegibilidadePublic } = usePublicElegibilidadeConvenio(
+    token && selectedColaboradorId && !isMotoEmbu && !isManualPublicBlocked ? token : undefined,
+    selectedColaboradorId,
+    mesRef || undefined,
+    anoRef || undefined,
+    valorLancamento || 0
+  );
+
+  const isPublicMargemBlocked = !!token && !isMotoEmbu && !!elegibilidadePublic?.bloqueado;
+  const isPublicBlocked = isManualPublicBlocked || isPublicMargemBlocked;
+  const publicBlockedReason = selectedPublicCollab?.motivo_bloqueio || elegibilidadePublic?.motivo || "Este colaborador está com o convênio suspenso no momento. Não realize o serviço pelo convênio.";
 
   const collaboratorOptions = collaborators.map((c) => {
     const isBlocked = "bloqueado" in c && Boolean((c as { bloqueado?: boolean }).bloqueado);
@@ -263,10 +282,7 @@ export function LancamentoForm({
                       <Banner
                         variant="destructive"
                         title="Lançamento Não Autorizado"
-                        description={
-                          selectedPublicCollab?.motivo_bloqueio ||
-                          "Este colaborador está com o convênio suspenso no momento. Não realize o serviço pelo convênio."
-                        }
+                        description={publicBlockedReason}
                         className="mt-2"
                       />
                     )}

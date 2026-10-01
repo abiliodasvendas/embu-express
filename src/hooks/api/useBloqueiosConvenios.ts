@@ -81,3 +81,26 @@ export function useElegibilidadeConvenio(
     staleTime: 10 * 1000,
   });
 }
+
+export function usePublicElegibilidadeConvenio(
+  token?: string,
+  colaboradorId?: string,
+  mes?: number,
+  ano?: number,
+  valor?: number
+) {
+  return useQuery<ElegibilidadeConvenioResultado>({
+    queryKey: ["public_elegibilidade_convenio", token, colaboradorId, mes, ano, valor],
+    queryFn: async () => {
+      const { data } = await api.get<ElegibilidadeConvenioResultado>(
+        `/convenios/public/${token}/colaboradores/${colaboradorId}/elegibilidade`,
+        {
+          params: { mes, ano, valor },
+        }
+      );
+      return data;
+    },
+    enabled: !!token && !!colaboradorId,
+    staleTime: 10 * 1000,
+  });
+}

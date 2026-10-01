@@ -79,55 +79,55 @@ const renderTurnFinancialBreakdown = (link: ColaboradorCliente, isClosed: boolea
         )}
 
         {Boolean(link.valor_bonus) && (
-          <div className="bg-emerald-50/50 p-2 rounded-xl border border-emerald-100/70">
-            <span className="text-[10px] text-emerald-800 uppercase font-bold tracking-wider block">
+          <div className="bg-gray-50/90 p-2 rounded-xl border border-gray-100">
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
               Zero Falta / Bônus
             </span>
-            <span className="text-xs font-bold text-emerald-700">
+            <span className="text-xs font-bold text-gray-800">
               {formatCurrency(link.valor_bonus)}
             </span>
           </div>
         )}
 
         {Boolean(link.valor_aluguel) && (
-          <div className="bg-blue-50/50 p-2 rounded-xl border border-blue-100/70">
-            <span className="text-[10px] text-blue-800 uppercase font-bold tracking-wider block">
+          <div className="bg-gray-50/90 p-2 rounded-xl border border-gray-100">
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
               Aluguel Moto
             </span>
-            <span className="text-xs font-bold text-blue-700">
+            <span className="text-xs font-bold text-gray-800">
               {formatCurrency(link.valor_aluguel)}
             </span>
           </div>
         )}
 
         {Boolean(link.ajuda_custo) && (
-          <div className="bg-purple-50/50 p-2 rounded-xl border border-purple-100/70">
-            <span className="text-[10px] text-purple-800 uppercase font-bold tracking-wider block">
+          <div className="bg-gray-50/90 p-2 rounded-xl border border-gray-100">
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
               Ajuda de Custo
             </span>
-            <span className="text-xs font-bold text-purple-700">
+            <span className="text-xs font-bold text-gray-800">
               {formatCurrency(link.ajuda_custo)}
             </span>
           </div>
         )}
 
         {Boolean(link.valor_adiantamento) && (
-          <div className="bg-red-50/50 p-2 rounded-xl border border-red-100/70">
-            <span className="text-[10px] text-red-800 uppercase font-bold tracking-wider block">
+          <div className="bg-gray-50/90 p-2 rounded-xl border border-gray-100">
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
               Adiantamento (Vale)
             </span>
-            <span className="text-xs font-bold text-red-700">
+            <span className="text-xs font-bold text-gray-800">
               -{formatCurrency(link.valor_adiantamento)}
             </span>
           </div>
         )}
 
         {Boolean(link.taxa_entrega) && (
-          <div className="bg-amber-50/50 p-2 rounded-xl border border-amber-100/70">
-            <span className="text-[10px] text-amber-800 uppercase font-bold tracking-wider block">
+          <div className="bg-gray-50/90 p-2 rounded-xl border border-gray-100">
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
               Taxa Entrega
             </span>
-            <span className="text-xs font-bold text-amber-700">
+            <span className="text-xs font-bold text-gray-800">
               {formatCurrency(link.taxa_entrega)}
             </span>
           </div>

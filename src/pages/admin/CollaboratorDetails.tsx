@@ -42,6 +42,110 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useBloqueiosColaborador } from "@/hooks/api/useBloqueiosConvenios";
 
+const formatCurrency = (val: number | null | undefined) => {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val || 0);
+};
+
+const renderTurnFinancialBreakdown = (link: ColaboradorCliente, isClosed: boolean = false) => {
+  const hasValues = Boolean(
+    link.valor_contrato ||
+    link.valor_bonus ||
+    link.valor_aluguel ||
+    link.ajuda_custo ||
+    link.valor_adiantamento ||
+    link.taxa_entrega
+  );
+
+  if (!hasValues) return null;
+
+  const totalGanhos =
+    (link.valor_contrato || 0) +
+    (link.valor_aluguel || 0) +
+    (link.valor_bonus || 0) +
+    (link.ajuda_custo || 0);
+
+  return (
+    <div className={cn("pt-3 mt-3 border-t border-dashed border-gray-200 space-y-2", isClosed && "opacity-90")}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {Boolean(link.valor_contrato) && (
+          <div className="bg-gray-50/90 p-2 rounded-xl border border-gray-100">
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+              Contrato Base
+            </span>
+            <span className="text-xs font-bold text-gray-800">
+              {formatCurrency(link.valor_contrato)}
+            </span>
+          </div>
+        )}
+
+        {Boolean(link.valor_bonus) && (
+          <div className="bg-emerald-50/50 p-2 rounded-xl border border-emerald-100/70">
+            <span className="text-[10px] text-emerald-800 uppercase font-bold tracking-wider block">
+              Zero Falta / Bônus
+            </span>
+            <span className="text-xs font-bold text-emerald-700">
+              {formatCurrency(link.valor_bonus)}
+            </span>
+          </div>
+        )}
+
+        {Boolean(link.valor_aluguel) && (
+          <div className="bg-blue-50/50 p-2 rounded-xl border border-blue-100/70">
+            <span className="text-[10px] text-blue-800 uppercase font-bold tracking-wider block">
+              Aluguel Moto
+            </span>
+            <span className="text-xs font-bold text-blue-700">
+              {formatCurrency(link.valor_aluguel)}
+            </span>
+          </div>
+        )}
+
+        {Boolean(link.ajuda_custo) && (
+          <div className="bg-purple-50/50 p-2 rounded-xl border border-purple-100/70">
+            <span className="text-[10px] text-purple-800 uppercase font-bold tracking-wider block">
+              Ajuda de Custo
+            </span>
+            <span className="text-xs font-bold text-purple-700">
+              {formatCurrency(link.ajuda_custo)}
+            </span>
+          </div>
+        )}
+
+        {Boolean(link.valor_adiantamento) && (
+          <div className="bg-red-50/50 p-2 rounded-xl border border-red-100/70">
+            <span className="text-[10px] text-red-800 uppercase font-bold tracking-wider block">
+              Adiantamento (Vale)
+            </span>
+            <span className="text-xs font-bold text-red-700">
+              -{formatCurrency(link.valor_adiantamento)}
+            </span>
+          </div>
+        )}
+
+        {Boolean(link.taxa_entrega) && (
+          <div className="bg-amber-50/50 p-2 rounded-xl border border-amber-100/70">
+            <span className="text-[10px] text-amber-800 uppercase font-bold tracking-wider block">
+              Taxa Entrega
+            </span>
+            <span className="text-xs font-bold text-amber-700">
+              {formatCurrency(link.taxa_entrega)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-between items-center pt-1.5 px-0.5">
+        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+          Remuneração Total
+        </span>
+        <span className={cn("text-sm font-extrabold", isClosed ? "text-gray-700" : "text-primary")}>
+          {formatCurrency(totalGanhos)}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export default function CollaboratorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -782,19 +886,7 @@ export default function CollaboratorDetails() {
                           </div>
                         </div>
 
-                        {link.valor_contrato && (
-                          <div className="pt-3 mt-3 border-t border-dashed border-gray-200 flex justify-between items-center">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Valor Total</span>
-                            <span className="text-sm font-extrabold text-primary">
-                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                                (link.valor_contrato || 0) +
-                                (link.valor_aluguel || 0) +
-                                (link.valor_bonus || 0) +
-                                (link.ajuda_custo || 0)
-                              )}
-                            </span>
-                          </div>
-                        )}
+                        {renderTurnFinancialBreakdown(link, false)}
                       </div>
                     </div>
                   ))}
@@ -831,6 +923,9 @@ export default function CollaboratorDetails() {
                         </div>
                         <Can I={PERMISSIONS.USUARIOS.EDITAR}>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button onClick={() => handleEditTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-primary rounded-lg" title="Ver / Editar Turno">
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
                             <Button onClick={() => handleReactivateTurn(link)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-emerald-600 rounded-lg" title="Reativar Vínculo">
                               <RotateCcw className="h-3.5 w-3.5" />
                             </Button>
@@ -900,19 +995,7 @@ export default function CollaboratorDetails() {
                           </div>
                         </div>
 
-                        {link.valor_contrato && (
-                          <div className="pt-3 mt-3 border-t border-dashed border-gray-200 flex justify-between items-center opacity-80">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Valor Total</span>
-                            <span className="text-sm font-bold text-gray-600">
-                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                                (link.valor_contrato || 0) +
-                                (link.valor_aluguel || 0) +
-                                (link.valor_bonus || 0) +
-                                (link.ajuda_custo || 0)
-                              )}
-                            </span>
-                          </div>
-                        )}
+                        {renderTurnFinancialBreakdown(link, true)}
                       </div>
                     </div>
                   ))}

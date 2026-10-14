@@ -1,6 +1,7 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
+import { Banner } from "@/components/ui/Banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +29,7 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { useDateFilters } from "@/hooks/ui/useFilters";
 import { cn } from "@/lib/utils";
 import { Ocorrencia } from "@/types/database";
-import { ResumoClienteFinanceiro } from "@/types/financeiro";
+import { ExtratoMensal, ResumoClienteFinanceiro } from "@/types/financeiro";
 import { OccurrenceFormMode } from "@/types/enums";
 import { meses } from "@/utils/formatters/constants";
 import { formatCurrency } from "@/utils/formatters/currency";
@@ -64,6 +65,8 @@ interface FinancialReportViewProps {
   cargo?: string;
   selectedMonth?: number;
   selectedYear?: number;
+  modoComprovanteRenda?: boolean;
+  onToggleModoComprovanteRenda?: () => void;
 }
 
 export function FinancialReportView({
@@ -73,6 +76,8 @@ export function FinancialReportView({
   cargo,
   selectedMonth: propMonth,
   selectedYear: propYear,
+  modoComprovanteRenda = false,
+  onToggleModoComprovanteRenda,
 }: FinancialReportViewProps) {
   const { openConfirmationDialog, closeConfirmationDialog, openConfirmarAdiantamentoDialog, openOccurrenceDetailsDialog, closeOccurrenceDetailsDialog, openOccurrenceFormDialog } = useLayout();
 
@@ -129,10 +134,75 @@ export function FinancialReportView({
   const selectedYear = propYear ?? internalYear;
 
   const {
-    data: extrato,
+    data: rawExtrato,
     isLoading,
     refetch,
   } = useFinanceiro(usuarioId || undefined, selectedMonth, selectedYear);
+
+  const extrato = useMemo<ExtratoMensal | undefined>(() => {
+    if (!rawExtrato) return undefined;
+    if (!modoComprovanteRenda) return rawExtrato;
+
+    const resumoPorCliente = (rawExtrato.resumo_por_cliente || []).map((r) => {
+      const baseFixa =
+        (r.valores_fixos?.contrato || 0) +
+        (r.valores_fixos?.ajuda_custo || 0) +
+        (r.valores_fixos?.aluguel || 0);
+      const valorFixo = parseFloat(baseFixa.toFixed(2));
+      const diasIntegrais = r.dias_base_mes || r.dias_esperados_turno || 26;
+
+      return {
+        ...r,
+        ausencias: 0,
+        datas_ausencia: [],
+        dias_base_mes: diasIntegrais,
+        dias_esperados_turno: diasIntegrais,
+        dias_trabalhados: diasIntegrais,
+        debitos_ocorrencia: 0,
+        creditos_ocorrencia: 0,
+        valor_calculado: valorFixo,
+        saldo_fixo_original: valorFixo,
+        valores_fixos: {
+          ...r.valores_fixos,
+          bonus: 0,
+          bonus_config: 0,
+          adiantamento: 0,
+          adiantamento_config: 0,
+        },
+        calendario_visual: (r.calendario_visual || []).map((c) =>
+          c.status === CALENDARIO_STATUS.SEM_ATIVIDADE ||
+          c.status === CALENDARIO_STATUS.NAO_VIGENTE
+            ? { ...c, status: CALENDARIO_STATUS.TRABALHADO }
+            : c,
+        ),
+      };
+    });
+
+    const totalTurnos = resumoPorCliente.reduce((acc, r) => acc + r.valor_calculado, 0);
+    const saldoFinal = parseFloat(totalTurnos.toFixed(2));
+
+    return {
+      ...rawExtrato,
+      resumo_por_cliente: resumoPorCliente,
+      ocorrencias: [],
+      ocorrencias_avulsas: { creditos: 0, debitos: 0, saldo: 0 },
+      lancamentos_convenios: [],
+      mei_consolidado: {
+        valor_original: 0,
+        valor_calculado: 0,
+        dias_base: rawExtrato.mei_consolidado?.dias_base || 26,
+        dias_trabalhados: rawExtrato.mei_consolidado?.dias_base || 26,
+        datas_trabalhadas: [],
+      },
+      totais: {
+        total_turnos: saldoFinal,
+        total_mei: 0,
+        total_avulso: 0,
+        total_adiantamento: 0,
+        saldo_final: saldoFinal,
+      },
+    };
+  }, [rawExtrato, modoComprovanteRenda]);
 
   const {
     handlePaymentMutation,
@@ -339,10 +409,23 @@ export function FinancialReportView({
           <ListSkeleton />
         ) : extrato ? (
           <div className="animate-in fade-in duration-500 space-y-8">
+            {modoComprovanteRenda && (
+              <Banner
+                variant="info"
+                className="print:hidden"
+                title="Modo Comprovante de Renda ativo"
+                description="Exibindo exclusivamente o valor fixo contratual, ocultando descontos, convênios e lançamentos variáveis."
+                onClose={onToggleModoComprovanteRenda}
+              />
+            )}
             {/* Visão de Impressão Exclusiva (1 Folha A4 Consolidada - Clean & Flat) */}
             <div className="hidden print:block space-y-4">
               <PrintReportHeader
-                titulo="Fechamento Financeiro Mensal"
+                titulo={
+                  modoComprovanteRenda
+                    ? "Demonstrativo de Rendimentos Mensal"
+                    : "Fechamento Financeiro Mensal"
+                }
                 colaboradorNome={colaboradorNome}
                 cpf={cpf}
                 cargo={cargo}
@@ -460,7 +543,8 @@ export function FinancialReportView({
                   )}
                 </div>
 
-                {extrato.status === FINANCEIRO_STATUS.RASCUNHO &&
+                {!modoComprovanteRenda &&
+                  extrato.status === FINANCEIRO_STATUS.RASCUNHO &&
                   can(PERMISSIONS.FINANCEIRO.PAGAR) && (
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                       {!extrato.adiantamento_confirmado ? (
@@ -542,7 +626,8 @@ export function FinancialReportView({
                     </div>
                   )}
 
-                {extrato.status === FINANCEIRO_STATUS.PAGO &&
+                {!modoComprovanteRenda &&
+                  extrato.status === FINANCEIRO_STATUS.PAGO &&
                   can(PERMISSIONS.FINANCEIRO.PAGAR) && (
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                       <Button

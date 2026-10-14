@@ -36,7 +36,7 @@ import { meses } from "@/utils/formatters/constants";
 import { cnpjMask, cpfMask, phoneMask, pixMask } from "@/utils/masks";
 import { onlyNumbers } from "@/utils/string";
 import { format, parseISO } from "date-fns";
-import { AlertTriangle, Bike, Briefcase, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, Printer, RotateCcw, Trash2, User, Wallet, Store, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Bike, Briefcase, Calendar as CalendarIcon, CalendarOff, Clock, CreditCard, Edit2, FileText, History, Lock, Mail, MapPin, MoreVertical, Package, Phone, Plus, Printer, RotateCcw, Trash2, User, Wallet, Store, ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -183,6 +183,7 @@ export default function CollaboratorDetails() {
   }, [id, openCollaboratorTurnDialog]);
 
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
+  const [modoComprovanteRenda, setModoComprovanteRenda] = useState(false);
 
   useEffect(() => {
     if (!hasAutoOpened && searchParams.get('openTurnDialog') === 'true' && collaborator && !isLoading) {
@@ -1204,6 +1205,21 @@ export default function CollaboratorDetails() {
                 </Button>
 
                 <Button
+                  onClick={() => setModoComprovanteRenda((prev) => !prev)}
+                  variant={modoComprovanteRenda ? "default" : "outline"}
+                  className={cn(
+                    "rounded-2xl flex items-center gap-1.5 font-bold text-xs h-11 px-4 shadow-sm select-none transition-all",
+                    modoComprovanteRenda
+                      ? "bg-blue-600 hover:bg-blue-700 text-white border-transparent"
+                      : "border-gray-200 text-gray-700 bg-white hover:bg-gray-50"
+                  )}
+                  title="Alternar exibição apenas de valores fixos contratuais (sem descontos ou adicionais variáveis)"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>{modoComprovanteRenda ? "Visão Fixa Ativa" : "Comprovante de Renda"}</span>
+                </Button>
+
+                <Button
                   onClick={() => window.print()}
                   variant="outline"
                   className="rounded-2xl flex items-center gap-1.5 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-bold text-xs h-11 px-4 shadow-sm select-none"
@@ -1222,6 +1238,8 @@ export default function CollaboratorDetails() {
                 cargo={role?.nome}
                 selectedMonth={filters.selectedMes}
                 selectedYear={filters.selectedAno}
+                modoComprovanteRenda={modoComprovanteRenda}
+                onToggleModoComprovanteRenda={() => setModoComprovanteRenda(false)}
               />
             </CardContent>
           </Card>

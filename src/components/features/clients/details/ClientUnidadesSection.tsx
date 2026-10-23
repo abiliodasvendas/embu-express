@@ -145,7 +145,10 @@ export function ClientUnidadesSection({
                           {unidade.km_contratados || 0} KM / Mês
                         </span>
                       </div>
-                      <ScaleIndicators activeDays={unidade.escala_semanal || []} />
+                      <ScaleIndicators
+                        activeDays={unidade.escala_semanal || []}
+                        variant="light"
+                      />
                     </div>
                   </div>
                 </div>

@@ -1,32 +1,24 @@
-import { Badge } from "@/components/ui/badge";
-import { DIAS_SEMANA } from "@/utils/formatters/constants";
-import { cn } from "@/lib/utils";
+import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 
 interface WeeklyScaleProps {
-    escala: number[];
-    className?: string;
+  escala: number[];
+  className?: string;
+  variant?: "normal" | "condensed" | "light" | "soft";
+  size?: "xs" | "sm" | "md";
 }
 
-export function WeeklyScale({ escala, className }: WeeklyScaleProps) {
-    return (
-        <div className={cn("flex flex-wrap gap-1.5", className)}>
-            {DIAS_SEMANA.map((day) => {
-                const isActive = escala.includes(day.id);
-                return (
-                    <Badge
-                        key={day.id}
-                        variant={isActive ? "default" : "outline"}
-                        className={cn(
-                            "h-7 min-w-[36px] justify-center text-[10px] font-bold uppercase transition-all duration-200",
-                            isActive
-                                ? "bg-primary text-white border-primary shadow-sm"
-                                : "bg-gray-50 text-gray-400 border-gray-200 opacity-60"
-                        )}
-                    >
-                        {day.label}
-                    </Badge>
-                );
-            })}
-        </div>
-    );
+export function WeeklyScale({
+  escala,
+  className,
+  variant = "light",
+  size = "sm",
+}: WeeklyScaleProps) {
+  return (
+    <ScaleIndicators
+      activeDays={escala}
+      className={className}
+      variant={variant}
+      size={size}
+    />
+  );
 }

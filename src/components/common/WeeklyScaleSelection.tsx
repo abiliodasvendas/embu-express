@@ -7,16 +7,11 @@ interface WeeklyScaleSelectionProps {
   onChange: (value: number[]) => void;
 }
 
-/**
- * Modernized selector for days of the week.
- * Users can click circles to toggle active days.
- */
 export function WeeklyScaleSelection({ value = [], onChange }: WeeklyScaleSelectionProps) {
   const toggleDay = (dayId: number) => {
     const newValue = value.includes(dayId)
       ? value.filter((id) => id !== dayId)
       : [...value, dayId].sort((a, b) => {
-          // Keep days in order (1-6, 0 being sunday)
           const order = [1, 2, 3, 4, 5, 6, 0];
           return order.indexOf(a) - order.indexOf(b);
         });
@@ -38,20 +33,21 @@ export function WeeklyScaleSelection({ value = [], onChange }: WeeklyScaleSelect
             className={cn(
               "w-12 h-12 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group border-2",
               isActive
-                ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                : "bg-white border-gray-100 text-gray-400 hover:border-gray-300 hover:bg-gray-50"
+                ? "bg-primary/10 border-primary text-primary shadow-xs"
+                : "bg-card border-border text-muted-foreground hover:border-muted-foreground/30 hover:bg-muted/30"
             )}
           >
-            {/* Subtle indicator dot */}
-            <span className={cn(
-              "absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full transition-transform duration-300",
-              isActive 
-                ? "bg-white/40 scale-100" 
-                : "bg-gray-200 scale-0 group-hover:scale-100"
-            )} />
-            
+            <span
+              className={cn(
+                "absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full transition-transform duration-300",
+                isActive
+                  ? "bg-primary scale-100"
+                  : "bg-muted-foreground/30 scale-0 group-hover:scale-100"
+              )}
+            />
+
             <span className="text-[14px] font-black tracking-tight leading-none uppercase">
-                {day.label}
+              {day.label}
             </span>
           </motion.button>
         );

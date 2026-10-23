@@ -271,6 +271,7 @@ export default function UnitDetails() {
 
                 <ScaleIndicators
                   activeDays={unit.escala_semanal || []}
+                  variant="light"
                   size="md"
                 />
               </CardContent>

@@ -12,7 +12,7 @@ import { Search, MapPinned, Zap } from "lucide-react";
 import { useState } from "react";
 import { Unidade } from "@/types/database";
 import { cn } from "@/lib/utils";
-import { DIAS_SEMANA } from "@/utils/formatters/constants";
+import { ScaleIndicators } from "@/components/common/ScaleIndicators";
 import { cnpjMask } from "@/utils/masks";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 
@@ -118,23 +118,12 @@ export function UnitsListDialog({
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex gap-1 justify-end">
-                        {DIAS_SEMANA.map((day) => {
-                          const isActive = unidade.escala_semanal?.includes(day.id);
-                          return (
-                            <div
-                              key={day.id}
-                              className={cn(
-                                "w-6 h-6 rounded-[8px] flex items-center justify-center text-[9px] font-bold transition-colors",
-                                isActive
-                                  ? "bg-foreground text-background"
-                                  : "bg-muted text-muted-foreground",
-                              )}
-                            >
-                              {day.label.substring(0, 1)}
-                            </div>
-                          );
-                        })}
+                      <div className="flex justify-end">
+                        <ScaleIndicators
+                          activeDays={unidade.escala_semanal || []}
+                          variant="light"
+                          size="xs"
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

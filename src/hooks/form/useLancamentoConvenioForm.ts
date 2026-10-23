@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/utils/notifications/toast";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { useDebounce } from "@/hooks/ui/useDebounce";
 import {
   useCreatePublicLancamento,
   useUpdatePublicLancamento,
@@ -99,6 +100,8 @@ export function useLancamentoConvenioForm({
   const dataLancamento = form.watch("data_lancamento");
   const valorLancamento = form.watch("valor");
 
+  const debouncedValor = useDebounce(valorLancamento, 400);
+
   const [anoRef, mesRef] = (dataLancamento || "").split("-").map((v) => parseInt(v, 10));
 
   const selectedPublicCollab = token
@@ -107,11 +110,11 @@ export function useLancamentoConvenioForm({
   const isManualPublicBlocked = !!token && !isMotoEmbu && !!selectedPublicCollab?.bloqueado;
 
   const { data: elegibilidadeAdmin } = useElegibilidadeConvenio(
-    convenioId && selectedColaboradorId ? selectedColaboradorId : undefined,
+    convenioId && selectedColaboradorId && !isMotoEmbu ? selectedColaboradorId : undefined,
     convenioId,
     mesRef || undefined,
     anoRef || undefined,
-    valorLancamento || 0,
+    debouncedValor || 0,
   );
   const isAdminWarning = !!convenioId && !isMotoEmbu && !!elegibilidadeAdmin?.bloqueado;
 
@@ -120,7 +123,7 @@ export function useLancamentoConvenioForm({
     selectedColaboradorId,
     mesRef || undefined,
     anoRef || undefined,
-    valorLancamento || 0,
+    debouncedValor || 0,
   );
 
   const isPublicMargemBlocked = !!token && !isMotoEmbu && !!elegibilidadePublic?.bloqueado;

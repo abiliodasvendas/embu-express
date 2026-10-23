@@ -75,7 +75,7 @@ export function DespesaIdentificacaoSection({
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold text-foreground">
-                Empresa Pagadora (CNPJ)
+                Empresa Pagadora (CNPJ) <span className="text-destructive">*</span>
               </FormLabel>
               <FormControl>
                 <NativeSelect

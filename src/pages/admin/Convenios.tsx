@@ -3,7 +3,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsBadge, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConveniosViewModel } from "@/hooks";
 import {
   ConveniosHeader,
@@ -51,28 +51,19 @@ export function Convenios() {
 
           <Tabs defaultValue="parceiros" className="space-y-6">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-              <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex overflow-x-auto [scrollbar-width:none]">
-                <TabsTrigger
-                  value="parceiros"
-                  className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-                >
+              <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex items-center overflow-x-auto [scrollbar-width:none]">
+                <TabsTrigger value="parceiros">
                   Parceiros
                 </TabsTrigger>
-                <TabsTrigger
-                  value="relatorios"
-                  className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-                >
+                <TabsTrigger value="relatorios">
                   Relatórios
                 </TabsTrigger>
-                <TabsTrigger
-                  value="bloqueados"
-                  className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-1.5 shrink-0"
-                >
+                <TabsTrigger value="bloqueados">
                   <span>Bloqueados</span>
                   {vm.totalColaboradoresBloqueados > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-muted text-foreground border border-border">
+                    <TabsBadge>
                       {vm.totalColaboradoresBloqueados}
-                    </span>
+                    </TabsBadge>
                   )}
                 </TabsTrigger>
               </TabsList>

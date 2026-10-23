@@ -5,7 +5,11 @@ import { formatDateToBR } from "@/utils/formatters/date";
 import { STATUS_FATURA } from "@/constants/financeiro.constants";
 import { cn } from "@/lib/utils";
 import { FaturaStatusBadge } from "./FaturaStatusBadge";
-import { getFaturaAtrasoInfo, getFaturaPeriodoTexto } from "./faturaTableUtils";
+import {
+  getFaturaAtrasoInfo,
+  getFaturaPagamentoInfo,
+  getFaturaPeriodoTexto,
+} from "./faturaTableUtils";
 import type { FaturaCliente } from "@/types/database";
 
 interface FaturaMobileCardProps {
@@ -29,6 +33,9 @@ export function FaturaMobileCard({
     fatura.tipo_periodo,
     fatura.numero_periodo,
     fatura.quinzena,
+  );
+  const { temPagamento, quantidadeBaixas, ultimaData } = getFaturaPagamentoInfo(
+    fatura.recebimentos,
   );
   const podeReceber =
     fatura.status !== STATUS_FATURA.LIQUIDADA &&
@@ -64,7 +71,7 @@ export function FaturaMobileCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border text-xs">
         <div>
           <span className="text-[11px] text-muted-foreground block">Vencimento</span>
           <span
@@ -83,13 +90,13 @@ export function FaturaMobileCard({
             </span>
           )}
         </div>
-        <div className="text-right">
+        <div className="text-right sm:text-left">
           <span className="text-[11px] text-muted-foreground block">Valor Total</span>
           <span className="font-semibold text-foreground text-xs tabular-nums">
             {formatCurrency(fatura.valor_faturado)}
           </span>
         </div>
-        <div className="text-right">
+        <div>
           <span className="text-[11px] text-muted-foreground block">Valor Pago</span>
           <span
             className={cn(
@@ -100,6 +107,23 @@ export function FaturaMobileCard({
             )}
           >
             {formatCurrency(fatura.valor_pago || 0)}
+          </span>
+        </div>
+        <div className="text-right">
+          <span className="text-[11px] text-muted-foreground block">Data Pagto</span>
+          <span className="text-xs tabular-nums font-medium text-foreground">
+            {temPagamento && ultimaData ? (
+              <span>
+                {formatDateToBR(ultimaData)}
+                {quantidadeBaixas > 1 && (
+                  <span className="ml-1 text-[10px] font-semibold text-primary">
+                    (+{quantidadeBaixas - 1})
+                  </span>
+                )}
+              </span>
+            ) : (
+              <span className="text-muted-foreground/40">-</span>
+            )}
           </span>
         </div>
       </div>

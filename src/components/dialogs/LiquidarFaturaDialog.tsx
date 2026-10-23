@@ -66,6 +66,7 @@ export function LiquidarFaturaDialog({
         payload: {
           conta_bancaria_id: values.conta_bancaria_id,
           data_recebimento: values.data_recebimento,
+          data_pagamento: values.data_recebimento,
           valor_pago: values.valor_pago,
           observacao: values.observacao?.trim() || null,
         },

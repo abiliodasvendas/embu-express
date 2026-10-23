@@ -86,7 +86,7 @@ export function FluxoCaixaLiquidezChart({
                   label={{ value: "R$ 0,00", fill: "currentColor", fontSize: 10, position: "insideBottomLeft" }}
                 />
                 <ReferenceLine x={7} stroke="currentColor" className="text-muted-foreground" strokeDasharray="3 3" label={{ value: "Dia 07", fill: "currentColor", fontSize: 10, position: "top" }} />
-                <ReferenceLine x={15} stroke="currentColor" className="text-muted-foreground" strokeDasharray="3 3" label={{ value: "Dia 15", fill: "currentColor", fontSize: 10, position: "top" }} />
+                <ReferenceLine x={15} stroke="currentColor" className="text-muted-foreground" strokeDasharray="3 3" label={{ value: "Dia 16", fill: "currentColor", fontSize: 10, position: "top" }} />
                 <ReferenceLine x={20} stroke="currentColor" className="text-muted-foreground" strokeDasharray="3 3" label={{ value: "Dia 20", fill: "currentColor", fontSize: 10, position: "top" }} />
                 <Line
                   type="monotone"

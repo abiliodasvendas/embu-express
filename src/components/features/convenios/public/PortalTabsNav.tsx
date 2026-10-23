@@ -25,7 +25,7 @@ export function PortalTabsNav({
           type="button"
           onClick={() => onTabChange("recentes")}
           className={cn(
-            "flex-1 py-2 px-3 text-xs sm:text-sm font-semibold rounded-[14px] transition-all text-center",
+            "flex-1 py-1.5 px-3 text-xs sm:text-sm font-semibold rounded-[14px] transition-all text-center",
             activeTab === "recentes"
               ? "bg-card text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -37,7 +37,7 @@ export function PortalTabsNav({
           type="button"
           onClick={() => onTabChange("colaboradores")}
           className={cn(
-            "flex-1 py-2 px-3 text-xs sm:text-sm font-semibold rounded-[14px] transition-all text-center",
+            "flex-1 py-1.5 px-3 text-xs sm:text-sm font-semibold rounded-[14px] transition-all text-center",
             activeTab === "colaboradores"
               ? "bg-card text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -49,7 +49,7 @@ export function PortalTabsNav({
           type="button"
           onClick={() => onTabChange("bloqueados")}
           className={cn(
-            "flex-1 py-2 px-3 text-xs sm:text-sm font-semibold rounded-[14px] transition-all flex items-center justify-center gap-1.5 text-center",
+            "flex-1 py-1.5 px-3 text-xs sm:text-sm font-semibold rounded-[14px] transition-all flex items-center justify-center gap-1.5 text-center",
             activeTab === "bloqueados"
               ? "bg-card text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -58,7 +58,7 @@ export function PortalTabsNav({
           <ShieldAlert className="h-3.5 w-3.5" />
           <span>Bloqueados</span>
           {bloqueadosCount > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-muted text-foreground border border-border">
+            <span className="inline-flex items-center justify-center h-4.5 min-w-[18px] px-1.5 rounded-full text-[10px] font-bold leading-none bg-muted text-foreground border border-border">
               {bloqueadosCount}
             </span>
           )}

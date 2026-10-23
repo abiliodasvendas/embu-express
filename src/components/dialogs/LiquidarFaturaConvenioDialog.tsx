@@ -19,6 +19,7 @@ import { useLiquidarFaturaConvenio } from "@/hooks/api/useConvenioAuditoria";
 import { useLiquidarFaturaConvenioForm } from "@/hooks/form/useLiquidarFaturaConvenioForm";
 import { LiquidarFaturaConvenioFormData } from "@/schemas/liquidarFaturaConvenioSchema";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { formatCurrency } from "@/utils/formatters/currency";
 import { formatContaBancaria } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { CheckCircle2, Loader2, Handshake } from "lucide-react";
@@ -34,6 +35,7 @@ export interface LiquidarFaturaConvenioDialogProps {
   anoCompetencia: number;
   dataVencimento: string;
   valorTotalFatura: number;
+  valorJaPago?: number | null;
   empresaPadraoId?: number | null;
   contaBancariaPadraoId?: string | null;
   onSuccess?: () => void;
@@ -49,6 +51,7 @@ export function LiquidarFaturaConvenioDialog({
   anoCompetencia,
   dataVencimento,
   valorTotalFatura,
+  valorJaPago,
   empresaPadraoId,
   contaBancariaPadraoId,
   onSuccess,
@@ -57,7 +60,7 @@ export function LiquidarFaturaConvenioDialog({
   const { data: contasBancarias = [] } = useContasBancarias();
   const liquidarMutation = useLiquidarFaturaConvenio();
 
-  const { form } = useLiquidarFaturaConvenioForm({
+  const { form, saldoRestante } = useLiquidarFaturaConvenioForm({
     open,
     convenioId,
     faturaId,
@@ -65,11 +68,14 @@ export function LiquidarFaturaConvenioDialog({
     anoCompetencia,
     dataVencimento,
     valorTotalFatura,
+    valorJaPago,
     empresaPadraoId,
     contaBancariaPadraoId,
   });
 
   const selectedEmpresaId = form.watch("empresa_id");
+  const valorPagoWatch = form.watch("valor_pago") || 0;
+  const isQuitacaoTotal = Number(valorPagoWatch) >= saldoRestante;
 
   const contasFiltradas = useMemo(() => {
     if (!selectedEmpresaId) return contasBancarias.filter((c) => c.ativo);
@@ -98,7 +104,11 @@ export function LiquidarFaturaConvenioDialog({
         observacoes: values.observacoes || null,
       });
 
-      toast.success("Fatura do convênio quitada com sucesso!");
+      toast.success(
+        isQuitacaoTotal
+          ? "Fatura do convênio quitada com sucesso!"
+          : "Pagamento parcial registrado com sucesso!"
+      );
       handleClose();
       onSuccess?.();
     } catch (err: unknown) {
@@ -119,7 +129,7 @@ export function LiquidarFaturaConvenioDialog({
     >
       <BaseDialog.Header
         icon={<Handshake className="w-5 h-5 text-foreground" />}
-        title="Quitar Fatura de Convênio"
+        title={saldoRestante > 0 && Number(valorJaPago || 0) > 0 ? "Pagar Fatura de Convênio" : "Quitar Fatura de Convênio"}
         subtitle={`${convenioNome} - Competência ${String(mesCompetencia).padStart(2, "0")}/${anoCompetencia}`}
         onClose={handleClose}
       />
@@ -127,8 +137,31 @@ export function LiquidarFaturaConvenioDialog({
       <BaseDialog.Body>
         <div className="space-y-4 pt-1">
           <Banner variant="info">
-            Liquidação da fatura com vencimento dia 15 referente aos abastecimentos e manutenções do convênio.
+            Liquidação da fatura referente aos abastecimentos e manutenções do convênio.
           </Banner>
+
+          {Number(valorJaPago || 0) > 0 && (
+            <div className="grid grid-cols-3 gap-2 p-3 rounded-[16px] bg-muted/40 border border-border text-xs">
+              <div>
+                <span className="text-[11px] text-muted-foreground block">Valor Total</span>
+                <span className="font-semibold text-foreground tabular-nums">
+                  {formatCurrency(valorTotalFatura)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] text-muted-foreground block">Já Pago</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                  {formatCurrency(Number(valorJaPago))}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] text-muted-foreground block">Saldo Restante</span>
+                <span className="font-semibold text-foreground tabular-nums">
+                  {formatCurrency(saldoRestante)}
+                </span>
+              </div>
+            </div>
+          )}
 
           <Form {...form}>
             <form

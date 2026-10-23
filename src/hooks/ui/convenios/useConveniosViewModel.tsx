@@ -66,8 +66,8 @@ export function useConveniosViewModel() {
       selectedStatus === FilterOptions.TODOS
         ? undefined
         : selectedStatus === StatusUsuario.ATIVO
-        ? "true"
-        : "false",
+          ? "true"
+          : "false",
   });
 
   const {
@@ -118,8 +118,8 @@ export function useConveniosViewModel() {
         selectedStatus === FilterOptions.TODOS
           ? true
           : selectedStatus === StatusUsuario.ATIVO
-          ? c.ativo
-          : !c.ativo;
+            ? c.ativo
+            : !c.ativo;
       return matchSearch && matchStatus;
     });
   }, [convenios, searchTerm, selectedStatus]);
@@ -229,6 +229,7 @@ export function useConveniosViewModel() {
         anoCompetencia: ano,
         dataVencimento: fatura?.data_vencimento || dataVencDefault,
         valorTotalFatura: fatura?.valor_total_fatura || resumoItem?.total_consumido || 0,
+        valorJaPago: fatura?.valor_pago || 0,
         empresaPadraoId: fatura?.empresa_id || convenio.empresa_id || null,
         contaBancariaPadraoId: fatura?.conta_bancaria_id || convenio.conta_bancaria_id || null,
         onSuccess: () => refetchResumo(),
@@ -257,7 +258,7 @@ export function useConveniosViewModel() {
 
       if (canEdit && fatura && fatura.status !== "PAGA") {
         actions.push({
-          label: "Quitar Fatura Dia 15",
+          label: "Quitar Fatura",
           icon: <CheckCircle2 className="h-4 w-4" />,
           onClick: () => handleLiquidarFatura(convenio, resumoItem),
         });

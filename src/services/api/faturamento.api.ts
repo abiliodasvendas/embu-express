@@ -18,6 +18,7 @@ export interface LoteRecebimentoPayload {
 export interface LiquidarFaturaPayload {
   conta_bancaria_id: string;
   data_recebimento: string;
+  data_pagamento?: string;
   valor_pago: number;
   observacao?: string | null;
 }

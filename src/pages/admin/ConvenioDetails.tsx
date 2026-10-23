@@ -152,7 +152,7 @@ export default function ConvenioDetails() {
                 )}
               >
                 <Receipt className="h-3.5 w-3.5" />
-                Auditoria Dia 15
+                Financeiro
                 {vm.auditoria?.tem_risco_divergencia && (
                   <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
                 )}

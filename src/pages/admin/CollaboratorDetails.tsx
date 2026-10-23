@@ -57,46 +57,28 @@ export default function CollaboratorDetails() {
       />
 
       <Tabs value={vm.activeTab} onValueChange={vm.handleTabChange} className="space-y-6">
-        <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex overflow-x-auto [scrollbar-width:none] print:hidden">
-          <TabsTrigger
-            value="dados"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+        <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex items-center overflow-x-auto [scrollbar-width:none] print:hidden">
+          <TabsTrigger value="dados">
             <User className="h-4 w-4" />
             <span>Dados</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="turnos"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="turnos">
             <Clock className="h-4 w-4" />
             <span>Turnos</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="itens"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="itens">
             <Package className="h-4 w-4" />
             <span>Itens</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="ocorrencias"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="ocorrencias">
             <History className="h-4 w-4" />
             <span>Ocorrências</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="ponto"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="ponto">
             <Clock className="h-4 w-4" />
             <span>Atividade</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="financeiro"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="financeiro">
             <Wallet className="h-4 w-4" />
             <span>Financeiro</span>
           </TabsTrigger>

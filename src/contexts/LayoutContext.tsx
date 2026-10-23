@@ -195,6 +195,7 @@ export interface OpenLiquidarFaturaConvenioProps {
   anoCompetencia: number;
   dataVencimento: string;
   valorTotalFatura: number;
+  valorJaPago?: number | null;
   empresaPadraoId?: number | null;
   contaBancariaPadraoId?: string | null;
   onSuccess?: () => void;

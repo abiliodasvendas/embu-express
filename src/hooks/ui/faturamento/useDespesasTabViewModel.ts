@@ -99,6 +99,7 @@ export function useDespesasTabViewModel({
       categoria: (d) => CATEGORIA_DESPESA_LABELS[d.categoria] || d.categoria || "",
       valor_previsto: (d) => Number(d.valor_previsto || 0),
       valor_pago: (d) => Number(d.valor_pago || 0),
+      data_pagamento: (d) => d.data_pagamento || "",
       status: (d) => d.status || "",
     },
   });

@@ -1,4 +1,4 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsBadge, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bike, ShieldAlert } from "lucide-react";
 import { useRetaguardaReservasViewModel } from "@/hooks";
 import {
@@ -44,24 +44,18 @@ export default function RetaguardaReservas() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex overflow-x-auto [scrollbar-width:none]">
-          <TabsTrigger
-            value="monitor"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+        <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex items-center overflow-x-auto [scrollbar-width:none]">
+          <TabsTrigger value="monitor">
             <Bike className="h-4 w-4" />
             <span>Retaguarda (Equipe Interna)</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="risco-vales"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="risco-vales">
             <ShieldAlert className="h-4 w-4" />
             <span>Alerta de Vales Dia 20</span>
             {pendentesEmRisco.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 bg-muted/80 text-foreground border border-border text-[10px] rounded-full font-bold">
+              <TabsBadge>
                 {pendentesEmRisco.length}
-              </span>
+              </TabsBadge>
             )}
           </TabsTrigger>
         </TabsList>

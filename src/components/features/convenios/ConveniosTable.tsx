@@ -137,7 +137,10 @@ export function ConveniosTable({
                     Moto Embu
                   </TableHead>
                   <TableHead className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Fatura Dia 15
+                    Fatura
+                  </TableHead>
+                  <TableHead className="px-6 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Data Pagto
                   </TableHead>
                   <TableHead className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Ações

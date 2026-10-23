@@ -63,7 +63,7 @@ export function DespesaMobileCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border text-xs">
         <div>
           <span className="text-[11px] text-muted-foreground block">Vencimento</span>
           <span
@@ -82,13 +82,13 @@ export function DespesaMobileCard({
             </span>
           )}
         </div>
-        <div className="text-right">
+        <div className="text-right sm:text-left">
           <span className="text-[11px] text-muted-foreground block">Previsto</span>
           <span className="font-semibold text-rose-600 dark:text-rose-400 text-xs tabular-nums">
             - {formatCurrency(despesa.valor_previsto)}
           </span>
         </div>
-        <div className="text-right">
+        <div>
           <span className="text-[11px] text-muted-foreground block">Pago</span>
           <span
             className={cn(
@@ -99,6 +99,16 @@ export function DespesaMobileCard({
             )}
           >
             {formatCurrency(despesa.valor_pago || 0)}
+          </span>
+        </div>
+        <div className="text-right">
+          <span className="text-[11px] text-muted-foreground block">Data Pagto</span>
+          <span className="text-xs tabular-nums font-medium text-foreground">
+            {despesa.data_pagamento ? (
+              formatDateToBR(despesa.data_pagamento)
+            ) : (
+              <span className="text-muted-foreground/40">-</span>
+            )}
           </span>
         </div>
       </div>

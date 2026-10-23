@@ -1,5 +1,5 @@
 import { STATUS_FATURA, TIPO_PERIODO_FATURA } from "@/constants/financeiro.constants";
-import type { StatusFatura } from "@/types/database";
+import type { FaturaCliente, FaturaRecebimento, StatusFatura } from "@/types/database";
 
 export function getFaturaAtrasoInfo(
   dataVencimento: string,
@@ -30,4 +30,32 @@ export function getFaturaPeriodoTexto(
     return "Mensal";
   }
   return `${numeroPeriodo || quinzena || 1}ª Quinzena`;
+}
+
+export interface FaturaPagamentoInfo {
+  temPagamento: boolean;
+  quantidadeBaixas: number;
+  ultimaData?: string;
+  recebimentos: FaturaRecebimento[];
+}
+
+export function getFaturaPagamentoInfo(recebimentos?: FaturaRecebimento[]): FaturaPagamentoInfo {
+  if (!recebimentos || recebimentos.length === 0) {
+    return {
+      temPagamento: false,
+      quantidadeBaixas: 0,
+      recebimentos: [],
+    };
+  }
+
+  const sorted = [...recebimentos].sort((a, b) =>
+    (b.data_recebimento || "").localeCompare(a.data_recebimento || "")
+  );
+
+  return {
+    temPagamento: true,
+    quantidadeBaixas: sorted.length,
+    ultimaData: sorted[0]?.data_recebimento,
+    recebimentos: sorted,
+  };
 }

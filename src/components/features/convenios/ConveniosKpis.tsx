@@ -67,7 +67,7 @@ export function ConveniosKpis({ totais, isLoading }: ConveniosKpisProps) {
       <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
         <div className="flex items-center justify-between pb-2">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Faturas / Cobranças (Dia 15)
+            Faturas / Cobranças
           </span>
           <div className="w-10 h-10 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center font-bold">
             <FileText className="h-5 w-5" />

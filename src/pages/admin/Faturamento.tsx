@@ -40,32 +40,20 @@ export default function Faturamento() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex overflow-x-auto [scrollbar-width:none]">
-          <TabsTrigger
-            value="faturas"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+        <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex items-center overflow-x-auto [scrollbar-width:none]">
+          <TabsTrigger value="faturas">
             <FileText className="h-4 w-4" />
             <span>Faturas dos Clientes</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="despesas"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="despesas">
             <Receipt className="h-4 w-4" />
             <span>Contas a Pagar</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="intercompany"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="intercompany">
             <ArrowRightLeft className="h-4 w-4" />
             <span>Acerto Entre Nossas Empresas</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="avulsas"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="avulsas">
             <Banknote className="h-4 w-4" />
             <span>Movimentações Avulsas</span>
           </TabsTrigger>

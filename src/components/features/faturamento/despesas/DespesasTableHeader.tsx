@@ -60,6 +60,14 @@ export function DespesasTableHeader({
           align="right"
         />
         <SortableHeader
+          label="Data Pagto"
+          sortKey="data_pagamento"
+          currentKey={sortKey}
+          direction={sortDirection}
+          onSort={onSort}
+          align="center"
+        />
+        <SortableHeader
           label="Status"
           sortKey="status"
           currentKey={sortKey}

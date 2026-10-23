@@ -136,6 +136,11 @@ export function useFaturasTabViewModel({
       data_vencimento: (f) => f.data_vencimento || "",
       valor_faturado: (f) => Number(f.valor_faturado || 0),
       valor_pago: (f) => Number(f.valor_pago || 0),
+      data_pagamento: (f) => {
+        if (!f.recebimentos || f.recebimentos.length === 0) return "";
+        const sorted = [...f.recebimentos].sort((a, b) => (b.data_recebimento || "").localeCompare(a.data_recebimento || ""));
+        return sorted[0]?.data_recebimento || "";
+      },
       status: (f) => f.status || "",
     },
   });

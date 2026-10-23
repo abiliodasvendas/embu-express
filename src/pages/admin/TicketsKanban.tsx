@@ -11,7 +11,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { ListSkeleton } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsBadge, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Search, Plus, X, Bug, Lightbulb, HelpCircle, Loader2, LifeBuoy } from "lucide-react";
 import { Ticket } from "@/types/database";
 import { TicketType, TicketStatus, TicketPriority, TICKET_TYPE_LABELS, TICKET_PRIORITY_LABELS } from "@/types/enums";
@@ -334,12 +334,12 @@ export default function TicketsKanban() {
                           <TabsTrigger
                             key={col.id}
                             value={col.id}
-                            className="rounded-[14px] font-semibold text-xs py-2 px-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs text-muted-foreground hover:text-foreground flex-1 flex items-center justify-center gap-1.5 transition-all"
+                            className="rounded-[14px] font-semibold text-xs py-1.5 px-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs text-muted-foreground hover:text-foreground flex-1 flex items-center justify-center gap-1.5 transition-all"
                           >
                             <span>{col.title}</span>
-                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-muted text-foreground border border-border">
+                            <TabsBadge>
                               {count}
-                            </span>
+                            </TabsBadge>
                           </TabsTrigger>
                         );
                       })}

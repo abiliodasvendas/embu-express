@@ -74,16 +74,9 @@ export function DespesaTableRow({
         </div>
       </td>
       <td className="py-3.5 px-4 text-xs font-medium text-foreground/80 whitespace-nowrap">
-        {despesa.is_holding ? (
-          <Badge
-            variant="outline"
-            className="bg-muted/50 text-foreground border-border text-[10px] font-medium px-2 py-0.5 rounded-[18px]"
-          >
-            Holding (Rateio)
-          </Badge>
-        ) : (
-          despesa.empresa?.nome_fantasia || "Empresa"
-        )}
+        {despesa.is_holding
+          ? "Holding (Rateio)"
+          : despesa.empresa?.nome_fantasia || "Empresa"}
       </td>
       <td className="py-3.5 px-4 text-xs font-medium text-muted-foreground whitespace-nowrap">
         {CATEGORIA_DESPESA_LABELS[despesa.categoria] || despesa.categoria}
@@ -103,6 +96,15 @@ export function DespesaTableRow({
         )}
       >
         {formatCurrency(despesa.valor_pago || 0)}
+      </td>
+      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+        {despesa.data_pagamento ? (
+          <span className="text-foreground font-medium text-xs tabular-nums">
+            {formatDateToBR(despesa.data_pagamento)}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground/40 font-normal">-</span>
+        )}
       </td>
       <td className="py-3.5 px-4 text-center whitespace-nowrap">
         <DespesaStatusBadge status={despesa.status} />

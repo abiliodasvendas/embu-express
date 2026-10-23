@@ -37,7 +37,7 @@ export function FaturasTable({
   onDelete,
 }: FaturasTableProps) {
   if (isLoading) {
-    return <TableSkeleton cols={9} rows={5} />;
+    return <TableSkeleton cols={10} rows={5} />;
   }
 
   if (faturas.length === 0) {

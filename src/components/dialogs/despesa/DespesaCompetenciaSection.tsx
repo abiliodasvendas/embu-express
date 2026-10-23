@@ -24,7 +24,7 @@ export function DespesaCompetenciaSection({ form }: DespesaCompetenciaSectionPro
         render={({ field }) => (
           <FormItem className="space-y-1.5">
             <FormLabel className="text-xs font-semibold text-foreground">
-              Mês Competência
+              Mês Competência <span className="text-destructive">*</span>
             </FormLabel>
             <FormControl>
               <NativeSelect
@@ -50,7 +50,7 @@ export function DespesaCompetenciaSection({ form }: DespesaCompetenciaSectionPro
         render={({ field }) => (
           <FormItem className="space-y-1.5">
             <FormLabel className="text-xs font-semibold text-foreground">
-              Ano Competência
+              Ano Competência <span className="text-destructive">*</span>
             </FormLabel>
             <FormControl>
               <Input

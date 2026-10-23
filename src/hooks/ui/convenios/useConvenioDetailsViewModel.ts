@@ -177,6 +177,7 @@ export function useConvenioDetailsViewModel() {
       anoCompetencia: ano,
       dataVencimento: fatura?.data_vencimento || dataVencDefault,
       valorTotalFatura: fatura?.valor_total_fatura || auditoria?.total_geral_lancamentos || 0,
+      valorJaPago: fatura?.valor_pago || 0,
       empresaPadraoId: fatura?.empresa_id || convenio?.empresa_id || null,
       contaBancariaPadraoId: fatura?.conta_bancaria_id || convenio?.conta_bancaria_id || null,
       onSuccess: () => refetchAuditoria(),

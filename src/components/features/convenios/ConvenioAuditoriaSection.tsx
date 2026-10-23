@@ -86,14 +86,14 @@ export function ConvenioAuditoriaSection({
     filtroCategoria === "motoboys"
       ? auditoria.lancamentos_motoboys
       : filtroCategoria === "frota"
-      ? auditoria.lancamentos_frota_propria
-      : filtroCategoria === "sem_vinculo"
-      ? auditoria.lancamentos_sem_vinculo
-      : [
-          ...auditoria.lancamentos_motoboys,
-          ...auditoria.lancamentos_frota_propria,
-          ...auditoria.lancamentos_sem_vinculo,
-        ];
+        ? auditoria.lancamentos_frota_propria
+        : filtroCategoria === "sem_vinculo"
+          ? auditoria.lancamentos_sem_vinculo
+          : [
+            ...auditoria.lancamentos_motoboys,
+            ...auditoria.lancamentos_frota_propria,
+            ...auditoria.lancamentos_sem_vinculo,
+          ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -101,7 +101,7 @@ export function ConvenioAuditoriaSection({
         <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
           <div className="flex items-center justify-between pb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Fatura da Oficina (Dia 15)
+              Fatura da Oficina
             </span>
             <div className="w-10 h-10 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center font-bold">
               <Receipt className="h-4 w-4" />
@@ -124,7 +124,7 @@ export function ConvenioAuditoriaSection({
                 variant="outline"
                 className="text-[10px] font-bold h-5 px-2 rounded-[6px] bg-muted/60 text-foreground border-border"
               >
-                A Pagar dia 15
+                A Pagar
               </Badge>
             ) : (
               <span className="text-[11px] text-muted-foreground font-normal">

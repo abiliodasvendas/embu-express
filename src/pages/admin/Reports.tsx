@@ -126,29 +126,20 @@ export default function Reports() {
         }}
         className="w-full space-y-6"
       >
-        <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex overflow-x-auto [scrollbar-width:none]">
+        <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex items-center overflow-x-auto [scrollbar-width:none]">
           {canViewDre && (
-            <TabsTrigger
-              value="dre"
-              className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-            >
+            <TabsTrigger value="dre">
               <BarChart3 className="h-4 w-4" />
               <span>Resultado Real do Mês (Lucro da Empresa)</span>
             </TabsTrigger>
           )}
           {canViewFluxoCaixa && (
-            <TabsTrigger
-              value="fluxo-caixa"
-              className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-            >
+            <TabsTrigger value="fluxo-caixa">
               <TrendingUp className="h-4 w-4" />
               <span>Fluxo de Caixa Diário</span>
             </TabsTrigger>
           )}
-          <TabsTrigger
-            value="financeiro"
-            className="rounded-[14px] px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all gap-2 shrink-0"
-          >
+          <TabsTrigger value="financeiro">
             <Wallet className="h-4 w-4" />
             <span>Folha de Pagamento</span>
           </TabsTrigger>

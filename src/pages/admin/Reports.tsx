@@ -15,6 +15,7 @@ export default function Reports() {
 
   const canViewDre = isAnyAdmin || can(PERMISSIONS.DRE.VER);
   const canViewFluxoCaixa = isAnyAdmin || can(PERMISSIONS.FLUXO_CAIXA.VER);
+  const canViewFinanceiro = isAnyAdmin || can(PERMISSIONS.FINANCEIRO.EXTRATO) || can(PERMISSIONS.FINANCEIRO.FECHAR);
 
   useEffect(() => {
     setPageTitle("Relatórios");
@@ -26,8 +27,9 @@ export default function Reports() {
   const primeiraAbaDisponivel = useMemo(() => {
     if (canViewDre) return "dre";
     if (canViewFluxoCaixa) return "fluxo-caixa";
-    return "financeiro";
-  }, [canViewDre, canViewFluxoCaixa]);
+    if (canViewFinanceiro) return "financeiro";
+    return "";
+  }, [canViewDre, canViewFluxoCaixa, canViewFinanceiro]);
 
   const [selectedTab, setSelectedTab] = useState<string>("dre");
   const [hasUserSelectedTab, setHasUserSelectedTab] = useState<boolean>(false);
@@ -139,10 +141,12 @@ export default function Reports() {
               <span>Fluxo de Caixa Diário</span>
             </TabsTrigger>
           )}
-          <TabsTrigger value="financeiro">
-            <Wallet className="h-4 w-4" />
-            <span>Folha de Pagamento</span>
-          </TabsTrigger>
+          {canViewFinanceiro && (
+            <TabsTrigger value="financeiro">
+              <Wallet className="h-4 w-4" />
+              <span>Folha de Pagamento</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {canViewDre && (
@@ -161,11 +165,13 @@ export default function Reports() {
           </TabsContent>
         )}
 
-        <TabsContent value="financeiro" className="m-0">
-          {selectedTab === "financeiro" && (
-            <FinanceiroTab mes={mes} ano={ano} />
-          )}
-        </TabsContent>
+        {canViewFinanceiro && (
+          <TabsContent value="financeiro" className="m-0">
+            {selectedTab === "financeiro" && (
+              <FinanceiroTab mes={mes} ano={ano} />
+            )}
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

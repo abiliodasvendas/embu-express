@@ -17,6 +17,7 @@ interface FaturaTableRowProps {
   onLiquidar: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
+  canEdit?: boolean;
 }
 
 export function FaturaTableRow({
@@ -24,6 +25,7 @@ export function FaturaTableRow({
   onLiquidar,
   onEdit,
   onDelete,
+  canEdit = true,
 }: FaturaTableRowProps) {
   const { isVencido, diasAtraso } = getFaturaAtrasoInfo(
     fatura.data_vencimento,
@@ -148,6 +150,7 @@ export function FaturaTableRow({
           onLiquidar={onLiquidar}
           onEdit={onEdit}
           onDelete={onDelete}
+          canEdit={canEdit}
         />
       </td>
     </tr>

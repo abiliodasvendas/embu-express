@@ -8,6 +8,7 @@ interface FaturaRowActionsProps {
   onLiquidar: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
+  canEdit?: boolean;
 }
 
 export function FaturaRowActions({
@@ -15,7 +16,12 @@ export function FaturaRowActions({
   onLiquidar,
   onEdit,
   onDelete,
+  canEdit = true,
 }: FaturaRowActionsProps) {
+  if (!canEdit) {
+    return <span className="text-xs text-muted-foreground">—</span>;
+  }
+
   const podeReceber =
     fatura.status !== STATUS_FATURA.LIQUIDADA &&
     fatura.status !== STATUS_FATURA.CANCELADA;

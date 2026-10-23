@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useLayout } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useMovimentacoesAvulsas } from "@/hooks/api/useMovimentacoesAvulsas";
 import { useTableSort } from "@/hooks/ui/useTableSort";
 import { MovimentacaoAvulsa } from "@/types/database";
@@ -26,6 +28,9 @@ export function useMovimentacoesAvulsasTabViewModel({
     openMovimentacaoAvulsaDialog,
     openConfirmationDialog,
   } = useLayout();
+
+  const { can, isSuperAdmin } = usePermissions();
+  const canEdit = isSuperAdmin || can(PERMISSIONS.MOVIMENTACOES_AVULSAS.EDITAR);
 
   const [tipoMovimentacaoFiltro, setTipoMovimentacaoFiltro] = useState<string>("todos");
   const [searchMovimentacao, setSearchMovimentacao] = useState<string>("");
@@ -124,6 +129,7 @@ export function useMovimentacoesAvulsasTabViewModel({
   };
 
   return {
+    canEdit,
     mes,
     ano,
     setMes,

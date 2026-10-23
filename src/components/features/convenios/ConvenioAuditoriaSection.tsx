@@ -35,6 +35,7 @@ interface ConvenioAuditoriaSectionProps {
   mes: number;
   ano: number;
   canEdit: boolean;
+  canLiquidar?: boolean;
   onOpenLiquidarDialog: () => void;
   onOpenLancamentoDialog: (lancamento?: LancamentoConvenio | null) => void;
 }
@@ -43,8 +44,10 @@ export function ConvenioAuditoriaSection({
   auditoria,
   isLoading,
   canEdit,
+  canLiquidar,
   onOpenLiquidarDialog,
 }: ConvenioAuditoriaSectionProps) {
+  const podeLiquidar = canLiquidar !== undefined ? canLiquidar : canEdit;
   const [filtroCategoria, setFiltroCategoria] = useState<
     "todos" | "motoboys" | "frota" | "sem_vinculo"
   >("todos");
@@ -131,7 +134,7 @@ export function ConvenioAuditoriaSection({
                 Sem consumo
               </span>
             )}
-            {canEdit && !isFaturaPaga && temConsumo && (
+            {podeLiquidar && !isFaturaPaga && temConsumo && (
               <button
                 type="button"
                 onClick={onOpenLiquidarDialog}

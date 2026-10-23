@@ -14,6 +14,7 @@ interface DespesaMobileCardProps {
   onLiquidar: (despesa: DespesaOperacional) => void;
   onEdit: (despesa: DespesaOperacional) => void;
   onDelete: (despesa: DespesaOperacional) => void;
+  canEdit?: boolean;
 }
 
 export function DespesaMobileCard({
@@ -21,6 +22,7 @@ export function DespesaMobileCard({
   onLiquidar,
   onEdit,
   onDelete,
+  canEdit = true,
 }: DespesaMobileCardProps) {
   const { isVencido, diasAtraso } = getDespesaAtrasoInfo(
     despesa.data_vencimento,
@@ -113,41 +115,43 @@ export function DespesaMobileCard({
         </div>
       </div>
 
-      <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
-        <div>
-          {podePagar && (
+      {canEdit && (
+        <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+          <div>
+            {podePagar && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-[18px] px-3 text-xs font-medium border-border hover:bg-muted text-foreground gap-1.5 shadow-2xs"
+                onClick={() => onLiquidar(despesa)}
+              >
+                <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
+                <span>Pagar</span>
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
             <Button
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-[18px] px-3 text-xs font-medium border-border hover:bg-muted text-foreground gap-1.5 shadow-2xs"
-              onClick={() => onLiquidar(despesa)}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
+              onClick={() => onEdit(despesa)}
+              title="Editar Despesa"
             >
-              <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Pagar</span>
+              <Edit2 className="h-4 w-4" />
             </Button>
-          )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
+              onClick={() => onDelete(despesa)}
+              title="Excluir Despesa"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
-            onClick={() => onEdit(despesa)}
-            title="Editar Despesa"
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
-            onClick={() => onDelete(despesa)}
-            title="Excluir Despesa"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -29,6 +29,7 @@ interface DespesasToolbarProps {
   onStatusChange: (value: string) => void;
   empresasList: EmpresaOption[];
   onNovaDespesa: () => void;
+  canEdit?: boolean;
 }
 
 export function DespesasToolbar({
@@ -46,6 +47,7 @@ export function DespesasToolbar({
   onStatusChange,
   empresasList,
   onNovaDespesa,
+  canEdit = true,
 }: DespesasToolbarProps) {
   const anoAtual = new Date().getFullYear();
 
@@ -123,14 +125,16 @@ export function DespesasToolbar({
         </NativeSelect>
       </div>
 
-      <Button
-        size="sm"
-        onClick={onNovaDespesa}
-        className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
-      >
-        <Plus className="h-4 w-4" />
-        <span>Nova Despesa</span>
-      </Button>
+      {canEdit && (
+        <Button
+          size="sm"
+          onClick={onNovaDespesa}
+          className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Nova Despesa</span>
+        </Button>
+      )}
     </div>
   );
 }

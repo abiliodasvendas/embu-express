@@ -35,6 +35,7 @@ export function useConveniosViewModel() {
 
   const { can, isSuperAdmin } = usePermissions();
   const canEdit = isSuperAdmin || can(PERMISSIONS.CONVENIOS.EDITAR);
+  const canLiquidar = isSuperAdmin || can(PERMISSIONS.CONVENIOS.EDITAR) || can(PERMISSIONS.DESPESAS.EDITAR) || can(PERMISSIONS.FINANCEIRO.PAGAR);
 
   const { searchTerm, setSearchTerm } = useSearchFilters("search");
   const { selectedStatus, setSelectedStatus } = useStatusFilters(
@@ -256,7 +257,7 @@ export function useConveniosViewModel() {
       const resumoItem = resumoMap.get(convenio.id);
       const fatura = resumoItem?.fatura_fornecedor;
 
-      if (canEdit && fatura && fatura.status !== "PAGA") {
+      if (canLiquidar && fatura && fatura.status !== "PAGA") {
         actions.push({
           label: "Quitar Fatura",
           icon: <CheckCircle2 className="h-4 w-4" />,
@@ -287,11 +288,12 @@ export function useConveniosViewModel() {
 
       return actions;
     },
-    [canEdit, resumoMap, handleLiquidarFatura]
+    [canEdit, canLiquidar, resumoMap, handleLiquidarFatura]
   );
 
   return {
     canEdit,
+    canLiquidar,
     mes,
     setMes,
     ano,

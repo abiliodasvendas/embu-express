@@ -27,6 +27,7 @@ export function IntercompanyTab({ isActive }: IntercompanyTabProps) {
         sortDirection={vm.sortDirIntercompany}
         onSort={vm.handleSortIntercompany}
         onRegistrarAcerto={vm.handleOpenAcerto}
+        canEdit={vm.canEdit}
       />
     </div>
   );

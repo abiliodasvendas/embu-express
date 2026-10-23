@@ -308,11 +308,11 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.OCORRENCIAS.replace("/", "")} element={<Ocorrencias />} />
                     </Route>
 
-                    <Route element={<RequirePermission permissions={[PERMISSIONS.FINANCEIRO.EXTRATO]} />}>
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.DRE.VER, PERMISSIONS.FLUXO_CAIXA.VER, PERMISSIONS.FINANCEIRO.EXTRATO, PERMISSIONS.FINANCEIRO.FECHAR]} useOrCondition={true} />}>
                       <Route path={ROUTES.PRIVATE.RELATORIOS.replace("/", "")} element={<Reports />} />
                     </Route>
 
-                    <Route element={<RequirePermission allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} permissions={[PERMISSIONS.FATURAMENTO.VER]} />}>
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.FATURAMENTO.VER, PERMISSIONS.DESPESAS.VER, PERMISSIONS.MOVIMENTACOES_AVULSAS.VER]} useOrCondition={true} />}>
                       <Route path={ROUTES.PRIVATE.FATURAMENTO.replace("/", "")} element={<Faturamento />} />
                     </Route>
 
@@ -430,3 +430,4 @@ const RedirectByRole = () => {
 };
 
 export default App;
+

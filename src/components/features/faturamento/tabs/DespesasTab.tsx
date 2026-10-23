@@ -45,6 +45,7 @@ export function DespesasTab({
         onStatusChange={vm.setStatusDespesaFiltro}
         empresasList={vm.empresasList}
         onNovaDespesa={vm.handleOpenNovaDespesa}
+        canEdit={vm.canEdit}
       />
 
       <DespesasTable
@@ -54,6 +55,7 @@ export function DespesasTab({
         search={vm.searchDespesa}
         onClearSearch={() => vm.setSearchDespesa("")}
         onNovaDespesa={vm.handleOpenNovaDespesa}
+        canEdit={vm.canEdit}
         sortKey={vm.sortKeyDespesas}
         sortDirection={vm.sortDirDespesas}
         onSort={vm.handleSortDespesas}

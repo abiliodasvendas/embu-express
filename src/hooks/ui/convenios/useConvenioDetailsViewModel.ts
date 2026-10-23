@@ -37,6 +37,7 @@ export function useConvenioDetailsViewModel() {
 
   const { can, isSuperAdmin } = usePermissions();
   const canEdit = isSuperAdmin || can(PERMISSIONS.CONVENIOS.EDITAR);
+  const canLiquidar = isSuperAdmin || can(PERMISSIONS.CONVENIOS.EDITAR) || can(PERMISSIONS.DESPESAS.EDITAR) || can(PERMISSIONS.FINANCEIRO.PAGAR);
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
@@ -268,6 +269,7 @@ export function useConvenioDetailsViewModel() {
     auditoria,
     isAuditoriaLoading,
     canEdit,
+    canLiquidar,
     currentDate,
     mes,
     ano,

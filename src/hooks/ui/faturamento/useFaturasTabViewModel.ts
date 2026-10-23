@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useLayout } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useFaturas } from "@/hooks/api/useFaturamento";
 import { useAgingRecebiveis } from "@/hooks/api/useAgingRecebiveis";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
@@ -27,6 +29,9 @@ export function useFaturasTabViewModel({
     openLiquidarFaturaDialog,
     openConfirmationDialog,
   } = useLayout();
+
+  const { can, isSuperAdmin } = usePermissions();
+  const canEdit = isSuperAdmin || can(PERMISSIONS.FATURAMENTO.EDITAR);
 
   const [periodoFiltro, setPeriodoFiltro] = useState<string>("todas");
   const [statusFiltro, setStatusFiltro] = useState<string>("todos");
@@ -214,6 +219,7 @@ export function useFaturasTabViewModel({
   };
 
   return {
+    canEdit,
     mes,
     ano,
     setMes,

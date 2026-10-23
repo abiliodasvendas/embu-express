@@ -39,6 +39,7 @@ export function FaturasTab({ mes, ano, setMes, setAno }: FaturasTabProps) {
         onStatusChange={vm.setStatusFiltro}
         empresasList={vm.empresasList}
         onNovaFatura={vm.handleOpenNovaFatura}
+        canEdit={vm.canEdit}
         agingFaixaFiltro={vm.agingFaixaFiltro}
         agingFaixaDescricao={
           vm.aging?.faixas.find((item) => item.faixa === vm.agingFaixaFiltro)?.descricao
@@ -54,6 +55,7 @@ export function FaturasTab({ mes, ano, setMes, setAno }: FaturasTabProps) {
         search={vm.searchFatura}
         onClearSearch={() => vm.setSearchFatura("")}
         onNovaFatura={vm.handleOpenNovaFatura}
+        canEdit={vm.canEdit}
         sortKey={vm.sortKeyFaturas}
         sortDirection={vm.sortDirFaturas}
         onSort={vm.handleSortFaturas}

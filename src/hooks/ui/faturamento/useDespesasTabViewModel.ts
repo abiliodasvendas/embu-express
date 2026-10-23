@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useLayout } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useDespesas } from "@/hooks/api/useDespesas";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useTableSort } from "@/hooks/ui/useTableSort";
@@ -32,6 +34,9 @@ export function useDespesasTabViewModel({
     openLiquidarDespesaDialog,
     openConfirmationDialog,
   } = useLayout();
+
+  const { can, isSuperAdmin } = usePermissions();
+  const canEdit = isSuperAdmin || can(PERMISSIONS.DESPESAS.EDITAR);
 
   const [empresaDespesaFiltro, setEmpresaDespesaFiltro] = useState<string>("todas");
   const [categoriaDespesaFiltro, setCategoriaDespesaFiltro] = useState<string>("todas");
@@ -181,6 +186,7 @@ export function useDespesasTabViewModel({
   };
 
   return {
+    canEdit,
     mes,
     ano,
     setMes,

@@ -22,6 +22,7 @@ interface IntercompanyTableProps {
   sortDirection: "asc" | "desc";
   onSort: (key: string) => void;
   onRegistrarAcerto: (transferencia: TransferenciaIntercompany) => void;
+  canEdit?: boolean;
 }
 
 export function IntercompanyTable({
@@ -35,6 +36,7 @@ export function IntercompanyTable({
   sortDirection,
   onSort,
   onRegistrarAcerto,
+  canEdit = true,
 }: IntercompanyTableProps) {
   if (isLoading) {
     return <TableSkeleton cols={7} rows={4} />;
@@ -162,7 +164,7 @@ export function IntercompanyTable({
                     )}
                   </td>
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                    {t.status === STATUS_INTERCOMPANY.PENDENTE_ACERTO && (
+                    {canEdit && t.status === STATUS_INTERCOMPANY.PENDENTE_ACERTO ? (
                       <Button
                         variant="outline"
                         size="sm"
@@ -171,6 +173,8 @@ export function IntercompanyTable({
                       >
                         Registrar Acerto
                       </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </td>
                 </tr>
@@ -235,7 +239,7 @@ export function IntercompanyTable({
               </div>
             </div>
 
-            {t.status === STATUS_INTERCOMPANY.PENDENTE_ACERTO && (
+            {canEdit && t.status === STATUS_INTERCOMPANY.PENDENTE_ACERTO && (
               <div className="pt-2 border-t border-border flex items-center justify-end">
                 <Button
                   variant="outline"

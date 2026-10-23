@@ -40,6 +40,7 @@ export function MovimentacoesAvulsasTab({
         tipoMovimentacaoFiltro={vm.tipoMovimentacaoFiltro}
         onTipoMovimentacaoChange={vm.setTipoMovimentacaoFiltro}
         onNovoLancamento={vm.handleOpenNovaMovimentacao}
+        canEdit={vm.canEdit}
       />
 
       <AvulsasTable
@@ -49,6 +50,7 @@ export function MovimentacoesAvulsasTab({
         search={vm.searchMovimentacao}
         onClearSearch={() => vm.setSearchMovimentacao("")}
         onNovoLancamento={vm.handleOpenNovaMovimentacao}
+        canEdit={vm.canEdit}
         sortKey={vm.sortKeyMovimentacoes}
         sortDirection={vm.sortDirMovimentacoes}
         onSort={vm.handleSortMovimentacoes}

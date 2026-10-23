@@ -28,6 +28,7 @@ interface AvulsasTableProps {
   onSort: (key: string) => void;
   onEdit: (movimentacao: MovimentacaoAvulsa) => void;
   onDelete: (movimentacao: MovimentacaoAvulsa) => void;
+  canEdit?: boolean;
 }
 
 export function AvulsasTable({
@@ -42,6 +43,7 @@ export function AvulsasTable({
   onSort,
   onEdit,
   onDelete,
+  canEdit = true,
 }: AvulsasTableProps) {
   if (isLoading) {
     return <TableSkeleton cols={8} rows={4} />;
@@ -61,7 +63,9 @@ export function AvulsasTable({
           action={
             search
               ? { label: "Limpar busca", onClick: onClearSearch }
-              : { label: "Novo Lançamento", onClick: onNovoLancamento }
+              : canEdit
+                ? { label: "Novo Lançamento", onClick: onNovoLancamento }
+                : undefined
           }
         />
       </div>
@@ -187,26 +191,30 @@ export function AvulsasTable({
                     {formatCurrency(m.valor)}
                   </td>
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-[18px] text-muted-foreground hover:text-foreground"
-                        onClick={() => onEdit(m)}
-                        title="Editar Lançamento"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-[18px] text-muted-foreground hover:text-destructive"
-                        onClick={() => onDelete(m)}
-                        title="Excluir Lançamento"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
+                    {canEdit ? (
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-[18px] text-muted-foreground hover:text-foreground"
+                          onClick={() => onEdit(m)}
+                          title="Editar Lançamento"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-[18px] text-muted-foreground hover:text-destructive"
+                          onClick={() => onDelete(m)}
+                          title="Excluir Lançamento"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -281,26 +289,28 @@ export function AvulsasTable({
               </div>
             </div>
 
-            <div className="pt-2 border-t border-border flex items-center justify-end gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
-                onClick={() => onEdit(m)}
-                title="Editar Lançamento"
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
-                onClick={() => onDelete(m)}
-                title="Excluir Lançamento"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+            {canEdit && (
+              <div className="pt-2 border-t border-border flex items-center justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
+                  onClick={() => onEdit(m)}
+                  title="Editar Lançamento"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
+                  onClick={() => onDelete(m)}
+                  title="Excluir Lançamento"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         ))}
       </div>

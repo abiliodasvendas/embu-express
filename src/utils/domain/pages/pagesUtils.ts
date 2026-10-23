@@ -84,8 +84,11 @@ export const pagesItems: PageItem[] = [
         title: "Faturamento & Clientes",
         href: ROUTES.PRIVATE.FATURAMENTO,
         icon: Receipt,
-        permissionKey: PERMISSIONS.FATURAMENTO.VER,
-        allowedRoles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
+        permissionKey: [
+            PERMISSIONS.FATURAMENTO.VER,
+            PERMISSIONS.DESPESAS.VER,
+            PERMISSIONS.MOVIMENTACOES_AVULSAS.VER,
+        ],
     },
     {
         title: "Retaguarda Operacional",
@@ -98,6 +101,12 @@ export const pagesItems: PageItem[] = [
         title: "Relatórios",
         href: ROUTES.PRIVATE.RELATORIOS,
         icon: Banknote,
+        permissionKey: [
+            PERMISSIONS.DRE.VER,
+            PERMISSIONS.FLUXO_CAIXA.VER,
+            PERMISSIONS.FINANCEIRO.EXTRATO,
+            PERMISSIONS.FINANCEIRO.FECHAR,
+        ],
     },
     {
         title: "Ocorrências",
@@ -153,3 +162,5 @@ export const pagesItems: PageItem[] = [
         permissionKey: PERMISSIONS.CHAMADOS.VER,
     },
 ];
+
+

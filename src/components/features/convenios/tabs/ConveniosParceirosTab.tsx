@@ -45,6 +45,7 @@ export function ConveniosParceirosTab({ vm }: ConveniosParceirosTabProps) {
         isResumoFetching={vm.isResumoFetching}
         searchTerm={vm.searchTerm}
         canEdit={vm.canEdit}
+        canLiquidar={vm.canLiquidar}
         total={vm.total}
         totalPages={vm.totalPages}
         page={vm.page}

@@ -8,6 +8,7 @@ interface DespesaRowActionsProps {
   onLiquidar: (despesa: DespesaOperacional) => void;
   onEdit: (despesa: DespesaOperacional) => void;
   onDelete: (despesa: DespesaOperacional) => void;
+  canEdit?: boolean;
 }
 
 export function DespesaRowActions({
@@ -15,7 +16,12 @@ export function DespesaRowActions({
   onLiquidar,
   onEdit,
   onDelete,
+  canEdit = true,
 }: DespesaRowActionsProps) {
+  if (!canEdit) {
+    return <span className="text-xs text-muted-foreground">—</span>;
+  }
+
   const podePagar =
     despesa.status !== STATUS_DESPESA.PAGO &&
     despesa.status !== STATUS_DESPESA.CANCELADO;

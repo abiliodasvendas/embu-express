@@ -27,11 +27,11 @@ export const PERMISSIONS = {
         STATUS: 'empresas:status',
     },
     PONTO: {
-        ADMIN_VER: 'ponto:admin_ver', // Painel: Ver lista de todos
-        ADMIN_CRIAR: 'ponto:admin_criar', // Painel: Inserir atividade manualmente
-        ADMIN_EDITAR: 'ponto:admin_editar', // Painel: Corrigir linha
-        ADMIN_DELETAR: 'ponto:admin_deletar', // Painel: Excluir linha
-        VER_MEU: 'ponto:ver_meu', // App: Ver o próprio espelho de atividade
+        ADMIN_VER: 'ponto:admin_ver',
+        ADMIN_CRIAR: 'ponto:admin_criar',
+        ADMIN_EDITAR: 'ponto:admin_editar',
+        ADMIN_DELETAR: 'ponto:admin_deletar',
+        VER_MEU: 'ponto:ver_meu',
     },
     CONFIGURACAO: {
         VER: "configuracoes:ver",
@@ -48,7 +48,7 @@ export const PERMISSIONS = {
         EXTRATO: "financeiro:extrato",
         FECHAR: "financeiro:fechar",
         PAGAR: "financeiro:pagar",
-        VER_MEU: 'financeiro:ver_meu', // App: Ver o próprio financeiro
+        VER_MEU: 'financeiro:ver_meu',
     } as const,
     EQUIPAMENTOS: {
         VER: 'equipamentos:ver',
@@ -82,6 +82,10 @@ export const PERMISSIONS = {
     RETAGUARDA: {
         VER: 'retaguarda:ver',
         ALOCAR: 'retaguarda:alocar',
+    } as const,
+    MOVIMENTACOES_AVULSAS: {
+        VER: 'movimentacoes_avulsas:ver',
+        EDITAR: 'movimentacoes_avulsas:editar',
     } as const,
 } as const;
 

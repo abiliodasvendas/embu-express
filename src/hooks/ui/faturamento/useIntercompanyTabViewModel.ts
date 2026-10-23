@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { useLayout } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useIntercompany } from "@/hooks/api/useIntercompany";
 import { useTableSort } from "@/hooks/ui/useTableSort";
 import { TransferenciaIntercompany } from "@/types/database";
@@ -12,6 +14,8 @@ export function useIntercompanyTabViewModel({
   enabled = true,
 }: UseIntercompanyTabViewModelProps = {}) {
   const { openAcertoIntercompanyDialog } = useLayout();
+  const { can, isSuperAdmin } = usePermissions();
+  const canEdit = isSuperAdmin || can(PERMISSIONS.FATURAMENTO.EDITAR) || can(PERMISSIONS.DESPESAS.EDITAR);
   const [searchIntercompany, setSearchIntercompany] = useState<string>("");
 
   const {
@@ -61,6 +65,7 @@ export function useIntercompanyTabViewModel({
   };
 
   return {
+    canEdit,
     transferencias,
     matrizSaldos,
     isLoadingMatriz,

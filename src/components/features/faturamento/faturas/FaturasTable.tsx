@@ -20,6 +20,7 @@ interface FaturasTableProps {
   onLiquidar: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
+  canEdit?: boolean;
 }
 
 export function FaturasTable({
@@ -35,6 +36,7 @@ export function FaturasTable({
   onLiquidar,
   onEdit,
   onDelete,
+  canEdit = true,
 }: FaturasTableProps) {
   if (isLoading) {
     return <TableSkeleton cols={10} rows={5} />;
@@ -54,7 +56,9 @@ export function FaturasTable({
           action={
             search
               ? { label: "Limpar busca", onClick: onClearSearch }
-              : { label: "Nova Fatura", onClick: onNovaFatura }
+              : canEdit
+                ? { label: "Nova Fatura", onClick: onNovaFatura }
+                : undefined
           }
         />
       </div>
@@ -89,6 +93,7 @@ export function FaturasTable({
                   onLiquidar={onLiquidar}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  canEdit={canEdit}
                 />
               ))}
             </tbody>
@@ -104,6 +109,7 @@ export function FaturasTable({
             onLiquidar={onLiquidar}
             onEdit={onEdit}
             onDelete={onDelete}
+            canEdit={canEdit}
           />
         ))}
       </div>

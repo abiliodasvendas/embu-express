@@ -17,6 +17,7 @@ interface FaturaMobileCardProps {
   onLiquidar: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
+  canEdit?: boolean;
 }
 
 export function FaturaMobileCard({
@@ -24,6 +25,7 @@ export function FaturaMobileCard({
   onLiquidar,
   onEdit,
   onDelete,
+  canEdit = true,
 }: FaturaMobileCardProps) {
   const { isVencido, diasAtraso } = getFaturaAtrasoInfo(
     fatura.data_vencimento,
@@ -128,41 +130,43 @@ export function FaturaMobileCard({
         </div>
       </div>
 
-      <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
-        <div>
-          {podeReceber && (
+      {canEdit && (
+        <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+          <div>
+            {podeReceber && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-[18px] px-3 text-xs font-medium border-border hover:bg-muted text-foreground gap-1.5 shadow-2xs"
+                onClick={() => onLiquidar(fatura)}
+              >
+                <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
+                <span>Receber</span>
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
             <Button
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-[18px] px-3 text-xs font-medium border-border hover:bg-muted text-foreground gap-1.5 shadow-2xs"
-              onClick={() => onLiquidar(fatura)}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
+              onClick={() => onEdit(fatura)}
+              title="Editar Fatura"
             >
-              <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Receber</span>
+              <Edit2 className="h-4 w-4" />
             </Button>
-          )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
+              onClick={() => onDelete(fatura)}
+              title="Excluir Fatura"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
-            onClick={() => onEdit(fatura)}
-            title="Editar Fatura"
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
-            onClick={() => onDelete(fatura)}
-            title="Excluir Fatura"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

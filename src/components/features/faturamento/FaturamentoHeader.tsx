@@ -5,12 +5,16 @@ interface FaturamentoHeaderProps {
   isLiquidacaoActive: boolean;
   onToggleLiquidacao: () => void;
   onOpenContasBancarias: () => void;
+  canLiquidacao?: boolean;
+  canContasBancarias?: boolean;
 }
 
 export function FaturamentoHeader({
   isLiquidacaoActive,
   onToggleLiquidacao,
   onOpenContasBancarias,
+  canLiquidacao = true,
+  canContasBancarias = true,
 }: FaturamentoHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -29,23 +33,27 @@ export function FaturamentoHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full sm:w-auto">
-        <Button
-          variant={isLiquidacaoActive ? "default" : "outline"}
-          onClick={onToggleLiquidacao}
-          className="h-11 rounded-[18px] font-semibold px-4 gap-2 shadow-xs text-xs sm:text-sm cursor-pointer select-none"
-        >
-          <Layers className="h-4 w-4" />
-          <span>Liquidação em Lote</span>
-        </Button>
+        {canLiquidacao && (
+          <Button
+            variant={isLiquidacaoActive ? "default" : "outline"}
+            onClick={onToggleLiquidacao}
+            className="h-11 rounded-[18px] font-semibold px-4 gap-2 shadow-xs text-xs sm:text-sm cursor-pointer select-none"
+          >
+            <Layers className="h-4 w-4" />
+            <span>Liquidação em Lote</span>
+          </Button>
+        )}
 
-        <Button
-          variant="outline"
-          onClick={onOpenContasBancarias}
-          className="h-11 rounded-[18px] border-border text-foreground hover:bg-muted font-semibold px-4 gap-2 shadow-xs text-xs sm:text-sm cursor-pointer select-none"
-        >
-          <Landmark className="h-4 w-4 text-muted-foreground" />
-          <span>Contas Bancárias</span>
-        </Button>
+        {canContasBancarias && (
+          <Button
+            variant="outline"
+            onClick={onOpenContasBancarias}
+            className="h-11 rounded-[18px] border-border text-foreground hover:bg-muted font-semibold px-4 gap-2 shadow-xs text-xs sm:text-sm cursor-pointer select-none"
+          >
+            <Landmark className="h-4 w-4 text-muted-foreground" />
+            <span>Contas Bancárias</span>
+          </Button>
+        )}
       </div>
     </div>
   );

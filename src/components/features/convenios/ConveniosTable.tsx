@@ -33,6 +33,7 @@ interface ConveniosTableProps {
   isResumoFetching: boolean;
   searchTerm: string;
   canEdit: boolean;
+  canLiquidar?: boolean;
   total: number;
   totalPages: number;
   page: number;
@@ -53,6 +54,7 @@ export function ConveniosTable({
   isResumoFetching,
   searchTerm,
   canEdit,
+  canLiquidar = true,
   total,
   totalPages,
   page,
@@ -111,8 +113,10 @@ export function ConveniosTable({
               convenio={convenio}
               resumoItem={resumoMap.get(convenio.id)}
               actions={getConvenioActions(convenio)}
-              onLiquidar={() =>
-                onLiquidarFatura(convenio, resumoMap.get(convenio.id))
+              onLiquidar={
+                canLiquidar
+                  ? () => onLiquidarFatura(convenio, resumoMap.get(convenio.id))
+                  : undefined
               }
             />
           )}
@@ -154,8 +158,10 @@ export function ConveniosTable({
                     convenio={convenio}
                     resumoItem={resumoMap.get(convenio.id)}
                     actions={getConvenioActions(convenio)}
-                    onLiquidar={() =>
-                      onLiquidarFatura(convenio, resumoMap.get(convenio.id))
+                    onLiquidar={
+                      canLiquidar
+                        ? () => onLiquidarFatura(convenio, resumoMap.get(convenio.id))
+                        : undefined
                     }
                   />
                 ))}

@@ -26,6 +26,7 @@ interface FaturasToolbarProps {
   onStatusChange: (value: string) => void;
   empresasList: EmpresaOption[];
   onNovaFatura: () => void;
+  canEdit?: boolean;
   agingFaixaFiltro: string | null;
   agingFaixaDescricao?: string;
   totalExibidas: number;
@@ -47,6 +48,7 @@ export function FaturasToolbar({
   onStatusChange,
   empresasList,
   onNovaFatura,
+  canEdit = true,
   agingFaixaFiltro,
   agingFaixaDescricao,
   totalExibidas,
@@ -126,14 +128,16 @@ export function FaturasToolbar({
           </NativeSelect>
         </div>
 
-        <Button
-          size="sm"
-          onClick={onNovaFatura}
-          className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Nova Fatura</span>
-        </Button>
+        {canEdit && (
+          <Button
+            size="sm"
+            onClick={onNovaFatura}
+            className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Nova Fatura</span>
+          </Button>
+        )}
       </div>
 
       {agingFaixaFiltro && (

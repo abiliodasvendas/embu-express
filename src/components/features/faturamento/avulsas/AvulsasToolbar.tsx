@@ -14,6 +14,7 @@ interface AvulsasToolbarProps {
   tipoMovimentacaoFiltro: string;
   onTipoMovimentacaoChange: (value: string) => void;
   onNovoLancamento: () => void;
+  canEdit?: boolean;
 }
 
 export function AvulsasToolbar({
@@ -26,6 +27,7 @@ export function AvulsasToolbar({
   tipoMovimentacaoFiltro,
   onTipoMovimentacaoChange,
   onNovoLancamento,
+  canEdit = true,
 }: AvulsasToolbarProps) {
   const anoAtual = new Date().getFullYear();
 
@@ -74,14 +76,16 @@ export function AvulsasToolbar({
         </NativeSelect>
       </div>
 
-      <Button
-        size="sm"
-        onClick={onNovoLancamento}
-        className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
-      >
-        <Plus className="h-4 w-4" />
-        <span>Novo Lançamento</span>
-      </Button>
+      {canEdit && (
+        <Button
+          size="sm"
+          onClick={onNovoLancamento}
+          className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Novo Lançamento</span>
+        </Button>
+      )}
     </div>
   );
 }

@@ -182,6 +182,7 @@ export default function ConvenioDetails() {
             mes={vm.mes}
             ano={vm.ano}
             canEdit={vm.canEdit}
+            canLiquidar={vm.canLiquidar}
             onOpenLiquidarDialog={vm.handleLiquidarFaturaAuditoria}
             onOpenLancamentoDialog={(l) => vm.handleEditarLancamento(l)}
           />

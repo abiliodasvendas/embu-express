@@ -18,6 +18,7 @@ interface DespesaTableRowProps {
   onLiquidar: (despesa: DespesaOperacional) => void;
   onEdit: (despesa: DespesaOperacional) => void;
   onDelete: (despesa: DespesaOperacional) => void;
+  canEdit?: boolean;
 }
 
 export function DespesaTableRow({
@@ -25,6 +26,7 @@ export function DespesaTableRow({
   onLiquidar,
   onEdit,
   onDelete,
+  canEdit = true,
 }: DespesaTableRowProps) {
   const { isVencido, diasAtraso } = getDespesaAtrasoInfo(
     despesa.data_vencimento,
@@ -115,6 +117,7 @@ export function DespesaTableRow({
           onLiquidar={onLiquidar}
           onEdit={onEdit}
           onDelete={onDelete}
+          canEdit={canEdit}
         />
       </td>
     </tr>

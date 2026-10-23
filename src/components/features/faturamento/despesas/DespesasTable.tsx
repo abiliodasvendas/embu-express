@@ -20,6 +20,7 @@ interface DespesasTableProps {
   onLiquidar: (despesa: DespesaOperacional) => void;
   onEdit: (despesa: DespesaOperacional) => void;
   onDelete: (despesa: DespesaOperacional) => void;
+  canEdit?: boolean;
 }
 
 export function DespesasTable({
@@ -35,6 +36,7 @@ export function DespesasTable({
   onLiquidar,
   onEdit,
   onDelete,
+  canEdit = true,
 }: DespesasTableProps) {
   if (isLoading) {
     return <TableSkeleton cols={10} rows={5} />;
@@ -54,7 +56,9 @@ export function DespesasTable({
           action={
             search
               ? { label: "Limpar busca", onClick: onClearSearch }
-              : { label: "Nova Despesa", onClick: onNovaDespesa }
+              : canEdit
+                ? { label: "Nova Despesa", onClick: onNovaDespesa }
+                : undefined
           }
         />
       </div>
@@ -89,6 +93,7 @@ export function DespesasTable({
                   onLiquidar={onLiquidar}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  canEdit={canEdit}
                 />
               ))}
             </tbody>
@@ -104,6 +109,7 @@ export function DespesasTable({
             onLiquidar={onLiquidar}
             onEdit={onEdit}
             onDelete={onDelete}
+            canEdit={canEdit}
           />
         ))}
       </div>

@@ -6,12 +6,9 @@ export const categoriaItemSchema = z.object({
 
 export const itemEquipamentoSchema = z.object({
   nome: z.string().min(2, "O nome do item deve ter pelo menos 2 caracteres"),
-  categoria_id: z
-    .any({ required_error: "A categoria é obrigatória" })
-    .refine((val) => val !== undefined && val !== null && val !== "" && !isNaN(Number(val)), {
-      message: "A categoria é obrigatória",
-    })
-    .transform(Number),
+  categoria_id: z.coerce
+    .number({ required_error: "A categoria é obrigatória", invalid_type_error: "A categoria é obrigatória" })
+    .positive("A categoria é obrigatória"),
   ativo: z.boolean().optional().default(true),
 });
 

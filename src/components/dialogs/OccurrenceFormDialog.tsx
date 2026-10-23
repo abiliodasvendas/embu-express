@@ -1,601 +1,108 @@
-import { MoneyInput } from "@/components/ui/MoneyInput";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
+import { Form } from "@/components/ui/form";
+import { useOccurrenceForm } from "@/hooks";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
+  OccurrenceColaboradorSection,
+  OccurrenceTipoDataSection,
+  OccurrenceFinanceiroSection,
+  OccurrenceObservacaoSection,
+} from "./occurrence";
 import { OccurrenceFormMode } from "@/types/enums";
-import { messages } from "@/constants/messages";
-import { ParcelasPreview } from "@/components/common/ParcelasPreview";
-import { useCollaborator, useCollaborators } from "@/hooks/api/useCollaborators";
-import { useCreateOcorrencia, useUpdateOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
-import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
-import { cn } from "@/lib/utils";
-import { OccurrenceFormData, occurrenceSchema } from "@/schemas/occurrenceSchema";
-import { mockGenerator } from "@/utils/mocks/generator";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Loader2, Wand2, X } from "lucide-react";
-import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import type { OccurrenceFormData } from "@/schemas/occurrenceSchema";
 
 interface OccurrenceFormDialogProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    collaboratorId?: string;
-    onSuccess?: () => void;
-    defaultValues?: Partial<OccurrenceFormData> & { id?: number };
-    mode?: OccurrenceFormMode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  collaboratorId?: string;
+  onSuccess?: () => void;
+  defaultValues?: Partial<OccurrenceFormData> & { id?: number };
+  mode?: OccurrenceFormMode;
 }
 
 export function OccurrenceFormDialog({
+  open,
+  onOpenChange,
+  collaboratorId,
+  onSuccess,
+  defaultValues,
+  mode,
+}: OccurrenceFormDialogProps) {
+  const {
+    form,
+    collaborators,
+    tipos,
+    links,
+    isEditing,
+    isSaving,
+    onSubmit,
+    handleClose,
+  } = useOccurrenceForm({
     open,
     onOpenChange,
     collaboratorId,
     onSuccess,
     defaultValues,
     mode,
-}: OccurrenceFormDialogProps) {
-    const { data: collaboratorsResponse } = useCollaborators({});
-    const collaborators = useMemo(() => {
-        if (!collaboratorsResponse) return [];
-        if (Array.isArray(collaboratorsResponse)) return collaboratorsResponse;
-        return collaboratorsResponse.data || [];
-    }, [collaboratorsResponse]);
-    const { data: tipos = [] } = useTiposOcorrencia();
-    const createMutation = useCreateOcorrencia();
-    const updateMutation = useUpdateOcorrencia();
-    const isEditing = !!defaultValues?.id;
+  });
 
-    const form = useForm<OccurrenceFormData>({
-        resolver: zodResolver(occurrenceSchema),
-        defaultValues: {
-            colaborador_id: collaboratorId || defaultValues?.colaborador_id || "",
-            tipo_id: defaultValues?.tipo_id || "",
-            data_ocorrencia: defaultValues?.data_ocorrencia || "",
-            valor: defaultValues?.valor || 0,
-            impacto_financeiro: mode === OccurrenceFormMode.FINANCIAL ? true : (mode === OccurrenceFormMode.GENERAL ? false : (defaultValues?.impacto_financeiro || false)),
-            tipo_lancamento: defaultValues?.tipo_lancamento || undefined as any,
-            colaborador_cliente_id: defaultValues?.colaborador_cliente_id !== undefined ? defaultValues.colaborador_cliente_id : undefined as any,
-            observacao: defaultValues?.observacao || "",
-            is_parcelado: defaultValues?.is_parcelado || false,
-            quantidade_parcelas: defaultValues?.quantidade_parcelas || undefined,
-        },
-    });
-
-    const selectedCollaboratorId = form.watch("colaborador_id");
-    const { data: selectedDetailedCollaborator } = useCollaborator(selectedCollaboratorId);
-
-    // Update collaborator_id and defaultValues if they change via props
-    useEffect(() => {
-        if (collaboratorId) {
-            form.setValue("colaborador_id", collaboratorId);
+  return (
+    <BaseDialog open={open} onOpenChange={(val) => !val && handleClose()} maxWidth="md">
+      <BaseDialog.Header
+        title={isEditing ? "Editar Ocorrência" : "Lançar Ocorrência"}
+        subtitle={
+          isEditing
+            ? "Edite os dados desta ocorrência"
+            : "Registre uma ocorrência para um colaborador"
         }
-        if (defaultValues) {
-            Object.entries(defaultValues).forEach(([key, value]) => {
-                if (value !== undefined) {
-                    form.setValue(key as any, value);
-                }
-            });
-        }
-    }, [collaboratorId, defaultValues, form]);
+        icon={<AlertCircle className="w-5 h-5 text-foreground" />}
+      />
 
-    // Garantir que o valor inicial do turno seja selecionado assim que a lista de links/turnos for carregada do backend
-    useEffect(() => {
-        if (selectedDetailedCollaborator?.links && defaultValues?.colaborador_cliente_id) {
-            const hasLink = selectedDetailedCollaborator.links.some(
-                (link: any) => String(link.id) === String(defaultValues.colaborador_cliente_id)
-            );
-            if (hasLink) {
-                form.setValue("colaborador_cliente_id", String(defaultValues.colaborador_cliente_id));
-            }
-        }
-    }, [selectedDetailedCollaborator, defaultValues?.colaborador_cliente_id, form]);
+      <BaseDialog.Body className="space-y-4">
+        <Form {...form}>
+          <form id="occurrence-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {!collaboratorId && (
+              <OccurrenceColaboradorSection
+                control={form.control}
+                collaborators={collaborators}
+              />
+            )}
 
-    const handleFillMagic = () => {
-        const data = mockGenerator.occurrence(collaboratorId);
-        const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+            <OccurrenceTipoDataSection
+              control={form.control}
+              tipos={tipos}
+              links={links}
+            />
 
-        form.reset({
-            ...(data as any),
-            tipo_id: tipo ? String(tipo.id) : "",
-        });
-    };
+            <OccurrenceFinanceiroSection
+              form={form}
+              mode={mode}
+              isEditing={isEditing}
+            />
 
-    const onSubmit = async (data: OccurrenceFormData) => {
-        try {
-            if (isEditing && defaultValues?.id) {
-                await updateMutation.mutateAsync({
-                    id: defaultValues.id,
-                    data: {
-                        colaborador_id: data.colaborador_id,
-                        tipo_id: Number(data.tipo_id),
-                        data_ocorrencia: data.data_ocorrencia,
-                        valor: data.valor,
-                        impacto_financeiro: Boolean(data.impacto_financeiro),
-                        tipo_lancamento: data.tipo_lancamento as typeof LANCAMENTO_TIPO.ENTRADA | typeof LANCAMENTO_TIPO.SAIDA | undefined,
-                        observacao: data.observacao,
-                        colaborador_cliente_id: data.colaborador_cliente_id ? Number(data.colaborador_cliente_id) : undefined,
-                        is_parcelado: data.is_parcelado,
-                        quantidade_parcelas: data.quantidade_parcelas ? Number(data.quantidade_parcelas) : undefined,
-                    } as any
-                });
-            } else {
-                await createMutation.mutateAsync({
-                    colaborador_id: data.colaborador_id,
-                    tipo_id: Number(data.tipo_id),
-                    data_ocorrencia: data.data_ocorrencia,
-                    valor: data.valor,
-                    impacto_financeiro: Boolean(data.impacto_financeiro),
-                    tipo_lancamento: data.tipo_lancamento as typeof LANCAMENTO_TIPO.ENTRADA | typeof LANCAMENTO_TIPO.SAIDA | undefined,
-                    observacao: data.observacao,
-                    colaborador_cliente_id: data.colaborador_cliente_id ? Number(data.colaborador_cliente_id) : undefined,
-                    is_parcelado: data.is_parcelado,
-                    quantidade_parcelas: data.quantidade_parcelas ? Number(data.quantidade_parcelas) : undefined,
-                });
-            }
-            onSuccess?.();
-            form.reset();
-        } catch (error) {
-            toast.error(isEditing ? messages.ocorrencia.erro.atualizar : messages.ocorrencia.erro.salvar, { description: error.response?.data?.message || error.message });
-        }
-    };
+            <OccurrenceObservacaoSection control={form.control} />
+          </form>
+        </Form>
+      </BaseDialog.Body>
 
-    const selectedTipoId = form.watch("tipo_id");
-
-    // Auto-set finance properties when type changes
-    useEffect(() => {
-        if (selectedTipoId) {
-            const tipo = tipos.find((t) => String(t.id) === selectedTipoId);
-            if (tipo) {
-                const hasImpact = mode === OccurrenceFormMode.FINANCIAL ? true : (mode === OccurrenceFormMode.GENERAL ? false : !!tipo.impacto_financeiro);
-                form.setValue("impacto_financeiro", hasImpact);
-
-                if (hasImpact) {
-                    if (tipo.valor_padrao) {
-                        form.setValue("valor", tipo.valor_padrao);
-                    }
-                    if (tipo.tipo_lancamento) {
-                        form.setValue("tipo_lancamento", tipo.tipo_lancamento);
-                    }
-                } else {
-                    // Limpa os campos financeiros se o tipo não tiver impacto por padrão e o mode permitir
-                    form.setValue("valor", 0);
-                    form.setValue("tipo_lancamento", undefined as any);
-                    form.setValue("colaborador_cliente_id", undefined as any);
-                    form.setValue("is_parcelado", false);
-                    form.setValue("quantidade_parcelas", undefined);
-                }
-            }
-        }
-    }, [selectedTipoId, tipos, form, mode]);
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent
-                className="w-full max-w-lg p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
-                hideCloseButton
-            >
-                {/* Header Padronizado */}
-                <div className="bg-blue-600 p-4 text-center relative shrink-0">
-                    <div className="absolute left-4 top-4 flex gap-2">
-                        {import.meta.env.DEV && (
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20 transition-all active:scale-95"
-                                onClick={handleFillMagic}
-                                title="Preencher com dados mágicos"
-                            >
-                                <Wand2 className="h-5 w-5" />
-                            </Button>
-                        )}
-                    </div>
-
-                    <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
-                        <X className="h-6 w-6" />
-                        <span className="sr-only">Fechar</span>
-                    </DialogClose>
-
-                    <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-                        <AlertCircle className="w-5 h-5 text-white" />
-                    </div>
-                    <DialogTitle className="text-xl font-bold text-white">
-                        {isEditing ? "Editar Ocorrência" : "Lançar Ocorrência"}
-                    </DialogTitle>
-                    <p className="text-xs text-white/70 mt-1">
-                        {isEditing ? "Edite os dados desta ocorrência" : "Registre uma ocorrência para um colaborador"}
-                    </p>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
-                    <Form {...form}>
-                        <form id="occurrence-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            {!collaboratorId && (
-                                <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-                                    <FormField
-                                        control={form.control}
-                                        name="colaborador_id"
-                                        render={({ field }) => (
-                                            <FormItem className="space-y-1.5">
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    Colaborador <span className="text-red-500">*</span>
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Combobox
-                                                        modal={true}
-                                                        options={collaborators.map((c) => ({
-                                                            value: c.id,
-                                                            label: c.nome_completo,
-                                                        }))}
-                                                        value={field.value}
-                                                        onSelect={field.onChange}
-                                                        placeholder="Selecione um colaborador"
-                                                        searchPlaceholder="Buscar colaborador..."
-                                                        emptyText="Nenhum colaborador encontrado."
-                                                        className={cn(
-                                                            "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all focus-visible:ring-primary/20",
-                                                            form.formState.errors.colaborador_id && "border-red-500 focus:ring-red-200"
-                                                        )}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            )}
-
-                            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-6">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="tipo_id"
-                                        render={({ field }) => (
-                                            <FormItem className="space-y-1.5">
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    Tipo <span className="text-red-500">*</span>
-                                                </FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger
-                                                            className={cn(
-                                                                "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                                form.formState.errors.tipo_id && "border-red-500 focus:ring-red-200"
-                                                            )}
-                                                        >
-                                                            <SelectValue placeholder="Selecione o tipo" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent className="rounded-xl shadow-xl" side="bottom" sideOffset={4}>
-                                                        {tipos.map((t) => (
-                                                            <SelectItem key={t.id} value={String(t.id)} className="cursor-pointer">
-                                                                {t.descricao}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="data_ocorrencia"
-                                        render={({ field }) => (
-                                            <FormItem className="space-y-1.5">
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    Data <span className="text-red-500">*</span>
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="date"
-                                                        {...field}
-                                                        className={cn(
-                                                            "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                            form.formState.errors.data_ocorrencia && "border-red-500 focus:ring-red-200"
-                                                        )}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <FormField
-                                    control={form.control}
-                                    name="colaborador_cliente_id"
-                                    render={({ field }) => {
-                                        const links = selectedDetailedCollaborator?.links || [];
-
-                                        return (
-                                            <FormItem className="space-y-1.5 w-full">
-                                                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                    Turno <span className="text-red-500">*</span>
-                                                </FormLabel>
-                                                <Select
-                                                    onValueChange={(val) => {
-                                                        field.onChange(val === "none" ? null : val);
-                                                    }}
-                                                    value={field.value === null ? "none" : (field.value || "")}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger
-                                                            className={cn(
-                                                                "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                                form.formState.errors.colaborador_cliente_id && "border-red-500 focus:ring-red-200"
-                                                            )}
-                                                        >
-                                                            <SelectValue placeholder="Selecione o turno ou 'Geral'" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent className="rounded-xl shadow-xl" side="bottom" sideOffset={4}>
-                                                        <SelectItem value="none" className="cursor-pointer font-semibold text-primary italic">
-                                                            Geral (Avulsa)
-                                                        </SelectItem>
-                                                        {links.map((link: any) => {
-                                                            const hInicio = link.horarios?.[0]?.hora_inicio;
-                                                            const hFim = link.horarios?.[0]?.hora_fim;
-
-                                                            return (
-                                                                <SelectItem key={link.id} value={String(link.id)} className="cursor-pointer">
-                                                                    {link.cliente?.nome_fantasia || "Sem Cliente"}{" "}
-                                                                    {hInicio && hFim && (
-                                                                        <span className="text-[10px] text-gray-400 font-normal italic">
-                                                                            ({hInicio.slice(0, 5)} - {hFim.slice(0, 5)})
-                                                                        </span>
-                                                                    )}
-                                                                </SelectItem>
-                                                            );
-                                                        })}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        );
-                                    }}
-                                />
-
-
-                                {(!mode || mode === OccurrenceFormMode.FINANCIAL) && (
-                                    <FormField
-                                        control={form.control}
-                                        name="impacto_financeiro"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-row items-center justify-between rounded-xl border border-blue-50 bg-blue-50/30 p-4 shadow-sm">
-                                                <div className="space-y-0.5">
-                                                    <FormLabel className="text-sm font-bold text-gray-700">
-                                                        Gera impacto financeiro?
-                                                    </FormLabel>
-                                                    <p className="text-[10px] text-gray-500 font-medium leading-tight">
-                                                        {mode === OccurrenceFormMode.FINANCIAL
-                                                            ? "Obrigatório para lançamentos na aba financeira."
-                                                            : "Se ativado, este valor será considerado no fechamento."}
-                                                    </p>
-                                                </div>
-                                                <FormControl>
-                                                    <Switch
-                                                        checked={field.value}
-                                                        onCheckedChange={field.onChange}
-                                                        disabled={mode === OccurrenceFormMode.FINANCIAL}
-                                                    />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                )}
-
-                                {form.watch("impacto_financeiro") && (
-                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="tipo_lancamento"
-                                                render={({ field }) => (
-                                                    <FormItem className="space-y-1.5">
-                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                            Lançamento <span className="text-red-500">*</span>
-                                                        </FormLabel>
-                                                        <Select onValueChange={field.onChange} value={field.value}>
-                                                            <FormControl>
-                                                                <SelectTrigger
-                                                                    className={cn(
-                                                                        "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                                        form.formState.errors.tipo_lancamento && "border-red-500 focus:ring-red-200"
-                                                                    )}
-                                                                >
-                                                                    <SelectValue placeholder="Selecione..." />
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent className="rounded-xl shadow-xl" side="bottom" sideOffset={4}>
-                                                                <SelectItem value={LANCAMENTO_TIPO.SAIDA} className="cursor-pointer">Saída (Débito)</SelectItem>
-                                                                <SelectItem value={LANCAMENTO_TIPO.ENTRADA} className="cursor-pointer">Entrada (Crédito)</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="valor"
-                                                render={({ field }) => (
-                                                    <FormItem className="space-y-1.5">
-                                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                            Valor <span className="text-red-500">*</span>
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <MoneyInput
-                                                                value={field.value}
-                                                                onChange={field.onChange}
-                                                                className={cn(
-                                                                    "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                                    form.formState.errors.valor && "border-red-500 focus:ring-red-200"
-                                                                )}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        {mode === OccurrenceFormMode.FINANCIAL && !isEditing && (
-                                            <>
-                                                <div className="pt-4">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="is_parcelado"
-                                                        render={({ field }) => (
-                                                            <FormItem className="flex flex-row items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-3.5">
-                                                                <div className="space-y-0.5 pr-2">
-                                                                    <FormLabel className="text-gray-700 font-bold text-sm">
-                                                                        Ocorrência Parcelada?
-                                                                    </FormLabel>
-                                                                    <p className="text-xs text-gray-500">
-                                                                        Gera automaticamente ocorrências para os próximos meses.
-                                                                    </p>
-                                                                </div>
-                                                                <FormControl>
-                                                                    <Switch
-                                                                        checked={field.value}
-                                                                        onCheckedChange={(checked) => {
-                                                                            field.onChange(checked);
-                                                                            if (!checked) {
-                                                                                form.setValue("quantidade_parcelas", undefined);
-                                                                            }
-                                                                        }}
-                                                                        className="data-[state=checked]:bg-blue-600"
-                                                                    />
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-
-                                                {form.watch("is_parcelado") && (
-                                                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                                                        <FormField
-                                                            control={form.control}
-                                                            name="quantidade_parcelas"
-                                                            render={({ field }) => (
-                                                            <FormItem className="space-y-1.5 w-full">
-                                                                    <FormLabel className="text-gray-700 font-bold text-sm">
-                                                                        Quantidade de Parcelas <span className="text-red-500">*</span>
-                                                                    </FormLabel>
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            type="number"
-                                                                            min={2}
-                                                                            step={1}
-                                                                            {...field}
-                                                                            value={field.value || ""}
-                                                                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                                                                            placeholder="Ex: 4"
-                                                                            className={cn(
-                                                                                "h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all",
-                                                                                form.formState.errors.quantidade_parcelas && "border-red-500 focus:ring-red-200"
-                                                                            )}
-                                                                        />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                {form.watch("is_parcelado") && form.watch("quantidade_parcelas") ? (
-                                                    <div className="pt-2">
-                                                        <ParcelasPreview
-                                                            dataBase={form.watch("data_ocorrencia")}
-                                                            quantidadeParcelas={form.watch("quantidade_parcelas") || 0}
-                                                            valorTotal={form.watch("valor")}
-                                                        />
-                                                    </div>
-                                                ) : null}
-                                            </>
-                                        )}
-                                    </div>
-                                )}
-
-                                <FormField
-                                    control={form.control}
-                                    name="observacao"
-                                    render={({ field }) => (
-                                        <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                                Observação <span className="text-red-500">*</span>
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    {...field}
-                                                    placeholder="Detalhes adicionais da ocorrência..."
-                                                    className={cn(
-                                                        "min-h-[100px] rounded-2xl bg-gray-50 border-gray-200 focus:bg-white transition-all resize-none p-4",
-                                                        form.formState.errors.observacao && "border-red-500 focus:ring-red-200"
-                                                    )}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        </form>
-                    </Form>
-                </div>
-
-                <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                        className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
-                    >
-                        Cancelar
-                    </Button>
-                    <Button
-                        type="submit"
-                        form="occurrence-form"
-                        disabled={createMutation.isPending || updateMutation.isPending}
-                        className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
-                    >
-                        {createMutation.isPending || updateMutation.isPending ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                {isEditing ? "Salvando..." : "Registrando..."}
-                            </>
-                        ) : isEditing ? "Salvar Alterações" : "Registrar Ocorrência"}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
+      <BaseDialog.Footer>
+        <Button type="button" variant="outline" onClick={handleClose}>
+          Cancelar
+        </Button>
+        <Button type="submit" form="occurrence-form" disabled={isSaving}>
+          {isSaving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {isEditing ? "Salvando..." : "Registrando..."}
+            </>
+          ) : isEditing ? (
+            "Salvar Alterações"
+          ) : (
+            "Registrar Ocorrência"
+          )}
+        </Button>
+      </BaseDialog.Footer>
+    </BaseDialog>
+  );
 }

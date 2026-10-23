@@ -1,364 +1,340 @@
 import { Can } from "@/components/auth/Can";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/BaseDialog";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { StatusVisualPonto } from "@/types/enums";
 import { cn } from "@/lib/utils";
-import { RegistroPonto } from "@/types/database";
-import { safeCloseDialog } from "@/utils/dialogUtils";
+import { RegistroPonto, Pausa } from "@/types/database";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { formatKm } from "@/utils/masks";
 import { formatMinutes, getStatusColorClass, getStatusLabel, formatTime } from "@/utils/ponto";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Building2, CalendarClock, Clock, Edit2, MapPin, Pause, User, X, AlertTriangle } from "lucide-react";
+import { Building2, CalendarClock, Clock, Edit2, MapPin, Pause } from "lucide-react";
 import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface TimeRecordDetailsDialogProps {
-    isOpen: boolean;
-    onClose: () => void;
-    record: RegistroPonto | null;
-    onEdit: (record: RegistroPonto) => void;
-    onDelete?: any;
+  isOpen: boolean;
+  onClose: () => void;
+  record: RegistroPonto | null;
+  onEdit: (record: RegistroPonto) => void;
+  onDelete?: (record: RegistroPonto) => void;
 }
 
-export function TimeRecordDetailsDialog({ isOpen, onClose, record, onEdit }: TimeRecordDetailsDialogProps) {
-    const { can } = usePermissions();
-    if (!record) return null;
+export function TimeRecordDetailsDialog({
+  isOpen,
+  onClose,
+  record,
+  onEdit
+}: TimeRecordDetailsDialogProps) {
+  const { can } = usePermissions();
+  if (!record) return null;
 
-    const formatDate = (dateStr: string) => {
-        if (!dateStr) return "";
-        const [year, month, day] = dateStr.split('-').map(Number);
-        return format(new Date(year, month - 1, day), "d 'de' MMMM, yyyy", { locale: ptBR });
-    };
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-").map(Number);
+    return format(new Date(year, month - 1, day), "d 'de' MMMM, yyyy", { locale: ptBR });
+  };
 
+  const handleClose = () => {
+    safeCloseDialog(onClose);
+  };
 
+  const handleEdit = () => {
+    safeCloseDialog(() => onEdit(record));
+  };
 
-    const handleClose = () => {
-        safeCloseDialog(onClose);
-    };
+  const pausas: Pausa[] = record.pausas || [];
 
-    const handleEdit = () => {
-        safeCloseDialog(() => onEdit(record));
-    };
+  const initials = record.usuario?.nome_completo
+    ? record.usuario.nome_completo
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+    : "--";
 
-    // Pause History
-    const pausas = (record as any).pausas || [];
+  const renderCalculationDetails = (type: "entrada" | "saida") => {
+    const details = record.detalhes_calculo?.[type];
+    const timeIso = type === "entrada" ? record.entrada_hora : record.saida_hora;
+    const status = type === "entrada" ? record.status_entrada : record.status_saida;
 
-    const renderCalculationDetails = (type: 'entrada' | 'saida') => {
-        const details = record.detalhes_calculo?.[type];
-        const timeIso = type === 'entrada' ? record.entrada_hora : record.saida_hora;
-        const status = type === 'entrada' ? record.status_entrada : record.status_saida;
+    if (!details || !timeIso) {
+      return (
+        <div className="bg-muted/30 rounded-[18px] p-4 border border-border flex items-center justify-center h-full min-h-[120px]">
+          <p className="text-xs text-muted-foreground italic text-center">
+            Aguardando registro para calcular...
+          </p>
+        </div>
+      );
+    }
 
-        if (!details || !timeIso) return (
-            <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex items-center justify-center h-full min-h-[140px]">
-                <p className="text-xs text-gray-400 italic text-center">Aguardando registro para calcular...</p>
-            </div>
-        );
-
-        const diff = details.diff_minutos;
-
-        return (
-            <div className="bg-white rounded-2xl p-4 space-y-3 border border-gray-100 shadow-sm transition-all hover:border-blue-100">
-                <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-400">Registrado</span>
-                    <span className="font-bold text-gray-900 font-mono text-base">{formatTime(timeIso)}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-400">Turno Base</span>
-                    <span className="font-medium text-gray-700 font-mono">{details.turno_base?.substring(0, 5) || '--:--'}</span>
-                </div>
-                <div className="border-t border-gray-50 my-1"></div>
-                <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-400">Diferença</span>
-                    <span className={cn(
-                        "font-bold px-2 py-0.5 rounded-md",
-                        status === StatusVisualPonto.VERDE ? "text-emerald-600 bg-emerald-50" :
-                            status === StatusVisualPonto.AMARELO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-sky-600 bg-sky-50") :
-                                status === StatusVisualPonto.ANTECIPADA ? (type === 'entrada' ? "text-sky-600 bg-sky-50" : "text-orange-600 bg-orange-50") :
-                                    status === StatusVisualPonto.VERMELHO ? (type === 'entrada' ? "text-rose-600 bg-rose-50" : "text-indigo-700 bg-indigo-50") :
-                                        "text-gray-600 bg-gray-50"
-                    )}>
-                        {formatMinutes(diff)}
-                    </span>
-                </div>
-                <div className="pt-2 text-center">
-                    <span className={`text-[10px] px-2.5 py-1 rounded-full border uppercase tracking-wider font-bold ${getStatusColorClass(status, type)}`}>
-                        {getStatusLabel(status, type)}
-                    </span>
-                </div>
-            </div>
-        );
-    };
+    const diff = details.diff_minutos;
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-            <DialogContent
-                onOpenAutoFocus={(e) => e.preventDefault()}
-                className="w-full max-w-lg p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
-                hideCloseButton
-            >
-                <div className="bg-blue-600 p-4 text-center relative shrink-0">
-                    <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors" onClick={handleClose}>
-                        <X className="h-6 w-6" />
-                        <span className="sr-only">Fechar</span>
-                    </DialogClose>
-
-                    <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-                        <CalendarClock className="w-5 h-5 text-white" />
-                    </div>
-                    <DialogTitle className="text-xl font-bold text-white">
-                        Detalhes da Atividade
-                    </DialogTitle>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30 space-y-6">
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center space-y-2">
-                        <div className="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-2">
-                            <User className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 leading-tight">{record.usuario?.nome_completo}</h3>
-                        <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                            <Building2 className="w-4 h-4" />
-                            <div className="flex flex-col items-center">
-                                <span className="font-bold">{(record as any).cliente?.nome_fantasia || record.usuario?.links?.[0]?.cliente?.nome_fantasia || "Sem Cliente"}</span>
-                                {(record as any).colaborador_cliente?.unidade?.nome_unidade && (
-                                    <span className="text-xs text-gray-400 font-medium ml-1">{(record as any).colaborador_cliente.unidade.nome_unidade}</span>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 text-xs font-medium text-gray-400">
-                            <MapPin className="w-3 h-3" />
-                            <span>{formatDate(record.data_referencia)}</span>
-                        </div>
-                    </div>
-
-                    {/* Timeline Section */}
-                    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
-                        <h4 className="font-black text-[11px] text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                            <Clock className="w-3 h-3" /> Linha do Tempo
-                        </h4>
-
-                        <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
-                            {/* Entry */}
-                            {record.entrada_hora && (
-                                <div className="relative">
-                                    <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm z-10" />
-                                    <div className="flex flex-col w-full">
-                                        <div className="flex justify-between items-start w-full">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-gray-400 uppercase">Entrada</span>
-                                                <span className="text-sm font-bold text-gray-900">{formatTime(record.entrada_hora)}</span>
-                                            </div>
-                                            {(record.entrada_km !== null && record.entrada_km !== undefined) && (
-                                                <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
-                                                    {formatKm(record.entrada_km)}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Pauses */}
-                            {pausas.map((p: any, idx: number) => (
-                                <div key={p.id} className="space-y-4">
-                                    <div className="relative">
-                                        <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-sm z-10" />
-                                        <div className="flex flex-col w-full">
-                                            <div className="flex justify-between items-start w-full">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-tighter">Pausa #{idx + 1}</span>
-                                                    <span className="text-sm font-bold text-gray-900">{format(new Date(p.inicio_hora), "HH:mm")}</span>
-                                                </div>
-                                                {(p.inicio_km !== null && p.inicio_km !== undefined) && (
-                                                    <span className="text-[10px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md font-bold">
-                                                        {formatKm(p.inicio_km)}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {p.fim_hora && (
-                                        <div className="relative">
-                                            <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-blue-400 border-2 border-white shadow-sm z-10" />
-                                            <div className="flex flex-col w-full">
-                                                <div className="flex justify-between items-start w-full">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-bold text-gray-900">{format(new Date(p.fim_hora), "HH:mm")}</span>
-                                                        <span className="text-[10px] text-gray-500 italic">Retorno ao trabalho</span>
-                                                    </div>
-                                                    {(p.fim_km !== undefined && p.fim_km !== null) && (
-                                                        <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">
-                                                            {formatKm(p.fim_km)}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-
-                            {/* Exit */}
-                            {record.saida_hora && (
-                                <div className="relative">
-                                    <div className="absolute -left-[24px] top-1 w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm z-10" />
-                                    <div className="flex flex-col w-full">
-                                        <div className="flex justify-between items-start w-full">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-gray-400 uppercase">Saída</span>
-                                                <span className="text-sm font-bold text-gray-900">{formatTime(record.saida_hora)}</span>
-                                            </div>
-                                            {(record.saida_km !== null && record.saida_km !== undefined) && (
-                                                <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-md font-bold">
-                                                    {formatKm(record.saida_km)}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50 col-span-2">
-                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Saldo Diário</span>
-                            <span className={`text-xl font-black ${record.saldo_minutos !== undefined && record.saldo_minutos !== null ? (record.saldo_minutos >= 0 ? "text-green-600" : "text-red-500") : "text-gray-300"}`}>
-                                {record.entrada_hora && record.saida_hora && record.saldo_minutos !== undefined && record.saldo_minutos !== null ? formatMinutes(record.saldo_minutos) : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
-                            </span>
-                        </div>
-
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
-                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Trabalhadas</span>
-                            <span className="text-lg font-black text-gray-700 font-mono">
-                                {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
-                            </span>
-                        </div>
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
-                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Em Pausa</span>
-                            <span className="text-lg font-black text-amber-600 font-mono">
-                                {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_pausa || "--:--") : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--:--" : "")}
-                            </span>
-                        </div>
-
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
-                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">KM Trabalhado</span>
-                            <span className="text-lg font-black text-blue-600 font-mono">
-                                {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_trabalhado !== undefined ? formatKm(record.detalhes_calculo.resumo.km_trabalhado) : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--" : "")}
-                            </span>
-                        </div>
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center h-24 transition-all hover:bg-gray-50">
-                            <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">KM em Pausa</span>
-                            <span className="text-lg font-black text-amber-600 font-mono">
-                                {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_pausa !== undefined ? formatKm(record.detalhes_calculo.resumo.km_pausa) : (record.status_entrada !== StatusVisualPonto.CINZA && record.entrada_hora && record.saida_hora ? "--" : "")}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Pauses Section */}
-                    {pausas.length > 0 && (
-                        <div className="bg-orange-50/50 rounded-2xl p-5 border border-orange-100 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h4 className="font-bold text-orange-900 flex items-center gap-2">
-                                    <div className="p-1.5 bg-orange-100 rounded-lg">
-                                        <Pause className="w-4 h-4 text-orange-600" />
-                                    </div>
-                                    Histórico de Pausas
-                                </h4>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-2 mt-2">
-                                {pausas.map((p: any, idx: number) => {
-                                    const start = new Date(p.inicio_hora);
-                                    const end = p.fim_hora ? new Date(p.fim_hora) : null;
-                                    const duration = end ? Math.round((end.getTime() - start.getTime()) / 60000) : null;
-
-                                    return (
-                                        <div key={p.id} className="text-xs bg-white p-3 rounded-xl border border-orange-100 flex justify-between items-center shadow-sm">
-                                            <div className="flex gap-3 items-center">
-                                                <div className="bg-orange-50 w-8 h-8 rounded-full flex items-center justify-center font-bold text-orange-600">
-                                                    {idx + 1}
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="font-black text-gray-800 uppercase tracking-tighter text-[10px]">Período</span>
-                                                    <span className="text-gray-500 font-mono text-sm">
-                                                        {format(start, "HH:mm")} - {end ? format(end, "HH:mm") : "Andamento..."}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            {duration !== null && (
-                                                <div className="flex flex-col items-end gap-1">
-                                                    <span className="font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg text-[10px] uppercase">
-                                                        {duration} min
-                                                    </span>
-                                                    {p.distancia_trabalho !== undefined && p.distancia_trabalho > 0 && (
-                                                        <span className="text-[9px] text-blue-500 font-bold">
-                                                            +{formatKm(p.distancia_trabalho)} trab.
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 pl-1">
-                                <div className="p-1.5 bg-blue-50 rounded-lg">
-                                    <Clock className="w-3.5 h-3.5 text-blue-600" />
-                                </div>
-                                <h4 className="font-black text-[11px] text-gray-400 uppercase tracking-widest">Entrada</h4>
-                            </div>
-                            {renderCalculationDetails('entrada')}
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 pl-1">
-                                <div className="p-1.5 bg-orange-50 rounded-lg">
-                                    <Clock className="w-3.5 h-3.5 text-orange-600" />
-                                </div>
-                                <h4 className="font-black text-[11px] text-gray-400 uppercase tracking-widest">Saída</h4>
-                            </div>
-                            {renderCalculationDetails('saida')}
-                        </div>
-                    </div>
-
-                    {record.observacao && (
-                        <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 text-sm text-amber-900 animate-in fade-in slide-in-from-bottom-2">
-                            <span className="font-black text-[10px] uppercase tracking-widest block mb-2 text-amber-600">Observações</span>
-                            <p className="leading-relaxed font-medium">{record.observacao}</p>
-                        </div>
-                    )}
-                </div>
-
-                <div className={cn(
-                    "p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid gap-3",
-                    can(PERMISSIONS.PONTO.ADMIN_EDITAR) ? "grid-cols-2" : "grid-cols-1"
-                )}>
-                    <Button
-                        variant="outline"
-                        onClick={handleClose}
-                        className="w-full h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-white font-medium"
-                    >
-                        Fechar
-                    </Button>
-                    <Can I={PERMISSIONS.PONTO.ADMIN_EDITAR}>
-                        <Button
-                            onClick={handleEdit}
-                            className="w-full h-11 rounded-xl font-black shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                            <Edit2 className="w-4 h-4 mr-2" />
-                            {(record as any).ausente ? "Registrar Atividade" : "Editar Atividade"}
-                        </Button>
-                    </Can>
-                </div>
-            </DialogContent>
-        </Dialog>
+      <div className="bg-card rounded-[18px] p-4 space-y-2.5 border border-border shadow-xs">
+        <div className="flex justify-between items-center text-xs">
+          <span className="text-muted-foreground">Registrado</span>
+          <span className="font-semibold text-foreground font-mono text-sm">{formatTime(timeIso)}</span>
+        </div>
+        <div className="flex justify-between items-center text-xs">
+          <span className="text-muted-foreground">Turno Base</span>
+          <span className="font-medium text-foreground font-mono">{details.turno_base?.substring(0, 5) || "--:--"}</span>
+        </div>
+        <div className="border-t border-border/50 pt-2 flex justify-between items-center text-xs">
+          <span className="text-muted-foreground">Diferença</span>
+          <span className="font-semibold font-mono text-foreground">
+            {formatMinutes(diff)}
+          </span>
+        </div>
+        <div className="pt-1 text-center">
+          <span className={`text-[10px] px-2.5 py-0.5 rounded-[8px] border uppercase tracking-wider font-semibold ${getStatusColorClass(status, type)}`}>
+            {getStatusLabel(status, type)}
+          </span>
+        </div>
+      </div>
     );
+  };
+
+  return (
+    <BaseDialog open={isOpen} onOpenChange={(val) => !val && handleClose()} maxWidth="lg">
+      <BaseDialog.Header
+        title="Detalhes da Atividade"
+        subtitle="Visualização operacional completa da jornada"
+        icon={<CalendarClock className="w-5 h-5 text-foreground" />}
+      />
+
+      <BaseDialog.Body className="space-y-5">
+        <div className="bg-muted/30 p-4 rounded-[20px] border border-border flex flex-col items-center text-center space-y-2">
+          <Avatar className="h-12 w-12 rounded-[14px] border border-border bg-muted/70">
+            <AvatarImage src={record.usuario?.foto_url} className="rounded-[14px] object-cover" />
+            <AvatarFallback className="rounded-[14px] text-sm font-semibold text-foreground uppercase">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="text-base font-semibold text-foreground leading-tight">
+              {record.usuario?.nome_completo}
+            </h3>
+            <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-1">
+              <Building2 className="w-3.5 h-3.5" />
+              <span>
+                {record.cliente?.nome_fantasia || record.usuario?.links?.[0]?.cliente?.nome_fantasia || "Sem Cliente"}
+              </span>
+              {record.colaborador_cliente?.unidade?.nome_unidade && (
+                <span className="text-muted-foreground font-medium">
+                  • {record.colaborador_cliente.unidade.nome_unidade}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-muted-foreground mt-0.5">
+              <MapPin className="w-3 h-3" />
+              <span>{formatDate(record.data_referencia)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-[20px] p-4 border border-border bg-card space-y-4 shadow-xs">
+          <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" /> Linha do Tempo
+          </h4>
+
+          <div className="relative pl-6 space-y-4 before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
+            {record.entrada_hora && (
+              <div className="relative">
+                <div className="absolute -left-[20px] top-1 w-2.5 h-2.5 rounded-full bg-foreground border border-background shadow-xs z-10" />
+                <div className="flex justify-between items-center w-full">
+                  <div>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase block">Entrada</span>
+                    <span className="text-sm font-semibold font-mono text-foreground">{formatTime(record.entrada_hora)}</span>
+                  </div>
+                  {record.entrada_km !== null && record.entrada_km !== undefined && (
+                    <Badge variant="outline" className="text-[10px] font-mono font-semibold bg-muted/60 text-foreground border-border">
+                      {formatKm(record.entrada_km)}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {pausas.map((p, idx) => (
+              <div key={p.id} className="space-y-3">
+                <div className="relative">
+                  <div className="absolute -left-[20px] top-1 w-2.5 h-2.5 rounded-full bg-muted-foreground border border-background shadow-xs z-10" />
+                  <div className="flex justify-between items-center w-full">
+                    <div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase block">Pausa #{idx + 1}</span>
+                      <span className="text-sm font-semibold font-mono text-foreground">{format(new Date(p.inicio_hora), "HH:mm")}</span>
+                    </div>
+                    {p.inicio_km !== null && p.inicio_km !== undefined && (
+                      <Badge variant="outline" className="text-[10px] font-mono font-semibold bg-muted/60 text-foreground border-border">
+                        {formatKm(p.inicio_km)}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {p.fim_hora && (
+                  <div className="relative">
+                    <div className="absolute -left-[20px] top-1 w-2.5 h-2.5 rounded-full bg-muted-foreground border border-background shadow-xs z-10" />
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold font-mono text-foreground">{format(new Date(p.fim_hora), "HH:mm")}</span>
+                        <span className="text-[10px] text-muted-foreground italic">Retorno</span>
+                      </div>
+                      {p.fim_km !== undefined && p.fim_km !== null && (
+                        <Badge variant="outline" className="text-[10px] font-mono font-semibold bg-muted/60 text-foreground border-border">
+                          {formatKm(p.fim_km)}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {record.saida_hora && (
+              <div className="relative">
+                <div className="absolute -left-[20px] top-1 w-2.5 h-2.5 rounded-full bg-foreground border border-background shadow-xs z-10" />
+                <div className="flex justify-between items-center w-full">
+                  <div>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase block">Saída</span>
+                    <span className="text-sm font-semibold font-mono text-foreground">{formatTime(record.saida_hora)}</span>
+                  </div>
+                  {record.saida_km !== null && record.saida_km !== undefined && (
+                    <Badge variant="outline" className="text-[10px] font-mono font-semibold bg-muted/60 text-foreground border-border">
+                      {formatKm(record.saida_km)}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-card p-3 rounded-[18px] border border-border shadow-xs flex flex-col items-center justify-center text-center col-span-2">
+            <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider mb-0.5">Saldo Diário</span>
+            <span className={cn(
+              "text-lg font-bold font-mono",
+              record.saldo_minutos !== undefined && record.saldo_minutos !== null
+                ? (record.saldo_minutos >= 0 ? "text-foreground" : "text-destructive")
+                : "text-muted-foreground"
+            )}>
+              {record.entrada_hora && record.saida_hora && record.saldo_minutos !== undefined && record.saldo_minutos !== null
+                ? formatMinutes(record.saldo_minutos)
+                : "--:--"}
+            </span>
+          </div>
+
+          <div className="bg-card p-3 rounded-[18px] border border-border shadow-xs flex flex-col items-center justify-center text-center">
+            <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider mb-0.5">Trabalhadas</span>
+            <span className="text-base font-semibold text-foreground font-mono">
+              {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_trabalhadas || "--:--") : "--:--"}
+            </span>
+          </div>
+
+          <div className="bg-card p-3 rounded-[18px] border border-border shadow-xs flex flex-col items-center justify-center text-center">
+            <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider mb-0.5">Em Pausa</span>
+            <span className="text-base font-semibold text-foreground font-mono">
+              {record.entrada_hora && record.saida_hora ? (record.detalhes_calculo?.resumo?.horas_pausa || "--:--") : "--:--"}
+            </span>
+          </div>
+
+          <div className="bg-card p-3 rounded-[18px] border border-border shadow-xs flex flex-col items-center justify-center text-center">
+            <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider mb-0.5">KM Trabalhado</span>
+            <span className="text-base font-semibold text-foreground font-mono">
+              {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_trabalhado !== undefined
+                ? formatKm(record.detalhes_calculo.resumo.km_trabalhado)
+                : "--"}
+            </span>
+          </div>
+
+          <div className="bg-card p-3 rounded-[18px] border border-border shadow-xs flex flex-col items-center justify-center text-center">
+            <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider mb-0.5">KM em Pausa</span>
+            <span className="text-base font-semibold text-foreground font-mono">
+              {record.entrada_hora && record.saida_hora && record.detalhes_calculo?.resumo?.km_pausa !== undefined
+                ? formatKm(record.detalhes_calculo.resumo.km_pausa)
+                : "--"}
+            </span>
+          </div>
+        </div>
+
+        {pausas.length > 0 && (
+          <div className="bg-card rounded-[20px] p-4 border border-border space-y-3 shadow-xs">
+            <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Pause className="w-3.5 h-3.5 text-muted-foreground" />
+              Histórico de Pausas
+            </h4>
+
+            <div className="space-y-2">
+              {pausas.map((p, idx) => {
+                const start = new Date(p.inicio_hora);
+                const end = p.fim_hora ? new Date(p.fim_hora) : null;
+                const duration = end ? Math.round((end.getTime() - start.getTime()) / 60000) : null;
+
+                return (
+                  <div key={p.id} className="text-xs bg-muted/30 p-2.5 rounded-[14px] border border-border/70 flex justify-between items-center">
+                    <div className="flex gap-2.5 items-center">
+                      <div className="w-6 h-6 rounded-[8px] bg-muted border border-border flex items-center justify-center font-bold text-[10px] text-foreground shrink-0">
+                        {idx + 1}
+                      </div>
+                      <span className="text-foreground font-mono text-xs">
+                        {format(start, "HH:mm")} - {end ? format(end, "HH:mm") : "Em andamento..."}
+                      </span>
+                    </div>
+                    {duration !== null && (
+                      <Badge variant="outline" className="text-[10px] font-semibold bg-muted/60 text-foreground border-border">
+                        {duration} min
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider pl-1">Cálculo Entrada</h4>
+            {renderCalculationDetails("entrada")}
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider pl-1">Cálculo Saída</h4>
+            {renderCalculationDetails("saida")}
+          </div>
+        </div>
+
+        {record.observacao && (
+          <div className="bg-muted/30 p-3.5 rounded-[18px] border border-border text-xs space-y-1">
+            <span className="font-semibold uppercase tracking-wider block text-muted-foreground text-[10px]">Observações</span>
+            <p className="leading-relaxed text-foreground font-normal">{record.observacao}</p>
+          </div>
+        )}
+      </BaseDialog.Body>
+
+      <BaseDialog.Footer>
+        <Button
+          variant="outline"
+          onClick={handleClose}
+        >
+          Fechar
+        </Button>
+        <Can I={PERMISSIONS.PONTO.ADMIN_EDITAR}>
+          <Button
+            onClick={handleEdit}
+          >
+            <Edit2 className="w-4 h-4 mr-2" />
+            {record.ausente ? "Registrar Atividade" : "Editar Atividade"}
+          </Button>
+        </Can>
+      </BaseDialog.Footer>
+    </BaseDialog>
+  );
 }

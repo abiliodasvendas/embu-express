@@ -1,7 +1,6 @@
 import {
   AuditoriaConvenioResultado,
   FaturaFornecedorConvenio,
-  StatusFaturaFornecedorConvenio,
   ResumoGeralConveniosResultado,
 } from "@/types/database";
 import { apiClient } from "./client";
@@ -16,32 +15,28 @@ export const convenioAuditoriaApi = {
       .get(`/convenios/${convenioId}/auditoria`, { params: { mes, ano } })
       .then((res) => res.data),
 
-  salvarFaturaFornecedor: (
-    convenioId: string,
-    data: Partial<FaturaFornecedorConvenio>
-  ): Promise<FaturaFornecedorConvenio> =>
-    apiClient
-      .post(`/convenios/${convenioId}/fatura-fornecedor`, data)
-      .then((res) => res.data),
-
-  atualizarStatusFatura: (
-    convenioId: string,
-    faturaId: string,
-    status: StatusFaturaFornecedorConvenio,
-    observacoes?: string | null
-  ): Promise<FaturaFornecedorConvenio> =>
-    apiClient
-      .patch(`/convenios/${convenioId}/fatura-fornecedor/${faturaId}/status`, {
-        status,
-        observacoes,
-      })
-      .then((res) => res.data),
-
   getResumoGeral: (
     mes: number,
     ano: number
   ): Promise<ResumoGeralConveniosResultado> =>
     apiClient
       .get("/convenios/resumo-geral", { params: { mes, ano } })
+      .then((res) => res.data),
+
+  liquidarFatura: (data: {
+    fatura_id?: string | null;
+    convenio_id: string;
+    mes_competencia: number;
+    ano_competencia: number;
+    data_vencimento: string;
+    valor_total_fatura: number;
+    valor_pago: number;
+    data_pagamento: string;
+    empresa_id: number;
+    conta_bancaria_id: string;
+    observacoes?: string | null;
+  }): Promise<FaturaFornecedorConvenio> =>
+    apiClient
+      .post("/convenios/liquidar-fatura", data)
       .then((res) => res.data),
 };

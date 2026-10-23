@@ -1,4 +1,3 @@
-// Business hooks
 export { usePermissions } from "./business/usePermissions";
 export { useTimeTrackingBusiness } from "./business/useTimeTrackingBusiness";
 export { useOccurrenceBusiness } from "./business/useOccurrenceBusiness";
@@ -7,11 +6,12 @@ export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
 export { useRegistrarPontoBusiness } from "./business/useRegistrarPontoBusiness";
 
-// Form Hooks
 export { useCollaboratorForm } from "./form/useCollaboratorForm";
+export { useCollaboratorTurnForm } from "./form/useCollaboratorTurnForm";
 export { useSelfRegistrationForm } from "./form/useSelfRegistrationForm";
+export { useOccurrenceForm } from "./form/useOccurrenceForm";
+export { useUnidadeForm } from "./form/useUnidadeForm";
 
-// UI Hooks
 export * from "./ui/useAnimatedNumber";
 export * from "./ui/useDebounce";
 export { safeCloseDialog, useDialogClose } from "./ui/useDialogClose";
@@ -37,8 +37,42 @@ export { useRegistrarPontoViewModel } from "./ui/useRegistrarPontoViewModel";
 export { useCollaboratorsViewModel } from "./ui/useCollaboratorsViewModel";
 export { useClientsViewModel } from "./ui/useClientsViewModel";
 export { useCountdown } from "./ui/useCountdown";
+export {
+  useFaturasTabViewModel,
+  useDespesasTabViewModel,
+  useIntercompanyTabViewModel,
+  useMovimentacoesAvulsasTabViewModel,
+} from "./ui/faturamento";
+export {
+  useFinancialReportView,
+  useFechamentoGeralViewModel,
+  useFluxoCaixaTabViewModel,
+} from "./ui/financeiro";
+export {
+  useCollaboratorDetailsViewModel,
+} from "./ui/collaborator";
+export {
+  useConveniosViewModel,
+  useConvenioDetailsViewModel,
+  useConvenioPublicPortalViewModel,
+  useConveniosBloqueadosViewModel,
+} from "./ui/convenios";
+export {
+  useClientDetailsViewModel,
+} from "./ui/clients";
+export {
+  useTicketDetailsViewModel,
+} from "./ui/tickets";
+export {
+  useConfiguracoesViewModel,
+} from "./ui/configuracoes";
+export {
+  useRetaguardaReservasViewModel,
+} from "./ui/retaguarda";
+export {
+  useTimeMirrorView,
+} from "./ui/ponto";
 
-// Embu Express Hooks
 export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClient } from "./api/useClientMutations";
 export { useClients } from "./api/useClients";
 export { useUnidades } from "./api/useUnidades";
@@ -57,7 +91,4 @@ export { useClientActions } from "./business/useClientActions";
 export { useCollaboratorActions } from "./business/useCollaboratorActions";
 export { useCollaboratorMap } from "./api/useCollaboratorMap";
 
-
-
-// Context Hooks
 export { useLayout } from "../contexts/LayoutContext";

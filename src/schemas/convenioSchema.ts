@@ -3,6 +3,8 @@ import { z } from "zod";
 export const convenioSchema = z.object({
   nome: z.string().min(2, "O nome do convênio deve ter pelo menos 2 caracteres"),
   ativo: z.boolean().default(true),
+  empresa_id: z.coerce.number().positive().optional().nullable(),
+  conta_bancaria_id: z.string().uuid().optional().nullable(),
 });
 
 export type ConvenioFormValues = z.infer<typeof convenioSchema>;

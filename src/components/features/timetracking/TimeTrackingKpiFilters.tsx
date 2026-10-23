@@ -3,62 +3,69 @@ import { ManagementStatus } from "@/types/enums";
 import { cn } from "@/lib/utils";
 
 interface TimeTrackingKpiFiltersProps {
-    activeFilter: ManagementStatus | null;
-    counts: Record<string, number>;
-    onFilterClick: (status: ManagementStatus | 'ALL') => void;
-    className?: string;
+  activeFilter: ManagementStatus | null;
+  counts: Record<string, number>;
+  onFilterClick: (status: ManagementStatus | "ALL") => void;
+  className?: string;
 }
 
 export function TimeTrackingKpiFilters({
-    activeFilter,
-    counts,
-    onFilterClick,
-    className
+  activeFilter,
+  counts,
+  onFilterClick,
+  className
 }: TimeTrackingKpiFiltersProps) {
-    const statuses = [
-        ManagementStatus.ALL,
-        ManagementStatus.LATE,
-        ManagementStatus.OVERTIME,
-        ManagementStatus.WORKING,
-        ManagementStatus.ABSENT,
-        ManagementStatus.WAITING,
-        ManagementStatus.DONE
-    ];
+  const statuses = [
+    ManagementStatus.ALL,
+    ManagementStatus.LATE,
+    ManagementStatus.OVERTIME,
+    ManagementStatus.WORKING,
+    ManagementStatus.ABSENT,
+    ManagementStatus.WAITING,
+    ManagementStatus.DONE
+  ];
 
-    return (
-        <div className={cn("grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3 lg:gap-4", className)}>
-            {statuses.map((status) => {
-                const config = PONTO_STATUS_UI_CONFIG[status as ManagementStatus];
-                const isActive = (status === ManagementStatus.ALL && activeFilter === null) || activeFilter === (status as ManagementStatus);
-                const count = counts[status];
+  return (
+    <div
+      className={cn(
+        "-mx-4 sm:mx-0 px-4 sm:px-0 flex sm:grid sm:grid-cols-4 md:grid-cols-7 gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0",
+        className
+      )}
+    >
+      {statuses.map((status) => {
+        const config = PONTO_STATUS_UI_CONFIG[status as ManagementStatus];
+        const isActive =
+          (status === ManagementStatus.ALL && activeFilter === null) ||
+          activeFilter === (status as ManagementStatus);
+        const count = counts[status] || 0;
+        const Icon = config.icon;
 
-                return (
-                    <button
-                        key={status}
-                        onClick={() => onFilterClick(status)}
-                        className={cn(
-                            "flex flex-col items-center justify-center p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all duration-200 group text-center h-full active:scale-95 cursor-pointer",
-                            isActive
-                                ? cn(config.border.replace('bg-', 'border-'), config.bg, "shadow-md scale-[1.02]")
-                                : "bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 hover:shadow-sm"
-                        )}
-                    >
-                        <config.icon className={cn("w-4 h-4 mb-2 opacity-40", isActive ? config.color : "text-gray-400")} />
-                        <span className={cn(
-                            "text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mb-0.5 sm:mb-1 transition-colors",
-                            isActive ? config.color : "text-gray-400 group-hover:text-gray-600"
-                        )}>
-                            {config.label}
-                        </span>
-                        <span className={cn(
-                            "text-lg sm:text-2xl font-black transition-colors",
-                            isActive ? config.color : "text-gray-300 group-hover:text-gray-500"
-                        )}>
-                            {String(count || 0).padStart(2, '0')}
-                        </span>
-                    </button>
-                );
-            })}
-        </div>
-    );
+        return (
+          <button
+            key={status}
+            type="button"
+            onClick={() => onFilterClick(status)}
+            className={cn(
+              "min-w-[110px] sm:min-w-0 flex-1 flex flex-col items-center justify-center p-3 rounded-[18px] transition-all text-center select-none cursor-pointer active:scale-95",
+              isActive
+                ? "border-2 border-foreground/30 bg-muted/80 shadow-xs"
+                : "border border-border bg-card hover:bg-muted/40 shadow-xs"
+            )}
+          >
+            <div className="w-7 h-7 rounded-[10px] bg-muted/70 border border-border flex items-center justify-center text-foreground mb-1.5 shrink-0">
+              <Icon className="w-3.5 h-3.5" />
+            </div>
+
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate w-full mb-0.5">
+              {config.label}
+            </span>
+
+            <span className="text-lg sm:text-xl font-bold text-foreground tabular-nums">
+              {String(count).padStart(2, "0")}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
 }

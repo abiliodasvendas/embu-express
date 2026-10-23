@@ -1,11 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { perfilApi } from "../../services/api/perfil.api";
 import { Perfil } from "../../types/database";
 
 export function usePerfis() {
     return useQuery({
         queryKey: ['perfis'],
-        queryFn: perfilApi.getAll
+        queryFn: perfilApi.getAll,
+        placeholderData: keepPreviousData,
     });
 }
 

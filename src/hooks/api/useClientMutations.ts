@@ -24,6 +24,9 @@ export function useCreateClient() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["faturas-clientes"] });
+      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
       if (!variables.silent) {
         toast.success(messages.cliente.sucesso.criado);
       }
@@ -52,6 +55,9 @@ export function useUpdateClient() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["faturas-clientes"] });
+      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
       queryClient.invalidateQueries({ queryKey: ["unidade"] });
       queryClient.invalidateQueries({ queryKey: ["collaborators"] });
@@ -74,6 +80,9 @@ export function useToggleClientStatus() {
       clienteApi.toggleStatus(id, ativo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["faturas-clientes"] });
+      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
       queryClient.invalidateQueries({ queryKey: ["unidade"] });
       queryClient.invalidateQueries({ queryKey: ["collaborators"] });
@@ -93,6 +102,9 @@ export function useDeleteClient() {
     mutationFn: (id: number) => clienteApi.deleteCliente(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["faturas-clientes"] });
+      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
 
       // Force reset to ensure fresh fetch
       queryClient.resetQueries({ queryKey: ["collaborators"] });

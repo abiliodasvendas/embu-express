@@ -3,7 +3,7 @@ import { EmpresaList } from "@/components/features/empresa/EmpresaList";
 import { EmpresasToolbar } from "@/components/features/empresa/EmpresasToolbar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -14,11 +14,11 @@ import {
   useToggleEmpresaStatus,
 } from "@/hooks/api/useEmpresaMutations";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
-import { useFiltersManager, useSearchFilters, useStatusFilters } from "@/hooks/ui/useFilters";
+import { useBatchFilters, useFiltersManager, useSearchFilters, useStatusFilters } from "@/hooks/ui/useFilters";
 import { Empresa } from "@/types/database";
 import { FilterOptions, StatusUsuario } from "@/types/enums";
-import { Building2 } from "lucide-react"; // Using Building2 for Empresas icon
-import { useCallback, useEffect, useState } from "react";
+import { Building2, Plus } from "lucide-react";
+import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
 export function Empresas() {
@@ -27,13 +27,21 @@ export function Empresas() {
   const { searchTerm, setSearchTerm } = useSearchFilters();
   const { selectedStatus, setSelectedStatus } = useStatusFilters();
   const { hasActiveFilters, clearFilters } = useFiltersManager(["search", "status"]);
+  const setFilters = useBatchFilters({ statusParam: "status", searchParam: "search" });
 
-  const [isQuickCreateLoading, setIsQuickCreateLoading] = useState(false);
+  const handleApplyFilters = useCallback((filters: { status?: string }) => {
+    if (filters.status !== undefined) {
+      setSelectedStatus(filters.status);
+    }
+    setFilters({ status: filters.status });
+  }, [setSelectedStatus, setFilters]);
 
-  const { data: empresas = [], isLoading, refetch } = useEmpresas({
+  const { data: empresas = [], isLoading, isFetching, refetch } = useEmpresas({
     searchTerm: searchTerm || undefined,
     ativo: selectedStatus === FilterOptions.TODOS ? undefined : (selectedStatus === StatusUsuario.ATIVO ? "true" : "false"),
   });
+
+  const isInitialLoading = isLoading && !empresas?.length;
 
   const createEmpresa = useCreateEmpresa();
   const deleteEmpresa = useDeleteEmpresa();
@@ -102,46 +110,64 @@ export function Empresas() {
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6">
-          <Card className="border-none shadow-none bg-transparent">
-            <CardContent className="px-0">
-              <div className="mb-6">
-                <EmpresasToolbar
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  selectedStatus={selectedStatus}
-                  onStatusChange={setSelectedStatus}
-                  onRegister={handleRegister}
-                  onApplyFilters={(f) => f.status && setSelectedStatus(f.status)}
-                  hasActiveFilters={hasActiveFilters}
-                  onClear={clearFilters}
-                />
+        <div className="space-y-6 w-full animate-in fade-in duration-300 pb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="h-11 w-11 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center shrink-0">
+                <Building2 className="h-5 w-5" />
               </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                  Empresas
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                  Gerencie as empresas e filiais emissoras do grupo
+                </p>
+              </div>
+            </div>
 
-              {isLoading ? (
-                <ListSkeleton />
-              ) : empresas && empresas.length > 0 ? (
-                <EmpresaList
-                  empresas={empresas}
-                  onEdit={handleEdit}
-                  onToggleStatus={handleToggleStatus}
-                  onDelete={handleDelete}
-                  onGerenciarContas={handleGerenciarContas}
-                />
-              ) : (
-                <UnifiedEmptyState
-                  icon={Building2}
-                  title="Nenhuma empresa encontrada"
-                  description={
-                    searchTerm
-                      ? "Não encontramos nenhuma empresa com os filtros atuais."
-                      : "Cadastre a primeira empresa para começar."
-                  }
-                  action={!searchTerm ? { label: "Cadastrar Empresa", onClick: handleRegister } : undefined}
-                />
-              )}
-            </CardContent>
-          </Card>
+            <Button
+              onClick={handleRegister}
+              className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Nova Empresa</span>
+            </Button>
+          </div>
+
+          <EmpresasToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedStatus={selectedStatus}
+            onStatusChange={setSelectedStatus}
+            onApplyFilters={handleApplyFilters}
+            hasActiveFilters={hasActiveFilters}
+            onClear={clearFilters}
+          />
+
+          {isInitialLoading ? (
+            <ListSkeleton />
+          ) : empresas && empresas.length > 0 ? (
+            <EmpresaList
+              empresas={empresas}
+              onEdit={handleEdit}
+              onToggleStatus={handleToggleStatus}
+              onDelete={handleDelete}
+              onGerenciarContas={handleGerenciarContas}
+              isFetching={isFetching}
+            />
+          ) : (
+            <UnifiedEmptyState
+              icon={Building2}
+              title="Nenhuma empresa encontrada"
+              description={
+                searchTerm
+                  ? "Não encontramos nenhuma empresa com os filtros atuais."
+                  : "Cadastre a primeira empresa para começar."
+              }
+              action={!searchTerm ? { label: "Cadastrar Empresa", onClick: handleRegister } : undefined}
+            />
+          )}
         </div>
       </PullToRefreshWrapper>
 

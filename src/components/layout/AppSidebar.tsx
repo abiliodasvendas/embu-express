@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { PageItem, pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink, useLocation } from "react-router-dom";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { ChevronRight, LayoutGrid, ClipboardList, Layers, Users } from "lucide-react";
+import { ChevronRight, LayoutGrid, ClipboardList, Layers, Users, LucideIcon } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -15,11 +15,15 @@ interface AppSidebarProps {
   onLinkClick?: () => void;
 }
 
-const CATEGORY_ICONS: Record<string, any> = {
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
   [MENU_CATEGORIES.PONTO]: ClipboardList,
   [MENU_CATEGORIES.CADASTROS]: Layers,
   [MENU_CATEGORIES.COLABORADORES]: Users,
 };
+
+type MenuBlock =
+  | { type: "link"; item: PageItem }
+  | { type: "group"; category: string; items: PageItem[] };
 
 export function AppSidebar({ onLinkClick }: AppSidebarProps) {
   const { can, isSuperAdmin, roleName } = usePermissions();
@@ -27,19 +31,21 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   const filteredItems = useMemo(() => {
-    return pagesItems.filter(item => {
+    return pagesItems.filter((item) => {
       if (isSuperAdmin) return true;
 
       if (item.allowedRoles && item.allowedRoles.length > 0) {
         const normalizedRole = roleName?.toLowerCase();
-        const hasRole = item.allowedRoles.some(r => r.toLowerCase() === normalizedRole);
+        const hasRole = item.allowedRoles.some(
+          (r) => r.toLowerCase() === normalizedRole
+        );
         if (!hasRole) return false;
       }
 
       if (!item.permissionKey) return true;
 
       if (Array.isArray(item.permissionKey)) {
-        return item.permissionKey.some(pk => can(pk));
+        return item.permissionKey.some((pk) => can(pk));
       }
 
       return can(item.permissionKey);
@@ -47,18 +53,19 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
   }, [can, isSuperAdmin, roleName]);
 
   const menuBlocks = useMemo(() => {
-    const blocks: Array<{ type: 'link'; item: PageItem } | { type: 'group'; category: string; items: PageItem[] }> = [];
+    const blocks: MenuBlock[] = [];
 
     filteredItems.forEach((item) => {
       const category = item.category;
 
       if (!category) {
-        blocks.push({ type: 'link', item });
+        blocks.push({ type: "link", item });
       } else {
         const existingBlock = blocks.find(
-          (b) => b.type === "group" && b.category === category
+          (b): b is { type: "group"; category: string; items: PageItem[] } =>
+            b.type === "group" && b.category === category
         );
-        if (existingBlock && existingBlock.type === "group") {
+        if (existingBlock) {
           existingBlock.items.push(item);
         } else {
           blocks.push({ type: "group", category, items: [item] });
@@ -80,8 +87,8 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
     if (!isPathAcknowledged) {
       let activeCategory = "";
       menuBlocks.forEach((block) => {
-        if (block.type === 'group') {
-          const hasActiveChild = block.items.some(item => item.href === currentPath);
+        if (block.type === "group") {
+          const hasActiveChild = block.items.some((item) => item.href === currentPath);
           if (hasActiveChild) activeCategory = block.category;
         }
       });
@@ -89,7 +96,7 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
       if (activeCategory) {
         setOpenGroups({ [activeCategory]: true });
         lastPathname.current = currentPath;
-      } else if (filteredItems.some(i => i.href === currentPath)) {
+      } else if (filteredItems.some((i) => i.href === currentPath)) {
         setOpenGroups({});
         lastPathname.current = currentPath;
       }
@@ -97,19 +104,19 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
   }, [location.pathname, menuBlocks, filteredItems]);
 
   const toggleGroup = (category: string) => {
-    setOpenGroups(prev => ({
+    setOpenGroups((prev) => ({
       ...prev,
-      [category]: !prev[category]
+      [category]: !prev[category],
     }));
   };
 
-  const renderIcon = (Icon: any, isActive: boolean) => (
+  const renderIcon = (Icon: LucideIcon, isActive: boolean) => (
     <span
       className={cn(
-        "flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-base shrink-0 transition-all",
+        "flex h-8 w-8 items-center justify-center rounded-[10px] text-base shrink-0 transition-colors",
         isActive
-          ? "bg-white/20 text-white shadow-sm"
-          : "bg-slate-50 text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50"
+          ? "bg-white/15 text-white"
+          : "bg-white/5 text-white/60 group-hover:text-white group-hover:bg-white/10"
       )}
     >
       <Icon className="h-4 w-4" />
@@ -123,11 +130,13 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
       onClick={onLinkClick}
       className={({ isActive }) =>
         cn(
-          "group flex items-center gap-3 rounded-xl px-4 py-1.5 text-sm font-semibold transition-all md:py-2",
-          isSubItem && "pl-3 ml-0",
+          "group flex items-center gap-3 transition-colors",
+          isSubItem
+            ? "rounded-[14px] px-3 py-2 text-xs"
+            : "rounded-[18px] px-3.5 py-2 text-sm",
           isActive
-            ? "bg-blue-600 text-white shadow-[0_12px_35px_-25px_rgba(59,130,246,0.7)]"
-            : "text-slate-500 hover:bg-blue-50/50 hover:text-blue-600"
+            ? "bg-white/10 text-white font-semibold shadow-xs"
+            : "text-white/60 font-medium hover:bg-white/5 hover:text-white"
         )
       }
     >
@@ -141,10 +150,10 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
   );
 
   return (
-    <div className="flex h-full flex-col gap-6">
+    <div className="flex h-full flex-col">
       <nav className="flex-1 space-y-1 overflow-y-auto pr-1 scrollbar-hide">
         {menuBlocks.map((block, idx) => {
-          if (block.type === 'link') {
+          if (block.type === "link") {
             return renderLink(block.item);
           }
 
@@ -162,26 +171,27 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
             >
               <CollapsibleTrigger asChild>
                 <button
+                  type="button"
                   className={cn(
-                    "group flex w-full items-center justify-between gap-3 rounded-xl px-4 py-1.5 text-sm font-semibold transition-all md:py-2",
-                    "text-slate-500 hover:bg-slate-50 hover:text-blue-600"
+                    "group flex w-full items-center justify-between gap-3 rounded-[18px] px-3.5 py-2 text-sm font-semibold transition-colors",
+                    "text-white/70 hover:bg-white/5 hover:text-white cursor-pointer"
                   )}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     {renderIcon(CategoryIcon, false)}
                     <span className="truncate">{category}</span>
                   </div>
                   <ChevronRight
                     className={cn(
-                      "h-4 w-4 transition-transform duration-200 text-slate-400",
-                      isOpen && "rotate-90"
+                      "h-4 w-4 transition-transform duration-200 text-white/40 shrink-0",
+                      isOpen && "rotate-90 text-white/80"
                     )}
                   />
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-1 animate-in slide-in-from-top-2 duration-200 overflow-hidden">
-                <div className="pt-1 border-l-2 border-slate-100/80 ml-8 mb-2">
-                  {items.map(item => renderLink(item, true))}
+                <div className="pt-1 border-l border-white/10 ml-7 pl-2 space-y-1 mb-2">
+                  {items.map((item) => renderLink(item, true))}
                 </div>
               </CollapsibleContent>
             </Collapsible>

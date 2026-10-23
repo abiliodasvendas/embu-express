@@ -1,4 +1,4 @@
-﻿import { MovimentacaoAvulsa, TipoMovimentacaoAvulsa, CategoriaMovimentacaoAvulsa } from "@/types/database";
+import { MovimentacaoAvulsa, TipoMovimentacaoAvulsa, CategoriaMovimentacaoAvulsa } from "@/types/database";
 import { apiClient } from "./client";
 
 export interface CreateMovimentacaoAvulsaPayload {

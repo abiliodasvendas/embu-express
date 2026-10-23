@@ -1,27 +1,28 @@
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Badge } from "@/components/ui/badge";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { useContasBancarias } from "@/hooks/api/useContasBancarias";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
+import { useContaBancariaForm } from "@/hooks/form/useContaBancariaForm";
+import { ContaBancariaFormData } from "@/schemas/contaBancariaSchema";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { formatContaBancaria } from "@/utils/formatters";
 import { toast } from "sonner";
-import { Building2, CreditCard, Plus, Trash2, Loader2, Landmark } from "lucide-react";
+import { Building2, CreditCard, Plus, Trash2, Loader2, Landmark, Wand2 } from "lucide-react";
 import { cnpjMask } from "@/utils/masks";
+import { mockGenerator } from "@/utils/mocks/generator";
 
 export interface ContasBancariasDialogProps {
   open: boolean;
@@ -38,42 +39,26 @@ export function ContasBancariasDialog({
   const { data: empresas = [] } = useEmpresas();
 
   const [mostrarNovoFormulario, setMostrarNovoFormulario] = useState(false);
-  const [empresaId, setEmpresaId] = useState<string>(empresaIdInicial ? String(empresaIdInicial) : "");
-  const [bancoNome, setBancoNome] = useState("");
-  const [agencia, setAgencia] = useState("");
-  const [conta, setConta] = useState("");
-  const [tipoConta, setTipoConta] = useState<"CORRENTE" | "POUPANCA">("CORRENTE");
+  const { form } = useContaBancariaForm({ defaultEmpresaId: empresaIdInicial });
 
-  const handleSubmitNovaConta = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!empresaId) {
-      toast.error("Selecione a empresa dona da conta bancária.");
-      return;
-    }
-    if (!bancoNome.trim()) {
-      toast.error("Informe o nome do banco.");
-      return;
-    }
-    if (!conta.trim()) {
-      toast.error("Informe o número da conta.");
-      return;
-    }
-
+  const onSubmitNovaConta = async (values: ContaBancariaFormData) => {
     try {
       await createMutation.mutateAsync({
-        empresa_id: Number(empresaId),
-        banco_nome: bancoNome.trim(),
-        agencia: agencia.trim() || undefined,
-        conta: conta.trim(),
-        tipo_conta: tipoConta,
-        ativo: true,
+        empresa_id: Number(values.empresa_id),
+        banco_nome: values.banco_nome.trim(),
+        agencia: values.agencia?.trim() || undefined,
+        conta: values.conta.trim(),
+        tipo_conta: values.tipo_conta,
       });
 
       toast.success("Conta bancária cadastrada com sucesso!");
-      setBancoNome("");
-      setAgencia("");
-      setConta("");
+      form.reset({
+        empresa_id: empresaIdInicial || 0,
+        banco_nome: "",
+        agencia: "",
+        conta: "",
+        tipo_conta: "CORRENTE",
+      });
       setMostrarNovoFormulario(false);
     } catch {
       toast.error("Erro ao cadastrar conta bancária.");
@@ -89,176 +74,285 @@ export function ContasBancariasDialog({
     }
   };
 
+  const handleFillMock = () => {
+    setMostrarNovoFormulario(true);
+    const empId = empresaIdInicial || empresas[0]?.id || 1;
+    const mockData = mockGenerator.contaBancaria(empId);
+    form.reset(mockData);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center gap-2 text-slate-800">
-            <Landmark className="w-5 h-5 text-indigo-600" />
-            <DialogTitle className="text-xl">Contas Bancárias do Grupo</DialogTitle>
-          </div>
-          <DialogDescription>
-            Gerencie as contas bancárias vinculadas a cada CNPJ para conciliação de pagamentos e acertos entre empresas.
-          </DialogDescription>
-        </DialogHeader>
+    <BaseDialog
+      open={open}
+      onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}
+      maxWidth="lg"
+    >
+      <BaseDialog.Header
+        icon={<Landmark className="h-5 w-5" />}
+        title="Contas Bancárias"
+        subtitle="Gerencie as contas bancárias vinculadas às empresas do grupo"
+        onClose={() => safeCloseDialog(() => onOpenChange(false))}
+        leftAction={
+          process.env.NODE_ENV === "development" ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleFillMock}
+              className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <Wand2 className="h-4 w-4 mr-1" />
+              Mock
+            </Button>
+          ) : undefined
+        }
+      />
 
-        <div className="space-y-6 pt-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-slate-700">Contas Cadastradas</h4>
-            {!mostrarNovoFormulario && (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => setMostrarNovoFormulario(true)}
-                className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Nova Conta Bancária
-              </Button>
-            )}
-          </div>
+      <BaseDialog.Body className="p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            Contas Cadastradas
+          </h4>
+          {!mostrarNovoFormulario && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setMostrarNovoFormulario(true)}
+              className="gap-1.5 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-xs h-9 rounded-[18px] px-3.5 shadow-xs cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nova Conta</span>
+            </Button>
+          )}
+        </div>
 
-          {mostrarNovoFormulario && (
-            <form onSubmit={handleSubmitNovaConta} className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Cadastrar Nova Conta</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setMostrarNovoFormulario(false)}
-                  className="h-6 text-xs text-slate-500 hover:text-slate-800"
-                >
-                  Cancelar
-                </Button>
+        {mostrarNovoFormulario && (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmitNovaConta)}
+              noValidate
+              className="bg-surface-alt/50 border border-border rounded-2xl p-4 space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-border pb-2.5">
+                <span className="text-xs font-semibold text-foreground">
+                  Cadastrar Nova Conta
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {process.env.NODE_ENV === "development" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleFillMock}
+                      className="h-7 text-xs text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
+                    >
+                      <Wand2 className="h-3.5 w-3.5 mr-1" />
+                      Mock
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setMostrarNovoFormulario(false)}
+                    className="h-7 text-xs text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-700">Empresa (CNPJ)</Label>
-                  <Select value={empresaId} onValueChange={setEmpresaId}>
-                    <SelectTrigger className="h-9 text-xs bg-white">
-                      <SelectValue placeholder="Selecione a empresa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {empresas.map((emp) => (
-                        <SelectItem key={emp.id} value={String(emp.id)} className="text-xs">
-                          {emp.nome_fantasia} {emp.cnpj ? `(${cnpjMask(emp.cnpj)})` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="empresa_id"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Empresa (CNPJ) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value ? String(field.value) : ""}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
+                        >
+                          <option value="">Selecione a empresa...</option>
+                          {empresas.map((emp) => (
+                            <option key={emp.id} value={String(emp.id)}>
+                              {emp.nome_fantasia} {emp.cnpj ? `(${cnpjMask(emp.cnpj)})` : ""}
+                            </option>
+                          ))}
+                        </NativeSelect>
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-700">Nome do Banco</Label>
-                  <Input
-                    placeholder="Ex: Itaú, Santander, Bradesco"
-                    value={bancoNome}
-                    onChange={(e) => setBancoNome(e.target.value)}
-                    className="h-9 text-xs bg-white"
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="banco_nome"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Nome do Banco <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: Itaú, Santander, Bradesco..."
+                          {...field}
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-700">Agência</Label>
-                  <Input
-                    placeholder="Ex: 0123"
-                    value={agencia}
-                    onChange={(e) => setAgencia(e.target.value)}
-                    className="h-9 text-xs bg-white"
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="agencia"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Agência
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: 0123"
+                          {...field}
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-700">Número da Conta</Label>
-                  <Input
-                    placeholder="Ex: 12345-6"
-                    value={conta}
-                    onChange={(e) => setConta(e.target.value)}
-                    className="h-9 text-xs bg-white"
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="conta"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Número da Conta
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: 12345-6 (opcional p/ caixinha ou espécie)"
+                          {...field}
+                          value={field.value || ""}
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="space-y-1">
-                  <Label className="text-xs text-slate-700">Tipo de Conta</Label>
-                  <Select value={tipoConta} onValueChange={(v: "CORRENTE" | "POUPANCA") => setTipoConta(v)}>
-                    <SelectTrigger className="h-9 text-xs bg-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CORRENTE" className="text-xs">Conta Corrente</SelectItem>
-                      <SelectItem value="POUPANCA" className="text-xs">Poupança</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="tipo_conta"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5 sm:col-span-2">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Tipo de Conta <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <NativeSelect
+                          {...field}
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
+                        >
+                          <option value="CORRENTE">Conta Corrente</option>
+                          <option value="POUPANCA">Poupança</option>
+                        </NativeSelect>
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="flex justify-end pt-2">
                 <Button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary-hover text-primary-foreground rounded-[18px] shadow-xs cursor-pointer"
                 >
-                  {createMutation.isPending && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
-                  Salvar Conta
+                  {createMutation.isPending && (
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  )}
+                  <span>Salvar Conta</span>
                 </Button>
               </div>
             </form>
-          )}
+          </Form>
+        )}
 
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8 text-slate-400 text-sm">
-              <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              Carregando contas...
-            </div>
-          ) : contas.length === 0 ? (
-            <div className="text-center py-8 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-              <CreditCard className="w-8 h-8 mx-auto text-slate-400 mb-2 opacity-60" />
-              <p className="text-sm font-medium text-slate-600">Nenhuma conta bancária cadastrada.</p>
-              <p className="text-xs text-slate-400 mt-0.5">Cadastre as contas das empresas para conciliar recebimentos.</p>
-            </div>
-          ) : (
-            <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
-              {contas.map((c) => (
-                <div key={c.id} className="p-3.5 bg-white hover:bg-slate-50/70 transition-colors flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
-                      <Building2 className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-800">{c.banco_nome}</span>
-                        <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200">
-                          {c.tipo_conta || "CORRENTE"}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
-                        {c.agencia && <span>Agência: <strong className="text-slate-700">{c.agencia}</strong></span>}
-                        <span>Conta: <strong className="text-slate-700">{c.conta}</strong></span>
-                        <span>•</span>
-                        <span className="text-indigo-700 font-medium truncate">
-                          {c.empresa?.nome_fantasia || `Empresa #${c.empresa_id}`}
-                        </span>
-                      </div>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-2 text-muted-foreground text-xs font-medium">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <span>Carregando contas...</span>
+          </div>
+        ) : contas.length === 0 ? (
+          <UnifiedEmptyState
+            icon={CreditCard}
+            title="Nenhuma conta cadastrada"
+            description="Cadastre as contas bancárias das empresas para conciliar recebimentos."
+          />
+        ) : (
+          <div className="border border-border rounded-2xl overflow-hidden divide-y divide-border/60 bg-card">
+            {contas.map((c) => (
+              <div
+                key={c.id}
+                className="p-3.5 hover:bg-surface-alt/60 transition-colors flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-muted/70 flex items-center justify-center text-foreground border border-border shrink-0">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">
+                        {formatContaBancaria(c)}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] border-border text-muted-foreground font-semibold"
+                      >
+                        {c.tipo_conta || "CORRENTE"}
+                      </Badge>
                     </div>
                   </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleExcluirConta(c.id)}
-                    disabled={deleteMutation.isPending}
-                    className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleExcluirConta(c.id)}
+                  disabled={deleteMutation.isPending}
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg shrink-0 cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </BaseDialog.Body>
+
+      <BaseDialog.Footer>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => safeCloseDialog(() => onOpenChange(false))}
+        >
+          Fechar
+        </Button>
+      </BaseDialog.Footer>
+    </BaseDialog>
   );
 }
+
+export default ContasBancariasDialog;

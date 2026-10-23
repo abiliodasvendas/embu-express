@@ -1,10 +1,6 @@
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
-} from "@/components/ui/dialog";
+import { Banner } from "@/components/ui/Banner";
 import {
   Form,
   FormControl,
@@ -14,55 +10,53 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { messages } from "@/constants/messages";
 import { useCreateClient, useUpdateClient } from "@/hooks";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { cn } from "@/lib/utils";
+import { ClientFormData, clientSchema } from "@/schemas/clientSchema";
 import { Client } from "@/types/database";
-import { MoneyInput } from "@/components/ui/MoneyInput";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Building2,
-  Loader2,
-  Wand2,
-  X,
-  Calculator,
-  ShieldAlert,
-  FileSpreadsheet,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { Building2, Wand2, Receipt, Calendar } from "lucide-react";
+import { useEffect } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-
-import { ClientFormData, clientSchema } from "@/schemas/clientSchema";
+import {
+  PERIODICIDADE_FATURAMENTO,
+  PERIODICIDADE_FATURAMENTO_LABELS,
+  TIPO_COBRANCA_CLIENTE,
+} from "@/constants/financeiro.constants";
 
 interface ClientFormDialogProps {
-  isOpen: boolean;
+  isOpen?: boolean;
+  open?: boolean;
   onClose: () => void;
+  onOpenChange?: (open: boolean) => void;
   editingClient?: Client | null;
   onSuccess?: () => void;
-  profile?: any;
+  profile?: unknown;
   allowBatchCreation?: boolean;
 }
 
 export function ClientFormDialog({
   isOpen,
+  open,
   onClose,
+  onOpenChange,
   editingClient = null,
   onSuccess,
-  profile,
-  allowBatchCreation = false,
 }: ClientFormDialogProps) {
-  const [openAccordionItems, setOpenAccordionItems] = useState([
-    "dados-cliente",
-    "endereco",
-  ]);
-  const [isCepLoading, setIsCepLoading] = useState(false);
+  const isDialogOpen = open ?? isOpen ?? false;
+  const handleClose = () => {
+    if (onOpenChange) onOpenChange(false);
+    onClose();
+  };
 
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
@@ -75,37 +69,41 @@ export function ClientFormDialog({
       nome_fantasia: "",
       ativo: true,
       empresa_emissora_padrao_id: null,
-      tipo_cobranca: "DIARIA_MOTOBOY",
+      tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
+      periodicidade: PERIODICIDADE_FATURAMENTO.QUINZENAL,
+      dia_vencimento_padrao: 16,
+      valor_contrato_mensal: 0,
       valor_base: 0,
-      valor_diaria_glosa: 0,
     },
   });
 
   useEffect(() => {
-    if (isOpen) {
+    if (isDialogOpen) {
       if (editingClient) {
         form.reset({
           nome_fantasia: editingClient.nome_fantasia,
           ativo: editingClient.ativo,
           empresa_emissora_padrao_id: editingClient.empresa_emissora_padrao_id ?? null,
-          tipo_cobranca: editingClient.tipo_cobranca || "DIARIA_MOTOBOY",
-          valor_base: editingClient.valor_base || 0,
-          valor_diaria_glosa: editingClient.valor_diaria_glosa || 0,
+          tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
+          periodicidade: (editingClient.periodicidade as ClientFormData["periodicidade"]) || PERIODICIDADE_FATURAMENTO.QUINZENAL,
+          dia_vencimento_padrao: editingClient.dia_vencimento_padrao || 16,
+          valor_contrato_mensal: editingClient.valor_contrato_mensal ?? editingClient.valor_base ?? 0,
+          valor_base: editingClient.valor_contrato_mensal ?? editingClient.valor_base ?? 0,
         });
-        setOpenAccordionItems(["dados-cliente"]);
       } else {
         form.reset({
           nome_fantasia: "",
           ativo: true,
           empresa_emissora_padrao_id: null,
-          tipo_cobranca: "DIARIA_MOTOBOY",
+          tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
+          periodicidade: PERIODICIDADE_FATURAMENTO.QUINZENAL,
+          dia_vencimento_padrao: 16,
+          valor_contrato_mensal: 0,
           valor_base: 0,
-          valor_diaria_glosa: 0,
         });
-        setOpenAccordionItems(["dados-cliente"]);
       }
     }
-  }, [isOpen, editingClient, form]);
+  }, [isDialogOpen, editingClient, form]);
 
   const onFormError = (errors: FieldErrors<ClientFormData>) => {
     toast.error(messages.validacao.formularioComErros);
@@ -115,289 +113,279 @@ export function ClientFormDialog({
     const data = mockGenerator.client();
     form.reset({
       ...data,
+      tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
+      periodicidade: (data.periodicidade as "QUINZENAL" | "MENSAL") || PERIODICIDADE_FATURAMENTO.QUINZENAL,
+      dia_vencimento_padrao: data.dia_vencimento_padrao || 16,
+      valor_contrato_mensal: data.valor_contrato_mensal || 30000,
+      valor_base: data.valor_base || 30000,
     });
-  };
-
-  const handleQuickCreate = async () => {
-    try {
-      const clientData = {
-        nome_fantasia: "Cliente Rápido " + Math.floor(Math.random() * 1000),
-        ativo: true,
-      };
-      await createClient.mutateAsync(clientData);
-      toast.success(messages.cliente.sucesso.criado);
-      safeCloseDialog(() => onClose());
-    } catch (error: any) {
-      toast.error(messages.cliente.erro.criar, { description: error.message });
-    }
   };
 
   const onSubmit = async (values: ClientFormData) => {
     try {
+      const payload = {
+        ...values,
+        tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
+        valor_contrato_mensal: values.valor_contrato_mensal || values.valor_base || 0,
+        valor_base: values.valor_contrato_mensal || values.valor_base || 0,
+      };
+
       if (editingClient) {
         await updateClient.mutateAsync({
           id: editingClient.id,
-          ...values,
-          silent: true
+          ...payload,
+          silent: true,
         });
         toast.success(messages.cliente.sucesso.atualizado);
       } else {
         const newClient = await createClient.mutateAsync({
-          ...values,
-          silent: true
+          ...payload,
+          silent: true,
         });
         toast.success(messages.cliente.sucesso.criado);
-        navigate(`/clientes/${newClient.id}?openUnitDialog=true`);
+        if (newClient?.id) {
+          navigate(`/clientes/${newClient.id}`);
+        }
       }
-      safeCloseDialog(() => onClose());
+      form.reset();
+      safeCloseDialog(handleClose);
       onSuccess?.();
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || "";
-      toast.error(errorMessage || (editingClient ? messages.cliente.erro.atualizar : messages.cliente.erro.criar));
+    } catch {
+      toast.error(editingClient ? messages.cliente.erro.atualizar : messages.cliente.erro.criar);
     }
   };
 
   const isPending = createClient.isPending || updateClient.isPending;
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
-      <DialogContent
-        className="w-full max-w-lg p-0 gap-0 bg-gray-50 h-auto flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
-        hideCloseButton
-      >
-        <div className="bg-blue-600 p-4 text-center relative shrink-0">
-          {import.meta.env.DEV && (
-            <div className="absolute left-4 top-4 flex gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-                onClick={handleFillMock}
-                title="Preencher com dados fictícios"
-              >
-                <Wand2 className="h-5 w-5" />
-              </Button>
-            </div>
-          )}
-
-          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
-            <X className="h-6 w-6" />
-            <span className="sr-only">Fechar</span>
-          </DialogClose>
-
-          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-            <Building2 className="w-5 h-5 text-white" />
-          </div>
-          <DialogTitle className="text-xl font-bold text-white">
-            {editingClient ? "Editar Cliente" : "Novo Cliente"}
-          </DialogTitle>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50/30">
-          <Form {...form}>
-            <form id="client-form"
-              onSubmit={form.handleSubmit(onSubmit, onFormError)}
-              className="space-y-4"
+    <BaseDialog
+      open={isDialogOpen}
+      onOpenChange={(val) => {
+        if (!val) safeCloseDialog(handleClose);
+      }}
+      maxWidth="xl"
+      lockClose={isPending}
+    >
+      <BaseDialog.Header
+        icon={<Building2 className="h-5 w-5 text-foreground" />}
+        title={editingClient ? "Editar Cliente" : "Novo Cliente"}
+        subtitle="Cadastre o cliente e defina suas regras contratuais de faturamento."
+        onClose={() => safeCloseDialog(handleClose)}
+        leftAction={
+          process.env.NODE_ENV === "development" ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleFillMock}
+              className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
-              <div className="border rounded-2xl px-4 py-6 bg-white shadow-sm border-gray-100 mb-4 space-y-4">
+              <Wand2 className="h-4 w-4 mr-1" />
+              Mock
+            </Button>
+          ) : undefined
+        }
+      />
+
+      <BaseDialog.Body className="p-5 sm:p-6 space-y-5">
+        <Form {...form}>
+          <form
+            id="client-form"
+            onSubmit={form.handleSubmit(onSubmit, onFormError)}
+            className="flex flex-col flex-1 min-h-0 space-y-4"
+          >
+            <FormField
+              control={form.control}
+              name="nome_fantasia"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-semibold text-foreground">
+                    Nome Fantasia <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="Ex: Logística ABC"
+                        className={cn(
+                          "pl-10 h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:border-primary shadow-xs",
+                          form.formState.errors.nome_fantasia && "border-destructive focus-visible:ring-destructive/20"
+                        )}
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive ml-1" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="empresa_emissora_padrao_id"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-semibold text-foreground">
+                    Empresa Emissora Padrão
+                  </FormLabel>
+                  <FormControl>
+                    <NativeSelect
+                      value={field.value ? String(field.value) : ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                      className="h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:border-primary shadow-xs"
+                    >
+                      <option value="">Nenhuma (Selecionar no faturamento)</option>
+                      {empresas.map((emp) => (
+                        <option key={emp.id} value={String(emp.id)}>
+                          {emp.nome_fantasia || emp.razao_social} {emp.codigo ? `(${emp.codigo})` : ""}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive ml-1" />
+                </FormItem>
+              )}
+            />
+
+            <div className="bg-muted/30 border border-border rounded-[20px] p-4 space-y-3.5">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-foreground" />
+                <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                  Contrato & Faturamento Mensal
+                </span>
+              </div>
+
+              <div className={cn("grid gap-3", form.watch("periodicidade") === PERIODICIDADE_FATURAMENTO.MENSAL ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
                 <FormField
                   control={form.control}
-                  name="nome_fantasia"
+                  name="periodicidade"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                        Nome Fantasia{" "}
-                        <span className="text-red-500">*</span>
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Periodicidade <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <Building2 className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            placeholder="Ex: Logística ABC"
-                            className={cn(
-                              "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                              form.formState.errors.nome_fantasia && "border-red-500 focus-visible:ring-red-200"
-                            )}
-                            {...field}
-                          />
-                        </div>
+                        <NativeSelect
+                          value={field.value}
+                          onChange={field.onChange}
+                          className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
+                        >
+                          <option value={PERIODICIDADE_FATURAMENTO.QUINZENAL}>
+                            Quinzenal
+                          </option>
+                          <option value={PERIODICIDADE_FATURAMENTO.MENSAL}>
+                            Mensal
+                          </option>
+                        </NativeSelect>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs text-destructive" />
                     </FormItem>
                   )}
                 />
 
                 <FormField
                   control={form.control}
-                  name="empresa_emissora_padrao_id"
+                  name="valor_contrato_mensal"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                        Empresa do Grupo que Emite a Nota (Padrão)
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Valor do Contrato Mensal <span className="text-destructive">*</span>
                       </FormLabel>
-                      <Select
-                        value={field.value ? String(field.value) : "none"}
-                        onValueChange={(val) => field.onChange(val === "none" ? null : Number(val))}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors">
-                            <SelectValue placeholder="Selecione o CNPJ emissor padrão (opcional)" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="rounded-xl border-gray-100 shadow-xl">
-                          <SelectItem value="none" className="text-gray-500">
-                            Nenhuma (Selecionar no faturamento)
-                          </SelectItem>
-                          {empresas.map((emp) => (
-                            <SelectItem key={emp.id} value={String(emp.id)} className="font-medium">
-                              {emp.nome_fantasia || emp.razao_social} {emp.codigo ? `(${emp.codigo})` : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
+                      <FormControl>
+                        <MoneyInput
+                          value={field.value || 0}
+                          onChange={(val) => {
+                            field.onChange(val);
+                            form.setValue("valor_base", val);
+                          }}
+                          placeholder="0,00"
+                          className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-semibold focus:border-primary shadow-xs"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
                     </FormItem>
                   )}
                 />
 
-                <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-4">
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Calculator className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-bold uppercase tracking-wider">
-                      Regras Contratuais de Cobrança & Glosa
-                    </span>
-                  </div>
-
+                {form.watch("periodicidade") === PERIODICIDADE_FATURAMENTO.MENSAL && (
                   <FormField
                     control={form.control}
-                    name="tipo_cobranca"
+                    name="dia_vencimento_padrao"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-80">
-                          Tipo de Cobrança do Contrato
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-xs font-semibold text-foreground">
+                          Dia de Vencimento da Fatura <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Select
-                          value={field.value || "DIARIA_MOTOBOY"}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-10 rounded-xl bg-white border-gray-200">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="rounded-xl border-gray-100 shadow-xl">
-                            <SelectItem value="DIARIA_MOTOBOY" className="font-medium text-xs">
-                              Diária por Motoboy Trabalhado
-                            </SelectItem>
-                            <SelectItem value="FIXO_MENSAL" className="font-medium text-xs">
-                              Fixo Mensal por Posto (Dedicação Exclusiva)
-                            </SelectItem>
-                            <SelectItem value="TAXA_ENTREGA" className="font-medium text-xs">
-                              Taxa por Entrega / Encomenda
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={31}
+                            placeholder="Ex: 10, 15 ou 25"
+                            value={field.value ?? 10}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs text-destructive" />
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="valor_base"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-80">
-                            Valor Base do Contrato (R$)
-                          </FormLabel>
-                          <FormControl>
-                            <MoneyInput
-                              value={field.value || 0}
-                              onChange={field.onChange}
-                              placeholder="0,00"
-                              className="h-10 rounded-xl bg-white border-gray-200"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="valor_diaria_glosa"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-bold ml-1 text-xs opacity-80">
-                            Diária de Glosa por Falta sem Cobertura (R$)
-                          </FormLabel>
-                          <FormControl>
-                            <MoneyInput
-                              value={field.value || 0}
-                              onChange={field.onChange}
-                              placeholder="0,00"
-                              className="h-10 rounded-xl bg-white border-gray-200"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="ativo"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-xl border p-2 px-4 bg-gray-50/50">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                          Status Ativo
-                        </FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                )}
               </div>
-            </form>
-          </Form>
-        </div>
 
-        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => safeCloseDialog(() => onClose())}
-            disabled={isPending}
-            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            form="client-form"
-            disabled={isPending}
-            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
-          >
-            {isPending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : editingClient ? (
-              "Atualizar"
-            ) : (
-              "Salvar"
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+              {form.watch("periodicidade") === PERIODICIDADE_FATURAMENTO.QUINZENAL && (
+                <Banner
+                  variant="info"
+                  title="Vencimentos Quinzenais Padronizados"
+                  description="A 1ª Quinzena vence no dia 16 e a 2ª Quinzena vence no último dia do mês."
+                />
+              )}
+            </div>
+
+            <FormField
+              control={form.control}
+              name="ativo"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-[18px] border border-border p-3.5 px-4 bg-surface-alt/40">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-sm font-semibold text-foreground cursor-pointer">
+                      Cliente Ativo
+                    </FormLabel>
+                    <p className="text-xs text-muted-foreground">
+                      Define se o cliente está habilitado para operações e faturamento
+                    </p>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+      </BaseDialog.Body>
+
+      <BaseDialog.Footer>
+        <BaseDialog.Action
+          label="Cancelar"
+          variant="secondary"
+          onClick={() => safeCloseDialog(handleClose)}
+          type="button"
+        />
+        <BaseDialog.Action
+          label={editingClient ? "Salvar Alterações" : "Criar Cliente"}
+          variant="primary"
+          type="submit"
+          form="client-form"
+          isLoading={isPending}
+        />
+      </BaseDialog.Footer>
+    </BaseDialog>
   );
 }
+
+export default ClientFormDialog;

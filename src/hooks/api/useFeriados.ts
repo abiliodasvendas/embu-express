@@ -2,7 +2,7 @@ import { messages } from "@/constants/messages";
 import { feriadoApi } from "@/services/api/feriado.api";
 import { Feriado } from "@/types/database";
 import { toast } from "@/utils/notifications/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FeriadoFormValues } from "@/schemas/feriadoSchema";
 import { ApiError } from "@/types/api";
 
@@ -10,6 +10,7 @@ export function useFeriados(ano?: number) {
     return useQuery({
         queryKey: ["feriados", ano],
         queryFn: () => feriadoApi.listFeriados(ano),
+        placeholderData: keepPreviousData,
     });
 }
 

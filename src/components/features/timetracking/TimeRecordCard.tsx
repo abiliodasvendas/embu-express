@@ -1,124 +1,132 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { PONTO_STATUS_UI_CONFIG } from "@/config/ponto-ui";
 import { cn } from "@/lib/utils";
 import { RegistroPonto } from "@/types/database";
+import { ActionItem } from "@/types/actions";
 import { ManagementStatus } from "@/types/enums";
 import { formatMinutes, formatTime, getManagementStatus } from "@/utils/ponto";
 import { Clock } from "lucide-react";
 
 interface TimeRecordCardProps {
-    record: RegistroPonto;
-    date: Date;
-    onDetails?: (r: RegistroPonto) => void;
-    actions?: any[];
-    showActions?: boolean;
-    showClient?: boolean;
-    isManual?: boolean;
+  record: RegistroPonto & { mgtStatus?: ManagementStatus };
+  date: Date;
+  onDetails?: (r: RegistroPonto) => void;
+  actions?: ActionItem[];
+  showActions?: boolean;
+  showClient?: boolean;
+  isManual?: boolean;
 }
 
 export function TimeRecordCard({
-    record,
-    date,
-    onDetails,
-    actions = [],
-    showActions = true,
-    showClient = false,
-    isManual = false
+  record,
+  date,
+  onDetails,
+  actions = [],
+  showActions = true,
+  showClient = false,
+  isManual = false
 }: TimeRecordCardProps) {
-    const mStatus = (record as any).mgtStatus || getManagementStatus(record, date);
-    const config = PONTO_STATUS_UI_CONFIG[mStatus as ManagementStatus];
+  const mStatus = record.mgtStatus || getManagementStatus(record, date);
+  const config = PONTO_STATUS_UI_CONFIG[mStatus as ManagementStatus];
 
-    const cardContent = (
-        <Card
-            onClick={() => showActions && onDetails?.(record)}
-            className={cn(
-                "bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-all flex h-full relative",
-                showActions && onDetails ? "cursor-pointer hover:shadow-md hover:border-blue-100" : "cursor-default"
-            )}
-        >
-            {/* Sidebar de Status - Estilo Premium Absoluto */}
-            <div className={cn("absolute left-0 top-0 bottom-0 w-1.5", config.borderSide)} />
+  const initials = record.usuario?.nome_completo
+    ? record.usuario.nome_completo
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+    : "--";
 
-            <div className="flex-1 p-3 pl-6 flex flex-col h-full justify-between gap-2.5">
-                {/* Header: Avatar + Info */}
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <Avatar className="h-10 w-10 border shadow-sm shrink-0">
-                            <AvatarImage src={record.usuario?.foto_url} />
-                            <AvatarFallback className={cn("text-primary text-xs font-bold uppercase", config.color)}>
-                                {record.usuario?.nome_completo?.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                            <h3 title={record.usuario?.nome_completo} className="font-bold text-gray-900 leading-tight">{record.usuario?.nome_completo}</h3>
-                            <div className="flex flex-col gap-0.5 mt-0.5">
-                                {showClient && record.cliente?.nome_fantasia && (
-                                    <p className="text-[10px] font-semibold text-gray-900 uppercase tracking-wide">
-                                        {record.cliente.nome_fantasia}
-                                    </p>
-                                )}
-                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
-                                    {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--:--"} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--:--"}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+  return (
+    <div
+      onClick={() => showActions && onDetails?.(record)}
+      className={cn(
+        "rounded-[20px] sm:rounded-[24px] border border-border bg-card shadow-xs transition-all flex flex-col justify-between p-4 h-full relative group",
+        showActions && onDetails ? "cursor-pointer hover:border-foreground/20 hover:shadow-sm" : "cursor-default"
+      )}
+    >
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar className="h-10 w-10 rounded-[14px] border border-border bg-muted/60 shrink-0">
+              <AvatarImage src={record.usuario?.foto_url} className="rounded-[14px] object-cover" />
+              <AvatarFallback className="rounded-[14px] text-xs font-semibold text-foreground uppercase bg-muted/60">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
 
-                    <div className="flex items-start gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex flex-col items-end gap-1">
-                            <Badge className={cn("text-[8px] hover:bg-inherit uppercase font-black px-1.5 h-4.5 rounded-md border-none shrink-0", config.bg, config.color)}>
-                                {config.label}
-                            </Badge>
-                            {isManual && mStatus === ManagementStatus.ABSENT && (
-                                <Badge className="text-[8px] bg-slate-100 text-slate-500 hover:bg-slate-100 uppercase font-black px-1.5 h-4.5 rounded-md border-none shrink-0">
-                                    MANUAL
-                                </Badge>
-                            )}
-                        </div>
-                        {showActions && actions.length > 0 && <ActionsDropdown actions={actions} />}
-                    </div>
-                </div>
-
-                {/* Horários: Entrada e Saída */}
-                <div className="flex items-end justify-between border-t border-gray-50 pt-2.5 mt-auto">
-                    <div className="space-y-1">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Entrada</p>
-                        <p className={cn("text-base font-black leading-none", record.entrada_hora ? "text-gray-900" : "text-gray-300")}>
-                            {record.entrada_hora ? formatTime(record.entrada_hora) : (mStatus === ManagementStatus.ABSENT ? "Faltou" : "Pendente")}
-                        </p>
-                    </div>
-                    <div className="space-y-1 text-right">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Saída</p>
-                        <p className={cn("text-base font-black leading-none", record.saida_hora ? "text-gray-900" : "text-gray-300")}>
-                            {record.saida_hora ? formatTime(record.saida_hora) : "--:--"}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Rodapé: Total e Saldo (Apenas se finalizado) */}
-                {record.entrada_hora && record.saida_hora && (
-                    <div className="bg-gray-50/50 rounded-xl p-2.5 flex items-center justify-between mt-1">
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="h-3 w-3 text-gray-400" />
-                            <span className="text-[11px] font-bold text-gray-700">{record.detalhes_calculo?.resumo?.horas_trabalhadas || "00:00"}</span>
-                        </div>
-                        {record.saldo_minutos !== undefined && record.saldo_minutos !== null && (
-                            <span className={cn(
-                                "text-[10px] font-black",
-                                record.saldo_minutos >= 0 ? "text-emerald-600" : "text-rose-600"
-                            )}>
-                                {formatMinutes(record.saldo_minutos, true)}
-                            </span>
-                        )}
-                    </div>
+            <div className="min-w-0">
+              <h3 title={record.usuario?.nome_completo} className="font-semibold text-sm text-foreground leading-snug truncate">
+                {record.usuario?.nome_completo}
+              </h3>
+              <div className="flex flex-col gap-0.5 mt-0.5">
+                {showClient && record.cliente?.nome_fantasia && (
+                  <p className="text-[10px] font-semibold text-foreground/80 uppercase tracking-wide truncate">
+                    {record.cliente.nome_fantasia}
+                  </p>
                 )}
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                  {record.detalhes_calculo?.entrada?.turno_base?.substring(0, 5) || "--:--"} - {record.detalhes_calculo?.saida?.turno_base?.substring(0, 5) || "--:--"}
+                </p>
+              </div>
             </div>
-        </Card>
-    );
+          </div>
 
-    return <div className="h-full">{cardContent}</div>;
+          <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col items-end gap-1">
+              <Badge variant="outline" className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-[8px] bg-muted/70 text-foreground border-border shrink-0">
+                {config.label}
+              </Badge>
+              {isManual && mStatus === ManagementStatus.ABSENT && (
+                <Badge variant="outline" className="text-[9px] font-semibold bg-muted text-muted-foreground border-border px-1.5 py-0.5 rounded-[6px] shrink-0">
+                  MANUAL
+                </Badge>
+              )}
+            </div>
+            {showActions && actions.length > 0 && <ActionsDropdown actions={actions} />}
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between border-t border-border/50 pt-3">
+          <div className="space-y-0.5">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Entrada</p>
+            <p className={cn("text-base font-semibold font-mono leading-none", record.entrada_hora ? "text-foreground" : "text-muted-foreground/60")}>
+              {record.entrada_hora ? formatTime(record.entrada_hora) : (mStatus === ManagementStatus.ABSENT ? "Faltou" : "--:--")}
+            </p>
+          </div>
+          <div className="space-y-0.5 text-right">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Saída</p>
+            <p className={cn("text-base font-semibold font-mono leading-none", record.saida_hora ? "text-foreground" : "text-muted-foreground/60")}>
+              {record.saida_hora ? formatTime(record.saida_hora) : "--:--"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {record.entrada_hora && record.saida_hora && (
+        <div className="rounded-[14px] bg-muted/40 border border-border/60 p-2.5 flex items-center justify-between mt-3">
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-semibold font-mono text-foreground">
+              {record.detalhes_calculo?.resumo?.horas_trabalhadas || "00:00"}
+            </span>
+          </div>
+          {record.saldo_minutos !== undefined && record.saldo_minutos !== null && (
+            <span
+              className={cn(
+                "text-xs font-bold font-mono",
+                record.saldo_minutos >= 0 ? "text-foreground" : "text-destructive"
+              )}
+            >
+              {formatMinutes(record.saldo_minutos, true)}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
-

@@ -20,16 +20,15 @@ export function useClientsViewModel() {
         openClientFormDialog,
     } = useLayout();
 
-    // 1. Filters (Modularizado)
     const { searchTerm, setSearchTerm } = useSearchFilters();
-    const { selectedStatus, setSelectedStatus } = useStatusFilters();
-    const { hasActiveFilters, clearFilters } = useFiltersManager(["search", "status"]);
-    const setFilters = useBatchFilters({ statusParam: "status" });
+    const { selectedStatus, setSelectedStatus } = useStatusFilters("status", true, StatusUsuario.ATIVO);
+    const { hasActiveFilters } = useFiltersManager(["search", "status"]);
+    const setFilters = useBatchFilters({ statusParam: "status", statusDefault: StatusUsuario.ATIVO });
 
-    // 2. Data Query
     const {
-        data: clients = [],
+        data: clientsResponse,
         isLoading,
+        isFetching,
         refetch,
     } = useClients({
         searchTerm: searchTerm || undefined,
@@ -41,12 +40,13 @@ export function useClientsViewModel() {
                     : "false",
     });
 
-    // 3. Mutations
+    const isInitialLoading = isLoading && !clientsResponse;
+    const clients = clientsResponse || [];
+
     const createClient = useCreateClient();
     const deleteClient = useDeleteClient();
     const toggleStatus = useToggleClientStatus();
 
-    // 4. Actions Handlers
     const handleRegister = useCallback(() => {
         openClientFormDialog({});
     }, [openClientFormDialog]);
@@ -87,8 +87,15 @@ export function useClientsViewModel() {
     const handleApplyFilters = useCallback((newFilters: {
         status?: string;
     }) => {
-        setFilters(newFilters);
-    }, [setFilters]);
+        if (newFilters.status !== undefined) {
+            setSelectedStatus(newFilters.status);
+        }
+    }, [setSelectedStatus]);
+
+    const clearFilters = useCallback(() => {
+        setSearchTerm("");
+        setSelectedStatus(StatusUsuario.ATIVO);
+    }, [setSearchTerm, setSelectedStatus]);
 
     const isActionLoading = useMemo(() =>
         toggleStatus.isPending ||
@@ -97,24 +104,22 @@ export function useClientsViewModel() {
         , [toggleStatus.isPending, deleteClient.isPending, createClient.isPending]);
 
     return {
-        // Data
         clients,
         isLoading,
+        isInitialLoading,
+        isFetching,
         isActionLoading,
 
-        // State/Filters
         searchTerm,
         selectedStatus,
         hasActiveFilters,
 
-        // Handlers
         setSearchTerm,
         setSelectedStatus,
         handleApplyFilters,
         clearFilters,
         refetch,
 
-        // Actions
         handleRegister,
         handleEdit,
         handleToggleStatus,

@@ -5,7 +5,6 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { RegistroPonto } from "@/types/database";
 import { ManagementStatus, OccurrenceFormMode } from "@/types/enums";
 import { getManagementStatus } from "@/utils/ponto";
-import { Card } from "@/components/ui/card";
 import { TimeRecordCard } from "./TimeRecordCard";
 import { safeCloseDialog } from "@/hooks";
 import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
@@ -18,12 +17,12 @@ interface TimeTrackingListProps {
   showClient?: boolean;
   showActions?: boolean;
   manualAbsenceIds?: string[];
-  addManualAbsence?: any;
-  removeManualAbsence?: any;
+  addManualAbsence?: { mutateAsync: (id: string) => Promise<unknown> };
+  removeManualAbsence?: { mutateAsync: (id: string) => Promise<unknown> };
 }
 
 interface TimeTrackingItemProps {
-  record: RegistroPonto;
+  record: RegistroPonto & { mgtStatus?: ManagementStatus };
   date: Date;
   showClient?: boolean;
   showActions?: boolean;
@@ -34,13 +33,13 @@ interface TimeTrackingItemProps {
   isManuallyAbsent: boolean;
 }
 
-function TimeTrackingItem({ 
-  record, 
-  date, 
-  showClient, 
-  showActions = true, 
-  onDetails, 
-  onEdit, 
+function TimeTrackingItem({
+  record,
+  date,
+  showClient,
+  showActions = true,
+  onDetails,
+  onEdit,
   onDelete,
   onMarkAbsent,
   isManuallyAbsent
@@ -56,31 +55,34 @@ function TimeTrackingItem({
   });
 
   return (
-    <Card className="h-full border shadow-none bg-white rounded-2xl relative">
-      <TimeRecordCard
-        record={record}
-        date={date}
-        onDetails={onDetails}
-        actions={showActions ? actions : []}
-        showActions={showActions}
-        showClient={showClient}
-        isManual={isManuallyAbsent}
-      />
-    </Card>
+    <TimeRecordCard
+      record={record}
+      date={date}
+      onDetails={onDetails}
+      actions={showActions ? actions : []}
+      showActions={showActions}
+      showClient={showClient}
+      isManual={isManuallyAbsent}
+    />
   );
 }
 
-
-export function TimeTrackingList({ 
-  records, 
-  date, 
-  showClient = false, 
+export function TimeTrackingList({
+  records,
+  date,
+  showClient = false,
   showActions = true,
   manualAbsenceIds = [],
   addManualAbsence,
   removeManualAbsence
 }: TimeTrackingListProps) {
-  const { openTimeRecordDetailsDialog, openTimeRecordDialog, openConfirmationDialog, closeConfirmationDialog, openOccurrenceFormDialog } = useLayout();
+  const {
+    openTimeRecordDetailsDialog,
+    openTimeRecordDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openOccurrenceFormDialog
+  } = useLayout();
   const { mutateAsync: deletePonto } = useDeletePonto();
   const { mutateAsync: deleteOcorrencia } = useDeleteOcorrencia();
   const { data: tiposOcorrencia = [] } = useTiposOcorrencia();
@@ -116,14 +118,15 @@ export function TimeTrackingList({
   };
 
   const handleMarkAbsent = async (record: RegistroPonto) => {
-    if (!addManualAbsence || !removeManualAbsence) return;
+    if (!addManualAbsence || !removeManualAbsence || !record.usuario_id) return;
 
-    const tipoSemAtividade = tiposOcorrencia.find(t => 
-      t.descricao.toLowerCase().includes("sem atividade") || 
-      t.descricao.toLowerCase().includes("falta")
+    const tipoSemAtividade = tiposOcorrencia.find(
+      (t) =>
+        t.descricao.toLowerCase().includes("sem atividade") ||
+        t.descricao.toLowerCase().includes("falta")
     );
 
-    const isAbsent = manualAbsenceIds.includes(record.usuario_id!);
+    const isAbsent = manualAbsenceIds.includes(record.usuario_id);
     if (isAbsent) {
       if (tipoSemAtividade) {
         try {
@@ -131,7 +134,7 @@ export function TimeTrackingList({
             usuario_id: record.usuario_id,
             data_inicio: record.data_referencia,
             data_fim: record.data_referencia,
-            tipo_id: tipoSemAtividade.id,
+            tipo_id: tipoSemAtividade.id
           });
 
           if (ocorrenciasExistentes && ocorrenciasExistentes.length > 0) {
@@ -141,12 +144,12 @@ export function TimeTrackingList({
             }
           }
         } catch (error) {
-          console.error("Erro ao remover ocorrência automática de Sem Atividade:", error);
+          console.error("Erro ao remover ocorrência automática:", error);
         }
       }
 
       try {
-        await removeManualAbsence.mutateAsync(record.usuario_id!);
+        await removeManualAbsence.mutateAsync(record.usuario_id);
       } catch (error) {
         console.error("Erro ao remover ausência manual:", error);
       }
@@ -164,10 +167,12 @@ export function TimeTrackingList({
             ? String(record.colaborador_cliente.id)
             : "none",
           observacao: "",
-          impacto_financeiro: false,
+          impacto_financeiro: false
         },
         onSuccess: async () => {
-          await addManualAbsence.mutateAsync(record.usuario_id!);
+          if (record.usuario_id) {
+            await addManualAbsence.mutateAsync(record.usuario_id);
+          }
         }
       });
     }
@@ -182,47 +187,50 @@ export function TimeTrackingList({
     { key: ManagementStatus.DONE, label: "Finalizado" }
   ];
 
-  // Group records using the pre-calculated mgtStatus (already includes manual override from ViewModel)
-  const grouped = useMemo(() => records.reduce((acc, record: any) => {
-    const status = record.mgtStatus || getManagementStatus(record, date);
-    
-    if (!acc[status]) acc[status] = [];
-    acc[status].push(record);
-    return acc;
-  }, {} as Record<string, RegistroPonto[]>), [records, date]);
+  const grouped = useMemo(() => {
+    return records.reduce((acc, record) => {
+      const status =
+        (record as RegistroPonto & { mgtStatus?: string }).mgtStatus ||
+        getManagementStatus(record, date);
+      if (!acc[status]) acc[status] = [];
+      acc[status].push(record);
+      return acc;
+    }, {} as Record<string, RegistroPonto[]>);
+  }, [records, date]);
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-10">
       {statusOrder.map(({ key, label }) => {
         const groupRecords = grouped[key] || [];
+        if (groupRecords.length === 0) return null;
 
         return (
           <div key={key} className="space-y-4">
-            <div className="flex items-center gap-3 px-2">
-              <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest">
+            <div className="flex items-center gap-3 px-1">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {label} ({groupRecords.length})
               </h3>
-              <div className="h-px bg-gray-100 flex-1" />
+              <div className="h-px bg-border flex-1" />
             </div>
 
-            {groupRecords.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groupRecords.map((record) => (
-                  <TimeTrackingItem
-                    key={record.id}
-                    record={record}
-                    date={date}
-                    showClient={showClient}
-                    showActions={showActions}
-                    onDetails={openDetails}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onMarkAbsent={handleMarkAbsent}
-                    isManuallyAbsent={manualAbsenceIds.includes(record.usuario_id!)}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {groupRecords.map((record) => (
+                <TimeTrackingItem
+                  key={record.id}
+                  record={record as RegistroPonto & { mgtStatus?: ManagementStatus }}
+                  date={date}
+                  showClient={showClient}
+                  showActions={showActions}
+                  onDetails={openDetails}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onMarkAbsent={handleMarkAbsent}
+                  isManuallyAbsent={
+                    record.usuario_id ? manualAbsenceIds.includes(record.usuario_id) : false
+                  }
+                />
+              ))}
+            </div>
           </div>
         );
       })}

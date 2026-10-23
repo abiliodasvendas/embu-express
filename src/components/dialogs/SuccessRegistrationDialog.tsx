@@ -1,119 +1,107 @@
-import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { ROUTES } from "@/constants/routes";
-import { cn } from "@/lib/utils";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { Usuario } from "@/types/database";
-import { CheckCircle2, X } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface SuccessRegistrationDialogProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    collaborator: Usuario;
-    title?: string;
-    description?: React.ReactNode;
-    onOpenCollaboratorForm: () => void;
-    hideNewCollaboratorButton?: boolean;
-    hideTurnButton?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  collaborator: Usuario;
+  title?: string;
+  description?: React.ReactNode;
+  onOpenCollaboratorForm: () => void;
+  hideNewCollaboratorButton?: boolean;
+  hideTurnButton?: boolean;
 }
 
 export function SuccessRegistrationDialog({
-    open,
-    onOpenChange,
-    collaborator,
-    title = "Cadastro Realizado!",
-    description,
-    onOpenCollaboratorForm,
-    hideNewCollaboratorButton = false,
-    hideTurnButton = false
+  open,
+  onOpenChange,
+  collaborator,
+  title = "Cadastro Realizado!",
+  description,
+  onOpenCollaboratorForm,
+  hideNewCollaboratorButton = false,
+  hideTurnButton = false,
 }: SuccessRegistrationDialogProps) {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleNewCollaborator = () => {
-        onOpenChange(false);
-        // Small delay to prevent animation conflicts between dialogs
-        setTimeout(() => {
-            onOpenCollaboratorForm();
-        }, 100);
-    };
+  const handleNewCollaborator = () => {
+    safeCloseDialog(() => {
+      onOpenChange(false);
+      setTimeout(() => {
+        onOpenCollaboratorForm();
+      }, 100);
+    });
+  };
 
-    const handleAddTurn = () => {
-        onOpenChange(false);
-        navigate(`${ROUTES.PRIVATE.COLABORADORES}/${collaborator.id}?openTurnDialog=true`);
-    };
+  const handleAddTurn = () => {
+    safeCloseDialog(() => {
+      onOpenChange(false);
+      navigate(`${ROUTES.PRIVATE.COLABORADORES}/${collaborator.id}?openTurnDialog=true`);
+    });
+  };
 
-    const hasButtons = !hideNewCollaboratorButton || !hideTurnButton;
+  const hasButtons = !hideNewCollaboratorButton || !hideTurnButton;
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[95vw] max-w-sm rounded-[2rem] border-0 shadow-2xl p-0 overflow-hidden bg-white gap-0 animate-in fade-in zoom-in-95 duration-200" hideCloseButton>
-                <div className="p-8 pb-6 flex flex-col items-center text-center space-y-4 relative">
-                    <button
-                        onClick={() => onOpenChange(false)}
-                        className="absolute right-6 top-6 text-gray-400 hover:text-gray-600 transition-colors"
-                        title="Fechar"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
- 
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-emerald-50 border border-emerald-100 shadow-sm transition-all duration-500 animate-in zoom-in spin-in-12">
-                        <CheckCircle2 className="w-8 h-8 text-emerald-600" />
-                    </div>
- 
-                    <div className="space-y-2">
-                        <DialogTitle className="text-xl font-black text-gray-900 leading-tight uppercase tracking-tight">
-                            {title}
-                        </DialogTitle>
-                        <DialogDescription className="text-gray-500 text-sm leading-relaxed px-2 font-medium">
-                            {description || (
-                                <>
-                                    O colaborador <span className="text-gray-900 font-bold">{collaborator.nome_completo}</span> foi cadastrado com sucesso.
-                                </>
-                            )}
-                        </DialogDescription>
-                    </div>
-                </div>
- 
-                <div className={cn(
-                    "p-4 gap-3 bg-gray-50/50 border-t border-gray-50 mt-2",
-                    (!hideNewCollaboratorButton && !hideTurnButton) ? "grid grid-cols-2" : "flex"
-                )}>
-                    {!hideNewCollaboratorButton && (
-                        <Button
-                            variant="outline"
-                            onClick={handleNewCollaborator}
-                            className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs uppercase flex-1"
-                        >
-                            CADASTRAR COLABORADOR
-                        </Button>
-                    )}
-                    {!hideTurnButton && (
-                        <Button
-                            onClick={handleAddTurn}
-                            className={cn(
-                                "h-11 rounded-xl font-bold shadow-lg transition-all text-white bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20 text-[10px] sm:text-xs flex-1",
-                                hideNewCollaboratorButton && "w-full"
-                            )}
-                        >
-                            VINCULAR TURNO
-                        </Button>
-                    )}
-                    {!hasButtons && (
-                        <Button
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                            className="h-11 rounded-xl border-gray-200 bg-white hover:bg-gray-100 text-gray-600 font-bold transition-all shadow-sm text-[10px] sm:text-xs uppercase w-full"
-                        >
-                            FECHAR
-                        </Button>
-                    )}
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
+  return (
+    <BaseDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      maxWidth="sm"
+      description="Confirmação de cadastro realizado"
+    >
+      <BaseDialog.Body className="p-6 pt-7 text-center flex flex-col items-center space-y-4">
+        <div className="w-14 h-14 rounded-[18px] flex items-center justify-center bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-xs">
+          <CheckCircle2 className="w-7 h-7" />
+        </div>
+
+        <div className="space-y-1.5 px-2">
+          <h3 className="text-base font-bold text-foreground leading-tight tracking-tight">
+            {title}
+          </h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {description || (
+              <>
+                O colaborador{" "}
+                <span className="text-foreground font-bold">
+                  {collaborator.nome_completo}
+                </span>{" "}
+                foi cadastrado com sucesso no sistema.
+              </>
+            )}
+          </p>
+        </div>
+      </BaseDialog.Body>
+
+      <BaseDialog.Footer>
+        {!hideNewCollaboratorButton && (
+          <BaseDialog.Action
+            label="Novo Cadastro"
+            variant="secondary"
+            onClick={handleNewCollaborator}
+            type="button"
+          />
+        )}
+        {!hideTurnButton && (
+          <BaseDialog.Action
+            label="Vincular Turno"
+            variant="primary"
+            onClick={handleAddTurn}
+            type="button"
+          />
+        )}
+        {!hasButtons && (
+          <BaseDialog.Action
+            label="Fechar"
+            variant="secondary"
+            onClick={() => safeCloseDialog(() => onOpenChange(false))}
+            type="button"
+          />
+        )}
+      </BaseDialog.Footer>
+    </BaseDialog>
+  );
 }

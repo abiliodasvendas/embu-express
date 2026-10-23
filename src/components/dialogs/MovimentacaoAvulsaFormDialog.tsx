@@ -1,27 +1,22 @@
-﻿import { useState, useEffect } from "react";
 import { isAxiosError } from "axios";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/ui/MoneyInput";
 import { useMovimentacoesAvulsas } from "@/hooks/api/useMovimentacoesAvulsas";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useContasBancarias } from "@/hooks/api/useContasBancarias";
+import { useMovimentacaoAvulsaForm } from "@/hooks/form/useMovimentacaoAvulsaForm";
+import { MovimentacaoAvulsaFormData } from "@/schemas/movimentacaoAvulsaSchema";
 import {
   MovimentacaoAvulsa,
   TipoMovimentacaoAvulsa,
@@ -29,18 +24,19 @@ import {
 } from "@/types/database";
 import {
   TIPO_MOVIMENTACAO_AVULSA,
-  CATEGORIA_MOVIMENTACAO_AVULSA,
   CATEGORIA_MOVIMENTACAO_AVULSA_LABELS,
 } from "@/constants/financeiro.constants";
 import { toast } from "sonner";
-import { ArrowDownRight, ArrowUpRight, Banknote, Loader2 } from "lucide-react";
-import { toLocalDateString } from "@/utils/formatters/date";
+import { ArrowDownRight, ArrowUpRight, Banknote, Wand2 } from "lucide-react";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { formatContaBancaria } from "@/utils/formatters";
+import { mockGenerator } from "@/utils/mocks/generator";
 
 export interface MovimentacaoAvulsaFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   movimentacaoToEdit?: MovimentacaoAvulsa | null;
-  onSuccess?: () => void;
+  onSuccess?: () => void | Promise<void>;
 }
 
 const CATEGORIAS_ENTRADA: CategoriaMovimentacaoAvulsa[] = [
@@ -67,260 +63,310 @@ export function MovimentacaoAvulsaFormDialog({
   const { createMutation, updateMutation } = useMovimentacoesAvulsas();
   const { data: empresas = [] } = useEmpresas({ ativo: "true" });
 
-  const hoje = new Date();
-  const [tipo, setTipo] = useState<TipoMovimentacaoAvulsa>(TIPO_MOVIMENTACAO_AVULSA.ENTRADA);
-  const [empresaId, setEmpresaId] = useState<string>("");
-  const [contaBancariaId, setContaBancariaId] = useState<string>("");
-  const [categoria, setCategoria] = useState<CategoriaMovimentacaoAvulsa>(CATEGORIAS_ENTRADA[0]);
-  const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState<number>(0);
-  const [dataMovimentacao, setDataMovimentacao] = useState<string>(toLocalDateString(hoje));
+  const defaultEmpresaId = empresas[0]?.id;
+  const { form } = useMovimentacaoAvulsaForm({
+    open,
+    movimentacaoToEdit,
+    defaultEmpresaId,
+  });
 
-  const empresaIdNumber = empresaId ? Number(empresaId) : undefined;
-  const { contas = [] } = useContasBancarias(empresaIdNumber);
+  const tipo = form.watch("tipo_movimentacao");
+  const empresaId = form.watch("empresa_id");
+  const { contas = [] } = useContasBancarias(empresaId ? Number(empresaId) : undefined);
 
-  useEffect(() => {
-    if (open) {
-      if (movimentacaoToEdit) {
-        setTipo(movimentacaoToEdit.tipo_movimentacao);
-        setEmpresaId(String(movimentacaoToEdit.empresa_id));
-        setContaBancariaId(movimentacaoToEdit.conta_bancaria_id || "");
-        setCategoria(movimentacaoToEdit.categoria);
-        setDescricao(movimentacaoToEdit.descricao);
-        setValor(movimentacaoToEdit.valor);
-        setDataMovimentacao(movimentacaoToEdit.data_movimentacao);
-      } else {
-        setTipo(TIPO_MOVIMENTACAO_AVULSA.ENTRADA);
-        setEmpresaId(empresas[0] ? String(empresas[0].id) : "");
-        setContaBancariaId("");
-        setCategoria(CATEGORIAS_ENTRADA[0]);
-        setDescricao("");
-        setValor(0);
-        setDataMovimentacao(toLocalDateString(hoje));
-      }
-    }
-  }, [open, movimentacaoToEdit, empresas]);
+  const categoriasDisponiveis =
+    tipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA ? CATEGORIAS_ENTRADA : CATEGORIAS_SAIDA;
 
   const handleTipoChange = (novoTipo: TipoMovimentacaoAvulsa) => {
-    setTipo(novoTipo);
+    form.setValue("tipo_movimentacao", novoTipo);
     if (novoTipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA) {
-      setCategoria(CATEGORIAS_ENTRADA[0]);
+      form.setValue("categoria", CATEGORIAS_ENTRADA[0]);
     } else {
-      setCategoria(CATEGORIAS_SAIDA[0]);
+      form.setValue("categoria", CATEGORIAS_SAIDA[0]);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
-    if (!empresaId) {
-      toast.error("Selecione a empresa.");
-      return;
-    }
-    if (!descricao.trim()) {
-      toast.error("Informe a descrição do lançamento.");
-      return;
-    }
-    if (!dataMovimentacao) {
-      toast.error("Informe a data da movimentação.");
-      return;
-    }
-    if (valor <= 0) {
-      toast.error("O valor deve ser maior que zero.");
-      return;
-    }
-
+  const onSubmit = async (values: MovimentacaoAvulsaFormData) => {
     const payload = {
-      empresa_id: Number(empresaId),
-      conta_bancaria_id: contaBancariaId ? contaBancariaId : null,
-      tipo_movimentacao: tipo,
-      categoria,
-      descricao: descricao.trim(),
-      valor,
-      data_movimentacao: dataMovimentacao,
+      tipo_movimentacao: values.tipo_movimentacao,
+      empresa_id: Number(values.empresa_id),
+      conta_bancaria_id:
+        values.conta_bancaria_id && values.conta_bancaria_id !== "none"
+          ? values.conta_bancaria_id
+          : null,
+      categoria: values.categoria as CategoriaMovimentacaoAvulsa,
+      descricao: values.descricao.trim(),
+      valor: values.valor,
+      data_movimentacao: values.data_movimentacao,
     };
 
     try {
       if (movimentacaoToEdit) {
         await updateMutation.mutateAsync({ id: movimentacaoToEdit.id, data: payload });
-        toast.success("Movimentação avulsa atualizada com sucesso!");
+        toast.success("Movimentação atualizada com sucesso!");
       } else {
         await createMutation.mutateAsync(payload);
-        toast.success("Movimentação avulsa registrada com sucesso!");
+        toast.success("Lançamento avulso registrado com sucesso!");
       }
-      onOpenChange(false);
+      safeCloseDialog(() => onOpenChange(false));
       onSuccess?.();
     } catch (err: unknown) {
-      const msg = isAxiosError(err) && err.response?.data?.message
-        ? String(err.response.data.message)
-        : err instanceof Error
-        ? err.message
-        : "Erro ao salvar movimentação avulsa.";
+      const msg =
+        isAxiosError(err) && err.response?.data?.message
+          ? String(err.response.data.message)
+          : err instanceof Error
+          ? err.message
+          : "Erro ao salvar movimentação avulsa.";
       toast.error(msg);
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
-  const categoriasDisponiveis = tipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA ? CATEGORIAS_ENTRADA : CATEGORIAS_SAIDA;
+  const handleFillMock = () => {
+    const empId = empresas[0]?.id || 1;
+    const mockData = mockGenerator.movimentacaoAvulsa(empId);
+    form.reset(mockData);
+  };
+
+  const handleClose = () => {
+    if (isPending) return;
+    safeCloseDialog(() => onOpenChange(false));
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center gap-2 text-slate-800">
-            <Banknote className="w-5 h-5 text-indigo-600" />
-            <DialogTitle className="text-xl">
-              {movimentacaoToEdit ? "Editar Movimentação Avulsa" : "Novo Lançamento Avulso"}
-            </DialogTitle>
-          </div>
-          <DialogDescription>
-            Registre entradas ou saídas pontuais na conta bancária que não passam por fatura ou folha.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Tipo de Movimentação *</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                type="button"
-                variant={tipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA ? "default" : "outline"}
-                className={`text-xs gap-1.5 ${
-                  tipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    : "text-slate-600 hover:text-emerald-700 hover:border-emerald-300"
-                }`}
-                onClick={() => handleTipoChange(TIPO_MOVIMENTACAO_AVULSA.ENTRADA)}
-              >
-                <ArrowDownRight className="w-4 h-4" />
-                Entrada / Receita Avulsa
-              </Button>
-              <Button
-                type="button"
-                variant={tipo === TIPO_MOVIMENTACAO_AVULSA.SAIDA ? "default" : "outline"}
-                className={`text-xs gap-1.5 ${
-                  tipo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
-                    ? "bg-rose-600 hover:bg-rose-700 text-white"
-                    : "text-slate-600 hover:text-rose-700 hover:border-rose-300"
-                }`}
-                onClick={() => handleTipoChange(TIPO_MOVIMENTACAO_AVULSA.SAIDA)}
-              >
-                <ArrowUpRight className="w-4 h-4" />
-                Saída / Despesa Direta
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Empresa (CNPJ) *</Label>
-              <Select value={empresaId} onValueChange={setEmpresaId}>
-                <SelectTrigger className="text-xs">
-                  <SelectValue placeholder="Selecione a empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {empresas.map((emp) => (
-                    <SelectItem key={emp.id} value={String(emp.id)} className="text-xs">
-                      {emp.nome_fantasia || emp.razao_social}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">Conta Bancária (Opcional)</Label>
-              <Select value={contaBancariaId} onValueChange={setContaBancariaId}>
-                <SelectTrigger className="text-xs">
-                  <SelectValue placeholder="Sem conta bancária específica" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none" className="text-xs text-slate-500">
-                    Nenhuma conta específica
-                  </SelectItem>
-                  {contas.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="text-xs">
-                      {c.banco_nome} {c.agencia ? `- Ag: ${c.agencia}` : ""} {c.conta ? `Cc: ${c.conta}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs">Categoria *</Label>
-            <Select value={categoria} onValueChange={(v) => setCategoria(v as CategoriaMovimentacaoAvulsa)}>
-              <SelectTrigger className="text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {categoriasDisponiveis.map((cat) => (
-                  <SelectItem key={cat} value={cat} className="text-xs">
-                    {CATEGORIA_MOVIMENTACAO_AVULSA_LABELS[cat] || cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs">Descrição do Lançamento *</Label>
-            <Input
-              placeholder="Ex: Frete extra cliente ABC, Aplicação CDB, Taxa de Manutenção"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Valor (R$) *</Label>
-              <MoneyInput
-                value={valor}
-                onChange={setValor}
-                placeholder="0,00"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">Data da Operação *</Label>
-              <Input
-                type="date"
-                value={dataMovimentacao}
-                onChange={(e) => setDataMovimentacao(e.target.value)}
-                required
-                className="text-xs"
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="pt-2">
+    <BaseDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      maxWidth="md"
+      lockClose={isPending}
+    >
+      <BaseDialog.Header
+        icon={<Banknote className="h-5 w-5 text-foreground" />}
+        title={movimentacaoToEdit ? "Editar Movimentação Avulsa" : "Novo Lançamento Avulso"}
+        subtitle="Registre entradas ou saídas pontuais na conta bancária que não passam por fatura ou folha."
+        onClose={handleClose}
+        leftAction={
+          process.env.NODE_ENV === "development" ? (
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isPending}
-              className="text-xs"
+              size="sm"
+              onClick={handleFillMock}
+              className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
             >
-              Cancelar
+              <Wand2 className="h-4 w-4 mr-1" />
+              Mock
             </Button>
-            <Button
+          ) : undefined
+        }
+      />
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          noValidate
+          className="flex flex-col flex-1 min-h-0 overflow-hidden"
+        >
+          <BaseDialog.Body>
+            <div className="space-y-4 pt-1">
+              <div className="space-y-1.5">
+                <FormLabel className="text-xs font-semibold text-foreground">
+                  Tipo de Movimentação <span className="text-destructive">*</span>
+                </FormLabel>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={`h-11 rounded-[18px] text-xs font-medium gap-1.5 transition-all cursor-pointer ${
+                      tipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+                        ? "bg-background border-primary text-foreground ring-1 ring-primary shadow-xs"
+                        : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                    onClick={() => handleTipoChange(TIPO_MOVIMENTACAO_AVULSA.ENTRADA)}
+                  >
+                    <ArrowDownRight className="w-4 h-4" />
+                    Entrada / Receita
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={`h-11 rounded-[18px] text-xs font-medium gap-1.5 transition-all cursor-pointer ${
+                      tipo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
+                        ? "bg-background border-primary text-foreground ring-1 ring-primary shadow-xs"
+                        : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                    onClick={() => handleTipoChange(TIPO_MOVIMENTACAO_AVULSA.SAIDA)}
+                  >
+                    <ArrowUpRight className="w-4 h-4" />
+                    Saída / Despesa
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="empresa_id"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Empresa (CNPJ) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value ? String(field.value) : ""}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
+                        >
+                          <option value="">Selecione a empresa</option>
+                          {empresas.map((emp) => (
+                            <option key={emp.id} value={String(emp.id)}>
+                              {emp.nome_fantasia || emp.razao_social}
+                            </option>
+                          ))}
+                        </NativeSelect>
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="conta_bancaria_id"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Conta Bancária (Opcional)
+                      </FormLabel>
+                      <FormControl>
+                        <NativeSelect
+                          value={field.value || "none"}
+                          onChange={field.onChange}
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
+                        >
+                          <option value="none">Nenhuma conta específica</option>
+                          {contas.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {formatContaBancaria(c)}
+                            </option>
+                          ))}
+                        </NativeSelect>
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="categoria"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Categoria <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        {...field}
+                        className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
+                      >
+                        {categoriasDisponiveis.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {CATEGORIA_MOVIMENTACAO_AVULSA_LABELS[cat] || cat}
+                          </option>
+                        ))}
+                      </NativeSelect>
+                    </FormControl>
+                    <FormMessage className="text-xs text-destructive" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="descricao"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Descrição do Lançamento <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ex: Frete extra cliente ABC, Aplicação CDB, Taxa de Manutenção"
+                        {...field}
+                        className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs text-destructive" />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="valor"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Valor (R$) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <MoneyInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="0,00"
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="data_movimentacao"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Data da Operação <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </BaseDialog.Body>
+          <BaseDialog.Footer>
+            <BaseDialog.Action
+              label="Cancelar"
+              variant="secondary"
+              disabled={isPending}
+              onClick={handleClose}
+              type="button"
+            />
+            <BaseDialog.Action
+              label={movimentacaoToEdit ? "Salvar Alterações" : "Confirmar Lançamento"}
+              variant="primary"
+              isLoading={isPending}
               type="submit"
-              disabled={isPending}
-              className={`text-xs text-white gap-1.5 ${
-                tipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-rose-600 hover:bg-rose-700"
-              }`}
-            >
-              {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              {movimentacaoToEdit ? "Salvar Alterações" : "Confirmar Lançamento"}
-            </Button>
-          </DialogFooter>
+            />
+          </BaseDialog.Footer>
         </form>
-      </DialogContent>
-    </Dialog>
+      </Form>
+    </BaseDialog>
   );
 }
+
+export default MovimentacaoAvulsaFormDialog;

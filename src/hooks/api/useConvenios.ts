@@ -7,6 +7,8 @@ export interface Convenio {
     nome: string;
     ativo: boolean;
     token: string;
+    empresa_id?: number | null;
+    conta_bancaria_id?: string | null;
     created_at: string;
 }
 
@@ -27,11 +29,11 @@ export interface LancamentoConvenio {
 // HOOKS ADMIN
 // ---------------------------------------------
 
-export function useConvenios() {
+export function useConvenios(filters?: { ativo?: string }) {
     return useQuery({
-        queryKey: ["convenios"],
+        queryKey: ["convenios", filters],
         queryFn: async () => {
-            const { data } = await api.get<Convenio[]>("/convenios");
+            const { data } = await api.get<Convenio[]>("/convenios", { params: filters });
             return data;
         },
         refetchOnMount: true
@@ -67,7 +69,7 @@ export function useConvenioLancamentos(id: string, ano: number, mes: number) {
 export function useCreateConvenio() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (payload: { nome: string; ativo?: boolean }) => {
+        mutationFn: async (payload: { nome: string; ativo?: boolean; empresa_id?: number | null; conta_bancaria_id?: string | null }) => {
             const { data } = await api.post<Convenio>("/convenios", payload);
             return data;
         },
@@ -80,7 +82,7 @@ export function useCreateConvenio() {
 export function useUpdateConvenio() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...payload }: { id: string; nome?: string; ativo?: boolean }) => {
+        mutationFn: async ({ id, ...payload }: { id: string; nome?: string; ativo?: boolean; empresa_id?: number | null; conta_bancaria_id?: string | null }) => {
             const { data } = await api.put<Convenio>(`/convenios/${id}`, payload);
             return data;
         },
@@ -161,7 +163,7 @@ export function usePublicLancamentosMes(token: string, ano: number, mes: number)
 export function useCreatePublicLancamento() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ token, payload }: { token: string; payload: any }) => {
+        mutationFn: async ({ token, payload }: { token: string; payload: Partial<LancamentoConvenio> }) => {
             const { data } = await api.post<LancamentoConvenio>(`/convenios/public/${token}/lancamentos`, payload);
             return data;
         },
@@ -174,7 +176,7 @@ export function useCreatePublicLancamento() {
 export function useUpdatePublicLancamento() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ token, id, payload }: { token: string; id: string; payload: any }) => {
+        mutationFn: async ({ token, id, payload }: { token: string; id: string; payload: Partial<LancamentoConvenio> }) => {
             const { data } = await api.put<LancamentoConvenio>(`/convenios/public/${token}/lancamentos/${id}`, payload);
             return data;
         },
@@ -199,7 +201,7 @@ export function useDeletePublicLancamento() {
 export function useCreateAdminLancamento() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ convenioId, payload }: { convenioId: string; payload: any }) => {
+        mutationFn: async ({ convenioId, payload }: { convenioId: string; payload: Partial<LancamentoConvenio> }) => {
             const { data } = await api.post<LancamentoConvenio>(`/convenios/${convenioId}/lancamentos`, payload);
             return data;
         },
@@ -212,7 +214,7 @@ export function useCreateAdminLancamento() {
 export function useUpdateAdminLancamento() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ convenioId, id, payload }: { convenioId: string; id: string; payload: any }) => {
+        mutationFn: async ({ convenioId, id, payload }: { convenioId: string; id: string; payload: Partial<LancamentoConvenio> }) => {
             const { data } = await api.put<LancamentoConvenio>(`/convenios/${convenioId}/lancamentos/${id}`, payload);
             return data;
         },
@@ -233,3 +235,5 @@ export function useDeleteAdminLancamento() {
         }
     });
 }
+
+

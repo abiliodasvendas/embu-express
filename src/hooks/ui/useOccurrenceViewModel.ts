@@ -63,7 +63,7 @@ export function useOccurrenceViewModel(options: UseOccurrenceViewModelOptions = 
   const canViewAll = can(PERMISSIONS.OCORRENCIAS.VER);
   const finalUsuarioId = initialUsuarioId || (canViewAll ? (filters.selectedUsuario === 'todos' ? undefined : filters.selectedUsuario) : profile?.id);
 
-  const { data: rawOccurrences = [], isLoading, refetch } = useOcorrencias({
+  const { data: rawOccurrences = [], isLoading, isFetching, refetch } = useOcorrencias({
     data_inicio: initialDates.start || filters.startDate,
     data_fim: initialDates.end || filters.endDate,
     tipo_id: filters.selectedTipo === FilterOptions.TODOS ? undefined : Number(filters.selectedTipo),
@@ -74,29 +74,31 @@ export function useOccurrenceViewModel(options: UseOccurrenceViewModelOptions = 
     enabled: canViewAll || (!!profile?.id)
   });
 
+  const isInitialLoading = isLoading && !rawOccurrences.length;
+
   const { data: tiposOcorrencia = [] } = useTiposOcorrencia();
 
   const business = useOccurrenceBusiness();
   const occurrences = useMemo(() => business.processOccurrences(rawOccurrences), [rawOccurrences, business]);
 
   return useMemo(() => ({
-    // State
     filters,
     startDate: filters.startDate,
     endDate: filters.endDate,
     occurrences,
     tiposOcorrencia,
     isLoading,
+    isInitialLoading,
+    isFetching,
     canViewAll,
     usuarioId: finalUsuarioId,
     
-    // Actions
     refetch,
     setStartDate: filters.setStartDate,
     setEndDate: filters.setEndDate,
     setUsuario: filters.setSelectedUsuario,
     setTipo: filters.setSelectedTipo
   }), [
-    filters, occurrences, tiposOcorrencia, isLoading, canViewAll, finalUsuarioId, refetch
+    filters, occurrences, tiposOcorrencia, isLoading, isInitialLoading, isFetching, canViewAll, finalUsuarioId, refetch
   ]);
 }

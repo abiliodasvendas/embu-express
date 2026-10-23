@@ -2,12 +2,17 @@ import { despesaApi, CreateDespesaPayload, ListDespesasFiltros } from "@/service
 import { DespesaOperacional } from "@/types/database";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export function useDespesas(filtros?: ListDespesasFiltros) {
+export function useDespesas(
+  filtros?: ListDespesasFiltros,
+  options?: { enabled?: boolean }
+) {
   const queryClient = useQueryClient();
 
   const query = useQuery<DespesaOperacional[]>({
     queryKey: ["despesas", filtros],
     queryFn: () => despesaApi.list(filtros),
+    staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled,
   });
 
   const createMutation = useMutation({
@@ -38,11 +43,22 @@ export function useDespesas(filtros?: ListDespesasFiltros) {
     },
   });
 
+  const pagarMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { data_pagamento: string; valor_pago?: number } }) =>
+      despesaApi.marcarPaga(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["despesas"] });
+      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+    },
+  });
+
   return {
     ...query,
     despesas: query.data || [],
     createMutation,
     updateMutation,
     deleteMutation,
+    pagarMutation,
   };
 }

@@ -38,7 +38,6 @@ const cidades = [
   { nome: "Porto Alegre", estado: "RS" }
 ];
 
-
 /**
  * Gera um número aleatório entre min e max (inclusivo)
  */
@@ -176,7 +175,7 @@ export const generateCNPJ = (formatted = true): string => {
 };
 
 /**
- * Gera dados fictícios para um cliente (Simplificado: sem endereço e CNPJ)
+ * Gera dados fictícios para um cliente
  */
 export const generateClientData = () => {
   const empresas = ["Tech", "Global", "Express", "Logistics", "Brasil", "Digital", "Solutions", "Trans", "Cargo", "Flow"];
@@ -186,6 +185,10 @@ export const generateClientData = () => {
   return {
     nome_fantasia: `${nomeBase} ${complemento}`,
     ativo: true,
+    periodicidade: Math.random() > 0.5 ? "QUINZENAL" : "MENSAL",
+    dia_vencimento_padrao: Math.random() > 0.5 ? 10 : 16,
+    valor_contrato_mensal: randomNumber(5, 45) * 1000,
+    valor_base: randomNumber(5, 45) * 1000,
   };
 };
 
@@ -199,7 +202,7 @@ export const generateUnidadeData = (clienteId?: number) => {
   const nomeUnidade = nomes[randomNumber(0, nomes.length - 1)];
   const razaoSocial = `${nomeUnidade} Empreendimentos ${sufixos[randomNumber(0, sufixos.length - 1)]}`;
 
-  const randomEscala = [1, 2, 3, 4, 5] // Seg-Sex por padrão no fake
+  const randomEscala = [1, 2, 3, 4, 5]
     .sort(() => Math.random() - 0.5)
     .slice(0, randomNumber(3, 5))
     .sort((a, b) => a - b);
@@ -261,14 +264,14 @@ export const generateCollaboratorData = () => {
     email: generateEmail(nomeCompleto),
     cpf: generateCPF(),
     rg: generateRG(),
-    data_nascimento: formatDateBR(new Date(1990, 0, 1)), // Padronizado 1990
+    data_nascimento: formatDateBR(new Date(1990, 0, 1)),
     status: StatusUsuario.ATIVO,
     senha_padrao: true,
   };
 };
 
 /**
- * Gera um registro de atividade fictício para o colaborador na data especificada e turno
+ * Gera um registro de atividade fictício para o colaborador
  */
 export const generateTimeRecord = (usuarioId: string, date: string, turno?: { hora_inicio: string, hora_fim: string }, scenarioOverride?: number) => {
   const scenario = scenarioOverride || randomNumber(1, 6);
@@ -418,7 +421,7 @@ export const generateSelfRegistrationMandatoryData = () => {
 };
 
 /**
- * Gera dados fictícios para um turno (vínculo) - Agora com Horários por dia
+ * Gera dados fictícios para um turno
  */
 export const generateTurnData = () => {
   const baseValue = randomNumber(2000, 4500);
@@ -455,6 +458,106 @@ export const generateOccurrenceData = (colaboradorId?: string) => {
   };
 };
 
+/**
+ * Gera dados fictícios para uma fatura
+ */
+export const generateFaturaData = (clienteId?: number, empresaId?: number) => {
+  const hoje = new Date();
+  const vencimento = new Date();
+  vencimento.setDate(hoje.getDate() + 10);
+
+  return {
+    cliente_id: clienteId || 1,
+    empresa_id: empresaId || 1,
+    mes_competencia: hoje.getMonth() + 1,
+    ano_competencia: hoje.getFullYear(),
+    tipo_periodo: "QUINZENAL" as const,
+    numero_periodo: 1,
+    data_emissao: hoje.toISOString().split("T")[0],
+    data_vencimento: vencimento.toISOString().split("T")[0],
+    valor_faturado: randomNumber(2500, 12500),
+    status: "PENDENTE" as const,
+    numero_fatura: `NF-${randomNumber(1000, 9999)}`,
+    observacoes: "Fatura fictícia gerada para testes de fluxo financeiro.",
+  };
+};
+
+/**
+ * Gera dados fictícios para uma conta a pagar / despesa
+ */
+export const generateDespesaData = (empresaId?: number) => {
+  const despesasDesc = [
+    "Aluguel do Galpão Principal",
+    "Assessoria Contábil e Fiscal",
+    "DAS Simples Nacional",
+    "Seguro Frota Operacional",
+    "Manutenção de Equipamentos e Bagageiros",
+    "Energia Elétrica e Internet Escritório",
+    "Licenciamento de Software de Telemetria",
+  ];
+
+  const hoje = new Date();
+  const vencimento = new Date();
+  vencimento.setDate(hoje.getDate() + 5);
+
+  return {
+    descricao: despesasDesc[randomNumber(0, despesasDesc.length - 1)],
+    categoria: "DESPESA_FIXA" as const,
+    empresa_id: empresaId ? String(empresaId) : "holding",
+    is_holding: !empresaId,
+    mes_competencia: hoje.getMonth() + 1,
+    ano_competencia: hoje.getFullYear(),
+    data_vencimento: vencimento.toISOString().split("T")[0],
+    valor_previsto: randomNumber(450, 4800),
+    status: "PENDENTE" as const,
+  };
+};
+
+/**
+ * Gera dados fictícios para uma movimentação bancária avulsa
+ */
+export const generateMovimentacaoAvulsaData = (empresaId?: number) => {
+  const entradas = [
+    "Frete esporádico entrega urgente",
+    "Rendimento aplicação de liquidez diária",
+    "Reembolso de taxa operacional",
+  ];
+
+  const hoje = new Date();
+
+  return {
+    tipo_movimentacao: "ENTRADA" as const,
+    empresa_id: empresaId || 1,
+    conta_bancaria_id: "none",
+    categoria: "FRETE_ESPORADICO",
+    descricao: entradas[randomNumber(0, entradas.length - 1)],
+    valor: randomNumber(150, 1600),
+    data_movimentacao: hoje.toISOString().split("T")[0],
+  };
+};
+
+/**
+ * Gera dados fictícios para uma conta bancária
+ */
+export const generateContaBancariaData = (empresaId?: number) => {
+  const bancos = [
+    "Itaú Unibanco",
+    "Banco do Brasil",
+    "Bradesco",
+    "Santander",
+    "Banco Inter",
+    "Sicoob",
+  ];
+
+  return {
+    empresa_id: empresaId || 1,
+    banco_nome: bancos[randomNumber(0, bancos.length - 1)],
+    agencia: String(randomNumber(1000, 9999)),
+    conta: `${randomNumber(10000, 99999)}-${randomNumber(0, 9)}`,
+    tipo_conta: "CORRENTE" as const,
+  };
+};
+
 export const mockGenerator = {
   rg: generateRG,
   cpf: generateCPF,
@@ -474,5 +577,9 @@ export const mockGenerator = {
   selfRegistration: generateSelfRegistrationData,
   selfRegistrationMandatory: generateSelfRegistrationMandatoryData,
   turn: generateTurnData,
-  occurrence: generateOccurrenceData
+  occurrence: generateOccurrenceData,
+  fatura: generateFaturaData,
+  despesa: generateDespesaData,
+  movimentacaoAvulsa: generateMovimentacaoAvulsaData,
+  contaBancaria: generateContaBancariaData,
 };

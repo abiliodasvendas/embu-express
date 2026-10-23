@@ -25,20 +25,21 @@ export function DateNavigation({ date, onNavigate, disabled, maxDate: customMaxD
   const handleNext = () => {
     const nextDate = addDays(date, 1);
     if (!maxDate || !isAfter(startOfDay(nextDate), maxDate)) {
-       onNavigate(nextDate);
+      onNavigate(nextDate);
     }
   };
 
   const isNextDisabled = disabled || (maxDate && (isSameDay(date, maxDate) || isAfter(date, maxDate)));
 
   return (
-    <div className="flex items-center justify-center gap-2 bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 w-full md:w-auto">
+    <div className="flex items-center justify-center gap-1.5 bg-card px-2 h-11 rounded-[18px] shadow-xs border border-border w-full md:w-auto">
       <Button
         disabled={disabled}
         variant="ghost"
         size="icon"
         onClick={handlePrevious}
-        className="h-8 w-8 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-lg"
+        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/70 rounded-[12px] transition-colors cursor-pointer"
+        aria-label="Dia anterior"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -48,17 +49,17 @@ export function DateNavigation({ date, onNavigate, disabled, maxDate: customMaxD
           <Button
             variant="ghost"
             className={cn(
-              "flex items-center gap-2 h-8 px-3 font-bold text-gray-900 uppercase tracking-wide hover:bg-gray-50 rounded-lg transition-all",
-              disabled && "text-gray-400 opacity-50"
+              "flex items-center gap-2 h-8 px-2.5 font-medium text-xs sm:text-sm text-foreground hover:bg-muted/70 rounded-[12px] transition-colors cursor-pointer",
+              disabled && "text-muted-foreground opacity-50 cursor-not-allowed"
             )}
           >
-            <CalendarDays className="h-4 w-4 text-blue-600" />
-            <span className="text-sm">
+            <CalendarDays className="h-4 w-4 text-foreground" />
+            <span>
               {format(date, "dd 'de' MMM, yyyy", { locale: ptBR })}
             </span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 z-[10002]" align="center">
+        <PopoverContent className="w-auto p-0 z-[10002] rounded-[18px] border border-border shadow-md" align="center">
           <Calendar
             mode="single"
             selected={date}
@@ -81,11 +82,12 @@ export function DateNavigation({ date, onNavigate, disabled, maxDate: customMaxD
         size="icon"
         onClick={handleNext}
         className={cn(
-            "h-8 w-8 rounded-lg",
-            isNextDisabled 
-                ? "text-gray-300 cursor-not-allowed" 
-                : "text-gray-400 hover:text-gray-900 hover:bg-gray-50"
+          "h-8 w-8 rounded-[12px] transition-colors",
+          isNextDisabled
+            ? "text-muted-foreground/30 cursor-not-allowed"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer"
         )}
+        aria-label="Próximo dia"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>

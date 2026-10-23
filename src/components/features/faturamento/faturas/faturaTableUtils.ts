@@ -1,0 +1,33 @@
+import { STATUS_FATURA, TIPO_PERIODO_FATURA } from "@/constants/financeiro.constants";
+import type { StatusFatura } from "@/types/database";
+
+export function getFaturaAtrasoInfo(
+  dataVencimento: string,
+  status: StatusFatura,
+): { isVencido: boolean; diasAtraso: number } {
+  const hojeStr = new Date().toISOString().split("T")[0];
+  const isVencido =
+    status !== STATUS_FATURA.LIQUIDADA &&
+    status !== STATUS_FATURA.CANCELADA &&
+    dataVencimento < hojeStr;
+
+  let diasAtraso = 0;
+  if (isVencido) {
+    const venc = new Date(`${dataVencimento}T12:00:00Z`);
+    const diffMs = new Date().getTime() - venc.getTime();
+    diasAtraso = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  return { isVencido, diasAtraso };
+}
+
+export function getFaturaPeriodoTexto(
+  tipoPeriodo?: string,
+  numeroPeriodo?: number | null,
+  quinzena?: number | null,
+): string {
+  if (tipoPeriodo === TIPO_PERIODO_FATURA.MENSAL) {
+    return "Mensal";
+  }
+  return `${numeroPeriodo || quinzena || 1}ª Quinzena`;
+}

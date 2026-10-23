@@ -63,9 +63,9 @@ export function useTimeTrackingBusiness({ records, date, collaborators, manualAb
         });
 
         collaborators?.forEach(c => {
-            c.links?.forEach((link: any) => {
+            c.links?.forEach(link => {
                 if (link.horarios && Array.isArray(link.horarios)) {
-                    link.horarios.forEach((h: any) => {
+                    link.horarios.forEach(h => {
                         if (h.hora_inicio && h.hora_fim) {
                             shifts.add(`${h.hora_inicio.substring(0, 5)} - ${h.hora_fim.substring(0, 5)}`);
                         }
@@ -85,3 +85,4 @@ export function useTimeTrackingBusiness({ records, date, collaborators, manualAb
         uniqueShifts,
     };
 }
+

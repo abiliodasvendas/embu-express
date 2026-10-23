@@ -7,6 +7,7 @@ export { useUrlState };
 export interface UseFiltersOptions {
   searchParam?: string;
   statusParam?: string;
+  statusDefault?: string;
   periodoParam?: string;
   mesParam?: string;
   anoParam?: string;
@@ -40,28 +41,24 @@ export interface UseFiltersReturn {
   hasActiveFilters: boolean;
   clearFilters: () => void;
   onClear: () => void;
-  setFilters: (filters: any) => void;
+  setFilters: (filters: Record<string, string | number | boolean | null | undefined>) => void;
 }
 
-// 1. Hook para Busca
 export function useSearchFilters(param = "search", syncWithUrl = true) {
   const [searchTerm, setSearchTerm] = useUrlState<string>({ key: param, defaultValue: "", syncWithUrl });
   return { searchTerm, setSearchTerm };
 }
 
-// 2. Hook para Status Simples
-export function useStatusFilters(param = "status", syncWithUrl = true) {
-  const [selectedStatus, setSelectedStatus] = useUrlState<string>({ key: param, defaultValue: FilterOptions.TODOS, syncWithUrl });
+export function useStatusFilters(param = "status", syncWithUrl = true, defaultValue: string = FilterOptions.TODOS) {
+  const [selectedStatus, setSelectedStatus] = useUrlState<string>({ key: param, defaultValue, syncWithUrl });
   return { selectedStatus, setSelectedStatus };
 }
 
-// 2.1 Hook para Categoria/Cargo
 export function useCategoryFilters(param = "categoria", syncWithUrl = true) {
   const [selectedCategoria, setSelectedCategoria] = useUrlState<string>({ key: param, defaultValue: FilterOptions.TODOS, syncWithUrl });
   return { selectedCategoria, setSelectedCategoria };
 }
 
-// 3. Hook para Datas/Meses
 export function useDateFilters(options: { mesParam?: string; anoParam?: string; syncWithUrl?: boolean } = {}) {
   const { mesParam = "mes", anoParam = "ano", syncWithUrl = true } = options;
   const [selectedMes, setSelectedMes] = useUrlState<number>({ key: mesParam, defaultValue: new Date().getMonth() + 1, syncWithUrl: !!mesParam && syncWithUrl });
@@ -69,7 +66,6 @@ export function useDateFilters(options: { mesParam?: string; anoParam?: string; 
   return { selectedMes, setSelectedMes, selectedAno, setSelectedAno };
 }
 
-// 3.1 Hook para Período (Date Range)
 export function useDateRangeFilters(options: { 
   startParam?: string; 
   endParam?: string; 
@@ -84,7 +80,6 @@ export function useDateRangeFilters(options: {
   return { startDate, setStartDate, endDate, setEndDate };
 }
 
-// 4. Hook para Hierarquia (Empresa, Cliente, Usuário)
 export function useHierarchyFilters(options: { empresaParam?: string; clienteParam?: string; usuarioParam?: string; syncWithUrl?: boolean } = {}) {
   const { empresaParam, clienteParam, usuarioParam, syncWithUrl = true } = options;
   const [selectedEmpresa, setSelectedEmpresa] = useUrlState<string>({ key: empresaParam || "emp_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!empresaParam && syncWithUrl });
@@ -93,14 +88,12 @@ export function useHierarchyFilters(options: { empresaParam?: string; clientePar
   return { selectedEmpresa, setSelectedEmpresa, selectedCliente, setSelectedCliente, selectedUsuario, setSelectedUsuario };
 }
 
-// 5. Hook para Filtros Específicos de Ponto
 export function usePontoFilters(options: { turnoParam?: string; syncWithUrl?: boolean } = {}) {
   const { turnoParam, syncWithUrl = true } = options;
   const [selectedTurno, setSelectedTurno] = useUrlState<string>({ key: turnoParam || "tur_h", defaultValue: FilterOptions.TODOS, syncWithUrl: !!turnoParam && syncWithUrl });
   return { selectedTurno, setSelectedTurno };
 }
 
-// 6. Hook para Gestão Geral de Limpeza e Utilitários
 export function useFiltersManager(allParams: (string | undefined)[], syncWithUrl = true) {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -120,12 +113,12 @@ export function useFiltersManager(allParams: (string | undefined)[], syncWithUrl
   return { clearFilters, hasActiveFilters };
 }
 
-// 7. Hook para Atualização em Lote (Batch)
-export function useBatchFilters(options: UseFiltersOptions) {
+export function useBatchFilters(options: UseFiltersOptions = {}) {
   const [, setSearchParams] = useSearchParams();
+  const syncWithUrl = options.syncWithUrl ?? true;
 
   const setFilters = useCallback((newFilters: Record<string, string | number | boolean | null | undefined>) => {
-    if (!options.syncWithUrl) return;
+    if (!syncWithUrl) return;
 
     setSearchParams((prev) => {
       const newParams = new URLSearchParams(prev);
@@ -148,7 +141,13 @@ export function useBatchFilters(options: UseFiltersOptions) {
       Object.entries(newFilters).forEach(([key, value]) => {
         const paramKey = map[key];
         if (paramKey) {
-            if (value === undefined || value === null || value === FilterOptions.TODOS || value === "") {
+            const isDefault =
+                value === undefined ||
+                value === null ||
+                value === "" ||
+                (key === "status" && options.statusDefault ? value === options.statusDefault : value === FilterOptions.TODOS);
+
+            if (isDefault) {
                 newParams.delete(paramKey);
             } else {
                 newParams.set(paramKey, String(value));
@@ -163,10 +162,9 @@ export function useBatchFilters(options: UseFiltersOptions) {
   return setFilters;
 }
 
-// MANTENDO useFilters como a FACADE principal para não quebrar código legado imediatamente
 export function useFilters(options: UseFiltersOptions = {}): UseFiltersReturn {
   const search = useSearchFilters(options.searchParam, options.syncWithUrl);
-  const status = useStatusFilters(options.statusParam, options.syncWithUrl);
+  const status = useStatusFilters(options.statusParam, options.syncWithUrl, options.statusDefault || FilterOptions.TODOS);
   const categoria = useCategoryFilters(options.categoriaParam, options.syncWithUrl);
   const dates = useDateFilters({ mesParam: options.mesParam, anoParam: options.anoParam, syncWithUrl: options.syncWithUrl });
   const hierarchy = useHierarchyFilters({ empresaParam: options.empresaParam, clienteParam: options.clienteParam, usuarioParam: options.usuarioParam, syncWithUrl: options.syncWithUrl });

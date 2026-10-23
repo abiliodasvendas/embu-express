@@ -1,16 +1,5 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
-} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -23,36 +12,37 @@ import { Input } from "@/components/ui/input";
 import { messages } from "@/constants/messages";
 import { useCreateEmpresa, useUpdateEmpresa } from "@/hooks/api/useEmpresaMutations";
 import { cn } from "@/lib/utils";
+import { EmpresaFormValues, empresaSchema } from "@/schemas/empresaSchema";
 import { Empresa } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { cnpjMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, FileText, Hash, Loader2, Wand2, X, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Building2, FileText, Hash, Wand2 } from "lucide-react";
+import { useEffect } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
-
-import { EmpresaFormValues, empresaSchema } from "@/schemas/empresaSchema";
 
 interface EmpresaFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  empresaToEdit?: Empresa;
+  empresaToEdit?: Empresa | null;
+  onSuccess?: () => void;
 }
 
 export function EmpresaFormDialog({
   open,
   onOpenChange,
-  empresaToEdit,
+  empresaToEdit = null,
+  onSuccess,
 }: EmpresaFormDialogProps) {
   const createEmpresa = useCreateEmpresa();
   const updateEmpresa = useUpdateEmpresa();
 
-  const isEditing = !!empresaToEdit;
+  const isEditing = Boolean(empresaToEdit);
   const isLoading = createEmpresa.isPending || updateEmpresa.isPending;
 
-  const [openSections, setOpenSections] = useState<string[]>(["dados-empresa"]);
+  const handleClose = () => onOpenChange(false);
 
   const form = useForm<EmpresaFormValues>({
     resolver: zodResolver(empresaSchema),
@@ -90,216 +80,163 @@ export function EmpresaFormDialog({
     });
   };
 
-  const handleQuickCreate = async () => {
-    try {
-      const mockData = mockGenerator.empresa();
-      const empresaData = {
-        ...mockData,
-        ativo: true,
-      };
-      await createEmpresa.mutateAsync(empresaData);
-      toast.success(messages.empresa.sucesso.criadaRapida);
-      safeCloseDialog(() => onOpenChange(false));
-    } catch (error: any) {
-      toast.error(messages.empresa.erro.quickCreate, { description: error.message });
-    }
-  };
-
-  const onFormError = (errors: FieldErrors<EmpresaFormValues>) => {
-    if (Object.keys(errors).length > 0) {
-      setOpenSections(["dados-empresa"]);
-    }
+  const onFormError = (_errors: FieldErrors<EmpresaFormValues>) => {
+    toast.error(messages.validacao.formularioComErros);
   };
 
   const onSubmit = async (values: EmpresaFormValues) => {
     try {
       if (isEditing && empresaToEdit) {
-        await updateEmpresa.mutateAsync({ id: empresaToEdit.id, ...values, silent: true });
-      } else {
-        await createEmpresa.mutateAsync({ ...values, silent: true });
-      }
-      onOpenChange(false);
-    } catch (error: any) {
-      const message = error.response?.data?.message || error.message || "";
-      
-      if (message.toLowerCase().includes("cnpj")) {
-        setOpenSections(["dados-empresa"]);
-        form.setError("cnpj", { message: messages.empresa.erro.cnpjJaExiste });
-      } else {
-        toast.error(isEditing ? messages.empresa.erro.atualizar : messages.empresa.erro.criar, {
-          description: message
+        await updateEmpresa.mutateAsync({
+          id: empresaToEdit.id,
+          ...values,
         });
+      } else {
+        await createEmpresa.mutateAsync(values);
       }
+      safeCloseDialog(handleClose);
+      onSuccess?.();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } }; message?: string };
+      const errorMessage = err.response?.data?.error || err.message || "";
+      toast.error(errorMessage || "Erro ao salvar empresa");
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}>
-      <DialogContent className="w-full max-lg p-0 gap-0 h-[100dvh] sm:h-auto sm:max-h-[90vh] bg-gray-50 flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl" hideCloseButton>
-        <div className="bg-blue-600 p-4 text-center relative shrink-0">
-          {/* Header buttons omitted for brevity if they are the same, but I'll keep them */}
-          {import.meta.env.DEV && (
-            <div className="absolute left-4 top-4 flex gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-                onClick={handleFillMock}
-                title="Preencher com dados fictícios"
-              >
-                <Wand2 className="h-5 w-5" />
-              </Button>
-              {!isEditing && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-                  onClick={handleQuickCreate}
-                  title="Criação Rápida"
-                >
-                  <Zap className="h-5 w-5" />
-                </Button>
-              )}
-            </div>
-          )}
+    <BaseDialog
+      open={open}
+      onOpenChange={(val) => !val && safeCloseDialog(handleClose)}
+      maxWidth="md"
+      description="Formulário de cadastro e edição de empresa"
+    >
+      <BaseDialog.Header
+        title={isEditing ? "Editar Empresa" : "Nova Empresa"}
+        subtitle="Preencha os dados cadastrais da empresa"
+        icon={<Building2 className="h-5 w-5 text-foreground" />}
+        onClose={() => safeCloseDialog(handleClose)}
+        leftAction={
+          import.meta.env.DEV ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 rounded-[12px] border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              onClick={handleFillMock}
+              title="Preencher com dados fictícios"
+            >
+              <Wand2 className="h-4 w-4" />
+            </Button>
+          ) : undefined
+        }
+      />
 
-          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
-            <X className="h-6 w-6" />
-            <span className="sr-only">Fechar</span>
-          </DialogClose>
-
-          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-            <Building2 className="w-5 h-5 text-white" />
-          </div>
-          <DialogTitle className="text-xl font-bold text-white">
-            {isEditing ? "Editar Empresa" : "Nova Empresa"}
-          </DialogTitle>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50/30">
-          <Form {...form}>
-            <form id="empresa-form" onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-4">
-              <Accordion 
-                type="multiple" 
-                value={openSections} 
-                onValueChange={setOpenSections}
-                className="space-y-4"
-              >
-                <AccordionItem value="dados-empresa" className="border rounded-2xl px-4 bg-white shadow-sm border-gray-100">
-                  <AccordionTrigger className="hover:no-underline py-4 font-bold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-blue-600" />
-                      Dados da Empresa
+      <BaseDialog.Body className="p-6 space-y-4">
+        <Form {...form}>
+          <form
+            id="empresa-form"
+            onSubmit={form.handleSubmit(onSubmit, onFormError)}
+            className="space-y-4"
+          >
+            <FormField
+              control={form.control}
+              name="nome_fantasia"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs font-semibold text-foreground">
+                    Nome Fantasia <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="Ex: Embu Express"
+                        className={cn(
+                          "pl-10 h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all",
+                          form.formState.errors.nome_fantasia && "border-destructive focus-visible:ring-destructive/20"
+                        )}
+                        {...field}
+                      />
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 pt-2 space-y-5">
-                    <FormField
-                      control={form.control}
-                      name="nome_fantasia"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Nome Fantasia <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                              <Input
-                                placeholder="Ex: Flow Logistics"
-                                className={cn(
-                                  "pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                  form.formState.errors.nome_fantasia && "border-red-500 focus-visible:ring-red-200"
-                                )}
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                    <FormField
-                      control={form.control}
-                      name="razao_social"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Razão Social <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                              <Input
-                                placeholder="Ex: Flow Logistics LTDA"
-                                className={cn(
-                                  "pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                  form.formState.errors.razao_social && "border-red-500 focus-visible:ring-red-200"
-                                )}
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+            <FormField
+              control={form.control}
+              name="razao_social"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs font-semibold text-foreground">
+                    Razão Social
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="Ex: Embu Transportes Ltda"
+                        className={cn(
+                          "pl-10 h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all",
+                          form.formState.errors.razao_social && "border-destructive focus-visible:ring-destructive/20"
+                        )}
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                    <FormField
-                      control={form.control}
-                      name="cnpj"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">CNPJ <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                              <Input
-                                placeholder="00.000.000/0000-00"
-                                className={cn(
-                                  "pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                                  form.formState.errors.cnpj && "border-red-500 focus-visible:ring-red-200"
-                                )}
-                                {...field}
-                                onChange={(e) => field.onChange(cnpjMask(e.target.value))}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </form>
-          </Form>
-        </div>
+            <FormField
+              control={form.control}
+              name="cnpj"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs font-semibold text-foreground">
+                    CNPJ
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="00.000.000/0000-00"
+                        className={cn(
+                          "pl-10 h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all",
+                          form.formState.errors.cnpj && "border-destructive focus-visible:ring-destructive/20"
+                        )}
+                        {...field}
+                        onChange={(e) => field.onChange(cnpjMask(e.target.value))}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+      </BaseDialog.Body>
 
-        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            form="empresa-form"
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
-          >
-            {isLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : isEditing ? (
-              "Salvar Alterações"
-            ) : (
-              "Criar Empresa"
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <BaseDialog.Footer>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => safeCloseDialog(handleClose)}
+          disabled={isLoading}
+        >
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          form="empresa-form"
+          disabled={isLoading}
+        >
+          {isLoading ? "Salvando..." : isEditing ? "Salvar Alterações" : "Criar Empresa"}
+        </Button>
+      </BaseDialog.Footer>
+    </BaseDialog>
   );
 }

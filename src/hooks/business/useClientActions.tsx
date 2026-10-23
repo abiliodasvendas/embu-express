@@ -1,14 +1,16 @@
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { ActionItem } from "@/types/actions";
-import { Client } from "@/types/client";
-import { Edit2, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import { Client } from "@/types/database";
+import { Edit2, Eye, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface UseClientActionsProps {
   client?: Client;
   onEdit: (client: Client) => void;
   onToggleStatus: (client: Client) => void;
   onDelete: (client: Client) => void;
+  hideDetails?: boolean;
 }
 
 export function useClientActions({
@@ -16,10 +18,22 @@ export function useClientActions({
   onEdit,
   onToggleStatus,
   onDelete,
+  hideDetails = false,
 }: UseClientActionsProps): ActionItem[] {
   const { can } = usePermissions();
+  const navigate = useNavigate();
   const actions: ActionItem[] = [];
   if (!client) return actions;
+
+  if (!hideDetails) {
+    actions.push({
+      label: "Ver Detalhes",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: () => navigate(`/clientes/${client.id}`),
+      swipeColor: "bg-primary",
+      drawerClass: "text-primary",
+    });
+  }
 
   if (can(PERMISSIONS.CLIENTES.EDITAR)) {
     actions.push({

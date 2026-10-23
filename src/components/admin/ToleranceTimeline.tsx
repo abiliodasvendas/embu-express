@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Banner } from "@/components/ui/Banner";
 import { Clock, Info } from "lucide-react";
 import { useMemo } from "react";
 
@@ -193,39 +194,35 @@ export function ToleranceTimeline({ draftValues }: ToleranceTimelineProps) {
     };
 
     return (
-        <Card className="rounded-3xl border-slate-200 shadow-sm bg-gradient-to-br from-white to-slate-50 overflow-hidden col-span-1 md:col-span-2 mb-6">
+        <Card className="rounded-3xl border-border bg-card shadow-xs overflow-hidden col-span-1 md:col-span-2 mb-6">
             <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                    <div className="h-10 w-10 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center">
                         <Clock className="h-5 w-5" />
                     </div>
-                    <CardTitle className="text-xl font-bold text-slate-800">Visualização de Tolerâncias</CardTitle>
+                    <CardTitle className="text-xl font-bold text-foreground">Visualização de Tolerâncias</CardTitle>
                 </div>
-                <CardDescription className="text-slate-600 font-medium">
-                    Simulação dinâmica baseada nos valores que você configurou. Use um horário de entrada às <strong className="text-slate-800">09:00</strong> e saída às <strong className="text-slate-800">18:00</strong> como exemplo prático.
+                <CardDescription className="text-muted-foreground text-xs leading-relaxed">
+                    Simulação dinâmica baseada nos valores que você configurou. Use um horário de entrada às <strong className="text-foreground">09:00</strong> e saída às <strong className="text-foreground">18:00</strong> como exemplo prático.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8">
-                {/* Entrada */}
-                <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                    <h3 className="text-lg font-bold text-slate-800 mb-2 md:hidden">Entrada</h3>
+            <CardContent className="space-y-6">
+                <div className="p-5 bg-surface-alt/40 rounded-2xl border border-border space-y-4">
+                    <h3 className="text-sm font-bold text-foreground mb-2 md:hidden">Entrada</h3>
                     <div className="hidden md:block">{renderEntrada(false)}</div>
                     <div className="md:hidden flex justify-center">{renderEntrada(true)}</div>
                 </div>
 
-                {/* Saída */}
-                <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                    <h3 className="text-lg font-bold text-slate-800 mb-2 md:hidden">Saída</h3>
+                <div className="p-5 bg-surface-alt/40 rounded-2xl border border-border space-y-4">
+                    <h3 className="text-sm font-bold text-foreground mb-2 md:hidden">Saída</h3>
                     <div className="hidden md:block">{renderSaida(false)}</div>
                     <div className="md:hidden flex justify-center">{renderSaida(true)}</div>
                 </div>
 
-                <div className="flex items-start gap-2 text-sm text-slate-500 bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
-                    <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-                    <p>
-                        As barras acima são <strong>interativas</strong>. Ao alterar os valores nos campos abaixo, as faixas de cores se ajustarão em tempo real para refletir sua configuração antes mesmo de salvar.
-                    </p>
-                </div>
+                <Banner
+                    variant="info"
+                    description="As barras acima são interativas. Ao alterar os valores nos campos acima, as faixas de cores se ajustarão em tempo real para refletir sua configuração antes mesmo de salvar."
+                />
             </CardContent>
         </Card>
     );

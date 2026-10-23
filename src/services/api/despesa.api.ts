@@ -13,6 +13,13 @@ export interface CreateDespesaPayload {
   data_pagamento?: string | null;
   status?: StatusDespesa;
   is_holding?: boolean;
+  is_parcelado?: boolean;
+  quantidade_parcelas?: number;
+  is_recorrente?: boolean;
+  meses_recorrencia?: number;
+  grupo_parcelamento_id?: string | null;
+  numero_parcela?: number | null;
+  total_parcelas?: number | null;
 }
 
 export interface ListDespesasFiltros {
@@ -38,4 +45,7 @@ export const despesaApi = {
 
   delete: (id: string): Promise<void> =>
     apiClient.delete(`/despesas/${id}`).then((res) => res.data),
+
+  marcarPaga: (id: string, data: { data_pagamento: string; valor_pago?: number }): Promise<DespesaOperacional> =>
+    apiClient.patch(`/despesas/${id}/pagar`, data).then((res) => res.data),
 };

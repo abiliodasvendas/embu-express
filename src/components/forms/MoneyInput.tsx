@@ -8,6 +8,7 @@ interface MoneyInputProps<T extends FieldValues> {
   field: ControllerRenderProps<T, FieldPath<T>>;
   label?: string;
   required?: boolean;
+  optional?: boolean;
   placeholder?: string;
   className?: string;
   inputClassName?: string;
@@ -19,6 +20,7 @@ export function MoneyInput<T extends FieldValues>({
   field,
   label = "Valor",
   required = false,
+  optional,
   placeholder = "R$ 0,00",
   className,
   inputClassName,
@@ -26,19 +28,27 @@ export function MoneyInput<T extends FieldValues>({
   disabled = false,
 }: MoneyInputProps<T>) {
   const { error } = useFormField();
+  const isOptional = Boolean(optional);
 
   return (
     <FormItem className={className}>
-      <FormLabel className={labelClassName}>
-        {label} {required && <span className="text-red-600">*</span>}
-      </FormLabel>
+      {label && (
+        <FormLabel className={labelClassName}>
+          {label}
+          {required ? (
+            <span className="text-destructive ml-1">*</span>
+          ) : isOptional ? (
+            <span className="text-muted-foreground font-normal text-[11px] ml-1">(opcional)</span>
+          ) : null}
+        </FormLabel>
+      )}
       <FormControl>
         <Input
           {...field}
           placeholder={placeholder}
           type="text"
           className={cn(
-            "h-11 rounded-2xl bg-gray-50 border-gray-200 px-4 focus:bg-white transition-all",
+            "h-11 rounded-[18px] bg-background border-border px-4 text-sm font-normal focus:bg-white focus:border-primary transition-all",
             inputClassName
           )}
           disabled={disabled}
@@ -52,4 +62,3 @@ export function MoneyInput<T extends FieldValues>({
     </FormItem>
   );
 }
-

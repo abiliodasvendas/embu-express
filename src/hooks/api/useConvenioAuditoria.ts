@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { convenioAuditoriaApi } from "@/services/api/convenio-auditoria.api";
-import {
-  FaturaFornecedorConvenio,
-  StatusFaturaFornecedorConvenio,
-} from "@/types/database";
 
 export const CONVENIO_AUDITORIA_KEYS = {
   all: ["convenio-auditoria"] as const,
@@ -30,39 +26,28 @@ export function useResumoGeralConvenios(mes: number, ano: number) {
   });
 }
 
-export function useSalvarFaturaFornecedor(convenioId: string) {
+export function useLiquidarFaturaConvenio() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Partial<FaturaFornecedorConvenio>) =>
-      convenioAuditoriaApi.salvarFaturaFornecedor(convenioId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CONVENIO_AUDITORIA_KEYS.all });
-    },
-  });
-}
-
-export function useAtualizarStatusFaturaFornecedor(convenioId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      faturaId,
-      status,
-      observacoes,
-    }: {
-      faturaId: string;
-      status: StatusFaturaFornecedorConvenio;
+    mutationFn: (data: {
+      fatura_id?: string | null;
+      convenio_id: string;
+      mes_competencia: number;
+      ano_competencia: number;
+      data_vencimento: string;
+      valor_total_fatura: number;
+      valor_pago: number;
+      data_pagamento: string;
+      empresa_id: number;
+      conta_bancaria_id: string;
       observacoes?: string | null;
-    }) =>
-      convenioAuditoriaApi.atualizarStatusFatura(
-        convenioId,
-        faturaId,
-        status,
-        observacoes
-      ),
+    }) => convenioAuditoriaApi.liquidarFatura(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CONVENIO_AUDITORIA_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
     },
   });
 }

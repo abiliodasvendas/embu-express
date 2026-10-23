@@ -1,8 +1,15 @@
 import { useResumoGeralConvenios } from "@/hooks/api/useConvenioAuditoria";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListSkeleton } from "@/components/skeletons";
+import { ListSkeleton, KpiGridSkeleton } from "@/components/skeletons";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Receipt, Users, TrendingUp, Store, ChevronRight, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -24,7 +31,12 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
   const { data: resumo, isLoading } = useResumoGeralConvenios(mes, ano);
 
   if (isLoading) {
-    return <ListSkeleton />;
+    return (
+      <div className="space-y-6">
+        <KpiGridSkeleton count={4} cols={4} />
+        <ListSkeleton />
+      </div>
+    );
   }
 
   const totais = resumo?.totais;
@@ -50,98 +62,88 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="rounded-2xl border-gray-100 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+      <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0">
+        <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Consumido
-            </CardTitle>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-              <Receipt className="h-4 w-4" />
+            </span>
+            <div className="w-10 h-10 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center font-bold">
+              <Receipt className="h-5 w-5" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-black text-gray-900 tracking-tight">
-              {formatarMoeda(totalGeral)}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">{totalLancamentos} manutenções / itens</p>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {formatarMoeda(totalGeral)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">{totalLancamentos} manutenções / itens</p>
+        </div>
 
-        <Card className="rounded-2xl border-purple-100 bg-purple-50/20 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold text-purple-800 uppercase tracking-wider">
+        <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Ticket Médio
-            </CardTitle>
-            <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-              <TrendingUp className="h-4 w-4" />
+            </span>
+            <div className="w-10 h-10 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center font-bold">
+              <TrendingUp className="h-5 w-5" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-black text-purple-700 tracking-tight">
-              {formatarMoeda(ticketMedioGeral)}
-            </div>
-            <p className="text-xs text-purple-800/80 mt-1">Custo médio por ordem de serviço</p>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {formatarMoeda(ticketMedioGeral)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Custo médio por ordem de serviço</p>
+        </div>
 
-        <Card className="rounded-2xl border-amber-100 bg-amber-50/20 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold text-amber-800 uppercase tracking-wider">
+        <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Maior Despesa
-            </CardTitle>
-            <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-              <Store className="h-4 w-4" />
+            </span>
+            <div className="w-10 h-10 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center font-bold">
+              <Store className="h-5 w-5" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-black text-amber-900 tracking-tight truncate">
-              {maiorConvenio ? maiorConvenio.nome : "—"}
-            </div>
-            <p className="text-xs text-amber-800/80 mt-1">
-              {maiorConvenio ? formatarMoeda(maiorConvenio.total_consumido) : "Sem movimentação"}
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="text-xl sm:text-2xl font-bold text-foreground tracking-tight truncate">
+            {maiorConvenio ? maiorConvenio.nome : "—"}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {maiorConvenio ? formatarMoeda(maiorConvenio.total_consumido) : "Sem movimentação"}
+          </p>
+        </div>
 
-        <Card className="rounded-2xl border-emerald-100 bg-emerald-50/20 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+        <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Motoboys Atendidos
-            </CardTitle>
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-              <Users className="h-4 w-4" />
+            </span>
+            <div className="w-10 h-10 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center font-bold">
+              <Users className="h-5 w-5" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-black text-emerald-700 tracking-tight">
-              {totalMotoboysAtendidos}
-            </div>
-            <p className="text-xs text-emerald-800/80 mt-1">Colaboradores com ordens no mês</p>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {totalMotoboysAtendidos}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Colaboradores com ordens no mês</p>
+        </div>
       </div>
 
       {distribuicao.length > 0 && (
-        <Card className="rounded-2xl border-gray-100 shadow-sm p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-gray-900">Distribuição do Custo por Loja Parceira</h3>
-              <p className="text-xs text-gray-500">Participação de cada parceiro no volume financeiro do mês</p>
-            </div>
+        <div className="rounded-[24px] border border-border bg-card shadow-xs p-5 space-y-4">
+          <div>
+            <h3 className="text-sm font-bold text-foreground">Distribuição do Custo por Convênio Parceiro</h3>
+            <p className="text-xs text-muted-foreground">Participação de cada parceiro no volume financeiro do mês</p>
           </div>
 
           <div className="space-y-3">
-            <div className="w-full h-3.5 bg-gray-100 rounded-full overflow-hidden flex shadow-inner">
+            <div className="w-full h-3.5 bg-muted rounded-full overflow-hidden flex shadow-inner">
               {distribuicao.map((item, index) => {
                 const colors = [
-                  "bg-blue-600",
-                  "bg-emerald-500",
-                  "bg-amber-500",
-                  "bg-purple-600",
-                  "bg-rose-500",
-                  "bg-cyan-500",
-                  "bg-indigo-500",
+                  "bg-primary",
+                  "bg-foreground/80",
+                  "bg-muted-foreground",
+                  "bg-foreground/50",
+                  "bg-foreground/30",
+                  "bg-muted-foreground/40",
+                  "bg-foreground/15",
                 ];
                 const colorClass = colors[index % colors.length];
                 return (
@@ -158,130 +160,126 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
               {distribuicao.map((item, index) => {
                 const colors = [
-                  "bg-blue-600",
-                  "bg-emerald-500",
-                  "bg-amber-500",
-                  "bg-purple-600",
-                  "bg-rose-500",
-                  "bg-cyan-500",
-                  "bg-indigo-500",
+                  "bg-primary",
+                  "bg-foreground/80",
+                  "bg-muted-foreground",
+                  "bg-foreground/50",
+                  "bg-foreground/30",
+                  "bg-muted-foreground/40",
+                  "bg-foreground/15",
                 ];
                 const dotColor = colors[index % colors.length];
                 return (
                   <div key={item.convenio_id} className="flex items-center gap-1.5">
                     <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", dotColor)} />
-                    <span className="font-medium text-gray-700">{item.nome}:</span>
-                    <span className="font-bold text-gray-900">{item.percentual}%</span>
-                    <span className="text-gray-400 font-normal">({formatarMoeda(item.total)})</span>
+                    <span className="font-medium text-foreground">{item.nome}:</span>
+                    <span className="font-bold text-foreground">{item.percentual}%</span>
+                    <span className="text-muted-foreground font-normal">({formatarMoeda(item.total)})</span>
                   </div>
                 );
               })}
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-gray-900">Ranking Detalhado de Parceiros</h3>
-              <p className="text-xs text-gray-500">Performance, volume e ticket médio de cada convênio no período</p>
-            </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">Ranking Detalhado de Parceiros</h3>
+            <p className="text-xs text-muted-foreground">Performance, volume e ticket médio de cada convênio no período</p>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white shadow-sm">
+          <div className="rounded-[24px] border border-border overflow-hidden bg-card shadow-xs">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50/50">
-                  <tr className="border-b border-gray-100 text-left">
-                    <th className="py-3.5 pl-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Parceiro</th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider">Lançamentos</th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider">Motoboys</th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider">Frota Embu</th>
-                    <th className="px-4 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider">Ticket Médio</th>
-                    <th className="px-5 py-3.5 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50 text-sm">
+              <Table>
+                <TableHeader className="bg-muted/40">
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="py-3.5 pl-5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Parceiro</TableHead>
+                    <TableHead className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Lançamentos</TableHead>
+                    <TableHead className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Motoboys</TableHead>
+                    <TableHead className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Frota Embu</TableHead>
+                    <TableHead className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ticket Médio</TableHead>
+                    <TableHead className="px-5 py-3.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="divide-y divide-border/60 text-sm">
                   {convenios.map((c, index) => (
-                    <tr
+                    <TableRow
                       key={c.id}
                       onClick={() => navigate(`/convenios/${c.id}`)}
-                      className="hover:bg-gray-50/80 transition-colors cursor-pointer"
+                      className="hover:bg-primary/[0.04] active:bg-primary/[0.08] transition-colors duration-150 cursor-pointer"
                     >
-                      <td className="py-3.5 pl-5">
-                        <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-md bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-bold">
-                            {index + 1}º
-                          </span>
-                          <span className="font-bold text-gray-900">{c.nome}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5 text-gray-600 font-medium">
-                        {c.quantidade_lancamentos} <span className="text-xs text-gray-400">({c.total_colaboradores_distintos || 0} boys)</span>
-                      </td>
-                      <td className="px-4 py-3.5 text-blue-600 font-bold">
-                        {formatarMoeda(c.total_motoboys)}
-                      </td>
-                      <td className="px-4 py-3.5 text-amber-700 font-bold">
-                        {formatarMoeda(c.total_moto_embu_david)}
-                      </td>
-                      <td className="px-4 py-3.5 text-purple-700 font-medium text-xs">
-                        {formatarMoeda(c.ticket_medio || 0)}
-                      </td>
-                      <td className="px-5 py-3.5 text-right font-black text-gray-900">
-                        {formatarMoeda(c.total_consumido)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                    <TableCell className="py-3.5 pl-5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-[6px] bg-muted text-foreground flex items-center justify-center text-[10px] font-bold">
+                          {index + 1}º
+                        </span>
+                        <span className="font-bold text-foreground">{c.nome}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5 text-foreground font-medium">
+                      {c.quantidade_lancamentos} <span className="text-xs text-muted-foreground">({c.total_colaboradores_distintos || 0} boys)</span>
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5 text-foreground font-medium">
+                      {formatarMoeda(c.total_motoboys)}
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5 text-foreground font-medium">
+                      {formatarMoeda(c.total_moto_embu_david)}
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5 text-foreground font-medium text-xs">
+                      {formatarMoeda(c.ticket_medio || 0)}
+                    </TableCell>
+                    <TableCell className="px-5 py-3.5 text-right font-bold text-foreground">
+                      {formatarMoeda(c.total_consumido)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
+      </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-gray-900">Top Colaboradores</h3>
-              <p className="text-xs text-gray-500">Maior volume de ordens no mês</p>
-            </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">Top Colaboradores</h3>
+            <p className="text-xs text-muted-foreground">Maior volume de ordens no mês</p>
           </div>
 
-          <Card className="rounded-2xl border-gray-100 shadow-sm p-4 space-y-3">
+          <div className="rounded-[24px] border border-border bg-card shadow-xs p-5 space-y-3">
             {topColaboradores.length === 0 ? (
-              <div className="p-6 text-center text-xs text-gray-400">
+              <div className="p-6 text-center text-xs text-muted-foreground">
                 Nenhum lançamento vinculado a colaboradores no mês.
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-border/60">
                 {topColaboradores.map((colab, idx) => (
                   <div key={colab.colaborador_id} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-4 h-4 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-[6px] bg-muted text-foreground flex items-center justify-center text-[10px] font-bold shrink-0">
                           {idx + 1}
                         </span>
-                        <p className="font-bold text-gray-900 text-xs truncate">
+                        <p className="font-bold text-foreground text-xs truncate">
                           {colab.nome_completo}
                         </p>
                       </div>
-                      <p className="text-[11px] text-gray-400 mt-0.5 truncate pl-5.5">
+                      <p className="text-[11px] text-muted-foreground mt-0.5 truncate pl-7">
                         {colab.quantidade_lancamentos} itens em {colab.convenios_utilizados.join(", ")}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="font-black text-gray-900 text-xs">
+                      <span className="font-bold text-foreground text-xs">
                         {formatarMoeda(colab.total_gasto)}
                       </span>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 rounded-lg text-gray-400 hover:text-blue-600"
+                        className="h-8 w-8 rounded-[10px] text-muted-foreground hover:text-foreground hover:bg-muted"
                         onClick={() => navigate(`/colaboradores/${colab.colaborador_id}`)}
-                        title="Ver perfil do colaborador"
+                        title="Ver colaborador"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
@@ -290,7 +288,7 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         </div>
       </div>
     </div>

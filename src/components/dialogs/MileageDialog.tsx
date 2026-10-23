@@ -1,12 +1,4 @@
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogTitle
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import {
     Form,
     FormControl,
@@ -18,8 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { kmMask, kmToNumber } from "@/utils/masks";
+import { safeCloseDialog } from "@/utils/dialogUtils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Gauge, X } from "lucide-react";
+import { Gauge } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -38,7 +31,7 @@ const createSchema = (lastKm: number) => z.object({
         .min(1, "Campo obrigatório")
         .transform((val) => kmToNumber(val))
         .refine((val) => val >= lastKm, {
-            message: `O KM não pode ser menor que o último registrado`,
+            message: "O KM não pode ser menor que o último registrado",
         }),
 });
 
@@ -52,104 +45,91 @@ export function MileageDialog({
 }: MileageDialogProps) {
     const schema = createSchema(lastKm);
 
-    const form = useForm<z.infer<typeof schema>>({
+    const form = useForm<{ km: string }>({
         resolver: zodResolver(schema),
         defaultValues: {
-            km: "" as any,
+            km: "",
         },
     });
 
     useEffect(() => {
         if (open) {
-            form.reset({ km: "" as any });
+            form.reset({ km: "" });
         }
     }, [open, form]);
 
-    const onSubmit = (values: z.infer<typeof schema>) => {
-        onConfirm(values.km);
+    const onSubmit = (values: { km: string }) => {
+        onConfirm(kmToNumber(values.km));
+        safeCloseDialog(onClose);
     };
 
     return (
-        <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <AlertDialogContent className="max-w-md p-0 overflow-hidden border-0 rounded-[2rem] shadow-2xl bg-white">
-                {/* Header Azul Premium */}
-                <div className="bg-blue-600 p-6 text-center relative shrink-0">
-                    <button
-                        onClick={onClose}
-                        className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors"
-                    >
-                        <X className="h-6 w-6" />
-                        <span className="sr-only">Fechar</span>
-                    </button>
+        <BaseDialog
+            open={open}
+            onOpenChange={(isOpen) => !isOpen && safeCloseDialog(onClose)}
+            maxWidth="sm"
+        >
+            <BaseDialog.Header
+                icon={<Gauge className="h-5 w-5" />}
+                title={title}
+                subtitle={description}
+                onClose={() => safeCloseDialog(onClose)}
+            />
 
-                    <div className="mx-auto bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-3 backdrop-blur-sm shadow-inner">
-                        <Gauge className="w-6 h-6 text-white" />
-                    </div>
+            <BaseDialog.Body className="py-5 px-6">
+                <Form {...form}>
+                    <form id="mileage-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="km"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-semibold text-foreground">
+                                        Quilometragem <span className="text-destructive">*</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Gauge className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                            <Input
+                                                type="text"
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const masked = kmMask(e.target.value);
+                                                    field.onChange(masked);
+                                                }}
+                                                autoFocus
+                                                placeholder="0"
+                                                className={cn(
+                                                    "pl-10 pr-12 h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all",
+                                                    form.formState.errors.km && "border-destructive focus-visible:ring-destructive/20"
+                                                )}
+                                            />
+                                            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-xs tracking-wider pointer-events-none">
+                                                KM
+                                            </span>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage className="text-xs text-destructive ml-1" />
+                                </FormItem>
+                            )}
+                        />
+                    </form>
+                </Form>
+            </BaseDialog.Body>
 
-                    <AlertDialogTitle className="text-xl font-bold text-white mb-1">
-                        {title}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-blue-100 text-sm leading-relaxed px-4">
-                        {description}
-                    </AlertDialogDescription>
-                </div>
-
-                <div className="p-6">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            <FormField
-                                control={form.control}
-                                name="km"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                                            Quilometragem <span className="text-red-600">*</span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <div className="relative group">
-                                                <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                                                <Input
-                                                    type="text"
-                                                    {...field}
-                                                    onChange={(e) => {
-                                                        const masked = kmMask(e.target.value);
-                                                        field.onChange(masked);
-                                                    }}
-                                                    autoFocus
-                                                    className={cn(
-                                                        "pl-12 pr-14 h-11 rounded-xl border-gray-200 bg-gray-50 focus:bg-white transition-all text-base",
-                                                        form.formState.errors.km && "border-red-500 bg-red-50/10"
-                                                    )}
-                                                />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xs tracking-widest pointer-events-none group-focus-within:text-blue-500">
-                                                    KM
-                                                </span>
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <AlertDialogFooter className="flex flex-row justify-end gap-3 mt-8">
-                                <AlertDialogCancel
-                                    type="button"
-                                    onClick={onClose}
-                                    className="flex-1 sm:flex-none h-11 rounded-xl border-gray-200 text-gray-700 font-medium hover:bg-white transition-all m-0"
-                                >
-                                    Cancelar
-                                </AlertDialogCancel>
-                                <Button
-                                    type="submit"
-                                    className="flex-1 sm:flex-none h-11 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
-                                >
-                                    Confirmar
-                                </Button>
-                            </AlertDialogFooter>
-                        </form>
-                    </Form>
-                </div>
-            </AlertDialogContent>
-        </AlertDialog>
+            <BaseDialog.Footer>
+                <BaseDialog.Action
+                    label="Cancelar"
+                    variant="secondary"
+                    onClick={() => safeCloseDialog(onClose)}
+                />
+                <BaseDialog.Action
+                    label="Confirmar"
+                    variant="primary"
+                    type="submit"
+                    form="mileage-form"
+                />
+            </BaseDialog.Footer>
+        </BaseDialog>
     );
 }

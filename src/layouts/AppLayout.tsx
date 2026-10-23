@@ -18,38 +18,38 @@ export default function AppLayout() {
   useEffect(() => {
     if (showGuard) {
       openPasswordGuardDialog({
-        onSuccess: () => window.location.reload()
+        onSuccess: () => window.location.reload(),
       });
     }
   }, [showGuard, openPasswordGuardDialog]);
 
   if (loadingSession || isLoading || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary/20 border-t-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background flex flex-col">
       <AppNavbar />
 
-      <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white">
-        <div className="flex h-20 items-center justify-center border-b border-gray-50">
+      <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-white/10 bg-[#0a0a0a] shadow-xs">
+        <div className="flex h-20 items-center justify-center border-b border-white/10 px-6 shrink-0">
           <img
             src="/assets/logo-embuexpress.png"
             alt="Embu Express"
-            className="h-12 cursor-pointer"
-            onClick={() => navigate(ROUTES.PUBLIC.ROOT)}
+            className="h-10 w-auto cursor-pointer brightness-0 invert hover:opacity-90 transition-opacity"
+            onClick={() => navigate(ROUTES.PRIVATE.INICIO)}
           />
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-6">
+        <div className="flex-1 overflow-y-auto px-5 py-5 scrollbar-hide">
           <AppSidebar />
         </div>
       </aside>
 
-      <main className="pt-[calc(6.5rem+var(--safe-area-top))] pb-[calc(2.5rem+var(--safe-area-bottom))] md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 min-h-screen transition-all">
+      <main className="pt-[calc(6rem+var(--safe-area-top))] pb-[calc(2.5rem+var(--safe-area-bottom))] md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 flex-1 min-w-0 transition-all">
         <Outlet />
       </main>
     </div>

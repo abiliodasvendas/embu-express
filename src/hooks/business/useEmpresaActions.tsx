@@ -1,7 +1,8 @@
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { Empresa } from "@/types/database";
-import { Edit, ToggleLeft, ToggleRight, Trash2, Landmark } from "lucide-react";
+import { ActionItem } from "@/types/actions";
+import { Edit2, ToggleLeft, ToggleRight, Trash2, Landmark } from "lucide-react";
 
 interface UseEmpresaActionsProps {
   empresa: Empresa;
@@ -17,24 +18,22 @@ export function useEmpresaActions({
   onToggleStatus,
   onDelete,
   onGerenciarContas,
-}: UseEmpresaActionsProps) {
+}: UseEmpresaActionsProps): ActionItem[] {
   const { can } = usePermissions();
-  const actions = [];
+  const actions: ActionItem[] = [];
 
   if (onGerenciarContas) {
     actions.push({
       label: "Contas Bancárias",
-      icon: <Landmark className="w-4 h-4 text-indigo-600" />,
+      icon: <Landmark className="w-4 h-4" />,
       onClick: () => onGerenciarContas(empresa),
-      swipeColor: "bg-indigo-600",
-      drawerClass: "text-indigo-600",
     });
   }
 
   if (can(PERMISSIONS.EMPRESAS.EDITAR)) {
     actions.push({
       label: "Editar",
-      icon: <Edit className="w-4 h-4" />,
+      icon: <Edit2 className="w-4 h-4" />,
       onClick: () => onEdit(empresa),
       swipeColor: "bg-blue-600",
       drawerClass: "text-blue-600",

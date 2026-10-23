@@ -1,11 +1,10 @@
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { ScaleIndicators } from "@/components/common/ScaleIndicators";
-import { cn } from "@/lib/utils";
-import { DIAS_SEMANA } from "@/utils/formatters/constants";
+import { StatusUsuario } from "@/types/enums";
 
 interface CollaboratorCardProps {
     name: string;
-    status: any;
+    status: StatusUsuario | boolean | string;
     unitName?: string;
     shiftInterval: string;
     shiftDays: number[];
@@ -15,10 +14,6 @@ interface CollaboratorCardProps {
     onClick?: () => void;
 }
 
-/**
- * Reusable card for collaborator information (profile, shift details, and operational days).
- * Used in client details and unit details.
- */
 export function CollaboratorCard({
     name,
     status,
@@ -32,32 +27,30 @@ export function CollaboratorCard({
 }: CollaboratorCardProps) {
     return (
         <div
-            className="bg-white px-8 py-5 rounded-3xl shadow-sm hover:shadow-lg transition-all cursor-pointer group border border-transparent hover:border-primary/10"
+            className="bg-card px-6 py-5 rounded-[18px] border border-border shadow-xs hover:border-foreground/20 hover:shadow-xs transition-all cursor-pointer group"
             onClick={onClick}
         >
-            {/* Top row: Avatar + info */}
             <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-full bg-primary/5 flex items-center justify-center text-sm font-extrabold text-primary shrink-0 group-hover:bg-primary/10 transition-colors duration-300">
+                <div className="w-10 h-10 rounded-[12px] bg-muted/70 text-foreground border border-border flex items-center justify-center text-sm font-bold shrink-0">
                     {name.substring(0, 1).toUpperCase()}
                 </div>
                 <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-2">
-                        <h5 className="text-[15px] font-extrabold text-gray-900 truncate tracking-tight group-hover:text-primary transition-colors">
+                        <h5 className="text-sm font-bold text-foreground truncate tracking-tight">
                             {name}
                         </h5>
                         <StatusBadge
                             status={status}
-                            className="shrink-0 text-[10px] px-2.5 h-5 uppercase tracking-wider"
+                            className="shrink-0 text-[10px] px-2 h-5 uppercase tracking-wider"
                         />
                     </div>
-                    <p className="text-[12px] text-gray-500 font-medium truncate mt-0.5">
+                    <p className="text-xs text-muted-foreground font-medium truncate mt-0.5">
                         {showUnit && (unitName || "S / Unidade")}{showUnit && " • "}{shiftInterval}
                     </p>
                 </div>
             </div>
 
-            {/* Scale row: Days of the week circles */}
-            <div className="pt-2">
+            <div className="pt-1">
                 <ScaleIndicators
                     activeDays={shiftDays}
                     availableDays={unitDays}

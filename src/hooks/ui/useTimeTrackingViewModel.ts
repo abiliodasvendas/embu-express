@@ -14,12 +14,12 @@ import { safeCloseDialog } from './useDialogClose';
 import { useManualAbsences } from '../api/useManualAbsences';
 
 interface UseTimeTrackingViewModelProps {
-    uuid?: string; // If provided, uses public fetches
-    isAdmin?: boolean; // If true, uses admin fetches
+    uuid?: string;
+    isAdmin?: boolean;
     initialDate?: Date;
     syncWithUrl?: boolean;
-    records?: RegistroPonto[]; // Support manual override if needed
-    collaborators?: Usuario[]; // Optional manual override
+    records?: RegistroPonto[];
+    collaborators?: Usuario[];
 }
 
 export function useTimeTrackingViewModel({
@@ -32,11 +32,9 @@ export function useTimeTrackingViewModel({
 }: UseTimeTrackingViewModelProps) {
     const { setPageTitle, openTimeRecordDialog, openTimeRecordDetailsDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
-    // 1. Local UI State
     const [date, setDate] = useState<Date>(initialDate);
     const [activeKpiFilter, setActiveKpiFilter] = useState<ManagementStatus | null>(null);
 
-    // 2. Filters State (Modularizado) - Moved up to be used in data fetching
     const { searchTerm, setSearchTerm } = useSearchFilters("search", syncWithUrl);
 
     const {
@@ -55,10 +53,8 @@ export function useTimeTrackingViewModel({
         syncWithUrl
     });
 
-    // 3. Data Fetching
     const formattedDateString = format(date, "yyyy-MM-dd");
 
-    // Admin Fetch - NOW PASSING FILTERS
     const { data: adminRecords, isLoading: isAdminLoading, isFetching: isAdminFetching, refetch: refetchAdmin } = useTimeRecords({
         date: formattedDateString,
         incluirTodos: true,
@@ -67,24 +63,21 @@ export function useTimeTrackingViewModel({
         searchTerm: searchTerm
     });
 
-    // Manual Absences
     const { manualAbsenceIds, addManualAbsence, removeManualAbsence, isLoading: isManualAbsenceLoading } = useManualAbsences(date);
 
-    // Public Fetch
     const { data: publicRecords, isLoading: isPublicLoading, isFetching: isPublicFetching, refetch: refetchPublic } = usePublicTimeTracking(uuid, formattedDateString);
     const { data: publicCollabs } = usePublicCollaborators(uuid);
 
     const records = uuid ? (publicRecords || []) : (externalRecords || adminRecords);
     const collaborators = uuid ? (publicCollabs as Usuario[]) : externalCollaborators;
     const isLoading = uuid ? (isPublicLoading || isManualAbsenceLoading) : (isAdminLoading || isManualAbsenceLoading);
+    const isInitialLoading = isLoading && (!records || records.length === 0);
     const refetch = uuid ? refetchPublic : refetchAdmin;
 
-    // 4. Mutations (Admin Only)
     const createRecord = useCreatePonto();
     const updateRecord = useUpdatePonto();
     const deleteRecord = useDeletePonto();
 
-    // 5. Business Logic
     const { processedRecords, uniqueShifts } = useTimeTrackingBusiness({
         records,
         date,
@@ -102,7 +95,6 @@ export function useTimeTrackingViewModel({
         syncWithUrl
     });
 
-    // 5. Actions Handlers
     const handleCreate = useCallback(() => {
         openTimeRecordDialog({});
     }, [openTimeRecordDialog]);
@@ -132,8 +124,6 @@ export function useTimeTrackingViewModel({
         });
     }, [handleEdit, handleDelete, openTimeRecordDetailsDialog]);
 
-    // 6. Apply Ultimate Filtering Strategy
-    // Stage 1: Filter by general criteria (Search, Client, Shift, User)
     const baseFilteredRecords = useMemo(() => {
         return processedRecords.filter(record => {
             if (searchTerm) {
@@ -160,7 +150,6 @@ export function useTimeTrackingViewModel({
         });
     }, [processedRecords, searchTerm, selectedUsuario, selectedCliente, selectedTurno]);
 
-    // Stage 2: Calculate KPI counts based on Stage 1 (Independent of active KPI filter)
     const dynamicKpiCounts = useMemo(() => {
         const counts: Record<string, number> = {
             [ManagementStatus.ALL]: baseFilteredRecords.length,
@@ -179,7 +168,6 @@ export function useTimeTrackingViewModel({
         return counts;
     }, [baseFilteredRecords]);
 
-    // Stage 3: Final list further filtered by Active KPI card
     const filteredRecords = useMemo(() => {
         if (!activeKpiFilter) return baseFilteredRecords;
         return baseFilteredRecords.filter(r => r.mgtStatus === activeKpiFilter);
@@ -209,7 +197,6 @@ export function useTimeTrackingViewModel({
     };
 
     return {
-        // Data
         date,
         formattedDate: format(date, "yyyy-MM-dd"),
         filteredRecords,
@@ -218,8 +205,8 @@ export function useTimeTrackingViewModel({
         collaborators,
         manualAbsenceIds,
 
-        // State
         isLoading,
+        isInitialLoading,
         isFetching: uuid ? isPublicFetching : isAdminFetching,
         isActionLoading: createRecord.isPending || updateRecord.isPending || deleteRecord.isPending || addManualAbsence.isPending || removeManualAbsence.isPending,
         searchTerm,
@@ -229,7 +216,6 @@ export function useTimeTrackingViewModel({
         selectedTurno,
         hasActiveFilters: hasActiveFiltersFromUrl || activeFiltersCount > 0 || activeKpiFilter !== null,
 
-        // Handlers
         setDate,
         setSearchTerm,
         setSelectedUsuario,
@@ -239,7 +225,6 @@ export function useTimeTrackingViewModel({
         clearAllFilters: clearAllFiltersFinal,
         setFilters,
 
-        // Actions
         handleCreate,
         handleEdit,
         handleDelete,

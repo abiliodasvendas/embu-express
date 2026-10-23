@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { itemEquipamentoApi } from "@/services/api/itemEquipamento.api";
 import { messages } from "@/constants/messages";
 import { toast } from "@/utils/notifications/toast";
@@ -64,6 +64,7 @@ export function useItensQuery() {
   return useQuery({
     queryKey: ["itens-equipamentos", "lista"],
     queryFn: () => itemEquipamentoApi.listItens(),
+    placeholderData: keepPreviousData,
   });
 }
 

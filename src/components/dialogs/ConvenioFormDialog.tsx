@@ -1,10 +1,5 @@
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -15,14 +10,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useCreateConvenio, useUpdateConvenio } from "@/hooks/api/useConvenios";
+import { useEmpresas } from "@/hooks/api/useEmpresas";
+import { useContasBancarias } from "@/hooks/api/useContasBancarias";
 import { cn } from "@/lib/utils";
 import { Convenio } from "@/types/database";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { formatContaBancaria } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Handshake, Loader2, X } from "lucide-react";
-import { useEffect } from "react";
+import { Handshake, Loader2 } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { ConvenioFormValues, convenioSchema } from "@/schemas/convenioSchema";
 
@@ -39,6 +38,8 @@ export function ConvenioFormDialog({
 }: ConvenioFormDialogProps) {
   const createConvenio = useCreateConvenio();
   const updateConvenio = useUpdateConvenio();
+  const { data: empresas = [] } = useEmpresas();
+  const { data: contasBancarias = [] } = useContasBancarias();
 
   const isEditing = !!convenioToEdit;
   const isLoading = createConvenio.isPending || updateConvenio.isPending;
@@ -48,8 +49,19 @@ export function ConvenioFormDialog({
     defaultValues: {
       nome: "",
       ativo: true,
+      empresa_id: null,
+      conta_bancaria_id: null,
     },
   });
+
+  const selectedEmpresaId = form.watch("empresa_id");
+
+  const contasFiltradas = useMemo(() => {
+    if (!selectedEmpresaId) return contasBancarias.filter((c) => c.ativo);
+    return contasBancarias.filter(
+      (c) => c.ativo && Number(c.empresa_id) === Number(selectedEmpresaId)
+    );
+  }, [contasBancarias, selectedEmpresaId]);
 
   useEffect(() => {
     if (open) {
@@ -57,11 +69,15 @@ export function ConvenioFormDialog({
         form.reset({
           nome: convenioToEdit.nome,
           ativo: convenioToEdit.ativo,
+          empresa_id: convenioToEdit.empresa_id || null,
+          conta_bancaria_id: convenioToEdit.conta_bancaria_id || null,
         });
       } else {
         form.reset({
           nome: "",
           ativo: true,
+          empresa_id: null,
+          conta_bancaria_id: null,
         });
       }
     }
@@ -70,18 +86,26 @@ export function ConvenioFormDialog({
   const onSubmit = async (values: ConvenioFormValues) => {
     try {
       if (isEditing && convenioToEdit) {
-        await updateConvenio.mutateAsync({ id: convenioToEdit.id, ...values });
+        await updateConvenio.mutateAsync({
+          id: convenioToEdit.id,
+          nome: values.nome,
+          ativo: values.ativo,
+          empresa_id: values.empresa_id ? Number(values.empresa_id) : null,
+          conta_bancaria_id: values.conta_bancaria_id || null,
+        });
         toast.success("Convênio atualizado com sucesso!");
       } else {
         await createConvenio.mutateAsync({
           nome: values.nome,
           ativo: values.ativo,
+          empresa_id: values.empresa_id ? Number(values.empresa_id) : null,
+          conta_bancaria_id: values.conta_bancaria_id || null,
         });
         toast.success("Convênio criado com sucesso!");
       }
-      onOpenChange(false);
-    } catch (error) {
-      const err = error as any;
+      safeCloseDialog(() => onOpenChange(false));
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
       const message = err.response?.data?.message || err.message || "";
       toast.error(isEditing ? "Erro ao atualizar convênio" : "Erro ao criar convênio", {
         description: message,
@@ -90,102 +114,162 @@ export function ConvenioFormDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}>
-      <DialogContent className="w-full max-w-lg p-0 gap-0 h-auto flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl" hideCloseButton>
-        <div className="bg-blue-600 p-4 text-center relative shrink-0">
-          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
-            <X className="h-6 w-6" />
-            <span className="sr-only">Fechar</span>
-          </DialogClose>
+    <BaseDialog
+      open={open}
+      onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}
+      maxWidth="md"
+    >
+      <BaseDialog.Header
+        icon={<Handshake className="h-5 w-5 text-foreground" />}
+        title={isEditing ? "Editar Convênio" : "Novo Convênio"}
+        subtitle={
+          isEditing
+            ? "Atualize as informações do estabelecimento parceiro"
+            : "Cadastre uma nova oficina, autopeça ou parceiro comercial"
+        }
+        onClose={() => safeCloseDialog(() => onOpenChange(false))}
+      />
 
-          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-            <Handshake className="w-5 h-5 text-white" />
-          </div>
-          <DialogTitle className="text-xl font-bold text-white">
-            {isEditing ? "Editar Convênio" : "Novo Convênio"}
-          </DialogTitle>
-        </div>
+      <BaseDialog.Body className="py-5 px-6">
+        <Form {...form}>
+          <form id="convenio-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="nome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs font-semibold text-foreground">
+                    Nome do Convênio / Estabelecimento <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Handshake className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="Ex: Oficina do João, AutoPeças Silva"
+                        className={cn(
+                          "pl-10 h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all",
+                          form.formState.errors.nome && "border-destructive focus-visible:ring-destructive/20"
+                        )}
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive ml-1" />
+                </FormItem>
+              )}
+            />
 
-        <div className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50/30">
-          <Form {...form}>
-            <form id="convenio-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="border rounded-2xl px-4 py-6 bg-white shadow-sm border-gray-100 mb-4 space-y-4">
-                <FormField
-                  control={form.control}
-                  name="nome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                        Nome do Convênio / Estabelecimento <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Handshake className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            placeholder="Ex: Oficina do João, AutoPeças Silva"
-                            className={cn(
-                              "pl-12 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-colors",
-                              form.formState.errors.nome && "border-red-500 focus-visible:ring-red-200"
-                            )}
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="empresa_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Empresa Pagadora (Padrão)
+                    </FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        {...field}
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                        className="h-11 rounded-[18px] bg-background"
+                      >
+                        <option value="">Nenhuma (definir na baixa)</option>
+                        {empresas
+                          .filter((e) => e.ativo)
+                          .map((emp) => (
+                            <option key={emp.id} value={emp.id}>
+                              {emp.nome_fantasia}
+                            </option>
+                          ))}
+                      </NativeSelect>
+                    </FormControl>
+                    <FormMessage className="text-xs text-destructive ml-1" />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="ativo"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-xl border p-2 px-4 bg-gray-50/50">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">
-                          Status Ativo
-                        </FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </form>
-          </Form>
-        </div>
+              <FormField
+                control={form.control}
+                name="conta_bancaria_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Conta Débito (Padrão)
+                    </FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        {...field}
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                        className="h-11 rounded-[18px] bg-background"
+                      >
+                        <option value="">Nenhuma (definir na baixa)</option>
+                        {contasFiltradas.map((conta) => (
+                          <option key={conta.id} value={conta.id}>
+                            {formatContaBancaria(conta)}
+                          </option>
+                        ))}
+                      </NativeSelect>
+                    </FormControl>
+                    <FormMessage className="text-xs text-destructive ml-1" />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => safeCloseDialog(() => onOpenChange(false))}
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            form="convenio-form"
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
-          >
-            {isLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : isEditing ? (
-              "Atualizar"
-            ) : (
-              "Salvar"
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+            <FormField
+              control={form.control}
+              name="ativo"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-[18px] border border-border p-3.5 px-4 bg-muted/20">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-xs font-semibold text-foreground cursor-pointer">
+                      Status Ativo
+                    </FormLabel>
+                    <p className="text-[11px] text-muted-foreground">
+                      Parceiros ativos podem receber novos lançamentos e manutenções
+                    </p>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+      </BaseDialog.Body>
+
+      <BaseDialog.Footer>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => safeCloseDialog(() => onOpenChange(false))}
+          disabled={isLoading}
+        >
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          form="convenio-form"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : isEditing ? (
+            "Atualizar"
+          ) : (
+            "Salvar"
+          )}
+        </Button>
+      </BaseDialog.Footer>
+    </BaseDialog>
   );
 }
+
+export default ConvenioFormDialog;

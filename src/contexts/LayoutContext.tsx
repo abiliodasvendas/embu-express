@@ -141,7 +141,8 @@ export interface OpenFaturaFormProps {
   onSuccess?: () => void;
 }
 
-export interface OpenLoteRecebimentoProps {
+export interface OpenLiquidarFaturaDialogProps {
+  fatura: FaturaCliente;
   onSuccess?: () => void;
 }
 
@@ -163,6 +164,11 @@ export interface OpenDespesaFormProps {
   onSuccess?: () => void;
 }
 
+export interface OpenLiquidarDespesaDialogProps {
+  despesa: DespesaOperacional;
+  onSuccess?: () => void;
+}
+
 export interface OpenMovimentacaoAvulsaFormProps {
   movimentacaoToEdit?: MovimentacaoAvulsa | null;
   onSuccess?: () => void;
@@ -181,12 +187,16 @@ export interface OpenLancamentoConvenioFormProps {
   onSuccess?: () => void;
 }
 
-export interface OpenFaturaFornecedorDialogProps {
+export interface OpenLiquidarFaturaConvenioProps {
   convenioId: string;
-  convenioNome?: string;
+  convenioNome: string;
+  faturaId?: string | null;
   mesCompetencia: number;
   anoCompetencia: number;
-  faturaToEdit?: FaturaFornecedorConvenio | null;
+  dataVencimento: string;
+  valorTotalFatura: number;
+  empresaPadraoId?: number | null;
+  contaBancariaPadraoId?: string | null;
   onSuccess?: () => void;
 }
 
@@ -288,8 +298,8 @@ export interface LayoutContextType {
   openFaturaFormDialog: (props: OpenFaturaFormProps) => void;
   closeFaturaFormDialog: () => void;
 
-  openLoteRecebimentoDialog: (props: OpenLoteRecebimentoProps) => void;
-  closeLoteRecebimentoDialog: () => void;
+  openLiquidarFaturaDialog: (props: OpenLiquidarFaturaDialogProps) => void;
+  closeLiquidarFaturaDialog: () => void;
 
   openAcertoIntercompanyDialog: (props: OpenAcertoIntercompanyProps) => void;
   closeAcertoIntercompanyDialog: () => void;
@@ -303,6 +313,9 @@ export interface LayoutContextType {
   openDespesaFormDialog: (props?: OpenDespesaFormProps) => void;
   closeDespesaFormDialog: () => void;
 
+  openLiquidarDespesaDialog: (props: OpenLiquidarDespesaDialogProps) => void;
+  closeLiquidarDespesaDialog: () => void;
+
   openMovimentacaoAvulsaDialog: (props?: OpenMovimentacaoAvulsaFormProps) => void;
   closeMovimentacaoAvulsaDialog: () => void;
 
@@ -312,11 +325,11 @@ export interface LayoutContextType {
   openLancamentoConvenioDialog: (props: OpenLancamentoConvenioFormProps) => void;
   closeLancamentoConvenioDialog: () => void;
 
-  openFaturaFornecedorDialog: (props: OpenFaturaFornecedorDialogProps) => void;
-  closeFaturaFornecedorDialog: () => void;
-
-  openGerenciarBloqueioConvenioDialog: (props: OpenGerenciarBloqueioConvenioProps) => void;
+openGerenciarBloqueioConvenioDialog: (props: OpenGerenciarBloqueioConvenioProps) => void;
   closeGerenciarBloqueioConvenioDialog: () => void;
+
+  openLiquidarFaturaConvenioDialog: (props: OpenLiquidarFaturaConvenioProps) => void;
+  closeLiquidarFaturaConvenioDialog: () => void;
 }
 
 

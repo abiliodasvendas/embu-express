@@ -59,15 +59,15 @@ export function Combobox({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between h-11 rounded-xl bg-gray-50 border-gray-200 font-normal shadow-none px-3 text-left relative",
+            "w-full justify-between h-11 rounded-[18px] bg-background border-border text-sm font-normal shadow-xs px-3.5 text-left relative hover:bg-background focus:bg-white focus:border-primary transition-all",
             startIcon && "pl-10",
             !value && "text-muted-foreground hover:text-muted-foreground",
-            disabled && "opacity-60 bg-gray-100 cursor-not-allowed pointer-events-none",
+            disabled && "opacity-60 bg-muted cursor-not-allowed pointer-events-none",
             className
           )}
         >
           {startIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
               {startIcon}
             </div>
           )}
@@ -79,7 +79,7 @@ export function Combobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-[18px] border-border bg-popover shadow-md overflow-hidden">
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>

@@ -1,15 +1,10 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { FilterOptions } from "@/types/enums";
 import { RefreshCcw } from "lucide-react";
+import { Client, Usuario } from "@/types/database";
 
 interface TimeTrackingToolbarProps {
   date: Date;
@@ -20,8 +15,8 @@ interface TimeTrackingToolbarProps {
     turno: string;
   };
   onFiltersChange: (key: string, value: string) => void;
-  collaborators: any[];
-  clients: any[];
+  collaborators: (Usuario | { id: string | number; nome_completo: string })[];
+  clients: (Client | { id: string | number; nome_fantasia: string })[];
   uniqueShifts: string[];
   countdown?: number;
   isLoading?: boolean;
@@ -39,26 +34,26 @@ export function TimeTrackingToolbar({
   isLoading
 }: TimeTrackingToolbarProps) {
   return (
-    <div className="flex flex-col space-y-6 mb-6">
+    <div className="flex flex-col space-y-4 mb-6">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div className="flex items-end gap-3">
-          <div className="flex flex-col space-y-1.5">
-            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Data</Label>
+          <div className="flex flex-col space-y-1.5 w-full sm:w-auto">
+            <Label className="text-xs font-medium text-muted-foreground ml-1">Data</Label>
             <DateNavigation date={date} onNavigate={onDateChange} />
           </div>
           {countdown !== undefined && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50/80 border border-gray-100 dark:bg-slate-800/40 dark:border-slate-700/50 backdrop-blur-sm min-w-[110px] h-[44px] justify-center transition-all duration-300">
+            <div className="flex items-center gap-2 px-3.5 h-11 rounded-[18px] bg-muted/60 border border-border min-w-[110px] justify-center transition-all shrink-0">
               {isLoading ? (
                 <>
-                  <RefreshCcw className="h-3.5 w-3.5 text-gray-400 animate-spin" />
-                  <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider animate-pulse">
+                  <RefreshCcw className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider animate-pulse">
                     Atualizando...
                   </span>
                 </>
               ) : (
                 <>
-                  <RefreshCcw className="h-3.5 w-3.5 text-gray-400" />
-                  <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tabular-nums tracking-wider">
+                  <RefreshCcw className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-[11px] font-semibold text-foreground tabular-nums tracking-wider">
                     {countdown}s
                   </span>
                 </>
@@ -67,49 +62,53 @@ export function TimeTrackingToolbar({
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row items-end gap-3 w-full lg:w-auto">
-          {/* Filtro de Colaborador */}
-          <div className="flex flex-col space-y-1.5 flex-1 sm:flex-initial min-w-[200px] w-full">
-            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Colaborador</Label>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full lg:w-auto">
+          <div className="flex flex-col space-y-1.5 flex-1 sm:flex-initial sm:min-w-[220px]">
+            <Label className="text-xs font-medium text-muted-foreground ml-1">Colaborador</Label>
             <Combobox
-              options={[{ value: FilterOptions.TODOS, label: "Todos os Colaboradores" }, ...collaborators.map(c => ({ value: c.id.toString(), label: c.nome_completo }))]}
+              options={[
+                { value: FilterOptions.TODOS, label: "Todos os Colaboradores" },
+                ...collaborators.map((c) => ({ value: String(c.id), label: c.nome_completo }))
+              ]}
               value={filters.colaboradorId === FilterOptions.TODOS ? "" : filters.colaboradorId}
               onSelect={(val) => onFiltersChange("colaboradorId", val || FilterOptions.TODOS)}
               placeholder="Todos os Colaboradores"
               searchPlaceholder="Buscar colaborador..."
               emptyText="Nenhum colaborador encontrado."
-              className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium shadow-none text-sm text-gray-600 hover:bg-white transition-none"
+              className="h-11 rounded-[18px] bg-card border-border shadow-xs text-xs sm:text-sm font-normal focus:bg-white focus:border-primary"
             />
           </div>
 
-          {/* Filtro de Cliente */}
-          <div className="flex flex-col space-y-1.5 flex-1 sm:flex-initial min-w-[200px] w-full">
-            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Cliente</Label>
+          <div className="flex flex-col space-y-1.5 flex-1 sm:flex-initial sm:min-w-[200px]">
+            <Label className="text-xs font-medium text-muted-foreground ml-1">Cliente</Label>
             <Combobox
-              options={[{ value: FilterOptions.TODOS, label: "Todos os Clientes" }, ...clients.map(c => ({ value: c.id.toString(), label: c.nome_fantasia }))]}
+              options={[
+                { value: FilterOptions.TODOS, label: "Todos os Clientes" },
+                ...clients.map((c) => ({ value: String(c.id), label: c.nome_fantasia }))
+              ]}
               value={filters.clienteId === FilterOptions.TODOS ? "" : filters.clienteId}
               onSelect={(val) => onFiltersChange("clienteId", val || FilterOptions.TODOS)}
               placeholder="Todos os Clientes"
               searchPlaceholder="Buscar cliente..."
               emptyText="Nenhum cliente encontrado."
-              className="h-11 rounded-xl bg-white border-gray-200 focus-visible:ring-primary/20 font-medium shadow-none text-sm text-gray-600 hover:bg-white transition-none"
+              className="h-11 rounded-[18px] bg-card border-border shadow-xs text-xs sm:text-sm font-normal focus:bg-white focus:border-primary"
             />
           </div>
 
-          {/* Filtro de Turno */}
-          <div className="flex flex-col space-y-1.5 w-full sm:w-[160px] shrink-0">
-            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Turno</Label>
-            <Select value={filters.turno} onValueChange={(v) => onFiltersChange("turno", v)}>
-              <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium text-gray-600">
-                <SelectValue placeholder="Todos os Turnos" />
-              </SelectTrigger>
-              <SelectContent className="z-[10001]">
-                <SelectItem value={FilterOptions.TODOS}>Todos os Turnos</SelectItem>
-                {uniqueShifts.map(shift => (
-                  <SelectItem key={shift} value={shift}>{shift}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col space-y-1.5 w-full sm:w-[170px] shrink-0">
+            <Label className="text-xs font-medium text-muted-foreground ml-1">Turno</Label>
+            <NativeSelect
+              value={filters.turno}
+              onChange={(e) => onFiltersChange("turno", e.target.value)}
+              className="h-11 rounded-[18px] bg-card border-border shadow-xs text-xs sm:text-sm font-semibold"
+            >
+              <option value={FilterOptions.TODOS}>Todos os Turnos</option>
+              {uniqueShifts.map((shift) => (
+                <option key={shift} value={shift}>
+                  {shift}
+                </option>
+              ))}
+            </NativeSelect>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { messages } from "@/constants/messages";
 import { unidadeApi } from "@/services/api/unidade.api";
+import { Unidade } from "@/types/database";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -7,13 +8,13 @@ export function useCreateUnidade() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => unidadeApi.createUnidade(data),
+    mutationFn: (data: Partial<Unidade>) => unidadeApi.createUnidade(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(messages.sucesso.salvar);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(messages.erro.cadastrar, { description: error.message });
     },
   });
@@ -23,14 +24,14 @@ export function useUpdateUnidade() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, ...data }: any) => unidadeApi.updateUnidade(id, data),
-    onSuccess: (data, variables: any) => {
+    mutationFn: ({ id, ...data }: Partial<Unidade> & { id: number }) => unidadeApi.updateUnidade(id, data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      queryClient.invalidateQueries({ queryKey: ["unidade", variables.id?.toString()] });
+      queryClient.invalidateQueries({ queryKey: ["unidade", variables.id.toString()] });
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(messages.sucesso.atualizar);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(messages.erro.atualizar, { description: error.message });
     },
   });
@@ -47,7 +48,7 @@ export function useDeleteUnidade() {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(messages.sucesso.excluir);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(messages.erro.excluir, { description: error.message });
     },
   });
@@ -59,13 +60,13 @@ export function useToggleUnidadeStatus() {
   return useMutation({
     mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) =>
       unidadeApi.updateUnidade(id, { ativo }),
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["unidades"] });
       queryClient.invalidateQueries({ queryKey: ["unidade", variables.id.toString()] });
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(messages.sucesso.atualizar);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(messages.erro.atualizar, { description: error.message });
     },
   });

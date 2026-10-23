@@ -6,12 +6,12 @@ import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useEffect, useCallback } from "react";
 import { useActiveCollaborators, useClients, useTimeTrackingViewModel, useCountdown } from "@/hooks";
+import { cn } from "@/lib/utils";
 
 export default function TimeTracking() {
     const { data: activeCollaborators = [] } = useActiveCollaborators();
     const { data: clients = [] } = useClients(undefined, { staleTime: 0, refetchOnWindowFocus: true });
 
-    // Unified Logic Hook (ViewModel)
     const vm = useTimeTrackingViewModel({
         collaborators: activeCollaborators,
         syncWithUrl: true,
@@ -64,22 +64,30 @@ export default function TimeTracking() {
                     className="pt-2"
                 />
 
-                <div className="space-y-4">
-                    {vm.isLoading ? (
+                <div className="space-y-4 relative">
+                    {vm.isFetching && !vm.isInitialLoading && (
+                        <div className="absolute -top-2 left-0 right-0 h-1 bg-surface-alt overflow-hidden rounded-full z-20">
+                            <div className="h-full bg-primary w-full animate-pulse" />
+                        </div>
+                    )}
+
+                    {vm.isInitialLoading ? (
                         <ListSkeleton />
                     ) : (
-                        <TimeTrackingList
-                            records={vm.filteredRecords}
-                            date={vm.date}
-                            showClient={true}
-                            manualAbsenceIds={vm.manualAbsenceIds}
-                            addManualAbsence={vm.addManualAbsence}
-                            removeManualAbsence={vm.removeManualAbsence}
-                        />
+                        <div className={cn("transition-opacity duration-200", vm.isFetching && "opacity-60")}>
+                            <TimeTrackingList
+                                records={vm.filteredRecords}
+                                date={vm.date}
+                                showClient={true}
+                                manualAbsenceIds={vm.manualAbsenceIds}
+                                addManualAbsence={vm.addManualAbsence}
+                                removeManualAbsence={vm.removeManualAbsence}
+                            />
+                        </div>
                     )}
                 </div>
 
-                <LoadingOverlay active={vm.isLoading || vm.isActionLoading} text="Carregando..." />
+                <LoadingOverlay active={vm.isActionLoading} text="Processando..." />
             </div>
         </PullToRefreshWrapper>
     );

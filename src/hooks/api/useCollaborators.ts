@@ -1,5 +1,5 @@
 import { colaboradorApi } from "@/services/api/colaborador.api";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export function useCollaborators(
   filters?: {
@@ -18,6 +18,7 @@ export function useCollaborators(
     queryKey: ["collaborators", filters],
     queryFn: () => colaboradorApi.listColaboradores(filters),
     enabled: options?.enabled ?? true,
+    placeholderData: keepPreviousData,
     refetchOnMount: true,
   });
 }

@@ -42,12 +42,12 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       onOpenAutoFocus={(e) => e.preventDefault()}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background pb-[calc(1.5rem+var(--safe-area-bottom))]",
+        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[28px] border-t border-border bg-card pb-[calc(1.5rem+var(--safe-area-bottom,0px))]",
         className
       )}
       {...props}
     >
-      <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
+      <div className="mx-auto mt-3.5 mb-2.5 h-1 w-10 rounded-full bg-neutral-300" />
       {children}
     </DrawerPrimitive.Content>
   </DrawerPortal>

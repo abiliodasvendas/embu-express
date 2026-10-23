@@ -1,4 +1,4 @@
-﻿import {
+import {
   movimentacoesAvulsasApi,
   CreateMovimentacaoAvulsaPayload,
   ListMovimentacoesAvulsasFiltros,
@@ -6,12 +6,17 @@
 import { MovimentacaoAvulsa } from "@/types/database";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export function useMovimentacoesAvulsas(filtros?: ListMovimentacoesAvulsasFiltros) {
+export function useMovimentacoesAvulsas(
+  filtros?: ListMovimentacoesAvulsasFiltros,
+  options?: { enabled?: boolean }
+) {
   const queryClient = useQueryClient();
 
   const query = useQuery<MovimentacaoAvulsa[]>({
     queryKey: ["movimentacoes-avulsas", filtros],
     queryFn: () => movimentacoesAvulsasApi.list(filtros),
+    staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled,
   });
 
   const createMutation = useMutation({

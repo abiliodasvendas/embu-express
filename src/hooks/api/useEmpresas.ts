@@ -1,5 +1,5 @@
 import { empresaApi } from "@/services/api/empresa.api";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 const cleanFilters = (filters?: { searchTerm?: string; ativo?: string; includeId?: string }) => {
   if (!filters) return undefined;
@@ -15,8 +15,9 @@ export function useEmpresas(filters?: { searchTerm?: string; ativo?: string; inc
   return useQuery({
     queryKey: ["empresas", cleanedFilters],
     queryFn: () => empresaApi.listEmpresas(cleanedFilters as any),
-    staleTime: options?.staleTime ?? 1000 * 60 * 5, // 5 minutes default cache
-    refetchOnMount: options?.refetchOnMount ?? true, // Explicitly true to avoid stale listing on nav
+    placeholderData: keepPreviousData,
+    staleTime: options?.staleTime ?? 1000 * 60 * 5,
+    refetchOnMount: options?.refetchOnMount ?? true,
     refetchOnWindowFocus: options?.refetchOnWindowFocus,
     enabled: options?.enabled,
   });

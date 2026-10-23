@@ -12,18 +12,27 @@ export function useContasBancarias(empresaId?: number) {
 
   const createMutation = useMutation({
     mutationFn: (data: Partial<ContaBancaria>) => contaBancariaApi.create(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+    },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<ContaBancaria> }) =>
       contaBancariaApi.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => contaBancariaApi.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+    },
   });
 
   return {

@@ -6,7 +6,7 @@ import { useGeolocation } from "../ui/useGeolocation";
 import { useLayout } from "@/contexts/LayoutContext";
 import { formatKm } from "@/utils/masks";
 import { apiClient } from "@/services/api/client";
-import { ColaboradorCliente, PontoLocation, Pausa } from "@/types/database";
+import { ColaboradorCliente, PontoLocation, Pausa, RegistroPonto } from "@/types/database";
 
 export function useRegistrarPontoViewModel() {
     const business = useRegistrarPontoBusiness();
@@ -77,7 +77,7 @@ export function useRegistrarPontoViewModel() {
         const link = business.activeLinks.find((l: ColaboradorCliente) => l.id.toString() === selectedLinkId);
         if (link) {
             const dayOfWeek = new Date().getDay();
-            const todaySchedule = link.horarios?.find((h: any) => h.dia_semana === dayOfWeek);
+            const todaySchedule = link.horarios?.find(h => h.dia_semana === dayOfWeek);
 
             setActiveShift({
                 id: link.id.toString(),
@@ -85,7 +85,7 @@ export function useRegistrarPontoViewModel() {
                 horario: todaySchedule?.hora_inicio && todaySchedule?.hora_fim ?
                     `${todaySchedule.hora_inicio.slice(0, 5)} - ${todaySchedule.hora_fim.slice(0, 5)}` : (link.cliente?.ativo ? "Sem Escala Hoje" : undefined),
                 empresa: link.empresa?.nome_fantasia,
-                escala_semanal: link.horarios?.map((h: any) => h.dia_semana)
+                escala_semanal: link.horarios?.map(h => h.dia_semana)
             });
         }
     }, [selectedLinkId, business.activeLinks]);
@@ -97,7 +97,8 @@ export function useRegistrarPontoViewModel() {
         const selectedLink = business.activeLinks?.find(l => l.id.toString() === selectedLinkId);
         if (!selectedLink) return business.pontoHoje[0] || null;
 
-        return business.pontoHoje.find((p: any) => String(p.cliente_id) === String(selectedLink.cliente_id)) || business.pontoHoje[0] || null;
+        const pontos = business.pontoHoje as unknown as RegistroPonto[];
+        return pontos.find(p => String(p.cliente_id) === String(selectedLink.cliente_id)) || pontos[0] || null;
     }, [business.pontoHoje, selectedLinkId, business.activeLinks]);
 
     const journeyMetrics = useMemo(() => {
@@ -322,3 +323,4 @@ export function useRegistrarPontoViewModel() {
         formatKm: (val: number) => formatKm(val)
     };
 }
+

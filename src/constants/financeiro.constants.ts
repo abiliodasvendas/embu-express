@@ -33,15 +33,42 @@ export const CALENDARIO_STATUS = {
 export type CalendarioStatus = keyof typeof CALENDARIO_STATUS;
 
 export const STATUS_FATURA = {
-    EM_MEDICAO: 'EM_MEDICAO',
-    AGUARDANDO_APROVACAO: 'AGUARDANDO_APROVACAO',
-    EMITIDA_PENDENTE: 'EMITIDA_PENDENTE',
+    PENDENTE: 'PENDENTE',
     PAGO_PARCIAL: 'PAGO_PARCIAL',
     LIQUIDADA: 'LIQUIDADA',
     CANCELADA: 'CANCELADA',
 } as const;
 
 export type StatusFaturaType = typeof STATUS_FATURA[keyof typeof STATUS_FATURA];
+
+export const STATUS_FATURA_LABELS: Record<StatusFaturaType, string> = {
+    PENDENTE: 'Pendente / Aguardando',
+    PAGO_PARCIAL: 'Pago Parcialmente',
+    LIQUIDADA: 'Liquidada',
+    CANCELADA: 'Cancelada',
+};
+
+export const PERIODICIDADE_FATURAMENTO = {
+    QUINZENAL: 'QUINZENAL',
+    MENSAL: 'MENSAL',
+    SEMANAL: 'SEMANAL',
+} as const;
+
+export type PeriodicidadeFaturamentoType = typeof PERIODICIDADE_FATURAMENTO[keyof typeof PERIODICIDADE_FATURAMENTO];
+
+export const PERIODICIDADE_FATURAMENTO_LABELS: Record<PeriodicidadeFaturamentoType, string> = {
+    QUINZENAL: 'Quinzenal (Duas vezes no mês)',
+    MENSAL: 'Mensal (Uma vez no mês)',
+    SEMANAL: 'Semanal',
+};
+
+export const TIPO_PERIODO_FATURA = {
+    QUINZENAL: 'QUINZENAL',
+    MENSAL: 'MENSAL',
+    SEMANAL: 'SEMANAL',
+} as const;
+
+export type TipoPeriodoFaturaType = typeof TIPO_PERIODO_FATURA[keyof typeof TIPO_PERIODO_FATURA];
 
 export const STATUS_INTERCOMPANY = {
     PENDENTE_ACERTO: 'PENDENTE_ACERTO',

@@ -14,6 +14,7 @@ export interface PontoFluxoDia {
 
 export interface FluxoCaixaResponse {
   periodo: { mes: number; ano: number };
+  empresa_id?: number | null;
   saldo_inicial: number;
   saldo_retido_convenios: number;
   total_entradas_projetadas: number;
@@ -23,13 +24,18 @@ export interface FluxoCaixaResponse {
   saldo_final_projetado: number;
   saldo_final_realizado: number;
   curva_diaria: PontoFluxoDia[];
+  config_dias?: {
+    dia_salarios: number;
+    dia_convenios: number;
+    dia_vales: number;
+  };
 }
 
 export const fluxoCaixaApi = {
-  getFluxoCaixa: (mes: number, ano: number): Promise<FluxoCaixaResponse> =>
-    apiClient.get("/fluxo-caixa", { params: { mes, ano } }).then(res => res.data),
+  getFluxoCaixa: (mes: number, ano: number, empresa_id?: number): Promise<FluxoCaixaResponse> =>
+    apiClient.get("/fluxo-caixa", { params: { mes, ano, empresa_id } }).then(res => res.data),
 
-  setSaldoInicial: (mes: number, ano: number, saldoInicial: number): Promise<any> =>
+  setSaldoInicial: (mes: number, ano: number, saldoInicial: number): Promise<{ success: boolean }> =>
     apiClient.post("/fluxo-caixa/saldo-inicial", {
       mes,
       ano,

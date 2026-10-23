@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps, OpenFaturaFormProps, OpenLoteRecebimentoProps, OpenAcertoIntercompanyProps, OpenAlocacaoTemporariaProps, OpenContasBancariasProps, OpenDespesaFormProps, OpenMovimentacaoAvulsaFormProps, OpenUnidadeFormProps, OpenLancamentoConvenioFormProps, OpenFaturaFornecedorDialogProps, OpenGerenciarBloqueioConvenioProps } from './LayoutContext';
+import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps, OpenFaturaFormProps, OpenLiquidarFaturaDialogProps, OpenAcertoIntercompanyProps, OpenAlocacaoTemporariaProps, OpenContasBancariasProps, OpenDespesaFormProps, OpenLiquidarDespesaDialogProps, OpenMovimentacaoAvulsaFormProps, OpenUnidadeFormProps, OpenLancamentoConvenioFormProps, OpenGerenciarBloqueioConvenioProps, OpenLiquidarFaturaConvenioProps } from './LayoutContext';
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
 
 // Dialogs
@@ -32,16 +32,17 @@ import { CreateTicketDialog } from "@/components/dialogs/CreateTicketDialog";
 import { TicketDetailsDialog } from "@/components/dialogs/TicketDetailsDialog";
 import { ConvenioFormDialog } from "@/components/dialogs/ConvenioFormDialog";
 import { FaturaFormDialog } from "@/components/dialogs/FaturaFormDialog";
-import { LoteRecebimentoDialog } from "@/components/dialogs/LoteRecebimentoDialog";
+import { LiquidarFaturaDialog } from "@/components/dialogs/LiquidarFaturaDialog";
 import { AcertoIntercompanyDialog } from "@/components/dialogs/AcertoIntercompanyDialog";
 import { AlocacaoTemporariaDialog } from "@/components/dialogs/AlocacaoTemporariaDialog";
 import { ContasBancariasDialog } from "@/components/dialogs/ContasBancariasDialog";
 import { DespesaFormDialog } from "@/components/dialogs/DespesaFormDialog";
+import { LiquidarDespesaDialog } from "@/components/dialogs/LiquidarDespesaDialog";
 import { MovimentacaoAvulsaFormDialog } from "@/components/dialogs/MovimentacaoAvulsaFormDialog";
 import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 import { LancamentoForm } from "@/components/features/convenios/public/LancamentoForm";
-import { FaturaFornecedorConvenioDialog } from "@/components/dialogs/FaturaFornecedorConvenioDialog";
 import { GerenciarBloqueioConvenioDialog } from "@/components/dialogs/GerenciarBloqueioConvenioDialog";
+import { LiquidarFaturaConvenioDialog } from "@/components/dialogs/LiquidarFaturaConvenioDialog";
 
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -85,16 +86,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [ticketDetailsDialogState, setTicketDetailsDialogState] = useState<{ open: boolean; props?: OpenTicketDetailsProps }>({ open: false });
   const [convenioFormDialogState, setConvenioFormDialogState] = useState<{ open: boolean; props?: OpenConvenioFormProps }>({ open: false });
   const [faturaFormDialogState, setFaturaFormDialogState] = useState<{ open: boolean; props?: OpenFaturaFormProps }>({ open: false });
-  const [loteRecebimentoDialogState, setLoteRecebimentoDialogState] = useState<{ open: boolean; props?: OpenLoteRecebimentoProps }>({ open: false });
+  const [liquidarFaturaDialogState, setLiquidarFaturaDialogState] = useState<{ open: boolean; props?: OpenLiquidarFaturaDialogProps }>({ open: false });
   const [acertoIntercompanyDialogState, setAcertoIntercompanyDialogState] = useState<{ open: boolean; props?: OpenAcertoIntercompanyProps }>({ open: false });
   const [alocacaoTemporariaDialogState, setAlocacaoTemporariaDialogState] = useState<{ open: boolean; props?: OpenAlocacaoTemporariaProps }>({ open: false });
   const [contasBancariasDialogState, setContasBancariasDialogState] = useState<{ open: boolean; props?: OpenContasBancariasProps }>({ open: false });
   const [despesaFormDialogState, setDespesaFormDialogState] = useState<{ open: boolean; props?: OpenDespesaFormProps }>({ open: false });
+  const [liquidarDespesaDialogState, setLiquidarDespesaDialogState] = useState<{ open: boolean; props?: OpenLiquidarDespesaDialogProps }>({ open: false });
   const [movimentacaoAvulsaDialogState, setMovimentacaoAvulsaDialogState] = useState<{ open: boolean; props?: OpenMovimentacaoAvulsaFormProps }>({ open: false });
   const [unidadeFormDialogState, setUnidadeFormDialogState] = useState<{ open: boolean; props?: OpenUnidadeFormProps }>({ open: false });
   const [lancamentoConvenioDialogState, setLancamentoConvenioDialogState] = useState<{ open: boolean; props?: OpenLancamentoConvenioFormProps }>({ open: false });
-  const [faturaFornecedorDialogState, setFaturaFornecedorDialogState] = useState<{ open: boolean; props?: OpenFaturaFornecedorDialogProps }>({ open: false });
   const [gerenciarBloqueioConvenioDialogState, setGerenciarBloqueioConvenioDialogState] = useState<{ open: boolean; props?: OpenGerenciarBloqueioConvenioProps }>({ open: false });
+  const [liquidarFaturaConvenioDialogState, setLiquidarFaturaConvenioDialogState] = useState<{ open: boolean; props?: OpenLiquidarFaturaConvenioProps }>({ open: false });
 
 
   // --- Actions ---
@@ -183,8 +185,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openFaturaFormDialog = (props: OpenFaturaFormProps) => setFaturaFormDialogState({ open: true, props });
   const closeFaturaFormDialog = () => closeDialog(() => setFaturaFormDialogState((prev) => ({ ...prev, open: false })));
 
-  const openLoteRecebimentoDialog = (props: OpenLoteRecebimentoProps) => setLoteRecebimentoDialogState({ open: true, props });
-  const closeLoteRecebimentoDialog = () => closeDialog(() => setLoteRecebimentoDialogState((prev) => ({ ...prev, open: false })));
+  const openLiquidarFaturaDialog = (props: OpenLiquidarFaturaDialogProps) => setLiquidarFaturaDialogState({ open: true, props });
+  const closeLiquidarFaturaDialog = () => closeDialog(() => setLiquidarFaturaDialogState((prev) => ({ ...prev, open: false })));
 
   const openAcertoIntercompanyDialog = (props: OpenAcertoIntercompanyProps) => setAcertoIntercompanyDialogState({ open: true, props });
   const closeAcertoIntercompanyDialog = () => closeDialog(() => setAcertoIntercompanyDialogState((prev) => ({ ...prev, open: false })));
@@ -198,6 +200,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openDespesaFormDialog = (props?: OpenDespesaFormProps) => setDespesaFormDialogState({ open: true, props });
   const closeDespesaFormDialog = () => closeDialog(() => setDespesaFormDialogState((prev) => ({ ...prev, open: false })));
 
+  const openLiquidarDespesaDialog = (props: OpenLiquidarDespesaDialogProps) => setLiquidarDespesaDialogState({ open: true, props });
+  const closeLiquidarDespesaDialog = () => closeDialog(() => setLiquidarDespesaDialogState((prev) => ({ ...prev, open: false })));
+
   const openMovimentacaoAvulsaDialog = (props?: OpenMovimentacaoAvulsaFormProps) => setMovimentacaoAvulsaDialogState({ open: true, props });
   const closeMovimentacaoAvulsaDialog = () => closeDialog(() => setMovimentacaoAvulsaDialogState((prev) => ({ ...prev, open: false })));
 
@@ -207,11 +212,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openLancamentoConvenioDialog = (props: OpenLancamentoConvenioFormProps) => setLancamentoConvenioDialogState({ open: true, props });
   const closeLancamentoConvenioDialog = () => closeDialog(() => setLancamentoConvenioDialogState((prev) => ({ ...prev, open: false })));
 
-  const openFaturaFornecedorDialog = (props: OpenFaturaFornecedorDialogProps) => setFaturaFornecedorDialogState({ open: true, props });
-  const closeFaturaFornecedorDialog = () => closeDialog(() => setFaturaFornecedorDialogState((prev) => ({ ...prev, open: false })));
-
   const openGerenciarBloqueioConvenioDialog = (props: OpenGerenciarBloqueioConvenioProps) => setGerenciarBloqueioConvenioDialogState({ open: true, props });
   const closeGerenciarBloqueioConvenioDialog = () => closeDialog(() => setGerenciarBloqueioConvenioDialogState((prev) => ({ ...prev, open: false })));
+
+  const openLiquidarFaturaConvenioDialog = (props: OpenLiquidarFaturaConvenioProps) => setLiquidarFaturaConvenioDialogState({ open: true, props });
+  const closeLiquidarFaturaConvenioDialog = () => closeDialog(() => setLiquidarFaturaConvenioDialogState((prev) => ({ ...prev, open: false })));
 
 
   return (
@@ -245,16 +250,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openTicketDetailsDialog, closeTicketDetailsDialog,
       openConvenioFormDialog, closeConvenioFormDialog,
       openFaturaFormDialog, closeFaturaFormDialog,
-      openLoteRecebimentoDialog, closeLoteRecebimentoDialog,
+      openLiquidarFaturaDialog, closeLiquidarFaturaDialog,
       openAcertoIntercompanyDialog, closeAcertoIntercompanyDialog,
       openAlocacaoTemporariaDialog, closeAlocacaoTemporariaDialog,
       openContasBancariasDialog, closeContasBancariasDialog,
       openDespesaFormDialog, closeDespesaFormDialog,
+      openLiquidarDespesaDialog, closeLiquidarDespesaDialog,
       openMovimentacaoAvulsaDialog, closeMovimentacaoAvulsaDialog,
       openUnidadeFormDialog, closeUnidadeFormDialog,
       openLancamentoConvenioDialog, closeLancamentoConvenioDialog,
-      openFaturaFornecedorDialog, closeFaturaFornecedorDialog,
-      openGerenciarBloqueioConvenioDialog, closeGerenciarBloqueioConvenioDialog,
+      openGerenciarBloqueioConvenioDialog, closeGerenciarBloqueioConvenioDialog, openLiquidarFaturaConvenioDialog, closeLiquidarFaturaConvenioDialog,
     }}>
       {children}
       {confirmationDialogState.props && <ConfirmationDialog open={confirmationDialogState.open} onOpenChange={(open) => setConfirmationDialogState((prev) => ({ ...prev, open }))} title={confirmationDialogState.props.title} description={confirmationDialogState.props.description} onConfirm={confirmationDialogState.props.onConfirm} confirmText={confirmationDialogState.props.confirmText} cancelText={confirmationDialogState.props.cancelText} variant={confirmationDialogState.props.variant} isLoading={confirmationDialogState.props.isLoading} />}
@@ -286,16 +291,34 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {ticketDetailsDialogState.open && ticketDetailsDialogState.props?.ticketId && <TicketDetailsDialog open={true} onOpenChange={(open) => !open && closeTicketDetailsDialog()} ticketId={ticketDetailsDialogState.props.ticketId} onSuccess={() => { ticketDetailsDialogState.props?.onSuccess?.(); }} />}
       {convenioFormDialogState.open && <ConvenioFormDialog open={true} onOpenChange={(open) => !open && closeConvenioFormDialog()} convenioToEdit={convenioFormDialogState.props?.convenioToEdit} />}
       {faturaFormDialogState.open && <FaturaFormDialog open={true} onOpenChange={(open) => !open && closeFaturaFormDialog()} faturaToEdit={faturaFormDialogState.props?.faturaToEdit} onSuccess={faturaFormDialogState.props?.onSuccess} />}
-      {loteRecebimentoDialogState.open && <LoteRecebimentoDialog open={true} onOpenChange={(open) => !open && closeLoteRecebimentoDialog()} onSuccess={loteRecebimentoDialogState.props?.onSuccess} />}
+      {liquidarFaturaDialogState.open && liquidarFaturaDialogState.props?.fatura && <LiquidarFaturaDialog open={true} onOpenChange={(open) => !open && closeLiquidarFaturaDialog()} fatura={liquidarFaturaDialogState.props.fatura} onSuccess={liquidarFaturaDialogState.props?.onSuccess} />}
       {acertoIntercompanyDialogState.open && acertoIntercompanyDialogState.props?.transferencia && <AcertoIntercompanyDialog open={true} onOpenChange={(open) => !open && closeAcertoIntercompanyDialog()} transferencia={acertoIntercompanyDialogState.props.transferencia} onSuccess={acertoIntercompanyDialogState.props.onSuccess} />}
       {alocacaoTemporariaDialogState.open && <AlocacaoTemporariaDialog open={true} onOpenChange={(open) => !open && closeAlocacaoTemporariaDialog()} onSuccess={alocacaoTemporariaDialogState.props?.onSuccess} />}
       {contasBancariasDialogState.open && <ContasBancariasDialog open={true} onOpenChange={(open) => !open && closeContasBancariasDialog()} empresaIdInicial={contasBancariasDialogState.props?.empresaIdInicial} />}
       {despesaFormDialogState.open && <DespesaFormDialog open={true} onOpenChange={(open) => !open && closeDespesaFormDialog()} despesaToEdit={despesaFormDialogState.props?.despesaToEdit} onSuccess={despesaFormDialogState.props?.onSuccess} />}
+      {liquidarDespesaDialogState.open && liquidarDespesaDialogState.props?.despesa && (
+        <LiquidarDespesaDialog
+          open={true}
+          onOpenChange={(open) => !open && closeLiquidarDespesaDialog()}
+          despesa={liquidarDespesaDialogState.props.despesa}
+          onSuccess={liquidarDespesaDialogState.props?.onSuccess}
+        />
+      )}
       {movimentacaoAvulsaDialogState.open && <MovimentacaoAvulsaFormDialog open={true} onOpenChange={(open) => !open && closeMovimentacaoAvulsaDialog()} movimentacaoToEdit={movimentacaoAvulsaDialogState.props?.movimentacaoToEdit} onSuccess={movimentacaoAvulsaDialogState.props?.onSuccess} />}
       {unidadeFormDialogState.open && unidadeFormDialogState.props && <UnidadeFormDialog isOpen={true} onClose={closeUnidadeFormDialog} clienteId={unidadeFormDialogState.props.clienteId} editingUnidade={unidadeFormDialogState.props.editingUnidade} onSuccess={() => { unidadeFormDialogState.props?.onSuccess?.(); closeUnidadeFormDialog(); }} />}
       {lancamentoConvenioDialogState.open && <LancamentoForm open={true} onOpenChange={(open) => !open && closeLancamentoConvenioDialog()} convenioId={lancamentoConvenioDialogState.props?.convenioId} token={lancamentoConvenioDialogState.props?.token} lancamentoToEdit={lancamentoConvenioDialogState.props?.lancamentoToEdit} />}
-      {faturaFornecedorDialogState.open && faturaFornecedorDialogState.props && <FaturaFornecedorConvenioDialog open={true} onOpenChange={(open) => !open && closeFaturaFornecedorDialog()} {...faturaFornecedorDialogState.props} onSuccess={() => { faturaFornecedorDialogState.props?.onSuccess?.(); closeFaturaFornecedorDialog(); }} />}
       {gerenciarBloqueioConvenioDialogState.open && gerenciarBloqueioConvenioDialogState.props && <GerenciarBloqueioConvenioDialog open={true} onOpenChange={(open) => !open && closeGerenciarBloqueioConvenioDialog()} {...gerenciarBloqueioConvenioDialogState.props} />}
+      {liquidarFaturaConvenioDialogState.open && liquidarFaturaConvenioDialogState.props && (
+        <LiquidarFaturaConvenioDialog
+          open={true}
+          onOpenChange={(open) => !open && closeLiquidarFaturaConvenioDialog()}
+          {...liquidarFaturaConvenioDialogState.props}
+          onSuccess={() => {
+            liquidarFaturaConvenioDialogState.props?.onSuccess?.();
+            closeLiquidarFaturaConvenioDialog();
+          }}
+        />
+      )}
     </LayoutContext.Provider>
   );
 };

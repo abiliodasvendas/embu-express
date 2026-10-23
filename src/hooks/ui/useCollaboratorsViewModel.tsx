@@ -33,7 +33,15 @@ export function useCollaboratorsViewModel() {
         setSearchParams((prev) => {
             const newParams = new URLSearchParams(prev);
             Object.entries(updates).forEach(([paramKey, val]) => {
-                if (val === null || val === undefined || val === "" || val === FilterOptions.TODOS || (paramKey === "page" && Number(val) === 1)) {
+                const isDefault =
+                    val === null ||
+                    val === undefined ||
+                    val === "" ||
+                    (paramKey === "status" ? val === StatusUsuario.ATIVO : val === FilterOptions.TODOS) ||
+                    (paramKey === "page" && Number(val) === 1) ||
+                    (paramKey === "pageSize" && Number(val) === 50);
+
+                if (isDefault) {
                     newParams.delete(paramKey);
                 } else {
                     newParams.set(paramKey, String(val));
@@ -44,7 +52,7 @@ export function useCollaboratorsViewModel() {
     }, [setSearchParams]);
 
     const [page] = useUrlState<number>({ key: "page", defaultValue: 1 });
-    const [pageSize] = useUrlState<number>({ key: "pageSize", defaultValue: 10 });
+    const [pageSize] = useUrlState<number>({ key: "pageSize", defaultValue: 50 });
 
     const setPage = useCallback((newPage: number) => {
         updateUrlParams({ page: newPage });
@@ -55,7 +63,7 @@ export function useCollaboratorsViewModel() {
     }, [updateUrlParams]);
 
     const { searchTerm } = useSearchFilters();
-    const { selectedStatus } = useStatusFilters("status");
+    const { selectedStatus } = useStatusFilters("status", true, StatusUsuario.ATIVO);
     const { selectedCategoria: selectedRole } = useCategoryFilters("cargo");
     const {
         selectedCliente: selectedClient,
@@ -91,7 +99,7 @@ export function useCollaboratorsViewModel() {
     const clearFilters = useCallback(() => {
         updateUrlParams({
             search: "",
-            status: "",
+            status: StatusUsuario.ATIVO,
             cargo: "",
             cliente: "",
             empresa: "",
@@ -102,13 +110,15 @@ export function useCollaboratorsViewModel() {
     const handleApplyFilters = useCallback((newFilters: {
         status?: string;
         categoria?: string;
+        role?: string;
         cliente?: string;
+        client?: string;
         empresa?: string;
     }) => {
         updateUrlParams({
             status: newFilters.status,
-            cargo: newFilters.categoria,
-            cliente: newFilters.cliente,
+            cargo: newFilters.categoria || newFilters.role,
+            cliente: newFilters.cliente || newFilters.client,
             empresa: newFilters.empresa,
             page: 1,
         });
@@ -121,6 +131,7 @@ export function useCollaboratorsViewModel() {
     const {
         data: collaboratorsResponse,
         isLoading,
+        isFetching,
         refetch,
     } = useCollaborators({
         searchTerm: searchTerm || undefined,
@@ -131,6 +142,8 @@ export function useCollaboratorsViewModel() {
         page,
         pageSize,
     });
+
+    const isInitialLoading = isLoading && !collaboratorsResponse;
 
     const collaborators = useMemo(() => {
         if (!collaboratorsResponse) return [];
@@ -227,6 +240,8 @@ export function useCollaboratorsViewModel() {
         clients,
         empresas,
         isLoading,
+        isInitialLoading,
+        isFetching,
         isActionLoading,
 
         page,

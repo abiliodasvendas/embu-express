@@ -1,21 +1,15 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, AlertCircle, X, Upload, FileImage } from "lucide-react";
+import { Loader2, LifeBuoy, X, Upload, FileImage } from "lucide-react";
 import { ticketSchema, TicketFormData } from "@/schemas/ticketSchema";
 import { useCreateTicket, useUpdateTicket } from "@/hooks/api/useTicketMutations";
 import { supabase } from "@/integrations/supabase/client";
 import { Ticket } from "@/types/database";
 import { TicketType, TicketPriority, TICKET_TYPE_LABELS, TICKET_PRIORITY_LABELS } from "@/types/enums";
-
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/BaseDialog";
+import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
   Form,
   FormControl,
@@ -27,13 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 
 interface CreateTicketDialogProps {
   open: boolean;
@@ -60,30 +48,32 @@ export function CreateTicketDialog({
     defaultValues: {
       title: "",
       description: "",
-      type: "" as any,
-      priority: "" as any,
+      type: TicketType.BUG,
+      priority: TicketPriority.MEDIUM,
       attachments: [],
     },
   });
 
   useEffect(() => {
-    if (ticketToEdit) {
-      form.reset({
-        title: ticketToEdit.title,
-        description: ticketToEdit.description,
-        type: ticketToEdit.type,
-        priority: ticketToEdit.priority,
-        attachments: ticketToEdit.attachments || [],
-      });
-    } else {
-      form.reset({
-        title: "",
-        description: "",
-        type: "" as any,
-        priority: "" as any,
-        attachments: [],
-      });
-      setSelectedFiles([]);
+    if (open) {
+      if (ticketToEdit) {
+        form.reset({
+          title: ticketToEdit.title,
+          description: ticketToEdit.description,
+          type: ticketToEdit.type,
+          priority: ticketToEdit.priority,
+          attachments: ticketToEdit.attachments || [],
+        });
+      } else {
+        form.reset({
+          title: "",
+          description: "",
+          type: TicketType.BUG,
+          priority: TicketPriority.MEDIUM,
+          attachments: [],
+        });
+        setSelectedFiles([]);
+      }
     }
   }, [ticketToEdit, form, open]);
 
@@ -123,9 +113,10 @@ export function CreateTicketDialog({
         }
       }
       return uploadedUrls;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string };
       toast.error("Erro ao fazer upload das imagens", {
-        description: error.message,
+        description: err.message,
       });
       throw error;
     } finally {
@@ -153,207 +144,217 @@ export function CreateTicketDialog({
             attachments: attachmentsList,
           },
         });
+        toast.success("Chamado atualizado com sucesso!");
       } else {
         await createMutation.mutateAsync({
           ...values,
           attachments: attachmentsList,
         });
+        toast.success("Chamado aberto com sucesso!");
       }
 
       onSuccess?.();
-      onOpenChange(false);
-    } catch (error) {
-      // toast.error is already handled by mutations
+      safeCloseDialog(() => onOpenChange(false));
+    } catch {
     }
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending || uploading;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="w-full max-w-lg p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
-        hideCloseButton
-      >
-        <div className="bg-blue-600 p-4 text-center relative shrink-0">
-          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
-            <X className="h-6 w-6" />
-            <span className="sr-only">Fechar</span>
-          </DialogClose>
+    <BaseDialog
+      open={open}
+      onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}
+      maxWidth="lg"
+    >
+      <BaseDialog.Header
+        icon={<LifeBuoy className="h-5 w-5 text-foreground" />}
+        title={isEdit ? "Editar Chamado" : "Novo Chamado / Sugestão"}
+        subtitle={
+          isEdit
+            ? "Atualize as informações do chamado aberto"
+            : "Abra uma solicitação de ajuste, melhoria ou relate um erro no sistema"
+        }
+        onClose={() => safeCloseDialog(() => onOpenChange(false))}
+      />
 
-          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-            <AlertCircle className="w-5 h-5 text-white" />
-          </div>
-          <DialogTitle className="text-xl font-bold text-white">
-            {isEdit ? "Editar Chamado" : "Novo Chamado / Sugestão"}
-          </DialogTitle>
-          <p className="text-xs text-white/70 mt-1">
-            {isEdit ? "Atualize as informações do chamado" : "Abra uma solicitação de ajuste, melhoria ou relate um bug"}
-          </p>
-        </div>
+      <BaseDialog.Body className="py-5 px-6 space-y-4">
+        <Form {...form}>
+          <form id="ticket-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-semibold text-foreground">
+                    Título <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ex: Erro ao carregar extrato no fechamento"
+                      {...field}
+                      className="h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive ml-1" />
+                </FormItem>
+              )}
+            />
 
-        <div className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50/30">
-          <Form {...form}>
-            <form id="ticket-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Título</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ex: Erro no relatório de atividade"
-                          {...field}
-                          className="h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1">
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Tipo</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="rounded-xl">
-                            <SelectItem value={TicketType.BUG}>{TICKET_TYPE_LABELS[TicketType.BUG]}</SelectItem>
-                            <SelectItem value={TicketType.FEATURE}>{TICKET_TYPE_LABELS[TicketType.FEATURE]}</SelectItem>
-                            <SelectItem value={TicketType.IMPROVEMENT}>{TICKET_TYPE_LABELS[TicketType.IMPROVEMENT]}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1">
-                        <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Prioridade</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="rounded-xl">
-                            <SelectItem value={TicketPriority.LOW}>{TICKET_PRIORITY_LABELS[TicketPriority.LOW]}</SelectItem>
-                            <SelectItem value={TicketPriority.MEDIUM}>{TICKET_PRIORITY_LABELS[TicketPriority.MEDIUM]}</SelectItem>
-                            <SelectItem value={TicketPriority.HIGH}>{TICKET_PRIORITY_LABELS[TicketPriority.HIGH]}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Descrição</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Descreva detalhadamente sua solicitação ou o erro encontrado..."
-                          {...field}
-                          className="min-h-[120px] rounded-xl bg-gray-50 border-gray-200 focus:bg-white transition-all resize-none p-4"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
-                <FormLabel className="text-gray-700 font-bold ml-1 text-sm opacity-70">Anexar Prints / Imagens</FormLabel>
-
-                <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-sm font-semibold text-gray-700">Clique para selecionar</p>
-                  <p className="text-xs text-gray-500 mt-1">Formato suportado: Imagens (PNG, JPG)</p>
-                </div>
-
-                {selectedFiles.length > 0 && (
-                  <div className="space-y-2 mt-4">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Arquivos selecionados:</p>
-                    <div className="divide-y divide-gray-100">
-                      {selectedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between py-2 text-sm text-gray-700">
-                          <div className="flex items-center gap-2 truncate">
-                            <FileImage className="h-4 w-4 text-blue-500 shrink-0" />
-                            <span className="truncate font-medium">{file.name}</span>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:bg-red-50 rounded-full"
-                            onClick={() => handleRemoveFile(index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Tipo <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value as TicketType)}
+                        className="h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all"
+                      >
+                        <option value={TicketType.BUG}>{TICKET_TYPE_LABELS[TicketType.BUG]}</option>
+                        <option value={TicketType.FEATURE}>{TICKET_TYPE_LABELS[TicketType.FEATURE]}</option>
+                        <option value={TicketType.IMPROVEMENT}>{TICKET_TYPE_LABELS[TicketType.IMPROVEMENT]}</option>
+                      </NativeSelect>
+                    </FormControl>
+                    <FormMessage className="text-xs text-destructive ml-1" />
+                  </FormItem>
                 )}
-              </div>
-            </form>
-          </Form>
-        </div>
+              />
 
-        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-white"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            form="ticket-form"
-            disabled={isPending}
-            className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processando...
-              </>
-            ) : isEdit ? (
-              "Salvar Alterações"
-            ) : (
-              "Abrir Chamado"
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Prioridade <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value as TicketPriority)}
+                        className="h-11 rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all"
+                      >
+                        <option value={TicketPriority.LOW}>{TICKET_PRIORITY_LABELS[TicketPriority.LOW]}</option>
+                        <option value={TicketPriority.MEDIUM}>{TICKET_PRIORITY_LABELS[TicketPriority.MEDIUM]}</option>
+                        <option value={TicketPriority.HIGH}>{TICKET_PRIORITY_LABELS[TicketPriority.HIGH]}</option>
+                      </NativeSelect>
+                    </FormControl>
+                    <FormMessage className="text-xs text-destructive ml-1" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-semibold text-foreground">
+                    Descrição Detalhada <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Descreva detalhadamente a situação, os passos para reproduzir ou a necessidade de melhoria..."
+                      {...field}
+                      className="min-h-[110px] rounded-[18px] bg-background border-border text-sm font-normal focus:bg-white focus:border-primary transition-all resize-none p-3.5"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive ml-1" />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-2 pt-1">
+              <FormLabel className="text-xs font-semibold text-foreground">
+                Anexos (Prints / Evidências)
+              </FormLabel>
+
+              <div className="border-2 border-dashed border-border rounded-[18px] p-5 text-center hover:bg-muted/30 transition-colors cursor-pointer relative">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <Upload className="mx-auto h-7 w-7 text-muted-foreground mb-1.5" />
+                <p className="text-xs sm:text-sm font-semibold text-foreground">
+                  Clique ou arraste imagens aqui
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Formatos suportados: PNG, JPG ou JPEG
+                </p>
+              </div>
+
+              {selectedFiles.length > 0 && (
+                <div className="space-y-1.5 mt-3">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Arquivos selecionados ({selectedFiles.length}):
+                  </p>
+                  <div className="space-y-1.5">
+                    {selectedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2.5 rounded-[14px] bg-muted/40 border border-border text-xs text-foreground"
+                      >
+                        <div className="flex items-center gap-2 truncate min-w-0 pr-2">
+                          <FileImage className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="truncate font-medium">{file.name}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[8px] shrink-0"
+                          onClick={() => handleRemoveFile(index)}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </form>
+        </Form>
+      </BaseDialog.Body>
+
+      <BaseDialog.Footer>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => safeCloseDialog(() => onOpenChange(false))}
+          disabled={isPending}
+        >
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          form="ticket-form"
+          disabled={isPending}
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processando...
+            </>
+          ) : isEdit ? (
+            "Salvar Alterações"
+          ) : (
+            "Abrir Chamado"
+          )}
+        </Button>
+      </BaseDialog.Footer>
+    </BaseDialog>
   );
 }
+
+export default CreateTicketDialog;

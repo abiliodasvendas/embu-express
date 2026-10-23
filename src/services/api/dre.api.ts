@@ -8,6 +8,7 @@ export interface DreItem {
 
 export interface DreConsolidado {
   periodo: { mes: number; ano: number };
+  tipo_visao?: "realizado" | "projetado";
   empresa_id?: number | null;
   empresa_nome?: string;
   faturamento_bruto: number;
@@ -40,6 +41,20 @@ export interface DreConsolidado {
 }
 
 export const dreApi = {
-  getDRE: (mes: number, ano: number, empresaId?: number): Promise<DreConsolidado> =>
-    apiClient.get("/dre", { params: { mes, ano, empresa_id: empresaId } }).then(res => res.data),
+  getDRE: (
+    mes: number,
+    ano: number,
+    empresaId?: number,
+    tipoVisao: "realizado" | "projetado" = "projetado"
+  ): Promise<DreConsolidado> =>
+    apiClient
+      .get("/dre", {
+        params: {
+          mes,
+          ano,
+          empresa_id: empresaId,
+          tipo_visao: tipoVisao,
+        },
+      })
+      .then((res) => res.data),
 };

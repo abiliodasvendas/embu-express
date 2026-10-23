@@ -1,259 +1,224 @@
-import { FilterButton } from "@/components/common/FilterButton";
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/ui/use-mobile";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useDebounce } from "@/hooks/ui/useDebounce";
 import { cn } from "@/lib/utils";
-import { Plus, Search, X } from "lucide-react";
-import * as React from "react";
-import { useState } from "react";
-import { Can } from "@/components/auth/Can";
-import { PERMISSIONS } from "@/constants/permissions.enum";
-import { StatusUsuario, FilterOptions } from "@/types/enums";
+import { FilterOptions, StatusUsuario } from "@/types/enums";
+import { safeCloseDialog } from "@/utils/dialogUtils";
+import { RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface EmpresasToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   selectedStatus: string;
   onStatusChange: (value: string) => void;
-  onRegister: () => void;
-  onApplyFilters: (filters: { status?: string }) => void;
+  onApplyFilters?: (filters: { status?: string }) => void;
   hasActiveFilters?: boolean;
   onClear?: () => void;
 }
-
-const FilterContent = ({
-  selectedStatus,
-  onStatusChange,
-  onClear,
-  onApply,
-  isSheet = false
-}: {
-  selectedStatus: string;
-  onStatusChange: (val: string) => void;
-  onClear: () => void;
-  onApply?: () => void;
-  isSheet?: boolean;
-}) => (
-  <div className={cn("space-y-6", isSheet ? "px-6 pb-6" : "p-4")}>
-    <div className="space-y-2">
-      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Status</Label>
-      <Select value={selectedStatus} onValueChange={onStatusChange}>
-        <SelectTrigger className={cn(
-          "h-11 rounded-xl bg-gray-50 border-gray-200 shadow-none focus-visible:ring-primary/20 font-medium",
-          isSheet && "h-12 bg-white"
-        )}>
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent className="z-[10001] rounded-xl border-gray-100">
-          <SelectItem value={FilterOptions.TODOS}>Todos os Status</SelectItem>
-          <SelectItem value={StatusUsuario.ATIVO}>Ativos</SelectItem>
-          <SelectItem value={StatusUsuario.INATIVO}>Inativos</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-
-  </div>
-);
 
 export function EmpresasToolbar({
   searchTerm,
   onSearchChange,
   selectedStatus,
   onStatusChange,
-  onRegister,
   onApplyFilters,
   hasActiveFilters,
   onClear,
 }: EmpresasToolbarProps) {
-  const isMobile = useIsMobile();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState(searchTerm);
-  const debouncedSearch = useDebounce(localSearch, 500);
+  const debouncedSearch = useDebounce(localSearch, 400);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [mobileStatus, setMobileStatus] = useState(selectedStatus || FilterOptions.TODOS);
 
-  // Local state for mobile filters
-  const [mobileStatus, setMobileStatus] = useState(selectedStatus);
+  useEffect(() => {
+    if (debouncedSearch !== searchTerm) {
+      onSearchChange(debouncedSearch);
+    }
+  }, [debouncedSearch, searchTerm, onSearchChange]);
 
-  React.useEffect(() => {
-    onSearchChange(debouncedSearch);
-  }, [debouncedSearch, onSearchChange]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (searchTerm !== localSearch) {
       setLocalSearch(searchTerm);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
-  React.useEffect(() => {
-    if (isSheetOpen) {
-      setMobileStatus(selectedStatus);
+  useEffect(() => {
+    if (isDrawerOpen) {
+      setMobileStatus(selectedStatus || FilterOptions.TODOS);
     }
-  }, [isSheetOpen, selectedStatus]);
+  }, [isDrawerOpen, selectedStatus]);
 
-  // Calculate filter states
-  const hasAdvancedFilters = selectedStatus !== FilterOptions.TODOS;
-  const hasAnyFilter = hasAdvancedFilters || searchTerm !== "";
+  const hasStatusFilter = selectedStatus && selectedStatus !== FilterOptions.TODOS;
+  const hasAnyFilter = Boolean(hasActiveFilters || hasStatusFilter || localSearch);
+  const activeFiltersCount = hasStatusFilter ? 1 : 0;
 
-  const clearFilters = () => {
+  const handleClear = () => {
     setLocalSearch("");
+    setMobileStatus(FilterOptions.TODOS);
     if (onClear) {
       onClear();
     } else {
       onSearchChange("");
-      onApplyFilters({ status: FilterOptions.TODOS });
+      onStatusChange(FilterOptions.TODOS);
     }
+    safeCloseDialog(() => setIsDrawerOpen(false));
   };
 
-  const applyMobileFilters = () => {
-    onApplyFilters({ status: mobileStatus });
-    setIsSheetOpen(false);
-  };
-
-  const clearMobileFilters = () => {
-    setMobileStatus(FilterOptions.TODOS);
+  const handleApplyMobile = () => {
+    if (onApplyFilters) {
+      onApplyFilters({ status: mobileStatus });
+    }
+    onStatusChange(mobileStatus);
+    safeCloseDialog(() => setIsDrawerOpen(false));
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center gap-3 mb-4">
-      <div className="relative flex-1 w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Buscar por nome, razão social ou CNPJ..."
-          value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
-          className={cn(
-            "pl-9 text-sm sm:text-base bg-white border-gray-200 focus-visible:ring-primary/20 h-11 rounded-xl shadow-none font-medium",
-            isMobile && localSearch && "pr-10"
-          )}
-        />
-        {isMobile && localSearch && (
-          <button
-            onClick={() => setLocalSearch("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-
-      <div className="flex items-center gap-3 w-full md:w-auto">
-        {isMobile ? (
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <FilterButton
-                hasActiveFilters={hasAdvancedFilters}
-                isMobile={isMobile}
-              />
-            </SheetTrigger>
-            <SheetContent
-              side="bottom"
-              className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 pb-0 bg-gray-50 border-t-0 shadow-2xl"
-              onOpenAutoFocus={(e) => e.preventDefault()}
+    <div className="space-y-3 w-full">
+      <div className="hidden sm:flex items-center gap-3 w-full">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Buscar por nome fantasia, razão social ou CNPJ..."
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            className="pl-10 pr-9 h-11 rounded-[18px] bg-card border-border shadow-xs text-xs font-medium focus:bg-white focus:border-primary transition-all"
+          />
+          {localSearch && (
+            <button
+              type="button"
+              onClick={() => {
+                setLocalSearch("");
+                onSearchChange("");
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-full transition-colors cursor-pointer"
             >
-              <SheetHeader className="text-left mb-4 px-6">
-                <SheetTitle className="text-xl font-bold">Filtrar</SheetTitle>
-                <SheetDescription className="text-gray-500">
-                  Refine a lista de empresas pelas opções abaixo.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="flex-1 overflow-y-auto">
-                <FilterContent
-                  isSheet={true}
-                  selectedStatus={mobileStatus}
-                  onStatusChange={setMobileStatus}
-                  onClear={clearMobileFilters}
-                  onApply={applyMobileFilters}
-                />
-              </div>
-              <div className="p-4 border-t bg-white mt-auto flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={clearMobileFilters}
-                  className="flex-1 h-12 rounded-xl text-slate-500 font-bold border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
-                >
-                  Limpar
-                </Button>
-                <Button
-                  onClick={applyMobileFilters}
-                  className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-sm font-bold transition-all active:scale-95 text-white"
-                >
-                  Aplicar
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <div className="flex items-center gap-3">
-            {hasAnyFilter && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="text-gray-500 hover:text-gray-900"
-              >
-                <X className="h-4 w-4 mr-1" />
-                Limpar
-              </Button>
-            )}
-            <Popover>
-              <PopoverTrigger asChild>
-                <FilterButton
-                  hasActiveFilters={hasAdvancedFilters}
-                  isMobile={isMobile}
-                  selectedCount={selectedStatus !== FilterOptions.TODOS ? 1 : 0}
-                />
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-[280px] p-0 rounded-2xl shadow-2xl border-gray-100 overflow-hidden"
-                align="end"
-                sideOffset={8}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-              >
-                <FilterContent
-                  selectedStatus={selectedStatus}
-                  onStatusChange={onStatusChange}
-                  onClear={clearFilters}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        )}
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
 
-        <Can I={PERMISSIONS.EMPRESAS.CRIAR}>
-          <Button
-            onClick={onRegister}
-            className={cn(
-              "bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap",
-              isMobile && "flex-1 h-11"
-            )}
+        <div className="w-52 shrink-0">
+          <NativeSelect
+            value={selectedStatus || FilterOptions.TODOS}
+            onChange={(e) => onStatusChange(e.target.value)}
+            className="h-11 rounded-[18px] bg-card border-border shadow-xs text-xs font-medium w-full"
           >
-            <Plus className="h-4 w-4" />
-            <span>{isMobile ? "Cadastrar" : "Cadastrar Empresa"}</span>
+            <option value={FilterOptions.TODOS}>Todos os Status</option>
+            <option value={StatusUsuario.ATIVO}>Ativos</option>
+            <option value={StatusUsuario.INATIVO}>Inativos</option>
+          </NativeSelect>
+        </div>
+
+        {hasAnyFilter && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleClear}
+            className="h-11 px-3.5 rounded-[18px] text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-surface-alt transition-colors shrink-0 gap-1.5"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span>Limpar Filtros</span>
           </Button>
-        </Can>
+        )}
       </div>
+
+      <div className="flex sm:hidden items-center gap-2 w-full">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Buscar empresas..."
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            className="pl-10 pr-9 h-11 rounded-[18px] bg-card border-border shadow-xs text-xs font-medium focus:bg-white focus:border-primary transition-all"
+          />
+          {localSearch && (
+            <button
+              type="button"
+              onClick={() => {
+                setLocalSearch("");
+                onSearchChange("");
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-full transition-colors cursor-pointer"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setIsDrawerOpen(true)}
+          className={cn(
+            "h-11 px-3.5 rounded-[18px] bg-card border-border shadow-xs text-foreground hover:bg-surface-alt shrink-0 gap-1.5 font-medium text-xs",
+            activeFiltersCount > 0 && "border-primary text-primary bg-primary/5"
+          )}
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          <span>Filtros</span>
+          {activeFiltersCount > 0 && (
+            <span className="w-5 h-5 rounded-full bg-primary text-white text-[11px] font-bold flex items-center justify-center -mr-1">
+              {activeFiltersCount}
+            </span>
+          )}
+        </Button>
+      </div>
+
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerContent className="rounded-t-[24px] bg-card border-border">
+          <DrawerHeader className="px-6 pt-5 pb-2 text-left">
+            <DrawerTitle className="text-lg font-bold text-foreground">
+              Filtrar Empresas
+            </DrawerTitle>
+            <DrawerDescription className="text-xs text-muted-foreground">
+              Ajuste as opções abaixo e toque em Aplicar.
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="p-6 space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground">Status</label>
+              <NativeSelect
+                value={mobileStatus}
+                onChange={(e) => setMobileStatus(e.target.value)}
+                className="h-11 rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
+              >
+                <option value={FilterOptions.TODOS}>Todos os Status</option>
+                <option value={StatusUsuario.ATIVO}>Ativos</option>
+                <option value={StatusUsuario.INATIVO}>Inativos</option>
+              </NativeSelect>
+            </div>
+          </div>
+
+          <DrawerFooter className="p-6 pt-2 border-t border-border flex flex-row items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClear}
+              className="flex-1 h-11 rounded-[18px] border-border font-medium text-muted-foreground hover:text-foreground"
+            >
+              Limpar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleApplyMobile}
+              className="flex-1 h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold shadow-xs"
+            >
+              Aplicar Filtros
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

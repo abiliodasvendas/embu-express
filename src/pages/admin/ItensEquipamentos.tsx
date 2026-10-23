@@ -1,165 +1,22 @@
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { ItemEquipamentoList } from "@/components/features/item-equipamento/ItemEquipamentoList";
+import { ItensEquipamentosToolbar } from "@/components/features/item-equipamento/ItensEquipamentosToolbar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { messages } from "@/constants/messages";
 import { PERMISSIONS } from "@/constants/permissions.enum";
-import { useLayout, usePermissions } from "@/hooks";
+import { safeCloseDialog, useLayout, usePermissions } from "@/hooks";
 import {
   useCategoriasQuery,
   useDeleteItem,
   useItensQuery,
 } from "@/hooks/api/useItensEquipamentos";
-import { cn } from "@/lib/utils";
-import { ActionItem } from "@/types/actions";
+import { useBatchFilters, useFiltersManager, useSearchFilters, useUrlState } from "@/hooks/ui/useFilters";
 import { ItemEquipamento } from "@/types/database";
-import { safeCloseDialog } from "@/utils/dialogUtils";
-import { Edit2, Package, Plus, Search, Tag, Trash2, Users, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-const ItemMobileCard = ({
-  item,
-  onEdit,
-  onDelete,
-  onViewAlocados,
-  canEdit,
-}: {
-  item: ItemEquipamento;
-  onEdit: (i: ItemEquipamento) => void;
-  onDelete: (id: number, name: string) => void;
-  onViewAlocados: (id: number, name: string) => void;
-  canEdit: boolean;
-}) => {
-  const actions: ActionItem[] = [
-    {
-      label: "Ver Alocados",
-      icon: <Users className="w-4 h-4" />,
-      onClick: () => onViewAlocados(item.id, item.nome),
-    },
-    {
-      label: "Editar",
-      icon: <Edit2 className="w-4 h-4" />,
-      onClick: () => onEdit(item),
-      hidden: !canEdit,
-    },
-    {
-      label: "Excluir",
-      icon: <Trash2 className="w-4 h-4" />,
-      onClick: () => onDelete(item.id, item.nome),
-      isDestructive: true,
-      variant: "destructive",
-      hidden: !canEdit,
-    },
-  ];
-
-  return (
-    <div
-      onClick={() => onEdit(item)}
-      className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-gray-900 text-sm line-clamp-1 leading-tight">
-              {item.nome}
-            </span>
-            {!item.ativo && (
-              <Badge variant="secondary" className="text-[10px] bg-slate-100 text-slate-500 font-bold shrink-0">
-                Inativo
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            <Badge variant="outline" className="text-[10px] border-slate-100 text-slate-400 font-bold uppercase">
-              {item.categoria?.nome || "Sem Categoria"}
-            </Badge>
-            <span className="text-[10px] text-blue-600 font-bold bg-blue-50/50 px-2 py-0.5 rounded-full">
-              {item.total_alocado || 0} alocados
-            </span>
-          </div>
-        </div>
-        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-          <ActionsDropdown actions={actions} />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ItemTableRow = ({
-  item,
-  onEdit,
-  onDelete,
-  onViewAlocados,
-  canEdit,
-}: {
-  item: ItemEquipamento;
-  onEdit: (i: ItemEquipamento) => void;
-  onDelete: (id: number, name: string) => void;
-  onViewAlocados: (id: number, name: string) => void;
-  canEdit: boolean;
-}) => {
-  const actions: ActionItem[] = [
-    {
-      label: "Ver Alocados",
-      icon: <Users className="w-4 h-4" />,
-      onClick: () => onViewAlocados(item.id, item.nome),
-    },
-    {
-      label: "Editar",
-      icon: <Edit2 className="w-4 h-4" />,
-      onClick: () => onEdit(item),
-      hidden: !canEdit,
-    },
-    {
-      label: "Excluir",
-      icon: <Trash2 className="w-4 h-4" />,
-      onClick: () => onDelete(item.id, item.nome),
-      isDestructive: true,
-      variant: "destructive",
-      hidden: !canEdit,
-    },
-  ];
-
-  return (
-    <tr
-      onClick={() => onEdit(item)}
-      className="hover:bg-gray-50/80 transition-colors cursor-pointer group"
-    >
-      <td className="py-4 pl-6 align-middle">
-        <div className="flex items-center gap-3">
-          <div className="bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 w-9 h-9 rounded-xl flex items-center justify-center transition-colors">
-            <Package className="w-4.5 h-4.5" />
-          </div>
-          <div>
-            <p className="font-bold text-gray-800 text-sm leading-tight">
-              {item.nome}
-            </p>
-          </div>
-        </div>
-      </td>
-      <td className="px-6 py-4 align-middle">
-        <Badge variant="outline" className="text-xs border-slate-100 text-slate-400 font-bold uppercase shadow-none">
-          {item.categoria?.nome || "Sem Categoria"}
-        </Badge>
-      </td>
-      <td className="px-6 py-4 align-middle">
-        <span className="text-xs text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full">
-          {item.total_alocado || 0}
-        </span>
-      </td>
-      <td className="px-6 py-4 text-right align-middle" onClick={(e) => e.stopPropagation()}>
-        <ActionsDropdown actions={actions} />
-      </td>
-    </tr>
-  );
-};
+import { Package, Plus, Share2, Tag } from "lucide-react";
+import { useCallback, useEffect, useMemo } from "react";
 
 export default function ItensEquipamentos() {
   const {
@@ -175,11 +32,20 @@ export default function ItensEquipamentos() {
   const { can } = usePermissions();
   const canEdit = can(PERMISSIONS.EQUIPAMENTOS.EDITAR);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const { searchTerm, setSearchTerm } = useSearchFilters("search");
+  const [selectedCategoria, setSelectedCategoria] = useUrlState<string>({
+    key: "categoria",
+    defaultValue: "todos",
+    syncWithUrl: true,
+  });
+  const { hasActiveFilters, clearFilters } = useFiltersManager(["search", "categoria"]);
+  const setFilters = useBatchFilters({ categoriaParam: "categoria", searchParam: "search" });
 
-  const { data: itens = [], isLoading, refetch } = useItensQuery();
+  const { data: itens = [], isLoading, isFetching, refetch } = useItensQuery();
   const { data: categorias = [] } = useCategoriasQuery();
   const deleteItemMutation = useDeleteItem();
+
+  const isInitialLoading = isLoading && !itens.length;
 
   useEffect(() => {
     setPageTitle("Itens e Equipamentos");
@@ -205,153 +71,137 @@ export default function ItensEquipamentos() {
     openAlocarEquipamentoDialog({ onSuccess: refetch });
   };
 
-  const handleViewAlocados = (itemId: number, itemName: string) => {
-    openAlocadosPorItemDialog({ itemId, itemName });
+  const handleViewAlocados = (item: ItemEquipamento) => {
+    openAlocadosPorItemDialog({ itemId: item.id, itemName: item.nome });
   };
 
-  const handleDelete = (id: number, name: string) => {
+  const handleDelete = (item: ItemEquipamento) => {
     openConfirmationDialog({
       title: messages.dialogo.remover.titulo,
-      description: `Deseja remover o item "${name}"? Esta ação não pode ser desfeita e só será permitida se não houver alocações ativas.`,
+      description: `Deseja remover o item "${item.nome}"? Esta ação não pode ser desfeita e só será permitida se não houver alocações ativas.`,
       confirmText: "Sim, remover",
       variant: "destructive",
       onConfirm: async () => {
-        await deleteItemMutation.mutateAsync(id);
+        await deleteItemMutation.mutateAsync(item.id);
         safeCloseDialog(closeConfirmationDialog);
       },
     });
   };
 
+  const handleApplyFilters = useCallback((filters: { categoria?: string }) => {
+    if (filters.categoria !== undefined) {
+      setSelectedCategoria(filters.categoria);
+    }
+    setFilters({ categoria: filters.categoria });
+  }, [setSelectedCategoria, setFilters]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchTerm("");
+    setSelectedCategoria("todos");
+    clearFilters();
+  }, [setSearchTerm, setSelectedCategoria, clearFilters]);
+
   const filteredItens = useMemo(() => {
     return itens.filter((item) => {
       const matchSearch = item.nome.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchSearch;
+      const matchCategoria =
+        selectedCategoria === "todos" || String(item.categoria_id) === selectedCategoria;
+      return matchSearch && matchCategoria;
     });
-  }, [itens, searchTerm]);
+  }, [itens, searchTerm, selectedCategoria]);
 
   const isActionLoading = deleteItemMutation.isPending;
 
   return (
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
-        <div className="space-y-6">
-          <Card className="border-none shadow-none bg-transparent">
-            <CardContent className="px-0">
-              <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
-                <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar por nome de item..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 bg-white border-gray-100 focus-visible:ring-blue-500/20 h-11 rounded-xl shadow-none font-medium"
-                  />
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
+        <div className="space-y-6 w-full animate-in fade-in duration-300 pb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="h-11 w-11 rounded-[14px] bg-muted/70 text-foreground border border-border flex items-center justify-center shrink-0">
+                <Package className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                  Itens e Equipamentos
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                  Controle do inventário, categorias e alocações de itens operacionais
+                </p>
+              </div>
+            </div>
 
-                <div className="flex flex-wrap md:flex-nowrap items-center gap-3 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleManageCategorias}
+                  className="h-11 rounded-[18px] border-border bg-card shadow-xs text-xs font-semibold px-3.5 gap-2 hover:border-primary hover:text-primary transition-all flex-1 sm:flex-initial"
+                >
+                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  <span>Categorias</span>
+                </Button>
+
+                {canEdit && (
                   <Button
-                    onClick={handleManageCategorias}
+                    type="button"
                     variant="outline"
-                    className="h-11 rounded-xl border-gray-100 bg-white gap-2 font-bold hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm flex-1 md:flex-initial"
+                    onClick={handleAlocar}
+                    className="h-11 rounded-[18px] border-border bg-card shadow-xs text-xs font-semibold px-3.5 gap-2 hover:border-primary hover:text-primary transition-all flex-1 sm:flex-initial"
                   >
-                    <Tag className="h-4 w-4 text-slate-400" />
-                    <span>Categorias</span>
+                    <Share2 className="h-4 w-4 text-muted-foreground" />
+                    <span>Alocar</span>
                   </Button>
-
-                  {canEdit && (
-                    <>
-                      <Button
-                        onClick={handleAdd}
-                        className="bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap flex-1 md:flex-initial"
-                      >
-                        <Plus className="h-4 w-4" />
-                        <span>Novo Item</span>
-                      </Button>
-                      
-                      <Button
-                        onClick={handleAlocar}
-                        className="bg-blue-600 hover:bg-blue-700 h-11 rounded-xl gap-2 shadow-sm font-bold text-white transition-all active:scale-95 whitespace-nowrap flex-1 md:flex-initial"
-                      >
-                        <Users className="h-4 w-4" />
-                        <span>Alocar</span>
-                      </Button>
-                    </>
-                  )}
-                </div>
+                )}
               </div>
 
-              {isLoading ? (
-                <ListSkeleton />
-              ) : filteredItens.length > 0 ? (
-                <ResponsiveDataList
-                  data={filteredItens}
-                  mobileContainerClassName="space-y-3"
-                  mobileItemRenderer={(item: ItemEquipamento) => (
-                    <ItemMobileCard
-                      key={item.id}
-                      item={item}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      onViewAlocados={handleViewAlocados}
-                      canEdit={canEdit}
-                    />
-                  )}
+              {canEdit && (
+                <Button
+                  onClick={handleAdd}
+                  className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 w-full sm:w-auto"
                 >
-                  <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white shadow-sm">
-                    <table className="w-full">
-                      <thead className="bg-gray-50/50">
-                        <tr className="border-b border-gray-100 text-left">
-                          <th className="py-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                            Item
-                          </th>
-                          <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider w-[180px]">
-                            Categoria
-                          </th>
-                          <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider w-[120px]">
-                            Qtd. Alocada
-                          </th>
-                          <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider w-[100px]">
-                            Ações
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {filteredItens.map((item) => (
-                          <ItemTableRow
-                            key={item.id}
-                            item={item}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onViewAlocados={handleViewAlocados}
-                            canEdit={canEdit}
-                          />
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </ResponsiveDataList>
-              ) : (
-                <UnifiedEmptyState
-                  icon={Package}
-                  title="Nenhum item encontrado"
-                  description={
-                    searchTerm
-                      ? "Não encontramos itens para os filtros atuais."
-                      : "Cadastre seu primeiro item no catálogo clicando no botão acima."
-                  }
-                  action={!searchTerm ? { label: "Novo Item", onClick: handleAdd } : undefined}
-                />
+                  <Plus className="h-4 w-4" />
+                  <span>Novo Item</span>
+                </Button>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          <ItensEquipamentosToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedCategoria={selectedCategoria}
+            onCategoriaChange={setSelectedCategoria}
+            onApplyFilters={handleApplyFilters}
+            categorias={categorias}
+            hasActiveFilters={hasActiveFilters}
+            onClear={handleClearFilters}
+          />
+
+          {isInitialLoading ? (
+            <ListSkeleton />
+          ) : filteredItens.length > 0 ? (
+            <ItemEquipamentoList
+              itens={filteredItens}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onViewAlocados={handleViewAlocados}
+              canEdit={canEdit}
+              isFetching={isFetching}
+            />
+          ) : (
+            <UnifiedEmptyState
+              icon={Package}
+              title="Nenhum item encontrado"
+              description={
+                searchTerm || selectedCategoria !== "todos"
+                  ? "Não encontramos itens para os filtros atuais."
+                  : "Cadastre seu primeiro item no catálogo clicando no botão acima."
+              }
+              action={!searchTerm && selectedCategoria === "todos" && canEdit ? { label: "Novo Item", onClick: handleAdd } : undefined}
+            />
+          )}
         </div>
       </PullToRefreshWrapper>
 

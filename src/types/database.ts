@@ -21,9 +21,13 @@ export interface Client {
   public_id: string;
   nome_fantasia: string;
   ativo: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
   tipo_cobranca?: 'FIXO_MENSAL' | 'DIARIA_MOTOBOY' | 'TAXA_ENTREGA';
+  periodicidade?: 'QUINZENAL' | 'MENSAL' | 'SEMANAL';
+  dia_vencimento_padrao?: number;
+  valor_contrato_mensal?: number;
   valor_base?: number;
-  valor_diaria_glosa?: number;
   empresa_emissora_padrao_id?: number | null;
   empresa_emissora_padrao?: Empresa | null;
   unidades?: Unidade[];
@@ -46,6 +50,8 @@ export interface Unidade {
   estado: string;
   km_contratados?: number | null;
   escala_semanal?: number[] | null;
+  latitude?: number | null;
+  longitude?: number | null;
   ativo: boolean;
   created_at?: string;
   updated_at?: string;
@@ -218,6 +224,8 @@ export interface ColaboradorCliente {
   taxa_entrega?: number | null;
   data_inicio?: string | null;
   data_fim?: string | null;
+  hora_inicio?: string | null;
+  hora_fim?: string | null;
   cliente?: Client;
   unidade?: Unidade;
   empresa?: Empresa;
@@ -347,6 +355,8 @@ export interface Convenio {
   nome: string;
   ativo: boolean;
   token: string;
+  empresa_id?: number | null;
+  conta_bancaria_id?: string | null;
   created_at: string;
 }
 
@@ -379,7 +389,7 @@ export interface ContaBancaria {
   empresa?: Empresa;
 }
 
-export type StatusFatura = 'EM_MEDICAO' | 'AGUARDANDO_APROVACAO' | 'EMITIDA_PENDENTE' | 'PAGO_PARCIAL' | 'LIQUIDADA' | 'CANCELADA';
+export type StatusFatura = 'PENDENTE' | 'PAGO_PARCIAL' | 'LIQUIDADA' | 'CANCELADA';
 
 export interface FaturaCliente {
   id: string;
@@ -396,7 +406,12 @@ export interface FaturaCliente {
   dias_esperados?: number;
   dias_trabalhados?: number;
   faltas_sem_cobertura?: number;
-  valor_glosa?: number;
+  numero_os?: string | null;
+  is_previsao?: boolean;
+  tipo_periodo?: 'QUINZENAL' | 'MENSAL' | 'SEMANAL' | null;
+  numero_periodo?: number | null;
+  data_inicio_apuracao?: string | null;
+  data_fim_apuracao?: string | null;
   observacoes?: string | null;
   criado_por?: string | null;
   created_at?: string;
@@ -510,6 +525,9 @@ export interface DespesaOperacional {
   data_pagamento?: string | null;
   status: StatusDespesa;
   is_holding: boolean;
+  is_recorrente?: boolean;
+  total_parcelas?: number | null;
+  numero_parcela?: number | null;
   criado_por?: string | null;
   created_at?: string;
   updated_at?: string;
@@ -542,7 +560,7 @@ export interface AlocacaoTemporaria {
   unidade?: Unidade;
 }
 
-export type StatusFaturaFornecedorConvenio = 'PENDENTE' | 'EM_AUDITORIA' | 'APROVADA' | 'PAGA' | 'GLOSADA';
+export type StatusFaturaFornecedorConvenio = 'PENDENTE' | 'PAGA';
 
 export interface FaturaFornecedorConvenio {
   id: string;
@@ -552,6 +570,11 @@ export interface FaturaFornecedorConvenio {
   data_vencimento: string;
   valor_total_fatura: number;
   status: StatusFaturaFornecedorConvenio;
+  empresa_id?: number | null;
+  conta_bancaria_id?: string | null;
+  data_pagamento?: string | null;
+  valor_pago?: number | null;
+  is_previsao?: boolean;
   comprovante_url?: string | null;
   observacoes?: string | null;
   criado_por?: string | null;
@@ -573,7 +596,7 @@ export interface AuditoriaConvenioResultado {
   total_geral_lancamentos: number;
   saldo_a_cargo_embu: number;
   diferenca_nao_identificada: number;
-  tem_risco_glosa: boolean;
+  tem_risco_divergencia?: boolean;
   mensagem_risco?: string | null;
   lancamentos_motoboys: LancamentoConvenio[];
   lancamentos_frota_propria: LancamentoConvenio[];
@@ -584,6 +607,8 @@ export interface ConvenioResumoItem {
   id: string;
   nome: string;
   ativo: boolean;
+  empresa_id?: number | null;
+  conta_bancaria_id?: string | null;
   total_consumido: number;
   total_motoboys: number;
   total_moto_embu_david: number;
@@ -597,6 +622,11 @@ export interface ConvenioResumoItem {
     data_vencimento: string;
     status: StatusFaturaFornecedorConvenio;
     saldo_embu: number;
+    empresa_id?: number | null;
+    conta_bancaria_id?: string | null;
+    valor_pago?: number | null;
+    data_pagamento?: string | null;
+    is_previsao?: boolean;
   } | null;
 }
 
@@ -636,7 +666,6 @@ export interface AgingRecebiveisFaixa {
 export interface AgingRecebiveisResultado {
   periodo?: { mes?: number; ano?: number };
   capital_giro_retido_rua: number;
-  total_glosas_periodo: number;
   total_a_vencer: number;
   total_vencido: number;
   total_geral_pendente: number;
@@ -651,6 +680,10 @@ export interface BloqueioConvenio {
   motivo: string | null;
   criado_em: string;
   criado_por?: string | null;
+  criado_por_usuario?: {
+    id: string;
+    nome_completo: string;
+  } | null;
   convenio?: {
     id: string;
     nome: string;
@@ -659,6 +692,7 @@ export interface BloqueioConvenio {
     id: string;
     nome_completo: string;
     cpf?: string;
+    status?: string;
   } | null;
 }
 

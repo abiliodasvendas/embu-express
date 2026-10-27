@@ -26,6 +26,7 @@ export type OcorrenciaComTipo = Ocorrencia & {
 export interface LancamentoConvenioItem {
   id?: string;
   convenio?: { nome?: string };
+  descricao?: string;
   observacao?: string;
   data_lancamento: string;
   valor: number | string;
@@ -240,11 +241,12 @@ export function useFinancialReportView({
       const dataBr = l.data_lancamento
         ? format(parseISO(l.data_lancamento), "dd/MM/yyyy")
         : "";
+      const detalheDescricao = l.descricao || l.observacao;
       items.push({
         id: `convenio-${l.id || idx}`,
         grupo: "Convênio",
         descricao: `${l.convenio?.nome || "Oficina/Parceiro"}${
-          l.observacao ? " - " + l.observacao : ""
+          detalheDescricao ? " - " + detalheDescricao : ""
         }${dataBr ? " (" + dataBr + ")" : ""}`,
         tipo: "SAIDA",
         valor: Number(l.valor || 0),

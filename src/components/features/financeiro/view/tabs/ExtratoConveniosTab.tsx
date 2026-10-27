@@ -46,9 +46,9 @@ export function ExtratoConveniosTab({ extrato }: ExtratoConveniosTabProps) {
                 <p className="text-xs font-semibold text-foreground truncate">
                   {lancamento.convenio?.nome || "Convênio"}
                 </p>
-                {lancamento.observacao && (
+                {(lancamento.descricao || lancamento.observacao) && (
                   <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                    {lancamento.observacao}
+                    {lancamento.descricao || lancamento.observacao}
                   </p>
                 )}
                 <p className="text-[10px] text-muted-foreground font-medium mt-0.5">

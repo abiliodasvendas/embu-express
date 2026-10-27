@@ -48,19 +48,36 @@ export function TimeTrackingKpiFilters({
             className={cn(
               "min-w-[110px] sm:min-w-0 flex-1 flex flex-col items-center justify-center p-3 rounded-[18px] transition-all text-center select-none cursor-pointer active:scale-95",
               isActive
-                ? "border-2 border-foreground/30 bg-muted/80 shadow-xs"
-                : "border border-border bg-card hover:bg-muted/40 shadow-xs"
+                ? cn("border-2 shadow-xs scale-[1.02]", config.border, config.bg)
+                : "border border-border bg-card hover:bg-muted/40 shadow-xs hover:border-border/80"
             )}
           >
-            <div className="w-7 h-7 rounded-[10px] bg-muted/70 border border-border flex items-center justify-center text-foreground mb-1.5 shrink-0">
-              <Icon className="w-3.5 h-3.5" />
+            <div
+              className={cn(
+                "w-7 h-7 rounded-[10px] flex items-center justify-center mb-1.5 shrink-0 transition-colors",
+                isActive
+                  ? "bg-white/80 dark:bg-black/20 shadow-xs"
+                  : cn(config.bg, "border border-transparent")
+              )}
+            >
+              <Icon className={cn("w-3.5 h-3.5 transition-colors", config.color)} />
             </div>
 
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate w-full mb-0.5">
+            <span
+              className={cn(
+                "text-[10px] font-semibold uppercase tracking-wider truncate w-full mb-0.5 transition-colors",
+                isActive ? config.color : "text-muted-foreground"
+              )}
+            >
               {config.label}
             </span>
 
-            <span className="text-lg sm:text-xl font-bold text-foreground tabular-nums">
+            <span
+              className={cn(
+                "text-lg sm:text-xl font-bold tabular-nums transition-colors",
+                isActive ? config.color : "text-foreground"
+              )}
+            >
               {String(count).padStart(2, "0")}
             </span>
           </button>

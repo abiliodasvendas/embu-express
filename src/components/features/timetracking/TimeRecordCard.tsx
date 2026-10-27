@@ -45,16 +45,18 @@ export function TimeRecordCard({
     <div
       onClick={() => showActions && onDetails?.(record)}
       className={cn(
-        "rounded-[20px] sm:rounded-[24px] border border-border bg-card shadow-xs transition-all flex flex-col justify-between p-4 h-full relative group",
+        "rounded-[20px] sm:rounded-[24px] border border-border bg-card shadow-xs transition-all flex flex-col justify-between p-4 pl-5 h-full relative group overflow-hidden",
         showActions && onDetails ? "cursor-pointer hover:border-foreground/20 hover:shadow-sm" : "cursor-default"
       )}
     >
+      <div className={cn("absolute left-0 top-0 bottom-0 w-1.5", config.borderSide)} />
+
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <Avatar className="h-10 w-10 rounded-[14px] border border-border bg-muted/60 shrink-0">
+            <Avatar className="h-10 w-10 rounded-[14px] border border-border shrink-0">
               <AvatarImage src={record.usuario?.foto_url} className="rounded-[14px] object-cover" />
-              <AvatarFallback className="rounded-[14px] text-xs font-semibold text-foreground uppercase bg-muted/60">
+              <AvatarFallback className={cn("rounded-[14px] text-xs font-bold uppercase", config.color, config.bg)}>
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -78,7 +80,7 @@ export function TimeRecordCard({
 
           <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
             <div className="flex flex-col items-end gap-1">
-              <Badge variant="outline" className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-[8px] bg-muted/70 text-foreground border-border shrink-0">
+              <Badge className={cn("text-[9px] uppercase font-bold px-2 py-0.5 rounded-[8px] border-none shrink-0", config.bg, config.color)}>
                 {config.label}
               </Badge>
               {isManual && mStatus === ManagementStatus.ABSENT && (
@@ -95,7 +97,7 @@ export function TimeRecordCard({
           <div className="space-y-0.5">
             <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Entrada</p>
             <p className={cn("text-base font-semibold font-mono leading-none", record.entrada_hora ? "text-foreground" : "text-muted-foreground/60")}>
-              {record.entrada_hora ? formatTime(record.entrada_hora) : (mStatus === ManagementStatus.ABSENT ? "Faltou" : "--:--")}
+              {record.entrada_hora ? formatTime(record.entrada_hora) : (mStatus === ManagementStatus.ABSENT ? "Faltou" : "Pendente")}
             </p>
           </div>
           <div className="space-y-0.5 text-right">
@@ -119,7 +121,7 @@ export function TimeRecordCard({
             <span
               className={cn(
                 "text-xs font-bold font-mono",
-                record.saldo_minutos >= 0 ? "text-foreground" : "text-destructive"
+                record.saldo_minutos >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
               )}
             >
               {formatMinutes(record.saldo_minutos, true)}

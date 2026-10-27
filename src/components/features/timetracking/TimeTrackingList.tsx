@@ -10,6 +10,8 @@ import { safeCloseDialog } from "@/hooks";
 import { useTiposOcorrencia } from "@/hooks/api/useOcorrencias";
 import { useDeleteOcorrencia } from "@/hooks/api/useOcorrenciaMutations";
 import { ocorrenciaService } from "@/services/api/ocorrencia.service";
+import { PONTO_STATUS_UI_CONFIG } from "@/config/ponto-ui";
+import { cn } from "@/lib/utils";
 
 interface TimeTrackingListProps {
   records: RegistroPonto[];
@@ -203,11 +205,13 @@ export function TimeTrackingList({
       {statusOrder.map(({ key, label }) => {
         const groupRecords = grouped[key] || [];
         if (groupRecords.length === 0) return null;
+        const config = PONTO_STATUS_UI_CONFIG[key as ManagementStatus];
 
         return (
           <div key={key} className="space-y-4">
-            <div className="flex items-center gap-3 px-1">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="flex items-center gap-2.5 px-1">
+              <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", config?.borderSide || "bg-muted-foreground")} />
+              <h3 className={cn("text-xs sm:text-sm font-bold uppercase tracking-wider", config?.color || "text-muted-foreground")}>
                 {label} ({groupRecords.length})
               </h3>
               <div className="h-px bg-border flex-1" />

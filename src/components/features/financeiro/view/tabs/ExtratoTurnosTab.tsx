@@ -137,10 +137,9 @@ export function ExtratoTurnosTab({
                         </Badge>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-muted-foreground">Trabalhados:</span>
+                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Trabalhados:</span>
                         <Badge
-                          variant="outline"
-                          className="text-[10px] font-medium h-5 px-1.5 border-border bg-muted/70 text-foreground"
+                          className="text-[10px] font-bold h-5 px-1.5 bg-emerald-600 hover:bg-emerald-600 text-white shadow-xs"
                         >
                           {resumo.dias_trabalhados}d
                         </Badge>
@@ -148,29 +147,54 @@ export function ExtratoTurnosTab({
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap justify-center sm:justify-start gap-2 p-3 bg-muted/20 rounded-[18px] border border-border">
+                  <div className="flex flex-wrap justify-center sm:justify-start gap-2.5 p-3 bg-muted/20 rounded-[18px] border border-border">
                     {resumo.calendario_visual?.map((dia) => (
                       <div
                         key={dia.data}
                         title={`${dia.dia_semana_longo}, ${dia.data_br} - ${dia.status}`}
                         className={cn(
-                          "h-11 w-9 flex flex-col items-center justify-center rounded-[12px] transition-all border shrink-0",
+                          "relative h-12 w-10 flex flex-col items-center justify-center rounded-[12px] transition-all border shrink-0",
                           dia.status === CALENDARIO_STATUS.TRABALHADO &&
-                            "bg-foreground text-background border-foreground font-semibold shadow-xs",
+                            "bg-emerald-500 text-white border-emerald-600 scale-105 z-10 shadow-sm",
                           dia.status === CALENDARIO_STATUS.SEM_ATIVIDADE &&
-                            "bg-destructive/15 text-destructive border-destructive/30 font-semibold",
+                            "bg-red-500 text-white border-red-600 shadow-red-200/50 shadow-sm",
                           dia.status === CALENDARIO_STATUS.FERIADO &&
-                            "bg-muted text-muted-foreground border-border font-medium",
+                            "bg-teal-500 text-white border-teal-600 shadow-teal-200/50 shadow-sm",
                           dia.status === CALENDARIO_STATUS.FUTURO &&
-                            "bg-transparent text-muted-foreground/30 border-dashed border-border opacity-50",
+                            "bg-muted/30 text-muted-foreground/40 border-dashed border-border opacity-50",
                           dia.status === CALENDARIO_STATUS.NAO_VIGENTE &&
-                            "bg-transparent text-muted-foreground/20 border-transparent opacity-30",
+                            "bg-muted/10 text-muted-foreground/20 border-transparent opacity-30",
                         )}
                       >
-                        <span className="text-[8px] leading-none mb-0.5 uppercase tracking-tighter opacity-80">
+                        {dia.status === CALENDARIO_STATUS.FERIADO && (
+                          <div className="absolute -top-2 -right-1 bg-teal-700 text-white text-[7px] font-black px-1 py-0.5 rounded uppercase tracking-wider shadow-xs z-20 border border-teal-500/50">
+                            Feriado
+                          </div>
+                        )}
+                        <span
+                          className={cn(
+                            "text-[8px] font-black leading-none mb-0.5 uppercase tracking-tighter opacity-80",
+                            dia.status === CALENDARIO_STATUS.TRABALHADO ||
+                              dia.status === CALENDARIO_STATUS.SEM_ATIVIDADE ||
+                              dia.status === CALENDARIO_STATUS.FERIADO
+                              ? "text-white"
+                              : "text-muted-foreground/60",
+                          )}
+                        >
                           {dia.dia_semana_curto}
                         </span>
-                        <span className="text-[11px] font-bold leading-none">{dia.dia}</span>
+                        <span
+                          className={cn(
+                            "text-[11px] font-black leading-none",
+                            dia.status === CALENDARIO_STATUS.TRABALHADO ||
+                              dia.status === CALENDARIO_STATUS.SEM_ATIVIDADE ||
+                              dia.status === CALENDARIO_STATUS.FERIADO
+                              ? "text-white"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {dia.dia}
+                        </span>
                       </div>
                     ))}
                   </div>

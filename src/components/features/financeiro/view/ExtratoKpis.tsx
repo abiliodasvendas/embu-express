@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateTimeToBR } from "@/utils/formatters/date";
+import { cn } from "@/lib/utils";
 import {
   FINANCEIRO_STATUS,
 } from "@/constants/financeiro.constants";
@@ -54,13 +55,18 @@ export function ExtratoKpis({
         <div className="flex flex-wrap items-center gap-3">
           <Badge
             variant="outline"
-            className="rounded-full px-4 py-1.5 font-semibold text-xs tracking-wider border-border bg-muted/70 text-foreground"
+            className={cn(
+              "rounded-full px-4 py-1.5 font-semibold text-xs tracking-wider border",
+              extrato.status === FINANCEIRO_STATUS.PAGO
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
+                : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
+            )}
           >
             {extrato.status === FINANCEIRO_STATUS.RASCUNHO ? "EM ABERTO" : extrato.status}
           </Badge>
           {extrato.data_pagamento && (
             <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-foreground" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               Pago em:{" "}
               {formatDateTimeToBR(extrato.data_pagamento, {
                 includeTime: true,
@@ -132,7 +138,12 @@ export function ExtratoKpis({
               <p className="text-xs font-medium text-muted-foreground">
                 Saldo Líquido a Pagar
               </p>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5">
+              <h2 className={cn(
+                "text-2xl sm:text-3xl font-bold tracking-tight mt-0.5",
+                (extrato.totais?.saldo_final || 0) >= 0
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-600 dark:text-red-400",
+              )}>
                 {formatCurrency(extrato.totais?.saldo_final || 0)}
               </h2>
               <div className="inline-flex items-center gap-1.5 mt-1 text-[11px] text-muted-foreground font-medium">

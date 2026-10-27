@@ -166,7 +166,7 @@ export function TimeMirrorDailyCard({
               <p
                 className={cn(
                   "text-xs sm:text-sm font-bold font-mono",
-                  day.minutos_saldo > 0 ? "text-foreground" : day.minutos_saldo < 0 ? "text-destructive" : "text-muted-foreground"
+                  day.minutos_saldo > 0 ? "text-emerald-600 dark:text-emerald-400" : day.minutos_saldo < 0 ? "text-destructive" : "text-muted-foreground"
                 )}
               >
                 {formatMinutes(day.minutos_saldo, true)}

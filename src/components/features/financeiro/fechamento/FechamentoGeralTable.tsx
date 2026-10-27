@@ -94,7 +94,12 @@ export function FechamentoGeralTable({
                   </p>
                   <Badge
                     variant="outline"
-                    className="bg-muted/70 text-foreground border-border font-medium text-[10px] px-2 py-0.5 rounded-lg"
+                    className={cn(
+                      "font-semibold text-[10px] px-2 py-0.5 rounded-lg border",
+                      colab.adiantamento_confirmado
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
+                        : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
+                    )}
                   >
                     {colab.adiantamento_confirmado ? "Confirmado" : "Pendente"}
                   </Badge>
@@ -105,7 +110,12 @@ export function FechamentoGeralTable({
                   </p>
                   <Badge
                     variant="outline"
-                    className="bg-muted/70 text-foreground border-border font-medium text-[10px] px-2 py-0.5 rounded-lg"
+                    className={cn(
+                      "font-semibold text-[10px] px-2 py-0.5 rounded-lg border",
+                      colab.pago
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
+                        : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
+                    )}
                   >
                     {colab.pago ? "Confirmado" : "Pendente"}
                   </Badge>
@@ -174,7 +184,12 @@ export function FechamentoGeralTable({
                     <td className="px-6 py-3.5 align-middle">
                       <Badge
                         variant="outline"
-                        className="bg-muted/70 text-foreground border-border font-medium text-[10px] px-2 py-0.5 rounded-lg"
+                        className={cn(
+                          "font-semibold text-[10px] px-2 py-0.5 rounded-lg border",
+                          colab.adiantamento_confirmado
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
+                            : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
+                        )}
                       >
                         {colab.adiantamento_confirmado ? "Confirmado" : "Pendente"}
                       </Badge>
@@ -182,7 +197,12 @@ export function FechamentoGeralTable({
                     <td className="px-6 py-3.5 align-middle">
                       <Badge
                         variant="outline"
-                        className="bg-muted/70 text-foreground border-border font-medium text-[10px] px-2 py-0.5 rounded-lg"
+                        className={cn(
+                          "font-semibold text-[10px] px-2 py-0.5 rounded-lg border",
+                          colab.pago
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
+                            : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
+                        )}
                       >
                         {colab.pago ? "Confirmado" : "Pendente"}
                       </Badge>

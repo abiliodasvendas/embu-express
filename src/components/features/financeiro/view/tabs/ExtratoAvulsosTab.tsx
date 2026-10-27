@@ -5,6 +5,7 @@ import { ExtratoMensal } from "@/types/financeiro";
 import { OcorrenciaComTipo } from "@/hooks/ui/financeiro";
 import { LANCAMENTO_TIPO } from "@/constants/financeiro.constants";
 import { Banknote, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ExtratoAvulsosTabProps {
   extrato: ExtratoMensal;
@@ -46,14 +47,14 @@ export function ExtratoAvulsosTab({
           {(extrato.totais?.total_mei ?? 0) > 0 && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-[16px] border border-border bg-card hover:bg-muted/40 transition-colors gap-3">
               <div className="flex items-start sm:items-center gap-3">
-                <div className="w-9 h-9 rounded-[12px] bg-muted/70 border border-border flex items-center justify-center text-foreground shrink-0">
+                <div className="w-9 h-9 rounded-[12px] bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 flex items-center justify-center shrink-0">
                   <ArrowUpCircle className="h-4 w-4" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-foreground">MEI</p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-foreground self-end sm:self-center">
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 self-end sm:self-center">
                 + {formatCurrency(extrato.totais?.total_mei ?? 0)}
               </span>
             </div>
@@ -66,7 +67,12 @@ export function ExtratoAvulsosTab({
               className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-[16px] border border-border bg-card hover:bg-muted/40 transition-colors gap-3 cursor-pointer"
             >
               <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                <div className="w-9 h-9 rounded-[12px] bg-muted/70 border border-border flex items-center justify-center text-foreground shrink-0">
+                <div className={cn(
+                  "w-9 h-9 rounded-[12px] border flex items-center justify-center shrink-0",
+                  occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA
+                    ? "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
+                    : "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800",
+                )}>
                   {occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? (
                     <ArrowUpCircle className="h-4 w-4" />
                   ) : (
@@ -75,9 +81,9 @@ export function ExtratoAvulsosTab({
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-foreground truncate">
-                    {occ.tipo?.descricao}
+                    {occ.tipo?.descricao || occ.observacao || "Ocorrência"}
                   </p>
-                  {occ.observacao && (
+                  {occ.observacao && occ.tipo?.descricao && (
                     <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                       {occ.observacao}
                     </p>
@@ -94,7 +100,12 @@ export function ExtratoAvulsosTab({
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-foreground self-end sm:self-center shrink-0">
+              <span className={cn(
+                "text-xs font-bold self-end sm:self-center shrink-0",
+                occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-600 dark:text-red-400",
+              )}>
                 {occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "+" : "-"}{" "}
                 {formatCurrency(occ.valor)}
               </span>
@@ -106,7 +117,12 @@ export function ExtratoAvulsosTab({
               <span className="text-xs text-muted-foreground font-medium">
                 Saldo Total Avulso
               </span>
-              <p className="text-base font-bold text-foreground">
+              <p className={cn(
+                "text-base font-bold",
+                saldoAvulso >= 0
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-600 dark:text-red-400",
+              )}>
                 {saldoAvulso >= 0 ? "+" : ""}
                 {formatCurrency(saldoAvulso)}
               </p>

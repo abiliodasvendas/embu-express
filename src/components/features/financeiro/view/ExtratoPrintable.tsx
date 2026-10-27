@@ -56,8 +56,8 @@ export function ExtratoPrintable({
             className={cn(
               "text-sm font-bold",
               (extrato.totais?.saldo_final || 0) >= 0
-                ? "text-foreground"
-                : "text-destructive",
+                ? "text-emerald-700"
+                : "text-red-600",
             )}
           >
             {formatCurrency(extrato.totais?.saldo_final || 0)}
@@ -114,14 +114,21 @@ export function ExtratoPrintable({
                   </td>
                   <td className="py-1.5 px-2 text-foreground">{item.descricao}</td>
                   <td className="py-1.5 px-2 text-center whitespace-nowrap">
-                    <span className="px-1.5 py-0.5 rounded-full font-medium text-[8px] uppercase tracking-wider border border-border bg-muted/50 text-foreground">
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 rounded-full font-bold text-[8px] uppercase tracking-wider border",
+                        item.tipo === "ENTRADA"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-red-50 text-red-700 border-red-200",
+                      )}
+                    >
                       {item.tipo}
                     </span>
                   </td>
                   <td
                     className={cn(
                       "py-1.5 px-2 text-right font-bold whitespace-nowrap",
-                      item.tipo === "ENTRADA" ? "text-foreground" : "text-destructive",
+                      item.tipo === "ENTRADA" ? "text-emerald-600" : "text-red-600",
                     )}
                   >
                     {item.tipo === "ENTRADA" ? "+" : "-"} {formatCurrency(item.valor)}
@@ -138,8 +145,8 @@ export function ExtratoPrintable({
                   className={cn(
                     "py-2 px-2 text-right font-bold",
                     (extrato.totais?.saldo_final || 0) >= 0
-                      ? "text-foreground"
-                      : "text-destructive",
+                      ? "text-emerald-600"
+                      : "text-red-600",
                   )}
                 >
                   {formatCurrency(extrato.totais?.saldo_final || 0)}

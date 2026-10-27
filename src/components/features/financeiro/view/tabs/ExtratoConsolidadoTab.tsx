@@ -48,14 +48,21 @@ export function ExtratoConsolidadoTab({
                   </td>
                   <td className="py-3 px-4 text-foreground">{item.descricao}</td>
                   <td className="py-3 px-4 text-center whitespace-nowrap">
-                    <span className="px-2 py-0.5 rounded-full font-medium text-[10px] uppercase tracking-wider border border-border bg-muted/50 text-foreground">
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full font-semibold text-[10px] uppercase tracking-wider border",
+                      item.tipo === "ENTRADA"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
+                        : "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800",
+                    )}>
                       {item.tipo}
                     </span>
                   </td>
                   <td
                     className={cn(
                       "py-3 px-4 text-right font-bold whitespace-nowrap",
-                      item.tipo === "ENTRADA" ? "text-foreground" : "text-destructive",
+                      item.tipo === "ENTRADA"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-red-600 dark:text-red-400",
                     )}
                   >
                     {item.tipo === "ENTRADA" ? "+" : "-"} {formatCurrency(item.valor)}
@@ -72,8 +79,8 @@ export function ExtratoConsolidadoTab({
                   className={cn(
                     "py-3.5 px-4 text-right text-sm font-bold",
                     (extrato.totais?.saldo_final || 0) >= 0
-                      ? "text-foreground"
-                      : "text-destructive",
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-red-600 dark:text-red-400",
                   )}
                 >
                   {formatCurrency(extrato.totais?.saldo_final || 0)}

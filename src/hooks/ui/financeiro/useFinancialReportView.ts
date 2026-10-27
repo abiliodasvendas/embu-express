@@ -208,6 +208,28 @@ export function useFinancialReportView({
           valor: parseFloat(resumo.valores_fixos.adiantamento.toFixed(2)),
         });
       }
+
+      ((extrato.ocorrencias as OcorrenciaComTipo[]) || [])
+        .filter(
+          (occ) =>
+            occ.colaborador_cliente_id === resumo.id_vinculo &&
+            occ.impacto_financeiro &&
+            !occ.is_virtual,
+        )
+        .forEach((occ, oIdx) => {
+          const dataBr = occ.data_ocorrencia
+            ? format(parseISO(occ.data_ocorrencia), "dd/MM/yyyy")
+            : "";
+          items.push({
+            id: `turno-occ-${idx}-${occ.id || oIdx}`,
+            grupo: `Turno (${resumo.nome_fantasia || "Cliente"})`,
+            descricao: `${occ.tipo?.descricao || occ.observacao || "Ocorrência"}${
+              occ.observacao && occ.tipo?.descricao ? " - " + occ.observacao : ""
+            }${dataBr ? " (" + dataBr + ")" : ""}`,
+            tipo: occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "ENTRADA" : "SAIDA",
+            valor: Number(occ.valor || 0),
+          });
+        });
     });
 
     if (extrato.totais?.total_mei > 0) {

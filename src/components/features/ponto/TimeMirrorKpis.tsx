@@ -37,7 +37,7 @@ export function TimeMirrorKpis({
           <span
             className={cn(
               "text-xl sm:text-2xl font-bold font-mono tracking-tight",
-              hourBalance >= 0 ? "text-foreground" : "text-destructive"
+              hourBalance > 0 ? "text-emerald-600 dark:text-emerald-400" : hourBalance < 0 ? "text-destructive" : "text-foreground"
             )}
           >
             {formatMinutes(hourBalance, true)}

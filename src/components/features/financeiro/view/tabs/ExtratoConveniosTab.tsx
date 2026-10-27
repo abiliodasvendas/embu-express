@@ -39,7 +39,7 @@ export function ExtratoConveniosTab({ extrato }: ExtratoConveniosTabProps) {
             className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-[16px] border border-border bg-card hover:bg-muted/40 transition-colors gap-3"
           >
             <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-              <div className="w-9 h-9 rounded-[12px] bg-muted/70 border border-border flex items-center justify-center text-foreground shrink-0">
+              <div className="w-9 h-9 rounded-[12px] bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800 flex items-center justify-center shrink-0">
                 <ArrowDownCircle className="h-4 w-4" />
               </div>
               <div className="min-w-0">

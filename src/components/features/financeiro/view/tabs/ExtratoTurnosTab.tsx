@@ -298,7 +298,12 @@ export function ExtratoTurnosTab({
                           className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-[16px] border border-border bg-card hover:bg-muted/40 transition-colors gap-3 cursor-pointer"
                         >
                           <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                            <div className="w-9 h-9 rounded-[12px] bg-muted/70 border border-border flex items-center justify-center text-foreground shrink-0">
+                            <div className={cn(
+                              "w-9 h-9 rounded-[12px] border flex items-center justify-center shrink-0",
+                              occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA
+                                ? "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800"
+                                : "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800",
+                            )}>
                               {occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? (
                                 <ArrowUpCircle className="h-4 w-4" />
                               ) : (
@@ -337,7 +342,12 @@ export function ExtratoTurnosTab({
                               </p>
                             </div>
                           </div>
-                          <span className="text-xs font-bold text-foreground self-end sm:self-center shrink-0">
+                          <span className={cn(
+                            "text-xs font-bold self-end sm:self-center shrink-0",
+                            occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-red-600 dark:text-red-400",
+                          )}>
                             {occ.tipo_lancamento === LANCAMENTO_TIPO.ENTRADA ? "+" : "-"}{" "}
                             {formatCurrency(occ.valor)}
                           </span>
@@ -348,7 +358,12 @@ export function ExtratoTurnosTab({
                         <span className="text-xs text-muted-foreground font-medium">
                           Saldo das Ocorrências
                         </span>
-                        <p className="text-base font-bold text-foreground">
+                        <p className={cn(
+                          "text-base font-bold",
+                          resumo.creditos_ocorrencia - resumo.debitos_ocorrencia >= 0
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-red-600 dark:text-red-400",
+                        )}>
                           {resumo.creditos_ocorrencia - resumo.debitos_ocorrencia >= 0 ? "+" : ""}
                           {formatCurrency(
                             resumo.creditos_ocorrencia - resumo.debitos_ocorrencia,

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const liquidarDespesaFormSchema = z.object({
+  conta_bancaria_id: z.string().uuid("Selecione a conta bancária pagadora"),
   data_pagamento: z.string().min(1, "Informe a data do pagamento"),
   valor_pago: z.coerce.number({
     required_error: "Informe o valor pago",

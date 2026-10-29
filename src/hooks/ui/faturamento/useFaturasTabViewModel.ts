@@ -8,7 +8,11 @@ import { useAgingRecebiveis } from "@/hooks/api/useAgingRecebiveis";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useTableSort } from "@/hooks/ui/useTableSort";
 import { FaturaCliente, StatusFatura } from "@/types/database";
-import { STATUS_FATURA, TIPO_PERIODO_FATURA } from "@/constants/financeiro.constants";
+import {
+  STATUS_FATURA,
+  TIPO_PERIODO_FATURA,
+  FILTRO_PERIODO_FATURA,
+} from "@/constants/financeiro.constants";
 import { toLocalDateString } from "@/utils/formatters/date";
 
 interface UseFaturasTabViewModelProps {
@@ -30,8 +34,8 @@ export function useFaturasTabViewModel({
     openConfirmationDialog,
   } = useLayout();
 
-  const { can, isSuperAdmin } = usePermissions();
-  const canEdit = isSuperAdmin || can(PERMISSIONS.FATURAMENTO.EDITAR);
+  const { can, isSuperAdmin, isLoading: isLoadingPermissions } = usePermissions();
+  const canEdit = isLoadingPermissions ? true : (isSuperAdmin || can(PERMISSIONS.FATURAMENTO.EDITAR));
 
   const [periodoFiltro, setPeriodoFiltro] = useState<string>("todas");
   const [statusFiltro, setStatusFiltro] = useState<string>("todos");
@@ -54,14 +58,17 @@ export function useFaturasTabViewModel({
       mes,
       ano,
     };
-    if (periodoFiltro === "1") {
+    if (periodoFiltro === FILTRO_PERIODO_FATURA.QUINZENA_1) {
       filtros.tipo_periodo = TIPO_PERIODO_FATURA.QUINZENAL;
       filtros.numero_periodo = 1;
-    } else if (periodoFiltro === "2") {
+    } else if (periodoFiltro === FILTRO_PERIODO_FATURA.QUINZENA_2) {
       filtros.tipo_periodo = TIPO_PERIODO_FATURA.QUINZENAL;
       filtros.numero_periodo = 2;
-    } else if (periodoFiltro === "MENSAL") {
+    } else if (periodoFiltro === FILTRO_PERIODO_FATURA.MENSAL) {
       filtros.tipo_periodo = TIPO_PERIODO_FATURA.MENSAL;
+    } else if (periodoFiltro.startsWith("SEM_")) {
+      filtros.tipo_periodo = TIPO_PERIODO_FATURA.SEMANAL;
+      filtros.numero_periodo = Number(periodoFiltro.replace("SEM_", ""));
     }
     if (statusFiltro !== "todos") {
       filtros.status = statusFiltro as StatusFatura;

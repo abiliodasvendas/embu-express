@@ -7,25 +7,22 @@ import {
   FaturamentoHeader,
   FaturasTab,
   LiquidacaoLoteTab,
-  DespesasTab,
   IntercompanyTab,
   MovimentacoesAvulsasTab,
 } from "@/components/features/faturamento";
-import { FileText, Receipt, ArrowRightLeft, Banknote } from "lucide-react";
+import { FileText, ArrowRightLeft, ArrowDownRight } from "lucide-react";
 
 export default function Faturamento() {
-  const { setPageTitle, openContasBancariasDialog } = useLayout();
+  const { setPageTitle } = useLayout();
   const { can, isSuperAdmin, isLoading: isLoadingPermissions } = usePermissions();
 
   const canViewFaturas = isSuperAdmin || can(PERMISSIONS.FATURAMENTO.VER);
   const canEditFaturas = isSuperAdmin || can(PERMISSIONS.FATURAMENTO.EDITAR);
-  const canViewDespesas = isSuperAdmin || can(PERMISSIONS.DESPESAS.VER);
   const canViewIntercompany = isSuperAdmin || can(PERMISSIONS.FATURAMENTO.VER) || can(PERMISSIONS.DESPESAS.VER);
   const canViewAvulsas = isSuperAdmin || can(PERMISSIONS.MOVIMENTACOES_AVULSAS.VER);
-  const canViewContasBancarias = isSuperAdmin || can(PERMISSIONS.FATURAMENTO.EDITAR) || can(PERMISSIONS.DESPESAS.EDITAR) || can(PERMISSIONS.EMPRESAS.EDITAR);
 
   useEffect(() => {
-    setPageTitle("Faturamento & Contas a Receber");
+    setPageTitle("Contas a Receber");
   }, [setPageTitle]);
 
   const {
@@ -41,11 +38,10 @@ export default function Faturamento() {
 
   const primeiraAbaDisponivel = useMemo(() => {
     if (canViewFaturas) return "faturas";
-    if (canViewDespesas) return "despesas";
     if (canViewIntercompany) return "intercompany";
     if (canViewAvulsas) return "avulsas";
     return "";
-  }, [canViewFaturas, canViewDespesas, canViewIntercompany, canViewAvulsas]);
+  }, [canViewFaturas, canViewIntercompany, canViewAvulsas]);
 
   const [activeTab, setActiveTab] = useState<string>("faturas");
   const [hasUserSelectedTab, setHasUserSelectedTab] = useState<boolean>(false);
@@ -66,9 +62,7 @@ export default function Faturamento() {
       <FaturamentoHeader
         isLiquidacaoActive={activeTab === "liquidacao"}
         onToggleLiquidacao={() => handleTabChange(activeTab === "liquidacao" ? "faturas" : "liquidacao")}
-        onOpenContasBancarias={openContasBancariasDialog}
         canLiquidacao={canEditFaturas}
-        canContasBancarias={canViewContasBancarias}
       />
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
@@ -79,12 +73,6 @@ export default function Faturamento() {
               <span>Faturas dos Clientes</span>
             </TabsTrigger>
           )}
-          {canViewDespesas && (
-            <TabsTrigger value="despesas">
-              <Receipt className="h-4 w-4" />
-              <span>Contas a Pagar</span>
-            </TabsTrigger>
-          )}
           {canViewIntercompany && (
             <TabsTrigger value="intercompany">
               <ArrowRightLeft className="h-4 w-4" />
@@ -93,8 +81,8 @@ export default function Faturamento() {
           )}
           {canViewAvulsas && (
             <TabsTrigger value="avulsas">
-              <Banknote className="h-4 w-4" />
-              <span>Movimentações Avulsas</span>
+              <ArrowDownRight className="h-4 w-4 text-emerald-600" />
+              <span>Entradas Avulsas</span>
             </TabsTrigger>
           )}
         </TabsList>
@@ -108,18 +96,6 @@ export default function Faturamento() {
         {canEditFaturas && (
           <TabsContent value="liquidacao" className="space-y-6 outline-none">
             <LiquidacaoLoteTab mes={mes} ano={ano} onVoltar={() => handleTabChange("faturas")} />
-          </TabsContent>
-        )}
-
-        {canViewDespesas && (
-          <TabsContent value="despesas" className="space-y-6 outline-none">
-            <DespesasTab
-              mes={mes}
-              ano={ano}
-              setMes={setMes}
-              setAno={setAno}
-              isActive={activeTab === "despesas"}
-            />
           </TabsContent>
         )}
 
@@ -137,6 +113,7 @@ export default function Faturamento() {
               setMes={setMes}
               setAno={setAno}
               isActive={activeTab === "avulsas"}
+              modo="ENTRADA"
             />
           </TabsContent>
         )}

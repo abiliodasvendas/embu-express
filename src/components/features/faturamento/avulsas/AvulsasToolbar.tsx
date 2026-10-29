@@ -15,6 +15,7 @@ interface AvulsasToolbarProps {
   onTipoMovimentacaoChange: (value: string) => void;
   onNovoLancamento: () => void;
   canEdit?: boolean;
+  modo?: "ENTRADA" | "SAIDA" | "TODOS";
 }
 
 export function AvulsasToolbar({
@@ -28,6 +29,7 @@ export function AvulsasToolbar({
   onTipoMovimentacaoChange,
   onNovoLancamento,
   canEdit = true,
+  modo = "TODOS",
 }: AvulsasToolbarProps) {
   const anoAtual = new Date().getFullYear();
 
@@ -65,25 +67,33 @@ export function AvulsasToolbar({
           ))}
         </NativeSelect>
 
-        <NativeSelect
-          value={tipoMovimentacaoFiltro}
-          onChange={(e) => onTipoMovimentacaoChange(e.target.value)}
-          className="h-10 w-48 rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
-        >
-          <option value="todos">Todas as Operações</option>
-          <option value="ENTRADA">Apenas Entradas</option>
-          <option value="SAIDA">Apenas Saídas</option>
-        </NativeSelect>
+        {modo === "TODOS" && (
+          <NativeSelect
+            value={tipoMovimentacaoFiltro}
+            onChange={(e) => onTipoMovimentacaoChange(e.target.value)}
+            className="h-10 w-48 rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          >
+            <option value="todos">Todas as Operações</option>
+            <option value="ENTRADA">Apenas Entradas</option>
+            <option value="SAIDA">Apenas Saídas</option>
+          </NativeSelect>
+        )}
       </div>
 
       {canEdit && (
         <Button
           size="sm"
           onClick={onNovoLancamento}
-          className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
+          className="h-10 rounded-[14px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
         >
           <Plus className="h-4 w-4" />
-          <span>Novo Lançamento</span>
+          <span>
+            {modo === "ENTRADA"
+              ? "Nova Entrada"
+              : modo === "SAIDA"
+              ? "Nova Saída"
+              : "Novo Lançamento"}
+          </span>
         </Button>
       )}
     </div>

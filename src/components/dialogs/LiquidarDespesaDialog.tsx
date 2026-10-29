@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/MoneyInput";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Banner } from "@/components/ui/Banner";
 import { useDespesas } from "@/hooks/api/useDespesas";
+import { useContasBancarias } from "@/hooks/api/useContasBancarias";
 import { useLiquidarDespesaForm } from "@/hooks/form/useLiquidarDespesaForm";
 import { LiquidarDespesaFormData } from "@/schemas/liquidarDespesaSchema";
 import { DespesaOperacional } from "@/types/database";
@@ -37,9 +39,14 @@ export function LiquidarDespesaDialog({
   onSuccess,
 }: LiquidarDespesaDialogProps) {
   const { pagarMutation } = useDespesas();
+  const { contas = [] } = useContasBancarias();
   const { form } = useLiquidarDespesaForm({ open, despesa });
 
   if (!despesa) return null;
+
+  const contasFiltradas = despesa.empresa_id
+    ? contas.filter((c) => c.empresa_id === despesa.empresa_id)
+    : contas;
 
   const handleClose = () => {
     safeCloseDialog(() => onOpenChange(false));
@@ -52,6 +59,7 @@ export function LiquidarDespesaDialog({
         data: {
           data_pagamento: values.data_pagamento,
           valor_pago: values.valor_pago,
+          conta_bancaria_id: values.conta_bancaria_id,
         },
       });
 
@@ -100,6 +108,34 @@ export function LiquidarDespesaDialog({
 
           <Form {...form}>
             <form id="liquidar-despesa-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="conta_bancaria_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Conta Bancária de Débito <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        {...field}
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        className="h-10 rounded-[14px]"
+                      >
+                        <option value="">Selecione a conta bancária pagadora...</option>
+                        {contasFiltradas.map((conta) => (
+                          <option key={conta.id} value={conta.id}>
+                            {conta.banco_nome} - Ag: {conta.agencia || "S/A"} CC: {conta.conta || "S/C"}
+                          </option>
+                        ))}
+                      </NativeSelect>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="data_pagamento"

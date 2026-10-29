@@ -13,6 +13,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { messages } from "@/constants/messages";
 import { Client, ColaboradorCliente, Unidade, Usuario } from "@/types/database";
+import { StatusUsuario } from "@/types/enums";
 
 export interface FlattenedCollaboratorClient extends Usuario {
   link: ColaboradorCliente;
@@ -63,7 +64,7 @@ export function useClientDetailsViewModel() {
 
   const flattenedCollaborators = useMemo((): FlattenedCollaboratorClient[] => {
     return collaboratorsList
-      .filter((collab) => collab.status === "ATIVO")
+      .filter((collab) => collab.status === StatusUsuario.ATIVO)
       .flatMap((collab) => {
         const clientLinks =
           collab.links?.filter(

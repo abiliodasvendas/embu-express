@@ -304,7 +304,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onSuccess={liquidarDespesaDialogState.props?.onSuccess}
         />
       )}
-      {movimentacaoAvulsaDialogState.open && <MovimentacaoAvulsaFormDialog open={true} onOpenChange={(open) => !open && closeMovimentacaoAvulsaDialog()} movimentacaoToEdit={movimentacaoAvulsaDialogState.props?.movimentacaoToEdit} onSuccess={movimentacaoAvulsaDialogState.props?.onSuccess} />}
+      {movimentacaoAvulsaDialogState.open && (
+        <MovimentacaoAvulsaFormDialog
+          open={true}
+          onOpenChange={(open) => !open && closeMovimentacaoAvulsaDialog()}
+          movimentacaoToEdit={movimentacaoAvulsaDialogState.props?.movimentacaoToEdit}
+          forcedTipo={movimentacaoAvulsaDialogState.props?.forcedTipo}
+          onSuccess={movimentacaoAvulsaDialogState.props?.onSuccess}
+        />
+      )}
       {unidadeFormDialogState.open && unidadeFormDialogState.props && <UnidadeFormDialog isOpen={true} onClose={closeUnidadeFormDialog} clienteId={unidadeFormDialogState.props.clienteId} editingUnidade={unidadeFormDialogState.props.editingUnidade} onSuccess={() => { unidadeFormDialogState.props?.onSuccess?.(); closeUnidadeFormDialog(); }} />}
       {lancamentoConvenioDialogState.open && <LancamentoForm open={true} onOpenChange={(open) => !open && closeLancamentoConvenioDialog()} convenioId={lancamentoConvenioDialogState.props?.convenioId} token={lancamentoConvenioDialogState.props?.token} lancamentoToEdit={lancamentoConvenioDialogState.props?.lancamentoToEdit} />}
       {gerenciarBloqueioConvenioDialogState.open && gerenciarBloqueioConvenioDialogState.props && <GerenciarBloqueioConvenioDialog open={true} onOpenChange={(open) => !open && closeGerenciarBloqueioConvenioDialog()} {...gerenciarBloqueioConvenioDialogState.props} />}

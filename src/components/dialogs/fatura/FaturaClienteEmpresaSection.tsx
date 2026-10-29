@@ -7,6 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { NativeSelect } from "@/components/ui/native-select";
+import { getPeriodicidadeLabel } from "@/constants/financeiro.constants";
 import { FaturaFormData } from "@/schemas/faturaSchema";
 import { Client, Empresa } from "@/types/database";
 
@@ -43,7 +44,7 @@ export function FaturaClienteEmpresaSection({
                 <option value="">Selecione o cliente</option>
                 {clientes.map((c) => (
                   <option key={c.id} value={String(c.id)}>
-                    {c.nome_fantasia} ({c.periodicidade === "MENSAL" ? "Mensal" : "Quinzenal"})
+                    {c.nome_fantasia} ({getPeriodicidadeLabel(c.periodicidade)})
                   </option>
                 ))}
               </NativeSelect>

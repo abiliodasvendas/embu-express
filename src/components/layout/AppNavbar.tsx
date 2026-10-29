@@ -90,7 +90,7 @@ export function AppNavbar() {
                   }}
                 />
               </SheetHeader>
-              <div className="flex-1 overflow-hidden p-5">
+              <div className="flex-1 overflow-hidden min-h-0">
                 <AppSidebar onLinkClick={() => setIsSheetOpen(false)} />
               </div>
             </SheetContent>

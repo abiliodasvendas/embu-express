@@ -15,6 +15,7 @@ interface UseMovimentacoesAvulsasTabViewModelProps {
   setMes: (mes: number) => void;
   setAno: (ano: number) => void;
   enabled?: boolean;
+  modo?: "ENTRADA" | "SAIDA" | "TODOS";
 }
 
 export function useMovimentacoesAvulsasTabViewModel({
@@ -23,6 +24,7 @@ export function useMovimentacoesAvulsasTabViewModel({
   setMes,
   setAno,
   enabled = true,
+  modo = "TODOS",
 }: UseMovimentacoesAvulsasTabViewModelProps) {
   const {
     openMovimentacaoAvulsaDialog,
@@ -32,7 +34,9 @@ export function useMovimentacoesAvulsasTabViewModel({
   const { can, isSuperAdmin } = usePermissions();
   const canEdit = isSuperAdmin || can(PERMISSIONS.MOVIMENTACOES_AVULSAS.EDITAR);
 
-  const [tipoMovimentacaoFiltro, setTipoMovimentacaoFiltro] = useState<string>("todos");
+  const [tipoMovimentacaoFiltro, setTipoMovimentacaoFiltro] = useState<string>(
+    modo === "ENTRADA" ? "ENTRADA" : modo === "SAIDA" ? "SAIDA" : "todos"
+  );
   const [searchMovimentacao, setSearchMovimentacao] = useState<string>("");
 
   const {
@@ -45,8 +49,9 @@ export function useMovimentacoesAvulsasTabViewModel({
 
   const movimentacoesFiltradas = useMemo(() => {
     let list = movimentacoes;
-    if (tipoMovimentacaoFiltro !== "todos") {
-      list = list.filter((m) => m.tipo_movimentacao === tipoMovimentacaoFiltro);
+    const filtroEfetivo = modo === "ENTRADA" ? "ENTRADA" : modo === "SAIDA" ? "SAIDA" : tipoMovimentacaoFiltro;
+    if (filtroEfetivo !== "todos") {
+      list = list.filter((m) => m.tipo_movimentacao === filtroEfetivo);
     }
     if (searchMovimentacao.trim()) {
       const term = searchMovimentacao.toLowerCase().trim();
@@ -59,7 +64,7 @@ export function useMovimentacoesAvulsasTabViewModel({
       });
     }
     return list;
-  }, [movimentacoes, tipoMovimentacaoFiltro, searchMovimentacao]);
+  }, [movimentacoes, modo, tipoMovimentacaoFiltro, searchMovimentacao]);
 
   const {
     sortedData: movimentacoesOrdenadas,
@@ -82,15 +87,42 @@ export function useMovimentacoesAvulsasTabViewModel({
   const kpisAvulsas = useMemo(() => {
     let totalEntradas = 0;
     let totalSaidas = 0;
+    let totalFretesEsporadicos = 0;
+    let totalTarifasBancarias = 0;
+    let totalDespesasOperacionais = 0;
+    let qtdEntradas = 0;
+    let qtdSaidas = 0;
+
     for (const m of movimentacoes) {
+      const val = Number(m.valor || 0);
       if (m.tipo_movimentacao === "ENTRADA") {
-        totalEntradas += Number(m.valor || 0);
+        totalEntradas += val;
+        qtdEntradas++;
+        if (m.categoria === "FRETE_ESPORADICO") {
+          totalFretesEsporadicos += val;
+        }
       } else {
-        totalSaidas += Number(m.valor || 0);
+        totalSaidas += val;
+        qtdSaidas++;
+        if (m.categoria === "TARIFA_BANCARIA") {
+          totalTarifasBancarias += val;
+        } else if (m.categoria === "DESPESA_OPERACIONAL_AVULSA") {
+          totalDespesasOperacionais += val;
+        }
       }
     }
     const saldoLiquido = totalEntradas - totalSaidas;
-    return { totalEntradas, totalSaidas, saldoLiquido, totalQtd: movimentacoes.length };
+    return {
+      totalEntradas,
+      totalSaidas,
+      saldoLiquido,
+      totalQtd: movimentacoes.length,
+      totalFretesEsporadicos,
+      totalTarifasBancarias,
+      totalDespesasOperacionais,
+      qtdEntradas,
+      qtdSaidas,
+    };
   }, [movimentacoes]);
 
   const handleDeleteMovimentacao = (mov: MovimentacaoAvulsa) => {
@@ -113,6 +145,7 @@ export function useMovimentacoesAvulsasTabViewModel({
 
   const handleOpenNovaMovimentacao = () => {
     openMovimentacaoAvulsaDialog({
+      forcedTipo: modo === "ENTRADA" ? "ENTRADA" : modo === "SAIDA" ? "SAIDA" : undefined,
       onSuccess: () => {
         refetchMovimentacoes();
       },
@@ -122,6 +155,7 @@ export function useMovimentacoesAvulsasTabViewModel({
   const handleEditMovimentacao = (mov: MovimentacaoAvulsa) => {
     openMovimentacaoAvulsaDialog({
       movimentacaoToEdit: mov,
+      forcedTipo: modo === "ENTRADA" ? "ENTRADA" : modo === "SAIDA" ? "SAIDA" : undefined,
       onSuccess: () => {
         refetchMovimentacoes();
       },
@@ -129,6 +163,7 @@ export function useMovimentacoesAvulsasTabViewModel({
   };
 
   return {
+    modo,
     canEdit,
     mes,
     ano,

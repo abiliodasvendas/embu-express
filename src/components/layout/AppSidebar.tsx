@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { PageItem, pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink, useLocation } from "react-router-dom";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { ChevronRight, LayoutGrid, ClipboardList, Layers, Users, LucideIcon } from "lucide-react";
+import { ChevronRight, LayoutGrid, ClipboardList, Layers, Users, Landmark, LucideIcon } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,6 +19,7 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   [MENU_CATEGORIES.PONTO]: ClipboardList,
   [MENU_CATEGORIES.CADASTROS]: Layers,
   [MENU_CATEGORIES.COLABORADORES]: Users,
+  [MENU_CATEGORIES.FINANCEIRO]: Landmark,
 };
 
 type MenuBlock =
@@ -150,8 +151,8 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
   );
 
   return (
-    <div className="flex h-full flex-col">
-      <nav className="flex-1 space-y-1 overflow-y-auto pr-1 scrollbar-hide">
+    <div className="flex h-full flex-col min-h-0">
+      <nav className="flex-1 space-y-1 overflow-y-auto pl-4 pr-1.5 py-4 scrollbar-dark">
         {menuBlocks.map((block, idx) => {
           if (block.type === "link") {
             return renderLink(block.item);

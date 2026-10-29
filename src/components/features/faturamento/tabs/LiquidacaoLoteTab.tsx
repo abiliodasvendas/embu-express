@@ -12,7 +12,8 @@ import { TableSearchInput } from "@/components/ui/TableSearchInput";
 import { meses } from "@/utils/formatters/constants";
 import { formatCurrency, formatContaBancaria } from "@/utils/formatters";
 import { formatDateToBR } from "@/utils/formatters/date";
-import { TIPO_PERIODO_FATURA } from "@/constants/financeiro.constants";
+import { TIPO_PERIODO_FATURA, FILTRO_PERIODO_FATURA } from "@/constants/financeiro.constants";
+import { getFaturaPeriodoTexto } from "../faturas/faturaTableUtils";
 import {
   Layers,
   Building2,
@@ -203,10 +204,15 @@ export function LiquidacaoLoteTab({ mes: mesInicial, ano: anoInicial, onVoltar }
                     onChange={(e) => vm.setPeriodoFiltro(e.target.value)}
                     className="h-10 rounded-[14px] bg-background border-border text-xs font-medium"
                   >
-                    <option value="todas">Todos os Períodos</option>
-                    <option value="1">1ª Quinzena</option>
-                    <option value="2">2ª Quinzena</option>
-                    <option value="MENSAL">Mensal</option>
+                    <option value={FILTRO_PERIODO_FATURA.TODOS}>Todos os Períodos</option>
+                    <option value={FILTRO_PERIODO_FATURA.QUINZENA_1}>1ª Quinzena</option>
+                    <option value={FILTRO_PERIODO_FATURA.QUINZENA_2}>2ª Quinzena</option>
+                    <option value={FILTRO_PERIODO_FATURA.MENSAL}>Mensal</option>
+                    <option value={FILTRO_PERIODO_FATURA.SEMANA_1}>1ª Semana</option>
+                    <option value={FILTRO_PERIODO_FATURA.SEMANA_2}>2ª Semana</option>
+                    <option value={FILTRO_PERIODO_FATURA.SEMANA_3}>3ª Semana</option>
+                    <option value={FILTRO_PERIODO_FATURA.SEMANA_4}>4ª Semana</option>
+                    <option value={FILTRO_PERIODO_FATURA.SEMANA_5}>5ª Semana</option>
                   </NativeSelect>
                 </div>
 
@@ -300,9 +306,7 @@ export function LiquidacaoLoteTab({ mes: mesInicial, ano: anoInicial, onVoltar }
                                 </Badge>
                               )}
                               <span className="text-[11px] text-muted-foreground font-medium">
-                                • {fatura.tipo_periodo === TIPO_PERIODO_FATURA.MENSAL
-                                  ? "Mensal"
-                                  : `${fatura.numero_periodo || fatura.quinzena || 1}ª Quinzena`}
+                                • {getFaturaPeriodoTexto(fatura.tipo_periodo, fatura.numero_periodo, fatura.quinzena)}
                               </span>
                             </div>
 

@@ -41,6 +41,18 @@ export const STATUS_FATURA = {
 
 export type StatusFaturaType = typeof STATUS_FATURA[keyof typeof STATUS_FATURA];
 
+export const STATUS_FATURA_CONVENIO = {
+    PENDENTE: 'PENDENTE',
+    PAGO_PARCIAL: 'PAGO_PARCIAL',
+    PAGA: 'PAGA',
+    CANCELADA: 'CANCELADA',
+    EM_AUDITORIA: 'EM_AUDITORIA',
+    APROVADA: 'APROVADA',
+    GLOSADA: 'GLOSADA',
+} as const;
+
+export type StatusFaturaConvenioType = typeof STATUS_FATURA_CONVENIO[keyof typeof STATUS_FATURA_CONVENIO];
+
 export const STATUS_FATURA_LABELS: Record<StatusFaturaType, string> = {
     PENDENTE: 'Pendente / Aguardando',
     PAGO_PARCIAL: 'Pago Parcialmente',
@@ -62,6 +74,18 @@ export const PERIODICIDADE_FATURAMENTO_LABELS: Record<PeriodicidadeFaturamentoTy
     SEMANAL: 'Semanal',
 };
 
+export const PERIODICIDADE_LABELS_CURTO: Record<PeriodicidadeFaturamentoType, string> = {
+    QUINZENAL: 'Quinzenal',
+    MENSAL: 'Mensal',
+    SEMANAL: 'Semanal',
+};
+
+export function getPeriodicidadeLabel(periodicidade?: string | null): string {
+    if (periodicidade === PERIODICIDADE_FATURAMENTO.SEMANAL) return PERIODICIDADE_LABELS_CURTO.SEMANAL;
+    if (periodicidade === PERIODICIDADE_FATURAMENTO.MENSAL) return PERIODICIDADE_LABELS_CURTO.MENSAL;
+    return PERIODICIDADE_LABELS_CURTO.QUINZENAL;
+}
+
 export const TIPO_PERIODO_FATURA = {
     QUINZENAL: 'QUINZENAL',
     MENSAL: 'MENSAL',
@@ -69,6 +93,20 @@ export const TIPO_PERIODO_FATURA = {
 } as const;
 
 export type TipoPeriodoFaturaType = typeof TIPO_PERIODO_FATURA[keyof typeof TIPO_PERIODO_FATURA];
+
+export const FILTRO_PERIODO_FATURA = {
+    TODOS: 'todas',
+    QUINZENA_1: '1',
+    QUINZENA_2: '2',
+    MENSAL: 'MENSAL',
+    SEMANA_1: 'SEM_1',
+    SEMANA_2: 'SEM_2',
+    SEMANA_3: 'SEM_3',
+    SEMANA_4: 'SEM_4',
+    SEMANA_5: 'SEM_5',
+} as const;
+
+export type FiltroPeriodoFaturaType = typeof FILTRO_PERIODO_FATURA[keyof typeof FILTRO_PERIODO_FATURA];
 
 export const STATUS_INTERCOMPANY = {
     PENDENTE_ACERTO: 'PENDENTE_ACERTO',
@@ -154,6 +192,21 @@ export const CATEGORIA_MOVIMENTACAO_AVULSA_LABELS: Record<CategoriaMovimentacaoA
     TARIFA_BANCARIA: 'Tarifa / Custo Bancário',
     OUTRAS_SAIDAS: 'Outras Saídas',
 };
+
+export const CATEGORIAS_ENTRADA: CategoriaMovimentacaoAvulsaType[] = [
+    CATEGORIA_MOVIMENTACAO_AVULSA.FRETE_ESPORADICO,
+    CATEGORIA_MOVIMENTACAO_AVULSA.RENDIMENTO_APLICACAO,
+    CATEGORIA_MOVIMENTACAO_AVULSA.REEMBOLSO_CLIENTE,
+    CATEGORIA_MOVIMENTACAO_AVULSA.DOACAO_APORTE,
+    CATEGORIA_MOVIMENTACAO_AVULSA.OUTRAS_ENTRADAS,
+];
+
+export const CATEGORIAS_SAIDA: CategoriaMovimentacaoAvulsaType[] = [
+    CATEGORIA_MOVIMENTACAO_AVULSA.DESPESA_OPERACIONAL_AVULSA,
+    CATEGORIA_MOVIMENTACAO_AVULSA.REEMBOLSO_DESPESA,
+    CATEGORIA_MOVIMENTACAO_AVULSA.TARIFA_BANCARIA,
+    CATEGORIA_MOVIMENTACAO_AVULSA.OUTRAS_SAIDAS,
+];
 
 export const NIVEL_RISCO_VALE = {
     NORMAL: 'NORMAL',

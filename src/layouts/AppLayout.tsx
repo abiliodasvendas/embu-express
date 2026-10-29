@@ -44,7 +44,7 @@ export default function AppLayout() {
             onClick={() => navigate(ROUTES.PRIVATE.INICIO)}
           />
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-5 scrollbar-hide">
+        <div className="flex-1 overflow-hidden min-h-0">
           <AppSidebar />
         </div>
       </aside>

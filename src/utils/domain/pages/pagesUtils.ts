@@ -16,7 +16,9 @@ import {
     MessageSquare,
     Handshake,
     Receipt,
+    CreditCard,
     ShieldCheck,
+    Landmark,
     LucideIcon
 } from "lucide-react";
 
@@ -81,21 +83,32 @@ export const pagesItems: PageItem[] = [
         category: MENU_CATEGORIES.COLABORADORES,
     },
     {
-        title: "Faturamento & Clientes",
+        title: "Contas a Receber",
         href: ROUTES.PRIVATE.FATURAMENTO,
         icon: Receipt,
         permissionKey: [
             PERMISSIONS.FATURAMENTO.VER,
-            PERMISSIONS.DESPESAS.VER,
             PERMISSIONS.MOVIMENTACOES_AVULSAS.VER,
         ],
+        category: MENU_CATEGORIES.FINANCEIRO,
     },
     {
-        title: "Retaguarda Operacional",
-        href: ROUTES.PRIVATE.RESERVAS,
-        icon: ShieldCheck,
-        permissionKey: PERMISSIONS.RETAGUARDA.VER,
-        category: MENU_CATEGORIES.COLABORADORES,
+        title: "Contas a Pagar",
+        href: ROUTES.PRIVATE.CONTAS_PAGAR,
+        icon: CreditCard,
+        permissionKey: PERMISSIONS.DESPESAS.VER,
+        category: MENU_CATEGORIES.FINANCEIRO,
+    },
+    {
+        title: "Contas Bancárias",
+        href: ROUTES.PRIVATE.CONTAS_BANCARIAS,
+        icon: Landmark,
+        permissionKey: [
+            PERMISSIONS.FATURAMENTO.VER,
+            PERMISSIONS.DESPESAS.VER,
+            PERMISSIONS.EMPRESAS.VER,
+        ],
+        category: MENU_CATEGORIES.FINANCEIRO,
     },
     {
         title: "Relatórios",
@@ -107,6 +120,7 @@ export const pagesItems: PageItem[] = [
             PERMISSIONS.FINANCEIRO.EXTRATO,
             PERMISSIONS.FINANCEIRO.FECHAR,
         ],
+        category: MENU_CATEGORIES.FINANCEIRO,
     },
     {
         title: "Ocorrências",

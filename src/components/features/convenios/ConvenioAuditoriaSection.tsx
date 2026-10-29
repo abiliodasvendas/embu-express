@@ -10,6 +10,7 @@ import {
 } from "@/types/database";
 import { formatCurrency } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
+import { STATUS_FATURA_CONVENIO } from "@/constants/financeiro.constants";
 import {
   Receipt,
   Users,
@@ -78,7 +79,7 @@ export function ConvenioAuditoriaSection({
     return null;
   }
 
-  const isFaturaPaga = auditoria.fatura_fornecedor?.status === "PAGA";
+  const isFaturaPaga = auditoria.fatura_fornecedor?.status === STATUS_FATURA_CONVENIO.PAGA;
   const valorFaturaExibido = isFaturaPaga
     ? (auditoria.fatura_fornecedor?.valor_pago || auditoria.fatura_fornecedor?.valor_total_fatura || 0)
     : (auditoria.total_fatura_fornecedor > 0 ? auditoria.total_fatura_fornecedor : auditoria.total_geral_lancamentos);

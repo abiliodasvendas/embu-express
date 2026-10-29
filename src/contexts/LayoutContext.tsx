@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem, Ticket, Convenio, FaturaCliente, TransferenciaIntercompany, DespesaOperacional, MovimentacaoAvulsa, Unidade, LancamentoConvenio, FaturaFornecedorConvenio } from '@/types/database';
+import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem, Ticket, Convenio, FaturaCliente, TransferenciaIntercompany, DespesaOperacional, MovimentacaoAvulsa, TipoMovimentacaoAvulsa, Unidade, LancamentoConvenio, FaturaFornecedorConvenio } from '@/types/database';
 import { OccurrenceFormData } from '@/schemas/occurrenceSchema';
 import { OccurrenceFormMode } from '@/types/enums';
 
@@ -171,6 +171,7 @@ export interface OpenLiquidarDespesaDialogProps {
 
 export interface OpenMovimentacaoAvulsaFormProps {
   movimentacaoToEdit?: MovimentacaoAvulsa | null;
+  forcedTipo?: TipoMovimentacaoAvulsa;
   onSuccess?: () => void;
 }
 

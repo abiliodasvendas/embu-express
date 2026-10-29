@@ -20,6 +20,7 @@ import { useResumoGeralConvenios } from "@/hooks/api/useConvenioAuditoria";
 import { useTodosBloqueiosConvenios } from "@/hooks/api/useBloqueiosConvenios";
 import { useSearchFilters, useStatusFilters } from "@/hooks/ui/useFilters";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { STATUS_FATURA_CONVENIO } from "@/constants/financeiro.constants";
 import { Convenio, ConvenioResumoItem } from "@/types/database";
 import { FilterOptions, StatusUsuario } from "@/types/enums";
 import { ActionItem } from "@/types/actions";
@@ -98,7 +99,7 @@ export function useConveniosViewModel() {
     () =>
       new Set(
         todosBloqueios
-          .filter((b) => b.colaborador && b.colaborador.status !== "INATIVO")
+          .filter((b) => b.colaborador && b.colaborador.status !== StatusUsuario.INATIVO)
           .map((b) => b.colaborador_id)
       ).size,
     [todosBloqueios]
@@ -257,7 +258,7 @@ export function useConveniosViewModel() {
       const resumoItem = resumoMap.get(convenio.id);
       const fatura = resumoItem?.fatura_fornecedor;
 
-      if (canLiquidar && fatura && fatura.status !== "PAGA") {
+      if (canLiquidar && fatura && fatura.status !== STATUS_FATURA_CONVENIO.PAGA) {
         actions.push({
           label: "Quitar Fatura",
           icon: <CheckCircle2 className="h-4 w-4" />,

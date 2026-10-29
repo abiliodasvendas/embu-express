@@ -1,17 +1,7 @@
 import { isAxiosError } from "axios";
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
-import { MoneyInput } from "@/components/ui/MoneyInput";
+import { Form } from "@/components/ui/form";
 import { useMovimentacoesAvulsas } from "@/hooks/api/useMovimentacoesAvulsas";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useContasBancarias } from "@/hooks/api/useContasBancarias";
@@ -24,40 +14,29 @@ import {
 } from "@/types/database";
 import {
   TIPO_MOVIMENTACAO_AVULSA,
-  CATEGORIA_MOVIMENTACAO_AVULSA_LABELS,
+  CATEGORIAS_ENTRADA,
+  CATEGORIAS_SAIDA,
 } from "@/constants/financeiro.constants";
 import { toast } from "sonner";
-import { ArrowDownRight, ArrowUpRight, Banknote, Wand2 } from "lucide-react";
+import { Banknote, Wand2 } from "lucide-react";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
-import { formatContaBancaria } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mocks/generator";
+import { TipoMovimentacaoToggle } from "./movimentacao-avulsa/TipoMovimentacaoToggle";
+import { MovimentacaoAvulsaCampos } from "./movimentacao-avulsa/MovimentacaoAvulsaCampos";
 
 export interface MovimentacaoAvulsaFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   movimentacaoToEdit?: MovimentacaoAvulsa | null;
+  forcedTipo?: TipoMovimentacaoAvulsa;
   onSuccess?: () => void | Promise<void>;
 }
-
-const CATEGORIAS_ENTRADA: CategoriaMovimentacaoAvulsa[] = [
-  "FRETE_ESPORADICO",
-  "RENDIMENTO_APLICACAO",
-  "REEMBOLSO_CLIENTE",
-  "DOACAO_APORTE",
-  "OUTRAS_ENTRADAS",
-];
-
-const CATEGORIAS_SAIDA: CategoriaMovimentacaoAvulsa[] = [
-  "DESPESA_OPERACIONAL_AVULSA",
-  "REEMBOLSO_DESPESA",
-  "TARIFA_BANCARIA",
-  "OUTRAS_SAIDAS",
-];
 
 export function MovimentacaoAvulsaFormDialog({
   open,
   onOpenChange,
   movimentacaoToEdit,
+  forcedTipo,
   onSuccess,
 }: MovimentacaoAvulsaFormDialogProps) {
   const { createMutation, updateMutation } = useMovimentacoesAvulsas();
@@ -68,6 +47,7 @@ export function MovimentacaoAvulsaFormDialog({
     open,
     movimentacaoToEdit,
     defaultEmpresaId,
+    forcedTipo,
   });
 
   const tipo = form.watch("tipo_movimentacao");
@@ -143,8 +123,22 @@ export function MovimentacaoAvulsaFormDialog({
     >
       <BaseDialog.Header
         icon={<Banknote className="h-5 w-5 text-foreground" />}
-        title={movimentacaoToEdit ? "Editar Movimentação Avulsa" : "Novo Lançamento Avulso"}
-        subtitle="Registre entradas ou saídas pontuais na conta bancária que não passam por fatura ou folha."
+        title={
+          movimentacaoToEdit
+            ? "Editar Movimentação Avulsa"
+            : forcedTipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+            ? "Nova Entrada Avulsa"
+            : forcedTipo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
+            ? "Nova Saída Avulsa"
+            : "Novo Lançamento Avulso"
+        }
+        subtitle={
+          forcedTipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+            ? "Registre fretes esporádicos, rendimentos ou outros créditos avulsos em conta bancária."
+            : forcedTipo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
+            ? "Registre tarifas bancárias, retiradas ou outras despesas operacionais avulsas."
+            : "Registre entradas ou saídas pontuais na conta bancária que não passam por fatura ou folha."
+        }
         onClose={handleClose}
         leftAction={
           process.env.NODE_ENV === "development" ? (
@@ -169,183 +163,18 @@ export function MovimentacaoAvulsaFormDialog({
         >
           <BaseDialog.Body>
             <div className="space-y-4 pt-1">
-              <div className="space-y-1.5">
-                <FormLabel className="text-xs font-semibold text-foreground">
-                  Tipo de Movimentação <span className="text-destructive">*</span>
-                </FormLabel>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className={`h-11 rounded-[18px] text-xs font-medium gap-1.5 transition-all cursor-pointer ${
-                      tipo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
-                        ? "bg-background border-primary text-foreground ring-1 ring-primary shadow-xs"
-                        : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
-                    onClick={() => handleTipoChange(TIPO_MOVIMENTACAO_AVULSA.ENTRADA)}
-                  >
-                    <ArrowDownRight className="w-4 h-4" />
-                    Entrada / Receita
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className={`h-11 rounded-[18px] text-xs font-medium gap-1.5 transition-all cursor-pointer ${
-                      tipo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
-                        ? "bg-background border-primary text-foreground ring-1 ring-primary shadow-xs"
-                        : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
-                    onClick={() => handleTipoChange(TIPO_MOVIMENTACAO_AVULSA.SAIDA)}
-                  >
-                    <ArrowUpRight className="w-4 h-4" />
-                    Saída / Despesa
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <FormField
-                  control={form.control}
-                  name="empresa_id"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-semibold text-foreground">
-                        Empresa (CNPJ) <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <NativeSelect
-                          value={field.value ? String(field.value) : ""}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
-                        >
-                          <option value="">Selecione a empresa</option>
-                          {empresas.map((emp) => (
-                            <option key={emp.id} value={String(emp.id)}>
-                              {emp.nome_fantasia || emp.razao_social}
-                            </option>
-                          ))}
-                        </NativeSelect>
-                      </FormControl>
-                      <FormMessage className="text-xs text-destructive" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="conta_bancaria_id"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-semibold text-foreground">
-                        Conta Bancária (Opcional)
-                      </FormLabel>
-                      <FormControl>
-                        <NativeSelect
-                          value={field.value || "none"}
-                          onChange={field.onChange}
-                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
-                        >
-                          <option value="none">Nenhuma conta específica</option>
-                          {contas.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {formatContaBancaria(c)}
-                            </option>
-                          ))}
-                        </NativeSelect>
-                      </FormControl>
-                      <FormMessage className="text-xs text-destructive" />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="categoria"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-xs font-semibold text-foreground">
-                      Categoria <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <NativeSelect
-                        {...field}
-                        className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
-                      >
-                        {categoriasDisponiveis.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {CATEGORIA_MOVIMENTACAO_AVULSA_LABELS[cat] || cat}
-                          </option>
-                        ))}
-                      </NativeSelect>
-                    </FormControl>
-                    <FormMessage className="text-xs text-destructive" />
-                  </FormItem>
-                )}
+              <TipoMovimentacaoToggle
+                tipo={tipo}
+                forcedTipo={forcedTipo}
+                onTipoChange={handleTipoChange}
               />
 
-              <FormField
+              <MovimentacaoAvulsaCampos
                 control={form.control}
-                name="descricao"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-xs font-semibold text-foreground">
-                      Descrição do Lançamento <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ex: Frete extra cliente ABC, Aplicação CDB, Taxa de Manutenção"
-                        {...field}
-                        className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs text-destructive" />
-                  </FormItem>
-                )}
+                empresas={empresas}
+                contas={contas}
+                categoriasDisponiveis={categoriasDisponiveis}
               />
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <FormField
-                  control={form.control}
-                  name="valor"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-semibold text-foreground">
-                        Valor (R$) <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <MoneyInput
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="0,00"
-                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs text-destructive" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="data_movimentacao"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-semibold text-foreground">
-                        Data da Operação <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          {...field}
-                          className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs text-destructive" />
-                    </FormItem>
-                  )}
-                />
-              </div>
             </div>
           </BaseDialog.Body>
           <BaseDialog.Footer>

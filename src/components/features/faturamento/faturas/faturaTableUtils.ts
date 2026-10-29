@@ -29,6 +29,9 @@ export function getFaturaPeriodoTexto(
   if (tipoPeriodo === TIPO_PERIODO_FATURA.MENSAL) {
     return "Mensal";
   }
+  if (tipoPeriodo === TIPO_PERIODO_FATURA.SEMANAL) {
+    return `${numeroPeriodo || 1}ª Semana`;
+  }
   return `${numeroPeriodo || quinzena || 1}ª Quinzena`;
 }
 

@@ -7,6 +7,7 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { CheckCircle2, CreditCard, Handshake } from "lucide-react";
 import { getConvenioPagamentoInfo } from "./convenioTableUtils";
+import { STATUS_FATURA_CONVENIO } from "@/constants/financeiro.constants";
 
 interface ConvenioMobileItemProps {
   convenio: Convenio;
@@ -69,12 +70,12 @@ export function ConvenioMobileItem({
         <div>
           <span className="text-muted-foreground text-[11px] block">Fatura</span>
           {fatura ? (
-            fatura.status === "PAGA" ? (
+            fatura.status === STATUS_FATURA_CONVENIO.PAGA ? (
               <span className="inline-flex items-center gap-1 font-semibold text-[11px] px-2 py-0.5 rounded-[18px] bg-muted/60 text-foreground border border-border">
                 <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
                 {formatCurrency(fatura.valor_pago || fatura.valor_total_fatura)}
               </span>
-            ) : fatura.status === "PAGO_PARCIAL" ? (
+            ) : fatura.status === STATUS_FATURA_CONVENIO.PAGO_PARCIAL ? (
               <button
                 type="button"
                 onClick={(e) => {

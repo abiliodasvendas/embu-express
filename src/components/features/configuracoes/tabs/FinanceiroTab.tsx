@@ -54,9 +54,9 @@ export function FinanceiroTab({
           config={configVales}
           onSave={(valor) => onSave(configVales.chave, valor)}
           isSaving={isSaving(configVales.chave)}
-          title="Dia de Vales e DAS"
-          description="Dia padrão do mês para o pagamento de vales (adiantamento quinzenal) e tributos (Simples Nacional)."
-          example="Ex: Se definido como 20, o adiantamento quinzenal e os tributos serão projetados para o dia 20."
+          title="Dia de Adiantamento Salarial (Vales)"
+          description="Dia padrão do mês previsto para pagamento de adiantamento aos colaboradores."
+          example="Ex: Se definido como 20 (ou 15), o adiantamento salarial será projetado para este dia no fluxo de caixa."
           icon={Clock}
         />
       )}

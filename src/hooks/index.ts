@@ -44,6 +44,15 @@ export {
   useMovimentacoesAvulsasTabViewModel,
 } from "./ui/faturamento";
 export {
+  useContasPagarViewModel,
+} from "./ui/contas-pagar/useContasPagarViewModel";
+export {
+  useContasBancariasViewModel,
+} from "./ui/contas-bancarias/useContasBancariasViewModel";
+export {
+  useLiquidacaoLotePagamentoVM,
+} from "./ui/contas-pagar/useLiquidacaoLotePagamentoVM";
+export {
   useFinancialReportView,
   useFechamentoGeralViewModel,
   useFluxoCaixaTabViewModel,

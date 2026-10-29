@@ -17,6 +17,23 @@ interface CnhSectionProps {
 }
 
 export function CnhSection({ form }: CnhSectionProps) {
+  const handleDateBlur = (
+    value: string | undefined,
+    onChange: (val: string) => void,
+    onBlur: () => void
+  ) => {
+    if (value) {
+      const parts = value.split("/");
+      if (parts.length === 3 && parts[2]?.length === 2) {
+        const num = parseInt(parts[2], 10);
+        const expandedYear = num >= 50 ? `19${parts[2]}` : `20${parts[2]}`;
+        const expanded = `${parts[0]}/${parts[1]}/${expandedYear}`;
+        onChange(expanded);
+      }
+    }
+    onBlur();
+  };
+
   return (
     <section className="space-y-4 pt-2">
       <div className="flex items-center gap-2.5">
@@ -69,6 +86,7 @@ export function CnhSection({ form }: CnhSectionProps) {
                   maxLength={10}
                   {...field}
                   onChange={(e) => field.onChange(dateMask(e.target.value))}
+                  onBlur={() => handleDateBlur(field.value, field.onChange, field.onBlur)}
                 />
               </FormControl>
               <FormMessage className="text-xs text-destructive ml-1" />

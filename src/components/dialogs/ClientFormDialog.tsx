@@ -114,7 +114,7 @@ export function ClientFormDialog({
     form.reset({
       ...data,
       tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
-      periodicidade: (data.periodicidade as "QUINZENAL" | "MENSAL") || PERIODICIDADE_FATURAMENTO.QUINZENAL,
+      periodicidade: (data.periodicidade as ClientFormData["periodicidade"]) || PERIODICIDADE_FATURAMENTO.QUINZENAL,
       dia_vencimento_padrao: data.dia_vencimento_padrao || 16,
       valor_contrato_mensal: data.valor_contrato_mensal || 30000,
       valor_base: data.valor_base || 30000,
@@ -251,7 +251,7 @@ export function ClientFormDialog({
               <div className="flex items-center gap-2">
                 <Receipt className="w-4 h-4 text-foreground" />
                 <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                  Contrato & Faturamento Mensal
+                  Contrato & Faturamento
                 </span>
               </div>
 
@@ -276,6 +276,9 @@ export function ClientFormDialog({
                           <option value={PERIODICIDADE_FATURAMENTO.MENSAL}>
                             Mensal
                           </option>
+                          <option value={PERIODICIDADE_FATURAMENTO.SEMANAL}>
+                            Semanal
+                          </option>
                         </NativeSelect>
                       </FormControl>
                       <FormMessage className="text-xs text-destructive" />
@@ -289,7 +292,10 @@ export function ClientFormDialog({
                   render={({ field }) => (
                     <FormItem className="space-y-1.5">
                       <FormLabel className="text-xs font-semibold text-foreground">
-                        Valor do Contrato Mensal <span className="text-destructive">*</span>
+                        {form.watch("periodicidade") === PERIODICIDADE_FATURAMENTO.SEMANAL
+                          ? "Valor Contratual por Semana"
+                          : "Valor do Contrato Mensal"}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         <MoneyInput
@@ -339,6 +345,14 @@ export function ClientFormDialog({
                   variant="info"
                   title="Vencimentos Quinzenais Padronizados"
                   description="A 1ª Quinzena vence no dia 16 e a 2ª Quinzena vence no último dia do mês."
+                />
+              )}
+
+              {form.watch("periodicidade") === PERIODICIDADE_FATURAMENTO.SEMANAL && (
+                <Banner
+                  variant="info"
+                  title="Ciclo Semanal Padronizado"
+                  description="Apuração de segunda a domingo com vencimento na terça-feira subsequente."
                 />
               )}
             </div>

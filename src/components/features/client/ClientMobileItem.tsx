@@ -3,6 +3,7 @@ import { ActionSheet } from "@/components/common/ActionSheet";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useClientActions } from "@/hooks/business/useClientActions";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { getPeriodicidadeLabel } from "@/constants/financeiro.constants";
 import type { Client } from "@/types/database";
 import { getAvatarStyles } from "./clientUtils";
 
@@ -54,7 +55,7 @@ export function ClientMobileItem({
                 <p className="text-xs font-bold text-foreground mt-1">
                   {formatCurrency(client.valor_contrato_mensal || client.valor_base || 0)}
                   <span className="text-[10px] font-normal text-muted-foreground ml-1">
-                    ({client.periodicidade === "QUINZENAL" ? "Quinzenal" : client.periodicidade === "SEMANAL" ? "Semanal" : "Mensal"})
+                    ({getPeriodicidadeLabel(client.periodicidade)})
                   </span>
                 </p>
               )}

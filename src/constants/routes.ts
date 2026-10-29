@@ -27,6 +27,8 @@ export const ROUTES = {
         CONVENIOS: "/convenios",
         CONVENIO_DETAILS: "/convenios/:id",
         FATURAMENTO: "/faturamento",
+        CONTAS_PAGAR: "/contas-a-pagar",
+        CONTAS_BANCARIAS: "/contas-bancarias",
         RESERVAS: "/retaguarda-reservas",
         INICIO: "/inicio"
     }

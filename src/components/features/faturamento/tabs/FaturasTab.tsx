@@ -16,13 +16,15 @@ export function FaturasTab({ mes, ano, setMes, setAno }: FaturasTabProps) {
 
   return (
     <div className="space-y-6">
-      <FaturasKpis kpis={vm.kpis} mes={vm.mes} ano={vm.ano} />
+      <div className="space-y-4">
+        <FaturasKpis kpis={vm.kpis} mes={vm.mes} ano={vm.ano} />
 
-      <AgingRecebiveisCard
-        aging={vm.aging}
-        selectedFaixa={vm.agingFaixaFiltro}
-        onSelectFaixa={vm.setAgingFaixaFiltro}
-      />
+        <AgingRecebiveisCard
+          aging={vm.aging}
+          selectedFaixa={vm.agingFaixaFiltro}
+          onSelectFaixa={vm.setAgingFaixaFiltro}
+        />
+      </div>
 
       <FaturasToolbar
         searchFatura={vm.searchFatura}

@@ -18,6 +18,7 @@ export function useLiquidarDespesaForm({ open, despesa }: UseLiquidarDespesaForm
   const form = useForm<LiquidarDespesaFormData>({
     resolver: zodResolver(liquidarDespesaFormSchema),
     defaultValues: {
+      conta_bancaria_id: despesa?.conta_bancaria_id || "",
       data_pagamento: toLocalDateString(),
       valor_pago: valorDefault,
     },
@@ -26,6 +27,7 @@ export function useLiquidarDespesaForm({ open, despesa }: UseLiquidarDespesaForm
   useEffect(() => {
     if (open && despesa) {
       form.reset({
+        conta_bancaria_id: despesa.conta_bancaria_id || "",
         data_pagamento: toLocalDateString(),
         valor_pago: Number(despesa.valor_previsto || 0),
       });

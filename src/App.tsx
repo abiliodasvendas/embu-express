@@ -62,6 +62,8 @@ const CollaboratorMap = lazyLoad(() => import("./pages/admin/CollaboratorMap"));
 const FinancialReport = lazyLoad(() => import("./pages/admin/FinancialReport"));
 const Reports = lazyLoad(() => import("./pages/admin/Reports"));
 const Faturamento = lazyLoad(() => import("./pages/admin/Faturamento"));
+const ContasPagar = lazyLoad(() => import("./pages/admin/ContasPagar"));
+const ContasBancarias = lazyLoad(() => import("./pages/admin/ContasBancarias"));
 const RetaguardaReservas = lazyLoad(() => import("./pages/admin/RetaguardaReservas"));
 const RegistrarPonto = lazyLoad(() => import("./pages/operational/RegistrarPonto"));
 
@@ -312,8 +314,16 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.RELATORIOS.replace("/", "")} element={<Reports />} />
                     </Route>
 
-                    <Route element={<RequirePermission permissions={[PERMISSIONS.FATURAMENTO.VER, PERMISSIONS.DESPESAS.VER, PERMISSIONS.MOVIMENTACOES_AVULSAS.VER]} useOrCondition={true} />}>
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.FATURAMENTO.VER, PERMISSIONS.MOVIMENTACOES_AVULSAS.VER]} useOrCondition={true} />}>
                       <Route path={ROUTES.PRIVATE.FATURAMENTO.replace("/", "")} element={<Faturamento />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.DESPESAS.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.CONTAS_PAGAR.replace("/", "")} element={<ContasPagar />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.FATURAMENTO.VER, PERMISSIONS.DESPESAS.VER, PERMISSIONS.EMPRESAS.VER]} useOrCondition={true} />}>
+                      <Route path={ROUTES.PRIVATE.CONTAS_BANCARIAS.replace("/", "")} element={<ContasBancarias />} />
                     </Route>
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.RETAGUARDA.VER]} />}>

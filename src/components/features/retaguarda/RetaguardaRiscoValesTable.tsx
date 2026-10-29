@@ -40,10 +40,10 @@ export function RetaguardaRiscoValesTable({
           </div>
           <div>
             <h3 className="font-semibold text-foreground text-sm uppercase tracking-tight">
-              Prevenção de Saldo Negativo na Folha (Vales do Dia 20)
+              Prevenção de Saldo Negativo na Folha (Adiantamentos Salariais)
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Cruzamento preditivo de faltas e convênios na 1ª quinzena integrado às confirmações de adiantamento.
+              Cruzamento preditivo de faltas e convênios integrado às confirmações manuais de adiantamento.
             </p>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useTodosBloqueiosConvenios } from "@/hooks/api/useBloqueiosConvenios";
 import { useConvenios } from "@/hooks/api/useConvenios";
 import { useLayout } from "@/contexts/LayoutContext";
 import type { BloqueioConvenio } from "@/types/database";
+import { StatusUsuario } from "@/types/enums";
 
 export interface ColabBloqueioItem {
   colaborador_id: string;
@@ -32,7 +33,7 @@ export function useConveniosBloqueadosViewModel() {
     const map = new Map<string, ColabBloqueioItem>();
 
     bloqueios.forEach((b: BloqueioConvenio) => {
-      if (b.colaborador?.status === "INATIVO") {
+      if (b.colaborador?.status === StatusUsuario.INATIVO) {
         return;
       }
 

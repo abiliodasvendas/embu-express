@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import { TableSearchInput } from "@/components/ui/TableSearchInput";
-import { STATUS_FATURA } from "@/constants/financeiro.constants";
+import { STATUS_FATURA, FILTRO_PERIODO_FATURA } from "@/constants/financeiro.constants";
 import { meses } from "@/utils/formatters/constants";
 import { Plus, Clock } from "lucide-react";
 
@@ -109,10 +109,15 @@ export function FaturasToolbar({
             onChange={(e) => onPeriodoChange(e.target.value)}
             className="h-10 w-[150px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
           >
-            <option value="todas">Todos os Períodos</option>
-            <option value="1">1ª Quinzena (01-15)</option>
-            <option value="2">2ª Quinzena (16-fim)</option>
-            <option value="MENSAL">Mensal (Integral)</option>
+            <option value={FILTRO_PERIODO_FATURA.TODOS}>Todos os Períodos</option>
+            <option value={FILTRO_PERIODO_FATURA.QUINZENA_1}>1ª Quinzena (01-15)</option>
+            <option value={FILTRO_PERIODO_FATURA.QUINZENA_2}>2ª Quinzena (16-fim)</option>
+            <option value={FILTRO_PERIODO_FATURA.MENSAL}>Mensal (Integral)</option>
+            <option value={FILTRO_PERIODO_FATURA.SEMANA_1}>1ª Semana</option>
+            <option value={FILTRO_PERIODO_FATURA.SEMANA_2}>2ª Semana</option>
+            <option value={FILTRO_PERIODO_FATURA.SEMANA_3}>3ª Semana</option>
+            <option value={FILTRO_PERIODO_FATURA.SEMANA_4}>4ª Semana</option>
+            <option value={FILTRO_PERIODO_FATURA.SEMANA_5}>5ª Semana</option>
           </NativeSelect>
 
           <NativeSelect
@@ -132,7 +137,7 @@ export function FaturasToolbar({
           <Button
             size="sm"
             onClick={onNovaFatura}
-            className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
+            className="h-10 rounded-[14px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
           >
             <Plus className="h-4 w-4" />
             <span>Nova Fatura</span>

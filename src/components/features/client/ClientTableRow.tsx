@@ -3,6 +3,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useClientActions } from "@/hooks/business/useClientActions";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { getPeriodicidadeLabel } from "@/constants/financeiro.constants";
 import type { Client } from "@/types/database";
 import { getAvatarStyles } from "./clientUtils";
 
@@ -66,11 +67,7 @@ export function ClientTableRow({
             {formatCurrency(client.valor_contrato_mensal || client.valor_base || 0)}
           </span>
           <span className="block text-[10px] text-muted-foreground">
-            {client.periodicidade === "QUINZENAL"
-              ? "Quinzenal"
-              : client.periodicidade === "SEMANAL"
-              ? "Semanal"
-              : "Mensal"}
+            {getPeriodicidadeLabel(client.periodicidade)}
           </span>
         </TableCell>
       )}

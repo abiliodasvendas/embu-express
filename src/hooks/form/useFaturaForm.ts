@@ -17,6 +17,11 @@ import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useFaturas } from "@/hooks/api/useFaturamento";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { mockGenerator } from "@/utils/mocks/generator";
+import {
+  getSemanasCompetenciaUI,
+  getQuinzenasCompetenciaUI,
+  getMensalCompetenciaUI,
+} from "@/utils/domain/periodoFaturamentoUtils";
 
 interface UseFaturaFormProps {
   open: boolean;
@@ -70,11 +75,11 @@ export function useFaturaForm({
     if (open) {
       if (faturaToEdit) {
         const statusNormalizado: FaturaFormData["status"] =
-          faturaToEdit.status === "LIQUIDADA"
+          faturaToEdit.status === STATUS_FATURA.LIQUIDADA
             ? STATUS_FATURA.LIQUIDADA
-            : faturaToEdit.status === "PAGO_PARCIAL"
+            : faturaToEdit.status === STATUS_FATURA.PAGO_PARCIAL
             ? STATUS_FATURA.PAGO_PARCIAL
-            : faturaToEdit.status === "CANCELADA"
+            : faturaToEdit.status === STATUS_FATURA.CANCELADA
             ? STATUS_FATURA.CANCELADA
             : STATUS_FATURA.PENDENTE;
 
@@ -117,56 +122,83 @@ export function useFaturaForm({
     if (clienteSelecionado?.empresa_emissora_padrao_id) {
       form.setValue("empresa_id", clienteSelecionado.empresa_emissora_padrao_id, { shouldValidate: true });
     }
-    const mesStr = String(form.getValues("mes_competencia")).padStart(2, "0");
-    const ano = form.getValues("ano_competencia");
+    const mes = form.getValues("mes_competencia") || hoje.getMonth() + 1;
+    const ano = form.getValues("ano_competencia") || hoje.getFullYear();
 
     let periodicidadeFinal: TipoPeriodoFaturaType = TIPO_PERIODO_FATURA.QUINZENAL;
     if (clienteSelecionado?.periodicidade) {
-      periodicidadeFinal =
-        clienteSelecionado.periodicidade === PERIODICIDADE_FATURAMENTO.MENSAL
-          ? TIPO_PERIODO_FATURA.MENSAL
-          : TIPO_PERIODO_FATURA.QUINZENAL;
+      if (clienteSelecionado.periodicidade === PERIODICIDADE_FATURAMENTO.SEMANAL) {
+        periodicidadeFinal = TIPO_PERIODO_FATURA.SEMANAL;
+      } else if (clienteSelecionado.periodicidade === PERIODICIDADE_FATURAMENTO.MENSAL) {
+        periodicidadeFinal = TIPO_PERIODO_FATURA.MENSAL;
+      } else {
+        periodicidadeFinal = TIPO_PERIODO_FATURA.QUINZENAL;
+      }
       form.setValue("tipo_periodo", periodicidadeFinal, { shouldValidate: true });
       form.setValue("numero_periodo", 1);
     }
 
-    const valorMensal = Number(clienteSelecionado?.valor_contrato_mensal || clienteSelecionado?.valor_base || 0);
-    const valorSugerido =
-      periodicidadeFinal === TIPO_PERIODO_FATURA.QUINZENAL
-        ? Math.round((valorMensal / 2) * 100) / 100
-        : valorMensal;
+    const valorCadastrado = Number(
+      clienteSelecionado?.valor_contrato_mensal || clienteSelecionado?.valor_base || 0
+    );
+
+    let valorSugerido = valorCadastrado;
+    if (periodicidadeFinal === TIPO_PERIODO_FATURA.QUINZENAL) {
+      valorSugerido = Math.round((valorCadastrado / 2) * 100) / 100;
+    }
 
     if (valorSugerido > 0) {
       form.setValue("valor_faturado", valorSugerido, { shouldValidate: true });
     }
 
     if (!form.getValues("data_vencimento")) {
-      if (periodicidadeFinal === TIPO_PERIODO_FATURA.QUINZENAL) {
-        form.setValue("data_vencimento", `${ano}-${mesStr}-16`, { shouldValidate: true });
+      if (periodicidadeFinal === TIPO_PERIODO_FATURA.SEMANAL) {
+        const s1 = getSemanasCompetenciaUI(mes, ano)[0];
+        if (s1) form.setValue("data_vencimento", s1.data_vencimento, { shouldValidate: true });
+      } else if (periodicidadeFinal === TIPO_PERIODO_FATURA.QUINZENAL) {
+        const q1 = getQuinzenasCompetenciaUI(mes, ano)[0];
+        if (q1) form.setValue("data_vencimento", q1.data_vencimento, { shouldValidate: true });
       } else {
-        const dia = String(clienteSelecionado?.dia_vencimento_padrao || 10).padStart(2, "0");
-        form.setValue("data_vencimento", `${ano}-${mesStr}-${dia}`, { shouldValidate: true });
+        const m1 = getMensalCompetenciaUI(
+          mes,
+          ano,
+          clienteSelecionado?.dia_vencimento_padrao || 10
+        )[0];
+        if (m1) form.setValue("data_vencimento", m1.data_vencimento, { shouldValidate: true });
       }
     }
   };
 
   const onSubmit = async (values: FaturaFormData) => {
-    const isMensal = values.tipo_periodo === TIPO_PERIODO_FATURA.MENSAL;
-    const ultimoDia = new Date(values.ano_competencia, values.mes_competencia, 0).getDate();
-    const mesStr = String(values.mes_competencia).padStart(2, "0");
+    const mes = values.mes_competencia;
     const ano = values.ano_competencia;
+    const tipo = values.tipo_periodo;
+    const num = tipo === TIPO_PERIODO_FATURA.MENSAL ? 1 : values.numero_periodo;
 
-    const dataInicioApuracao = isMensal
-      ? `${ano}-${mesStr}-01`
-      : values.numero_periodo === 1
-      ? `${ano}-${mesStr}-01`
-      : `${ano}-${mesStr}-16`;
+    let dataInicioApuracao = `${ano}-${String(mes).padStart(2, "0")}-01`;
+    let dataFimApuracao = `${ano}-${String(mes).padStart(2, "0")}-15`;
 
-    const dataFimApuracao = isMensal
-      ? `${ano}-${mesStr}-${String(ultimoDia).padStart(2, "0")}`
-      : values.numero_periodo === 1
-      ? `${ano}-${mesStr}-15`
-      : `${ano}-${mesStr}-${String(ultimoDia).padStart(2, "0")}`;
+    if (tipo === TIPO_PERIODO_FATURA.SEMANAL) {
+      const semanas = getSemanasCompetenciaUI(mes, ano);
+      const sem = semanas.find((s) => s.numero_periodo === num) || semanas[0];
+      if (sem) {
+        dataInicioApuracao = sem.data_inicio;
+        dataFimApuracao = sem.data_fim;
+      }
+    } else if (tipo === TIPO_PERIODO_FATURA.MENSAL) {
+      const mensal = getMensalCompetenciaUI(mes, ano)[0];
+      if (mensal) {
+        dataInicioApuracao = mensal.data_inicio;
+        dataFimApuracao = mensal.data_fim;
+      }
+    } else {
+      const quinzenas = getQuinzenasCompetenciaUI(mes, ano);
+      const q = quinzenas.find((item) => item.numero_periodo === num) || quinzenas[0];
+      if (q) {
+        dataInicioApuracao = q.data_inicio;
+        dataFimApuracao = q.data_fim;
+      }
+    }
 
     const payload: Partial<FaturaCliente> = {
       cliente_id: values.cliente_id,
@@ -174,8 +206,8 @@ export function useFaturaForm({
       mes_competencia: values.mes_competencia,
       ano_competencia: values.ano_competencia,
       tipo_periodo: values.tipo_periodo,
-      numero_periodo: isMensal ? 1 : values.numero_periodo,
-      quinzena: isMensal ? null : values.numero_periodo,
+      numero_periodo: num,
+      quinzena: tipo === TIPO_PERIODO_FATURA.QUINZENAL ? num : null,
       data_inicio_apuracao: dataInicioApuracao,
       data_fim_apuracao: dataFimApuracao,
       data_emissao: values.data_emissao,

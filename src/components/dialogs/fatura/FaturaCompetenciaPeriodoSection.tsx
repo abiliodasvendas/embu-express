@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
@@ -8,10 +9,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { TIPO_PERIODO_FATURA } from "@/constants/financeiro.constants";
+import {
+  TIPO_PERIODO_FATURA,
+  TipoPeriodoFaturaType,
+} from "@/constants/financeiro.constants";
 import { FaturaFormData } from "@/schemas/faturaSchema";
 import { Client } from "@/types/database";
 import { meses } from "@/utils/formatters/constants";
+import {
+  getSemanasCompetenciaUI,
+  getQuinzenasCompetenciaUI,
+  getMensalCompetenciaUI,
+} from "@/utils/domain/periodoFaturamentoUtils";
 
 interface FaturaCompetenciaPeriodoSectionProps {
   form: UseFormReturn<FaturaFormData>;
@@ -24,6 +33,30 @@ export function FaturaCompetenciaPeriodoSection({
   clientes,
   selectedTipoPeriodo,
 }: FaturaCompetenciaPeriodoSectionProps) {
+  const mesAtual = form.watch("mes_competencia") || 1;
+  const anoAtual = form.watch("ano_competencia") || new Date().getFullYear();
+  const clienteId = form.watch("cliente_id");
+
+  const clienteSel = useMemo(
+    () => clientes.find((c) => c.id === clienteId),
+    [clientes, clienteId]
+  );
+
+  const semanas = useMemo(
+    () => getSemanasCompetenciaUI(mesAtual, anoAtual),
+    [mesAtual, anoAtual]
+  );
+
+  const quinzenas = useMemo(
+    () => getQuinzenasCompetenciaUI(mesAtual, anoAtual),
+    [mesAtual, anoAtual]
+  );
+
+  const mensal = useMemo(
+    () => getMensalCompetenciaUI(mesAtual, anoAtual, clienteSel?.dia_vencimento_padrao || 10),
+    [mesAtual, anoAtual, clienteSel]
+  );
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
       <FormField
@@ -35,7 +68,10 @@ export function FaturaCompetenciaPeriodoSection({
             <FormControl>
               <NativeSelect
                 value={String(field.value)}
-                onChange={(e) => field.onChange(Number(e.target.value))}
+                onChange={(e) => {
+                  const novoMes = Number(e.target.value);
+                  field.onChange(novoMes);
+                }}
                 className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-semibold shadow-xs"
               >
                 {meses.map((m, i) => (
@@ -79,32 +115,46 @@ export function FaturaCompetenciaPeriodoSection({
               <NativeSelect
                 value={field.value}
                 onChange={(e) => {
-                  const val = e.target.value as "QUINZENAL" | "MENSAL";
+                  const val = e.target.value as TipoPeriodoFaturaType;
                   field.onChange(val);
                   form.setValue("numero_periodo", 1);
-                  const mes = form.getValues("mes_competencia");
-                  const ano = form.getValues("ano_competencia");
-                  const mesStr = String(mes).padStart(2, "0");
-                  const clienteSel = clientes.find((c) => c.id === form.getValues("cliente_id"));
-                  const valorMensal = Number(clienteSel?.valor_contrato_mensal || clienteSel?.valor_base || 0);
-                  if (valorMensal > 0) {
-                    const valorSugerido =
-                      val === TIPO_PERIODO_FATURA.QUINZENAL
-                        ? Math.round((valorMensal / 2) * 100) / 100
-                        : valorMensal;
-                    form.setValue("valor_faturado", valorSugerido, { shouldValidate: true });
-                  }
-                  if (val === TIPO_PERIODO_FATURA.QUINZENAL) {
-                    form.setValue("data_vencimento", `${ano}-${mesStr}-16`, { shouldValidate: true });
+
+                  const valorCadastrado = Number(
+                    clienteSel?.valor_contrato_mensal || clienteSel?.valor_base || 0
+                  );
+
+                  if (val === TIPO_PERIODO_FATURA.SEMANAL) {
+                    const s1 = semanas[0];
+                    if (s1) {
+                      form.setValue("data_vencimento", s1.data_vencimento, { shouldValidate: true });
+                    }
+                    if (valorCadastrado > 0) {
+                      form.setValue("valor_faturado", valorCadastrado, { shouldValidate: true });
+                    }
+                  } else if (val === TIPO_PERIODO_FATURA.QUINZENAL) {
+                    const q1 = quinzenas[0];
+                    if (q1) {
+                      form.setValue("data_vencimento", q1.data_vencimento, { shouldValidate: true });
+                    }
+                    if (valorCadastrado > 0) {
+                      const valorSugerido = Math.round((valorCadastrado / 2) * 100) / 100;
+                      form.setValue("valor_faturado", valorSugerido, { shouldValidate: true });
+                    }
                   } else {
-                    const dia = String(clienteSel?.dia_vencimento_padrao || 10).padStart(2, "0");
-                    form.setValue("data_vencimento", `${ano}-${mesStr}-${dia}`, { shouldValidate: true });
+                    const m1 = mensal[0];
+                    if (m1) {
+                      form.setValue("data_vencimento", m1.data_vencimento, { shouldValidate: true });
+                    }
+                    if (valorCadastrado > 0) {
+                      form.setValue("valor_faturado", valorCadastrado, { shouldValidate: true });
+                    }
                   }
                 }}
                 className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-semibold shadow-xs"
               >
                 <option value={TIPO_PERIODO_FATURA.QUINZENAL}>Quinzenal</option>
                 <option value={TIPO_PERIODO_FATURA.MENSAL}>Mensal (Integral)</option>
+                <option value={TIPO_PERIODO_FATURA.SEMANAL}>Semanal</option>
               </NativeSelect>
             </FormControl>
             <FormMessage className="text-xs text-destructive" />
@@ -127,26 +177,47 @@ export function FaturaCompetenciaPeriodoSection({
                 >
                   <option value="1">Mês Completo (Integral)</option>
                 </NativeSelect>
+              ) : selectedTipoPeriodo === TIPO_PERIODO_FATURA.SEMANAL ? (
+                <NativeSelect
+                  value={String(field.value)}
+                  onChange={(e) => {
+                    const num = Number(e.target.value);
+                    field.onChange(num);
+                    const semanaEscolhida = semanas.find((s) => s.numero_periodo === num);
+                    if (semanaEscolhida) {
+                      form.setValue("data_vencimento", semanaEscolhida.data_vencimento, {
+                        shouldValidate: true,
+                      });
+                    }
+                  }}
+                  className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-semibold shadow-xs"
+                >
+                  {semanas.map((s) => (
+                    <option key={s.numero_periodo} value={String(s.numero_periodo)}>
+                      {s.descricao}
+                    </option>
+                  ))}
+                </NativeSelect>
               ) : (
                 <NativeSelect
                   value={String(field.value)}
                   onChange={(e) => {
                     const num = Number(e.target.value);
                     field.onChange(num);
-                    const mes = form.getValues("mes_competencia");
-                    const ano = form.getValues("ano_competencia");
-                    const mesStr = String(mes).padStart(2, "0");
-                    const ultimoDia = new Date(ano, mes, 0).getDate();
-                    if (num === 1) {
-                      form.setValue("data_vencimento", `${ano}-${mesStr}-16`, { shouldValidate: true });
-                    } else {
-                      form.setValue("data_vencimento", `${ano}-${mesStr}-${String(ultimoDia).padStart(2, "0")}`, { shouldValidate: true });
+                    const qEscolhida = quinzenas.find((q) => q.numero_periodo === num);
+                    if (qEscolhida) {
+                      form.setValue("data_vencimento", qEscolhida.data_vencimento, {
+                        shouldValidate: true,
+                      });
                     }
                   }}
                   className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-semibold shadow-xs"
                 >
-                  <option value="1">1ª Quinzena (01 a 15)</option>
-                  <option value="2">2ª Quinzena (16 a 31)</option>
+                  {quinzenas.map((q) => (
+                    <option key={q.numero_periodo} value={String(q.numero_periodo)}>
+                      {q.descricao}
+                    </option>
+                  ))}
                 </NativeSelect>
               )}
             </FormControl>

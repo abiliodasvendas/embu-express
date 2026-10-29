@@ -389,6 +389,16 @@ export interface ContaBancaria {
   empresa?: Empresa;
 }
 
+export interface ContaBancariaComSaldo extends ContaBancaria {
+  saldo_atual: number;
+  saldo_projetado: number;
+  total_entradas_realizadas: number;
+  total_saidas_realizadas: number;
+  total_entradas_previstas: number;
+  total_saidas_previstas: number;
+  total_transacoes: number;
+}
+
 export type StatusFatura = 'PENDENTE' | 'PAGO_PARCIAL' | 'LIQUIDADA' | 'CANCELADA';
 
 export interface FaturaCliente {
@@ -515,6 +525,8 @@ export interface MovimentacaoAvulsa {
 export interface DespesaOperacional {
   id: string;
   empresa_id?: number | null;
+  conta_bancaria_id?: string | null;
+  lote_pagamento_id?: string | null;
   categoria: CategoriaDespesa;
   descricao: string;
   mes_competencia: number;
@@ -532,6 +544,7 @@ export interface DespesaOperacional {
   created_at?: string;
   updated_at?: string;
   empresa?: Empresa;
+  conta_bancaria?: ContaBancaria;
 }
 
 export interface FechamentoCaixaMensal {
@@ -595,6 +608,7 @@ export interface FaturaFornecedorConvenio {
   status: StatusFaturaFornecedorConvenio;
   empresa_id?: number | null;
   conta_bancaria_id?: string | null;
+  lote_pagamento_id?: string | null;
   data_pagamento?: string | null;
   valor_pago?: number | null;
   is_previsao?: boolean;
@@ -604,7 +618,50 @@ export interface FaturaFornecedorConvenio {
   created_at?: string;
   updated_at?: string;
   convenio?: Convenio;
+  empresa?: Empresa;
+  conta_bancaria?: ContaBancaria;
   pagamentos?: FaturaFornecedorPagamento[];
+}
+
+export interface LotePagamento {
+  id: string;
+  conta_bancaria_origem_id: string;
+  data_pagamento: string;
+  valor_total_pago: number;
+  observacao?: string | null;
+  criado_por?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  conta_bancaria_origem?: ContaBancaria;
+}
+
+export interface ContaPagarItem {
+  id: string;
+  tipo: "DESPESA" | "CONVENIO";
+  descricao: string;
+  categoria: string;
+  empresa_id?: number | null;
+  empresa_nome?: string;
+  conta_bancaria_id?: string | null;
+  conta_bancaria_nome?: string;
+  data_vencimento: string;
+  data_pagamento?: string | null;
+  valor_previsto: number;
+  valor_pago: number;
+  saldo_pendente: number;
+  status: string;
+  is_previsao: boolean;
+  lote_pagamento_id?: string | null;
+}
+
+export interface ContasPagarKpis {
+  total_a_pagar_mes: number;
+  total_pago_mes: number;
+  total_vencendo_hoje: number;
+  total_atrasadas: number;
+  total_semana: number;
+  quantidade_pendentes: number;
+  quantidade_pagas: number;
 }
 
 export interface AuditoriaConvenioResultado {

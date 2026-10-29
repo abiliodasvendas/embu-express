@@ -9,6 +9,7 @@ interface MovimentacoesAvulsasTabProps {
   setMes: (mes: number) => void;
   setAno: (ano: number) => void;
   isActive: boolean;
+  modo?: "ENTRADA" | "SAIDA" | "TODOS";
 }
 
 export function MovimentacoesAvulsasTab({
@@ -17,6 +18,7 @@ export function MovimentacoesAvulsasTab({
   setMes,
   setAno,
   isActive,
+  modo = "TODOS",
 }: MovimentacoesAvulsasTabProps) {
   const vm = useMovimentacoesAvulsasTabViewModel({
     mes,
@@ -24,11 +26,12 @@ export function MovimentacoesAvulsasTab({
     setMes,
     setAno,
     enabled: isActive,
+    modo,
   });
 
   return (
     <div className="space-y-6">
-      <AvulsasKpis kpis={vm.kpisAvulsas} mes={vm.mes} ano={vm.ano} />
+      <AvulsasKpis kpis={vm.kpisAvulsas} mes={vm.mes} ano={vm.ano} modo={modo} />
 
       <AvulsasToolbar
         searchMovimentacao={vm.searchMovimentacao}
@@ -41,6 +44,7 @@ export function MovimentacoesAvulsasTab({
         onTipoMovimentacaoChange={vm.setTipoMovimentacaoFiltro}
         onNovoLancamento={vm.handleOpenNovaMovimentacao}
         canEdit={vm.canEdit}
+        modo={modo}
       />
 
       <AvulsasTable
@@ -56,6 +60,7 @@ export function MovimentacoesAvulsasTab({
         onSort={vm.handleSortMovimentacoes}
         onEdit={vm.handleEditMovimentacao}
         onDelete={vm.handleDeleteMovimentacao}
+        modo={modo}
       />
     </div>
   );

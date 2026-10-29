@@ -5,7 +5,11 @@ import { useContasBancarias } from "@/hooks/api/useContasBancarias";
 import { useClients } from "@/hooks/api/useClients";
 import { useFaturas } from "@/hooks/api/useFaturamento";
 import { Client, FaturaCliente, StatusFatura } from "@/types/database";
-import { STATUS_FATURA, TIPO_PERIODO_FATURA } from "@/constants/financeiro.constants";
+import {
+  STATUS_FATURA,
+  TIPO_PERIODO_FATURA,
+  FILTRO_PERIODO_FATURA,
+} from "@/constants/financeiro.constants";
 import { toLocalDateString } from "@/utils/formatters/date";
 import { ItemRecebimentoPayload, LoteRecebimentoPayload } from "@/services/api/faturamento.api";
 
@@ -59,16 +63,19 @@ export function useLiquidacaoLoteViewModel({
       status: STATUS_FATURA.PENDENTE as StatusFatura,
     };
 
-    if (periodoFiltro === "1") {
+    if (periodoFiltro === FILTRO_PERIODO_FATURA.QUINZENA_1) {
       filtros.tipo_periodo = TIPO_PERIODO_FATURA.QUINZENAL;
       filtros.numero_periodo = 1;
       filtros.quinzena = 1;
-    } else if (periodoFiltro === "2") {
+    } else if (periodoFiltro === FILTRO_PERIODO_FATURA.QUINZENA_2) {
       filtros.tipo_periodo = TIPO_PERIODO_FATURA.QUINZENAL;
       filtros.numero_periodo = 2;
       filtros.quinzena = 2;
-    } else if (periodoFiltro === "MENSAL") {
+    } else if (periodoFiltro === FILTRO_PERIODO_FATURA.MENSAL) {
       filtros.tipo_periodo = TIPO_PERIODO_FATURA.MENSAL;
+    } else if (periodoFiltro.startsWith("SEM_")) {
+      filtros.tipo_periodo = TIPO_PERIODO_FATURA.SEMANAL;
+      filtros.numero_periodo = Number(periodoFiltro.replace("SEM_", ""));
     }
 
     return filtros;

@@ -44,10 +44,11 @@ export function useDespesas(
   });
 
   const pagarMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { data_pagamento: string; valor_pago?: number } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { data_pagamento: string; valor_pago?: number; conta_bancaria_id?: string } }) =>
       despesaApi.marcarPaga(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["despesas"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
       queryClient.invalidateQueries({ queryKey: ["dre"] });
       queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
     },

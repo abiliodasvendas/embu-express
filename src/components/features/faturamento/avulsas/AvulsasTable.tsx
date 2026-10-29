@@ -29,6 +29,7 @@ interface AvulsasTableProps {
   onEdit: (movimentacao: MovimentacaoAvulsa) => void;
   onDelete: (movimentacao: MovimentacaoAvulsa) => void;
   canEdit?: boolean;
+  modo?: "ENTRADA" | "SAIDA" | "TODOS";
 }
 
 export function AvulsasTable({
@@ -44,27 +45,46 @@ export function AvulsasTable({
   onEdit,
   onDelete,
   canEdit = true,
+  modo = "TODOS",
 }: AvulsasTableProps) {
   if (isLoading) {
     return <TableSkeleton cols={8} rows={4} />;
   }
 
   if (movimentacoes.length === 0) {
+    const emptyTitle =
+      modo === "ENTRADA"
+        ? "Nenhuma entrada avulsa encontrada"
+        : modo === "SAIDA"
+        ? "Nenhuma saída avulsa encontrada"
+        : "Nenhuma movimentação avulsa encontrada";
+
+    const emptyDesc = search
+      ? `Nenhum lançamento encontrado para "${search}".`
+      : modo === "ENTRADA"
+      ? "Nenhuma receita ou crédito avulso registrado na competência selecionada."
+      : modo === "SAIDA"
+      ? "Nenhuma despesa ou saída avulsa registrada na competência selecionada."
+      : "Nenhuma movimentação avulsa encontrada na competência selecionada.";
+
+    const actionLabel =
+      modo === "ENTRADA"
+        ? "Nova Entrada"
+        : modo === "SAIDA"
+        ? "Nova Saída"
+        : "Novo Lançamento";
+
     return (
       <div className="rounded-[24px] border border-border bg-card shadow-xs p-8">
         <UnifiedEmptyState
           icon={Banknote}
-          title="Nenhuma movimentação avulsa encontrada"
-          description={
-            search
-              ? `Nenhuma movimentação avulsa encontrada para "${search}".`
-              : "Nenhuma movimentação avulsa encontrada na competência selecionada."
-          }
+          title={emptyTitle}
+          description={emptyDesc}
           action={
             search
               ? { label: "Limpar busca", onClick: onClearSearch }
               : canEdit
-                ? { label: "Novo Lançamento", onClick: onNovoLancamento }
+                ? { label: actionLabel, onClick: onNovoLancamento }
                 : undefined
           }
         />

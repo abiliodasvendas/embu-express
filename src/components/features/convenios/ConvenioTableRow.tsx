@@ -13,6 +13,7 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { CheckCircle2, CreditCard, Handshake } from "lucide-react";
 import { getConvenioPagamentoInfo } from "./convenioTableUtils";
+import { STATUS_FATURA_CONVENIO } from "@/constants/financeiro.constants";
 
 interface ConvenioTableRowProps {
   convenio: Convenio;
@@ -66,7 +67,7 @@ export function ConvenioTableRow({
       </TableCell>
       <TableCell className="px-6 py-4 align-middle">
         {fatura ? (
-          fatura.status === "PAGA" ? (
+          fatura.status === STATUS_FATURA_CONVENIO.PAGA ? (
             <div className="flex flex-col gap-0.5">
               <span className="inline-flex items-center gap-1 font-semibold text-xs px-2.5 py-0.5 rounded-[18px] w-max bg-muted/60 text-foreground border border-border">
                 <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
@@ -76,7 +77,7 @@ export function ConvenioTableRow({
                 Quitado
               </span>
             </div>
-          ) : fatura.status === "PAGO_PARCIAL" ? (
+          ) : fatura.status === STATUS_FATURA_CONVENIO.PAGO_PARCIAL ? (
             <div
               className="flex flex-col gap-0.5"
               onClick={(e) => {

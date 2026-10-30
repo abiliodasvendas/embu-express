@@ -106,6 +106,7 @@ export function useContasPagarViewModel() {
             id: item.empresa_id,
             nome_fantasia: item.empresa_nome || "",
             razao_social: item.empresa_nome || "",
+            cnpj: "",
             ativo: true,
           } : undefined,
         },

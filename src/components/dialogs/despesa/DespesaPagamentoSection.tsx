@@ -100,17 +100,6 @@ export function DespesaPagamentoSection({
           )}
         />
       </div>
-                  <option value={STATUS_DESPESA.PENDENTE}>A Pagar (Pendente)</option>
-                  <option value={STATUS_DESPESA.PAGO}>Pago / Liquidado</option>
-                  <option value={STATUS_DESPESA.ADIADA}>Adiada</option>
-                  <option value={STATUS_DESPESA.CANCELADO}>Cancelada</option>
-                </NativeSelect>
-              </FormControl>
-              <FormMessage className="text-xs text-destructive" />
-            </FormItem>
-          )}
-        />
-      </div>
 
       {status === STATUS_DESPESA.PAGO && (
         <div className="p-3.5 bg-muted/30 border border-border rounded-[18px] grid grid-cols-1 sm:grid-cols-2 gap-3">

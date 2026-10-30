@@ -538,13 +538,16 @@ export interface DespesaOperacional {
   data_pagamento?: string | null;
   status: StatusDespesa;
   is_holding: boolean;
-  is_recorrente?: boolean;
-  total_parcelas?: number | null;
+  grupo_parcelamento_id?: string | null;
   numero_parcela?: number | null;
+  total_parcelas?: number | null;
+  is_recorrente?: boolean;
+  recorrencia_origem_id?: string | null;
+  dia_vencimento_base?: number | null;
   criado_por?: string | null;
   created_at?: string;
   updated_at?: string;
-  empresa?: Empresa;
+  empresa?: Partial<Empresa> | null;
   conta_bancaria?: ContaBancaria;
 }
 

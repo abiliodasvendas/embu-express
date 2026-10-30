@@ -187,8 +187,4 @@ export function useDespesaForm({
     handleClose,
     handleFillMock,
   };
-    onSubmit,
-    handleClose,
-    handleFillMock,
-  };
 }

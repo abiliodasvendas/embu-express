@@ -1,8 +1,10 @@
 import { DespesaOperacional, CategoriaDespesa, StatusDespesa } from "@/types/database";
+import { DespesaEscopoAcao } from "@/constants/financeiro.constants";
 import { apiClient } from "./client";
 
 export interface CreateDespesaPayload {
   empresa_id?: number | null;
+  conta_bancaria_id?: string | null;
   categoria: CategoriaDespesa;
   descricao: string;
   mes_competencia: number;
@@ -20,6 +22,7 @@ export interface CreateDespesaPayload {
   grupo_parcelamento_id?: string | null;
   numero_parcela?: number | null;
   total_parcelas?: number | null;
+  escopo?: DespesaEscopoAcao;
 }
 
 export interface ListDespesasFiltros {
@@ -43,8 +46,8 @@ export const despesaApi = {
   update: (id: string, data: Partial<CreateDespesaPayload>): Promise<DespesaOperacional> =>
     apiClient.put(`/despesas/${id}`, data).then((res) => res.data),
 
-  delete: (id: string): Promise<void> =>
-    apiClient.delete(`/despesas/${id}`).then((res) => res.data),
+  delete: (id: string, escopo?: DespesaEscopoAcao): Promise<void> =>
+    apiClient.delete(`/despesas/${id}`, { params: escopo ? { escopo } : undefined }).then((res) => res.data),
 
   marcarPaga: (id: string, data: { data_pagamento: string; valor_pago?: number; conta_bancaria_id?: string }): Promise<DespesaOperacional> =>
     apiClient.patch(`/despesas/${id}/pagar`, data).then((res) => res.data),

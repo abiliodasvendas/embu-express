@@ -27,6 +27,7 @@ export function DespesaFormDialog({
   const {
     form,
     empresas,
+    contas,
     status,
     isPending,
     onSubmit,
@@ -71,7 +72,7 @@ export function DespesaFormDialog({
             <div className="space-y-4 pt-1">
               <DespesaIdentificacaoSection form={form} empresas={empresas} />
               <DespesaCompetenciaSection form={form} />
-              <DespesaPagamentoSection form={form} status={status} />
+              <DespesaPagamentoSection form={form} status={status} contas={contas} />
               <DespesaParcelamentoSection form={form} despesaToEdit={despesaToEdit} />
             </div>
           </BaseDialog.Body>

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CATEGORIA_DESPESA, STATUS_DESPESA } from "@/constants/financeiro.constants";
+import { CATEGORIA_DESPESA, STATUS_DESPESA, DESPESA_ESCOPO_ACAO } from "@/constants/financeiro.constants";
 
 export const despesaFormSchema = z.object({
   descricao: z.string({
@@ -18,12 +18,14 @@ export const despesaFormSchema = z.object({
     invalid_type_error: "Informe o valor previsto",
   }).min(0.01, "O valor previsto deve ser maior que zero"),
   status: z.nativeEnum(STATUS_DESPESA).default(STATUS_DESPESA.PENDENTE),
+  conta_bancaria_id: z.string().optional().nullable(),
   valor_pago: z.coerce.number().optional().default(0),
   data_pagamento: z.string().optional(),
   is_parcelado: z.boolean().default(false),
   quantidade_parcelas: z.coerce.number().min(2, "Mínimo 2 parcelas").max(60).optional(),
   is_recorrente: z.boolean().default(false),
   meses_recorrencia: z.coerce.number().min(2).max(36).optional(),
+  escopo: z.nativeEnum(DESPESA_ESCOPO_ACAO).optional(),
 });
 
 export type DespesaFormData = z.infer<typeof despesaFormSchema>;

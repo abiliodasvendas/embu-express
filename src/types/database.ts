@@ -1,4 +1,5 @@
 import { StatusUsuario, TicketType, TicketStatus, TicketPriority } from "./enums";
+import type { TipoContaPagarType } from "@/constants/financeiro.constants";
 
 export interface Perfil {
   id: number;
@@ -637,7 +638,7 @@ export interface LotePagamento {
 
 export interface ContaPagarItem {
   id: string;
-  tipo: "DESPESA" | "CONVENIO";
+  tipo: TipoContaPagarType;
   descricao: string;
   categoria: string;
   empresa_id?: number | null;
@@ -652,6 +653,11 @@ export interface ContaPagarItem {
   status: string;
   is_previsao: boolean;
   lote_pagamento_id?: string | null;
+  grupo_parcelamento_id?: string | null;
+  numero_parcela?: number | null;
+  total_parcelas?: number | null;
+  is_recorrente?: boolean;
+  recorrencia_origem_id?: string | null;
 }
 
 export interface ContasPagarKpis {

@@ -3,16 +3,18 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { ContaPagarItem } from "@/types/database";
-import { CheckCircle2, Layers, CreditCard } from "lucide-react";
+import { CheckCircle2, Layers, CreditCard, Edit2, Trash2, Repeat } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { TableSkeleton } from "@/components/skeletons";
 import { ContasPagarMobileCard } from "./ContasPagarMobileCard";
-import { STATUS_DESPESA } from "@/constants/financeiro.constants";
+import { STATUS_DESPESA, TIPO_CONTA_PAGAR } from "@/constants/financeiro.constants";
 
 interface ContasPagarTableProps {
   itens: ContaPagarItem[];
   isLoading: boolean;
   onLiquidar: (item: ContaPagarItem) => void;
+  onEdit?: (item: ContaPagarItem) => void;
+  onDelete?: (item: ContaPagarItem) => void;
   onNovaDespesa?: () => void;
   canEdit?: boolean;
 }
@@ -21,6 +23,8 @@ export function ContasPagarTable({
   itens,
   isLoading,
   onLiquidar,
+  onEdit,
+  onDelete,
   onNovaDespesa,
   canEdit = true,
 }: ContasPagarTableProps) {
@@ -102,9 +106,21 @@ export function ContasPagarTable({
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-muted/60 text-muted-foreground font-mono text-[11px] font-medium">
-                        {item.tipo === "CONVENIO" ? "CONVÊNIO" : "DESPESA"}
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-muted/60 text-muted-foreground font-mono text-[11px] font-medium">
+                          {item.tipo === TIPO_CONTA_PAGAR.CONVENIO ? "CONVÊNIO" : "DESPESA"}
+                        </span>
+                        {item.total_parcelas && item.total_parcelas > 1 ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-[6px] bg-primary/10 text-primary font-mono text-[10px] font-semibold">
+                            {item.numero_parcela || 1}/{item.total_parcelas}
+                          </span>
+                        ) : null}
+                        {item.is_recorrente ? (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] bg-sky-500/10 text-sky-700 dark:text-sky-400 text-[10px] font-medium">
+                            <Repeat className="h-2.5 w-2.5" /> Fixo
+                          </span>
+                        ) : null}
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-4">
@@ -162,22 +178,47 @@ export function ContasPagarTable({
                     </td>
 
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      {!isPago ? (
-                        <Button
-                          size="sm"
-                          onClick={() => onLiquidar(item)}
-                          className="h-8 rounded-[12px] text-xs font-semibold px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Liquidar
-                        </Button>
-                      ) : item.lote_pagamento_id ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                          <Layers className="h-3 w-3" /> Lote
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-muted-foreground">Baixa Manual</span>
-                      )}
+                      <div className="flex items-center justify-end gap-1.5">
+                        {item.tipo === TIPO_CONTA_PAGAR.DESPESA && canEdit && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => onEdit?.(item)}
+                              className="h-8 w-8 rounded-[12px] text-muted-foreground hover:text-foreground"
+                              title="Editar Despesa"
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => onDelete?.(item)}
+                              className="h-8 w-8 rounded-[12px] text-muted-foreground hover:text-destructive"
+                              title="Excluir Despesa"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </>
+                        )}
+
+                        {!isPago ? (
+                          <Button
+                            size="sm"
+                            onClick={() => onLiquidar(item)}
+                            className="h-8 rounded-[12px] text-xs font-semibold px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Liquidar
+                          </Button>
+                        ) : item.lote_pagamento_id ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Layers className="h-3 w-3" /> Lote
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground">Baixa Manual</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -193,6 +234,8 @@ export function ContasPagarTable({
             key={`${item.tipo}_${item.id}`}
             item={item}
             onLiquidar={onLiquidar}
+            onEdit={onEdit}
+            onDelete={onDelete}
             canEdit={canEdit}
           />
         ))}

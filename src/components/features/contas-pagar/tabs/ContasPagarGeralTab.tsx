@@ -26,6 +26,8 @@ export function ContasPagarGeralTab() {
     isFetching,
     refetch,
     handleLiquidarItem,
+    handleEditItem,
+    handleDeleteItem,
     handleNovaDespesa,
   } = useContasPagarViewModel();
 
@@ -62,6 +64,8 @@ export function ContasPagarGeralTab() {
         itens={itens}
         isLoading={isLoading}
         onLiquidar={handleLiquidarItem}
+        onEdit={handleEditItem}
+        onDelete={handleDeleteItem}
         onNovaDespesa={handleNovaDespesa}
       />
     </div>

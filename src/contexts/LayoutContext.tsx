@@ -2,6 +2,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem, Ticket, Convenio, FaturaCliente, TransferenciaIntercompany, DespesaOperacional, MovimentacaoAvulsa, TipoMovimentacaoAvulsa, Unidade, LancamentoConvenio, FaturaFornecedorConvenio } from '@/types/database';
 import { OccurrenceFormData } from '@/schemas/occurrenceSchema';
 import { OccurrenceFormMode } from '@/types/enums';
+import { DespesaEscopoAcao } from '@/constants/financeiro.constants';
 
 // --- Interfaces ---
 
@@ -164,6 +165,19 @@ export interface OpenDespesaFormProps {
   onSuccess?: () => void;
 }
 
+export interface OpenDespesaDeleteProps {
+  despesa: {
+    id: string;
+    descricao: string;
+    valor_previsto: number;
+    grupo_parcelamento_id?: string | null;
+    numero_parcela?: number | null;
+    total_parcelas?: number | null;
+    is_recorrente?: boolean;
+  };
+  onConfirm: (escopo: DespesaEscopoAcao) => Promise<void> | void;
+}
+
 export interface OpenLiquidarDespesaDialogProps {
   despesa: DespesaOperacional;
   onSuccess?: () => void;
@@ -314,6 +328,9 @@ export interface LayoutContextType {
 
   openDespesaFormDialog: (props?: OpenDespesaFormProps) => void;
   closeDespesaFormDialog: () => void;
+
+  openDespesaDeleteDialog: (props: OpenDespesaDeleteProps) => void;
+  closeDespesaDeleteDialog: () => void;
 
   openLiquidarDespesaDialog: (props: OpenLiquidarDespesaDialogProps) => void;
   closeLiquidarDespesaDialog: () => void;

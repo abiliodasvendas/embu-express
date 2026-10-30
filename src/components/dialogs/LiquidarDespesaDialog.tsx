@@ -95,7 +95,7 @@ export function LiquidarDespesaDialog({
           <Banner variant="info">
             <div className="flex flex-col gap-0.5 text-xs">
               <span>
-                <strong>Empresa:</strong> {despesa.empresa?.nome_fantasia || "Empresa Padrão"}
+                <strong>Empresa:</strong> {despesa.empresa?.nome_fantasia || despesa.empresa?.razao_social || (despesa.is_holding ? "Holding / Matriz" : "Empresa não definida")}
               </span>
               <span>
                 <strong>Categoria:</strong> {categoriaLabel}
@@ -105,6 +105,13 @@ export function LiquidarDespesaDialog({
               </span>
             </div>
           </Banner>
+
+          {contasFiltradas.length === 0 && (
+            <Banner
+              variant="warning"
+              description="A empresa vinculada a esta despesa não possui contas bancárias ativas cadastradas. Cadastre uma conta em Financeiro > Contas Bancárias para realizar a quitação."
+            />
+          )}
 
           <Form {...form}>
             <form id="liquidar-despesa-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -188,7 +195,7 @@ export function LiquidarDespesaDialog({
         <Button
           type="submit"
           form="liquidar-despesa-form"
-          disabled={pagarMutation.isPending}
+          disabled={contasFiltradas.length === 0 || pagarMutation.isPending}
           className="rounded-[14px] bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
         >
           {pagarMutation.isPending ? (

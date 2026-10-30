@@ -5,10 +5,11 @@ import { isAxiosError } from "axios";
 import { toast } from "sonner";
 import { despesaFormSchema, DespesaFormData } from "@/schemas/despesaSchema";
 import { DespesaOperacional } from "@/types/database";
-import { CATEGORIA_DESPESA, STATUS_DESPESA } from "@/constants/financeiro.constants";
+import { CATEGORIA_DESPESA, STATUS_DESPESA, DESPESA_ESCOPO_ACAO } from "@/constants/financeiro.constants";
 import { toLocalDateString } from "@/utils/formatters/date";
 import { useDespesas } from "@/hooks/api/useDespesas";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
+import { useContasBancarias } from "@/hooks/api/useContasBancarias";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { mockGenerator } from "@/utils/mocks/generator";
 
@@ -29,6 +30,7 @@ export function useDespesaForm({
 
   const { createMutation, updateMutation } = useDespesas();
   const { data: empresas = [] } = useEmpresas({ ativo: "true" });
+  const { contas = [] } = useContasBancarias();
 
   const form = useForm<DespesaFormData>({
     resolver: zodResolver(despesaFormSchema),
@@ -42,17 +44,24 @@ export function useDespesaForm({
       data_vencimento: toLocalDateString(hoje),
       valor_previsto: 0,
       status: STATUS_DESPESA.PENDENTE,
+      conta_bancaria_id: "",
       valor_pago: 0,
       data_pagamento: "",
       is_parcelado: false,
       quantidade_parcelas: undefined,
       is_recorrente: false,
       meses_recorrencia: undefined,
+      escopo: DESPESA_ESCOPO_ACAO.UNICA,
     },
   });
 
   const status = form.watch("status");
+  const selectedEmpresaId = form.watch("empresa_id");
   const isPending = createMutation.isPending || updateMutation.isPending;
+
+  const contasFiltradas = selectedEmpresaId && selectedEmpresaId !== "holding"
+    ? contas.filter((c) => c.empresa_id === Number(selectedEmpresaId))
+    : contas;
 
   useEffect(() => {
     if (open) {
@@ -67,12 +76,14 @@ export function useDespesaForm({
           data_vencimento: despesaToEdit.data_vencimento,
           valor_previsto: despesaToEdit.valor_previsto,
           status: despesaToEdit.status,
+          conta_bancaria_id: despesaToEdit.conta_bancaria_id || "",
           valor_pago: despesaToEdit.valor_pago || 0,
           data_pagamento: despesaToEdit.data_pagamento || "",
           is_parcelado: false,
           quantidade_parcelas: undefined,
           is_recorrente: !!despesaToEdit.is_recorrente,
           meses_recorrencia: undefined,
+          escopo: DESPESA_ESCOPO_ACAO.UNICA,
         });
       } else {
         form.reset({
@@ -85,12 +96,14 @@ export function useDespesaForm({
           data_vencimento: toLocalDateString(hoje),
           valor_previsto: 0,
           status: STATUS_DESPESA.PENDENTE,
+          conta_bancaria_id: "",
           valor_pago: 0,
           data_pagamento: "",
           is_parcelado: false,
           quantidade_parcelas: undefined,
           is_recorrente: false,
           meses_recorrencia: undefined,
+          escopo: DESPESA_ESCOPO_ACAO.UNICA,
         });
       }
     }
@@ -103,6 +116,7 @@ export function useDespesaForm({
       categoria: values.categoria,
       is_holding: isHolding,
       empresa_id: isHolding ? null : Number(values.empresa_id),
+      conta_bancaria_id: values.conta_bancaria_id || null,
       mes_competencia: values.mes_competencia,
       ano_competencia: values.ano_competencia,
       data_vencimento: values.data_vencimento,
@@ -119,6 +133,7 @@ export function useDespesaForm({
       is_parcelado: !despesaToEdit ? values.is_parcelado : undefined,
       quantidade_parcelas: !despesaToEdit && values.is_parcelado ? values.quantidade_parcelas : undefined,
       is_recorrente: !despesaToEdit ? values.is_recorrente : undefined,
+      escopo: despesaToEdit ? values.escopo : undefined,
     };
 
     try {
@@ -146,12 +161,14 @@ export function useDespesaForm({
     const mockData = mockGenerator.despesa(empresas[0]?.id);
     form.reset({
       ...mockData,
+      conta_bancaria_id: "",
       is_parcelado: false,
       quantidade_parcelas: undefined,
       is_recorrente: false,
       meses_recorrencia: undefined,
       valor_pago: 0,
       data_pagamento: "",
+      escopo: DESPESA_ESCOPO_ACAO.UNICA,
     });
   };
 
@@ -163,8 +180,13 @@ export function useDespesaForm({
   return {
     form,
     empresas,
+    contas: contasFiltradas,
     status,
     isPending,
+    onSubmit,
+    handleClose,
+    handleFillMock,
+  };
     onSubmit,
     handleClose,
     handleFillMock,

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps, OpenFaturaFormProps, OpenLiquidarFaturaDialogProps, OpenAcertoIntercompanyProps, OpenAlocacaoTemporariaProps, OpenContasBancariasProps, OpenDespesaFormProps, OpenLiquidarDespesaDialogProps, OpenMovimentacaoAvulsaFormProps, OpenUnidadeFormProps, OpenLancamentoConvenioFormProps, OpenGerenciarBloqueioConvenioProps, OpenLiquidarFaturaConvenioProps } from './LayoutContext';
+import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps, OpenFaturaFormProps, OpenLiquidarFaturaDialogProps, OpenAcertoIntercompanyProps, OpenAlocacaoTemporariaProps, OpenContasBancariasProps, OpenDespesaFormProps, OpenDespesaDeleteProps, OpenLiquidarDespesaDialogProps, OpenMovimentacaoAvulsaFormProps, OpenUnidadeFormProps, OpenLancamentoConvenioFormProps, OpenGerenciarBloqueioConvenioProps, OpenLiquidarFaturaConvenioProps } from './LayoutContext';
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
 
 // Dialogs
@@ -37,6 +37,7 @@ import { AcertoIntercompanyDialog } from "@/components/dialogs/AcertoIntercompan
 import { AlocacaoTemporariaDialog } from "@/components/dialogs/AlocacaoTemporariaDialog";
 import { ContasBancariasDialog } from "@/components/dialogs/ContasBancariasDialog";
 import { DespesaFormDialog } from "@/components/dialogs/DespesaFormDialog";
+import { DespesaDeleteDialog } from "@/components/dialogs/DespesaDeleteDialog";
 import { LiquidarDespesaDialog } from "@/components/dialogs/LiquidarDespesaDialog";
 import { MovimentacaoAvulsaFormDialog } from "@/components/dialogs/MovimentacaoAvulsaFormDialog";
 import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
@@ -91,6 +92,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [alocacaoTemporariaDialogState, setAlocacaoTemporariaDialogState] = useState<{ open: boolean; props?: OpenAlocacaoTemporariaProps }>({ open: false });
   const [contasBancariasDialogState, setContasBancariasDialogState] = useState<{ open: boolean; props?: OpenContasBancariasProps }>({ open: false });
   const [despesaFormDialogState, setDespesaFormDialogState] = useState<{ open: boolean; props?: OpenDespesaFormProps }>({ open: false });
+  const [despesaDeleteDialogState, setDespesaDeleteDialogState] = useState<{ open: boolean; props?: OpenDespesaDeleteProps }>({ open: false });
   const [liquidarDespesaDialogState, setLiquidarDespesaDialogState] = useState<{ open: boolean; props?: OpenLiquidarDespesaDialogProps }>({ open: false });
   const [movimentacaoAvulsaDialogState, setMovimentacaoAvulsaDialogState] = useState<{ open: boolean; props?: OpenMovimentacaoAvulsaFormProps }>({ open: false });
   const [unidadeFormDialogState, setUnidadeFormDialogState] = useState<{ open: boolean; props?: OpenUnidadeFormProps }>({ open: false });
@@ -200,6 +202,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openDespesaFormDialog = (props?: OpenDespesaFormProps) => setDespesaFormDialogState({ open: true, props });
   const closeDespesaFormDialog = () => closeDialog(() => setDespesaFormDialogState((prev) => ({ ...prev, open: false })));
 
+  const openDespesaDeleteDialog = (props: OpenDespesaDeleteProps) => setDespesaDeleteDialogState({ open: true, props });
+  const closeDespesaDeleteDialog = () => closeDialog(() => setDespesaDeleteDialogState((prev) => ({ ...prev, open: false })));
+
   const openLiquidarDespesaDialog = (props: OpenLiquidarDespesaDialogProps) => setLiquidarDespesaDialogState({ open: true, props });
   const closeLiquidarDespesaDialog = () => closeDialog(() => setLiquidarDespesaDialogState((prev) => ({ ...prev, open: false })));
 
@@ -255,6 +260,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openAlocacaoTemporariaDialog, closeAlocacaoTemporariaDialog,
       openContasBancariasDialog, closeContasBancariasDialog,
       openDespesaFormDialog, closeDespesaFormDialog,
+      openDespesaDeleteDialog, closeDespesaDeleteDialog,
       openLiquidarDespesaDialog, closeLiquidarDespesaDialog,
       openMovimentacaoAvulsaDialog, closeMovimentacaoAvulsaDialog,
       openUnidadeFormDialog, closeUnidadeFormDialog,
@@ -296,6 +302,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {alocacaoTemporariaDialogState.open && <AlocacaoTemporariaDialog open={true} onOpenChange={(open) => !open && closeAlocacaoTemporariaDialog()} onSuccess={alocacaoTemporariaDialogState.props?.onSuccess} />}
       {contasBancariasDialogState.open && <ContasBancariasDialog open={true} onOpenChange={(open) => !open && closeContasBancariasDialog()} empresaIdInicial={contasBancariasDialogState.props?.empresaIdInicial} />}
       {despesaFormDialogState.open && <DespesaFormDialog open={true} onOpenChange={(open) => !open && closeDespesaFormDialog()} despesaToEdit={despesaFormDialogState.props?.despesaToEdit} onSuccess={despesaFormDialogState.props?.onSuccess} />}
+      {despesaDeleteDialogState.open && despesaDeleteDialogState.props && (
+        <DespesaDeleteDialog
+          open={true}
+          onOpenChange={(open) => !open && closeDespesaDeleteDialog()}
+          despesa={despesaDeleteDialogState.props.despesa}
+          onConfirm={despesaDeleteDialogState.props.onConfirm}
+        />
+      )}
       {liquidarDespesaDialogState.open && liquidarDespesaDialogState.props?.despesa && (
         <LiquidarDespesaDialog
           open={true}

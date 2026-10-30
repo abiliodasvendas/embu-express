@@ -1,5 +1,6 @@
 import { despesaApi, CreateDespesaPayload, ListDespesasFiltros } from "@/services/api/despesa.api";
 import { DespesaOperacional } from "@/types/database";
+import { DespesaEscopoAcao } from "@/constants/financeiro.constants";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useDespesas(
@@ -19,6 +20,7 @@ export function useDespesas(
     mutationFn: (data: CreateDespesaPayload) => despesaApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["despesas"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
       queryClient.invalidateQueries({ queryKey: ["dre"] });
       queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
     },
@@ -29,15 +31,22 @@ export function useDespesas(
       despesaApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["despesas"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
       queryClient.invalidateQueries({ queryKey: ["dre"] });
       queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => despesaApi.delete(id),
+    mutationFn: (params: string | { id: string; escopo?: DespesaEscopoAcao }) => {
+      if (typeof params === "string") {
+        return despesaApi.delete(params);
+      }
+      return despesaApi.delete(params.id, params.escopo);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["despesas"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
       queryClient.invalidateQueries({ queryKey: ["dre"] });
       queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
     },

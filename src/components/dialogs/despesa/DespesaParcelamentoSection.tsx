@@ -12,6 +12,8 @@ import { Banner } from "@/components/ui/Banner";
 import { ParcelasPreview } from "@/components/common/ParcelasPreview";
 import { DespesaFormData } from "@/schemas/despesaSchema";
 import { DespesaOperacional } from "@/types/database";
+import { DESPESA_ESCOPO_ACAO } from "@/constants/financeiro.constants";
+import { cn } from "@/lib/utils";
 
 interface DespesaParcelamentoSectionProps {
   form: UseFormReturn<DespesaFormData>;
@@ -23,7 +25,105 @@ export function DespesaParcelamentoSection({
   despesaToEdit,
 }: DespesaParcelamentoSectionProps) {
   if (despesaToEdit) {
-    return null;
+    const isParceladoEdit = Boolean(
+      despesaToEdit.grupo_parcelamento_id &&
+      despesaToEdit.total_parcelas &&
+      despesaToEdit.total_parcelas > 1
+    );
+    const isRecorrenteEdit = Boolean(!isParceladoEdit && despesaToEdit.is_recorrente);
+
+    if (!isParceladoEdit && !isRecorrenteEdit) {
+      return null;
+    }
+
+    const numeroParcela = despesaToEdit.numero_parcela || 1;
+    const totalParcelas = despesaToEdit.total_parcelas || 1;
+
+    return (
+      <div className="bg-muted/20 border border-border rounded-[20px] p-4 space-y-3">
+        <div>
+          <span className="text-xs font-semibold text-foreground uppercase tracking-wider block">
+            Escopo da Alteração
+          </span>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {isParceladoEdit
+              ? `Esta despesa faz parte de um parcelamento (parcela ${numeroParcela} de ${totalParcelas}). Onde deseja aplicar as mudanças?`
+              : "Esta despesa possui recorrência mensal. Onde deseja aplicar as mudanças?"}
+          </p>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="escopo"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormControl>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => field.onChange(DESPESA_ESCOPO_ACAO.UNICA)}
+                    className={cn(
+                      "p-3 rounded-[16px] border text-left transition-all text-xs cursor-pointer flex flex-col justify-between",
+                      field.value === DESPESA_ESCOPO_ACAO.UNICA
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-xs font-semibold text-foreground"
+                        : "border-border bg-card hover:bg-muted/40 text-muted-foreground"
+                    )}
+                  >
+                    <span className="font-semibold text-foreground block">
+                      {isParceladoEdit ? `Apenas parcela ${numeroParcela}` : "Apenas este mês"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground mt-1 block">
+                      Altera apenas este lançamento pontual.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => field.onChange(DESPESA_ESCOPO_ACAO.FUTURAS)}
+                    className={cn(
+                      "p-3 rounded-[16px] border text-left transition-all text-xs cursor-pointer flex flex-col justify-between",
+                      field.value === DESPESA_ESCOPO_ACAO.FUTURAS
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-xs font-semibold text-foreground"
+                        : "border-border bg-card hover:bg-muted/40 text-muted-foreground"
+                    )}
+                  >
+                    <span className="font-semibold text-foreground block">
+                      Esta e as futuras
+                    </span>
+                    <span className="text-[10px] text-muted-foreground mt-1 block">
+                      {isParceladoEdit
+                        ? `Aplica da parcela ${numeroParcela} até a ${totalParcelas}.`
+                        : "Aplica para este mês e próximas competências."}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => field.onChange(DESPESA_ESCOPO_ACAO.TODAS)}
+                    className={cn(
+                      "p-3 rounded-[16px] border text-left transition-all text-xs cursor-pointer flex flex-col justify-between",
+                      field.value === DESPESA_ESCOPO_ACAO.TODAS
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-xs font-semibold text-foreground"
+                        : "border-border bg-card hover:bg-muted/40 text-muted-foreground"
+                    )}
+                  >
+                    <span className="font-semibold text-foreground block">
+                      Todas as parcelas
+                    </span>
+                    <span className="text-[10px] text-muted-foreground mt-1 block">
+                      {isParceladoEdit
+                        ? `Atualiza todas as ${totalParcelas} parcelas pendentes.`
+                        : "Atualiza a despesa mestre e histórico."}
+                    </span>
+                  </button>
+                </div>
+              </FormControl>
+              <FormMessage className="text-xs text-destructive" />
+            </FormItem>
+          )}
+        />
+      </div>
+    );
   }
 
   const isParcelado = form.watch("is_parcelado");

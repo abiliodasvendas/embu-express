@@ -51,7 +51,7 @@ export function ConvenioFormDialog({
       ativo: true,
       empresa_id: undefined as unknown as number,
       conta_bancaria_id: "",
-      dia_vencimento_padrao: 15,
+      dia_vencimento_padrao: undefined as unknown as number,
       periodicidade: "MENSAL",
     },
   });
@@ -73,7 +73,7 @@ export function ConvenioFormDialog({
           ativo: convenioToEdit.ativo,
           empresa_id: convenioToEdit.empresa_id ? Number(convenioToEdit.empresa_id) : (undefined as unknown as number),
           conta_bancaria_id: convenioToEdit.conta_bancaria_id || "",
-          dia_vencimento_padrao: convenioToEdit.dia_vencimento_padrao || 15,
+          dia_vencimento_padrao: convenioToEdit.dia_vencimento_padrao ?? (undefined as unknown as number),
           periodicidade: (convenioToEdit.periodicidade as "MENSAL" | "QUINZENAL" | "SEMANAL") || "MENSAL",
         });
       } else {
@@ -82,7 +82,7 @@ export function ConvenioFormDialog({
           ativo: true,
           empresa_id: undefined as unknown as number,
           conta_bancaria_id: "",
-          dia_vencimento_padrao: 15,
+          dia_vencimento_padrao: undefined as unknown as number,
           periodicidade: "MENSAL",
         });
       }
@@ -205,10 +205,13 @@ export function ConvenioFormDialog({
                         type="number"
                         min={1}
                         max={31}
-                        placeholder="Ex: 15"
+                        placeholder="Informe o dia (1 a 31)"
                         className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 15)}
+                        value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
+                        }
                       />
                     </FormControl>
                     <FormMessage className="text-xs text-destructive ml-1" />

@@ -4,14 +4,28 @@ import { Unidade } from "@/types/database";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+function invalidarCachesUnidadeEFinanceiro(queryClient: ReturnType<typeof useQueryClient>, unidadeId?: number | string) {
+  queryClient.invalidateQueries({ queryKey: ["unidades"] });
+  if (unidadeId) {
+    queryClient.invalidateQueries({ queryKey: ["unidade", unidadeId.toString()] });
+  }
+  queryClient.invalidateQueries({ queryKey: ["clients"] });
+  queryClient.invalidateQueries({ queryKey: ["faturas-clientes"] });
+  queryClient.invalidateQueries({ queryKey: ["dre"] });
+  queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+  queryClient.invalidateQueries({ queryKey: ["sugestao-medicao"] });
+  queryClient.invalidateQueries({ queryKey: ["aging-recebiveis"] });
+  queryClient.invalidateQueries({ queryKey: ["marcos-faturamento"] });
+  queryClient.invalidateQueries({ queryKey: ["financeiro-marcos"] });
+}
+
 export function useCreateUnidade() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: Partial<Unidade>) => unidadeApi.createUnidade(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      invalidarCachesUnidadeEFinanceiro(queryClient);
       toast.success(messages.sucesso.salvar);
     },
     onError: (error: Error) => {
@@ -26,9 +40,7 @@ export function useUpdateUnidade() {
   return useMutation({
     mutationFn: ({ id, ...data }: Partial<Unidade> & { id: number }) => unidadeApi.updateUnidade(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      queryClient.invalidateQueries({ queryKey: ["unidade", variables.id.toString()] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      invalidarCachesUnidadeEFinanceiro(queryClient, variables.id);
       toast.success(messages.sucesso.atualizar);
     },
     onError: (error: Error) => {
@@ -43,9 +55,7 @@ export function useDeleteUnidade() {
   return useMutation({
     mutationFn: (id: number) => unidadeApi.deleteUnidade(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      queryClient.invalidateQueries({ queryKey: ["unidade"] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      invalidarCachesUnidadeEFinanceiro(queryClient);
       toast.success(messages.sucesso.excluir);
     },
     onError: (error: Error) => {
@@ -61,9 +71,7 @@ export function useToggleUnidadeStatus() {
     mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) =>
       unidadeApi.updateUnidade(id, { ativo }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["unidades"] });
-      queryClient.invalidateQueries({ queryKey: ["unidade", variables.id.toString()] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      invalidarCachesUnidadeEFinanceiro(queryClient, variables.id);
       toast.success(messages.sucesso.atualizar);
     },
     onError: (error: Error) => {

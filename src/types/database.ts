@@ -51,6 +51,7 @@ export interface Unidade {
   valor_contrato_mensal?: number;
   periodicidade?: 'QUINZENAL' | 'MENSAL' | 'SEMANAL';
   dia_vencimento_padrao?: number;
+  dia_vencimento_segunda_quinzena?: number | null;
   empresa_emissora_padrao_id?: number | null;
   empresa_emissora_padrao?: Empresa | null;
   conta_bancaria_padrao_id?: string | null;

@@ -11,6 +11,6 @@ export function useDRE(
     queryKey: ["dre", mes, ano, empresaId, tipoVisao],
     queryFn: () => dreApi.getDRE(mes, ano, empresaId, tipoVisao),
     enabled: !!mes && !!ano,
-    staleTime: 30000,
+    refetchOnMount: true,
   });
 }

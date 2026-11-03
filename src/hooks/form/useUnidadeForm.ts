@@ -51,7 +51,8 @@ export function useUnidadeForm({
       ativo: true,
       valor_contrato_mensal: 0,
       periodicidade: PERIODICIDADE_FATURAMENTO.QUINZENAL,
-      dia_vencimento_padrao: 16,
+      dia_vencimento_padrao: undefined as unknown as number,
+      dia_vencimento_segunda_quinzena: undefined as unknown as number,
       empresa_emissora_padrao_id: undefined as unknown as number,
       conta_bancaria_padrao_id: "",
       tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
@@ -78,10 +79,11 @@ export function useUnidadeForm({
           ativo: editingUnidade.ativo,
           valor_contrato_mensal: Number(editingUnidade.valor_contrato_mensal || 0),
           periodicidade: (editingUnidade.periodicidade as UnidadeFormData["periodicidade"]) || PERIODICIDADE_FATURAMENTO.QUINZENAL,
-          dia_vencimento_padrao: editingUnidade.dia_vencimento_padrao || 16,
+          dia_vencimento_padrao: editingUnidade.dia_vencimento_padrao ?? (undefined as unknown as number),
+          dia_vencimento_segunda_quinzena: editingUnidade.dia_vencimento_segunda_quinzena ?? (undefined as unknown as number),
           empresa_emissora_padrao_id: editingUnidade.empresa_emissora_padrao_id ? Number(editingUnidade.empresa_emissora_padrao_id) : (undefined as unknown as number),
           conta_bancaria_padrao_id: editingUnidade.conta_bancaria_padrao_id || "",
-          tipo_cobranca: (editingUnidade.tipo_cobranca as UnidadeFormData["tipo_cobranca"]) || TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
+          tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
         });
       } else {
         form.reset({
@@ -101,7 +103,8 @@ export function useUnidadeForm({
           ativo: true,
           valor_contrato_mensal: 0,
           periodicidade: PERIODICIDADE_FATURAMENTO.QUINZENAL,
-          dia_vencimento_padrao: 16,
+          dia_vencimento_padrao: undefined as unknown as number,
+          dia_vencimento_segunda_quinzena: undefined as unknown as number,
           empresa_emissora_padrao_id: undefined as unknown as number,
           conta_bancaria_padrao_id: "",
           tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,

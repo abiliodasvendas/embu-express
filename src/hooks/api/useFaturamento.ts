@@ -20,7 +20,7 @@ export function useFaturas(
   const query = useQuery<FaturaCliente[]>({
     queryKey: ["faturas-clientes", filtros],
     queryFn: () => faturamentoApi.listFaturas(filtros),
-    staleTime: 5 * 60 * 1000,
+    refetchOnMount: true,
     enabled: options?.enabled,
   });
 
@@ -30,6 +30,7 @@ export function useFaturas(
     queryClient.invalidateQueries({ queryKey: ["dre"] });
     queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
     queryClient.invalidateQueries({ queryKey: ["intercompany"] });
+    queryClient.invalidateQueries({ queryKey: ["sugestao-medicao"] });
   };
 
   const createMutation = useMutation({

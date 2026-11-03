@@ -24,14 +24,11 @@ export const unidadeSchema = z.object({
     PERIODICIDADE_FATURAMENTO.MENSAL,
     PERIODICIDADE_FATURAMENTO.SEMANAL,
   ]).default(PERIODICIDADE_FATURAMENTO.QUINZENAL),
-  dia_vencimento_padrao: z.coerce.number().int().min(1).max(31).default(16),
+  dia_vencimento_padrao: z.coerce.number().int().min(1, "Dia inválido").max(31, "Dia inválido").optional().nullable(),
+  dia_vencimento_segunda_quinzena: z.coerce.number().int().min(1, "Dia inválido").max(31, "Dia inválido").optional().nullable(),
   empresa_emissora_padrao_id: z.coerce.number({ invalid_type_error: "Selecione a empresa emissora" }).positive("A empresa emissora é obrigatória"),
   conta_bancaria_padrao_id: z.string({ required_error: "Selecione a conta bancária" }).min(1, "A conta bancária é obrigatória"),
-  tipo_cobranca: z.enum([
-    TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
-    TIPO_COBRANCA_CLIENTE.DIARIA_MOTOBOY,
-    TIPO_COBRANCA_CLIENTE.PRODUCAO_ENTREGA,
-  ]).default(TIPO_COBRANCA_CLIENTE.FIXO_MENSAL),
+  tipo_cobranca: z.string().optional().default(TIPO_COBRANCA_CLIENTE.FIXO_MENSAL),
 });
 
 export type UnidadeFormData = z.infer<typeof unidadeSchema>;

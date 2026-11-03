@@ -8,7 +8,7 @@ export function useFluxoCaixa(mes: number, ano: number, empresaId?: number) {
     queryKey: ["fluxo-caixa", mes, ano, empresaId],
     queryFn: () => fluxoCaixaApi.getFluxoCaixa(mes, ano, empresaId),
     enabled: !!mes && !!ano,
-    staleTime: 30000,
+    refetchOnMount: true,
   });
 
   const setSaldoInicialMutation = useMutation({

@@ -32,6 +32,7 @@ export const faturamentoApi = {
     numero_periodo?: number;
     empresa_id?: number;
     cliente_id?: number;
+    unidade_id?: number;
     status?: StatusFatura;
   }): Promise<FaturaCliente[]> =>
     apiClient.get("/faturamento", { params: filtros }).then(res => res.data),

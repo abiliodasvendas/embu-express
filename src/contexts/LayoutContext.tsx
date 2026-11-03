@@ -4,8 +4,6 @@ import { OccurrenceFormData } from '@/schemas/occurrenceSchema';
 import { OccurrenceFormMode } from '@/types/enums';
 import { DespesaEscopoAcao } from '@/constants/financeiro.constants';
 
-// --- Interfaces ---
-
 export interface OpenConfirmationDialogProps {
   title: string;
   description: string;
@@ -208,6 +206,9 @@ export interface OpenLiquidarFaturaConvenioProps {
   faturaId?: string | null;
   mesCompetencia: number;
   anoCompetencia: number;
+  tipoPeriodo?: string;
+  numeroPeriodo?: number;
+  quinzena?: number | null;
   dataVencimento: string;
   valorTotalFatura: number;
   valorJaPago?: number | null;
@@ -228,7 +229,6 @@ export interface LayoutContextType {
   pageSubtitle: string;
   setPageSubtitle: (subtitle: string) => void;
 
-  // Dialogs
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
   closeConfirmationDialog: () => void;
 

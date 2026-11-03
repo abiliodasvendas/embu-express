@@ -291,6 +291,11 @@ export function LiquidacaoLoteTab({ mes: mesInicial, ano: anoInicial, onVoltar }
                               >
                                 {fatura.cliente?.nome_fantasia || `Cliente #${fatura.cliente_id}`}
                               </span>
+                              {fatura.unidade?.nome_unidade && (
+                                <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10 border-none">
+                                  {fatura.unidade.nome_unidade}
+                                </Badge>
+                              )}
                               {fatura.numero_os && (
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-[6px] bg-muted/60 text-muted-foreground font-mono text-[10px] font-medium">
                                   OS #{fatura.numero_os}

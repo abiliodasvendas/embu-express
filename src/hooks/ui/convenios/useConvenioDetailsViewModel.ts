@@ -40,6 +40,7 @@ export function useConvenioDetailsViewModel() {
   const canLiquidar = isSuperAdmin || can(PERMISSIONS.CONVENIOS.EDITAR) || can(PERMISSIONS.DESPESAS.EDITAR) || can(PERMISSIONS.FINANCEIRO.PAGAR);
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [quinzena, setQuinzena] = useState<number>(1);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<"colaboradores" | "todos" | "auditoria">("todos");
   const [isCopied, setIsCopied] = useState(false);
@@ -52,13 +53,21 @@ export function useConvenioDetailsViewModel() {
   const ano = currentDate.getFullYear();
 
   const { data: convenio, isLoading: isConvenioLoading } = useConvenio(id || "");
+  const isQuinzenal = convenio?.periodicidade === "QUINZENAL";
+
   const { data: lancamentos = [], isLoading: isLancamentosLoading } =
     useConvenioLancamentos(id || "", ano, mes);
   const {
     data: auditoria,
     isLoading: isAuditoriaLoading,
     refetch: refetchAuditoria,
-  } = useConvenioAuditoria(id || "", mes, ano);
+  } = useConvenioAuditoria(
+    id || "",
+    mes,
+    ano,
+    isQuinzenal ? "QUINZENAL" : "MENSAL",
+    isQuinzenal ? quinzena : 1
+  );
 
   useEffect(() => {
     if (convenio) {
@@ -167,7 +176,8 @@ export function useConvenioDetailsViewModel() {
     if (!id) return;
     const mesVenc = mes === 12 ? 1 : mes + 1;
     const anoVenc = mes === 12 ? ano + 1 : ano;
-    const dataVencDefault = `${anoVenc}-${String(mesVenc).padStart(2, "0")}-15`;
+    const diaVenc = convenio?.dia_vencimento_padrao || 15;
+    const dataVencDefault = `${anoVenc}-${String(mesVenc).padStart(2, "0")}-${String(diaVenc).padStart(2, "0")}`;
     const fatura = auditoria?.fatura_fornecedor;
 
     openLiquidarFaturaConvenioDialog({
@@ -176,6 +186,9 @@ export function useConvenioDetailsViewModel() {
       faturaId: fatura?.is_previsao ? null : (fatura?.id || null),
       mesCompetencia: mes,
       anoCompetencia: ano,
+      tipoPeriodo: isQuinzenal ? "QUINZENAL" : "MENSAL",
+      numeroPeriodo: isQuinzenal ? quinzena : 1,
+      quinzena: isQuinzenal ? quinzena : null,
       dataVencimento: fatura?.data_vencimento || dataVencDefault,
       valorTotalFatura: fatura?.valor_total_fatura || auditoria?.total_geral_lancamentos || 0,
       valorJaPago: fatura?.valor_pago || 0,
@@ -183,7 +196,7 @@ export function useConvenioDetailsViewModel() {
       contaBancariaPadraoId: fatura?.conta_bancaria_id || convenio?.conta_bancaria_id || null,
       onSuccess: () => refetchAuditoria(),
     });
-  }, [id, mes, ano, auditoria, convenio, openLiquidarFaturaConvenioDialog, refetchAuditoria]);
+  }, [id, mes, ano, isQuinzenal, quinzena, auditoria, convenio, openLiquidarFaturaConvenioDialog, refetchAuditoria]);
 
   const sortedLancamentos = useMemo(() => {
     return [...lancamentos].sort((a, b) => {
@@ -273,6 +286,9 @@ export function useConvenioDetailsViewModel() {
     currentDate,
     mes,
     ano,
+    isQuinzenal,
+    quinzena,
+    setQuinzena,
     activeTab,
     setActiveTab,
     isCopied,

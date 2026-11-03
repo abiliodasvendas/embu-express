@@ -24,13 +24,7 @@ export interface Client {
   ativo: boolean;
   latitude?: number | null;
   longitude?: number | null;
-  tipo_cobranca?: 'FIXO_MENSAL' | 'DIARIA_MOTOBOY' | 'TAXA_ENTREGA';
-  periodicidade?: 'QUINZENAL' | 'MENSAL' | 'SEMANAL';
-  dia_vencimento_padrao?: number;
-  valor_contrato_mensal?: number;
-  valor_base?: number;
-  empresa_emissora_padrao_id?: number | null;
-  empresa_emissora_padrao?: Empresa | null;
+  valor_total_contrato?: number;
   unidades?: Unidade[];
   created_at?: string;
   updated_at?: string;
@@ -54,6 +48,15 @@ export interface Unidade {
   latitude?: number | null;
   longitude?: number | null;
   ativo: boolean;
+  valor_contrato_mensal?: number;
+  periodicidade?: 'QUINZENAL' | 'MENSAL' | 'SEMANAL';
+  dia_vencimento_padrao?: number;
+  empresa_emissora_padrao_id?: number | null;
+  empresa_emissora_padrao?: Empresa | null;
+  conta_bancaria_padrao_id?: string | null;
+  conta_bancaria_padrao?: ContaBancaria | null;
+  tipo_cobranca?: string;
+  cliente?: Partial<Client>;
   created_at?: string;
   updated_at?: string;
 }
@@ -211,6 +214,16 @@ export interface Pausa {
   updated_at?: string;
 }
 
+export interface HorarioTrabalhoTurno {
+  id?: number;
+  colaborador_cliente_id?: number;
+  dia_semana: number;
+  hora_inicio: string;
+  hora_fim: string;
+  tolerancia_pausa_min?: number | null;
+  created_at?: string | null;
+}
+
 export interface ColaboradorCliente {
   id: number;
   colaborador_id: string;
@@ -230,7 +243,7 @@ export interface ColaboradorCliente {
   cliente?: Client;
   unidade?: Unidade;
   empresa?: Empresa;
-  horarios?: any[];
+  horarios?: HorarioTrabalhoTurno[] | null;
   validar_localizacao?: boolean;
   tipo_alocacao?: 'PADRAO' | 'RESERVA' | 'FISCAL';
   created_at?: string;
@@ -358,6 +371,8 @@ export interface Convenio {
   token: string;
   empresa_id?: number | null;
   conta_bancaria_id?: string | null;
+  dia_vencimento_padrao?: number;
+  periodicidade?: 'MENSAL' | 'QUINZENAL' | 'SEMANAL';
   created_at: string;
 }
 
@@ -405,6 +420,7 @@ export type StatusFatura = 'PENDENTE' | 'PAGO_PARCIAL' | 'LIQUIDADA' | 'CANCELAD
 export interface FaturaCliente {
   id: string;
   cliente_id: number;
+  unidade_id: number;
   empresa_id: number;
   mes_competencia: number;
   ano_competencia: number;
@@ -428,6 +444,7 @@ export interface FaturaCliente {
   created_at?: string;
   updated_at?: string;
   cliente?: Client;
+  unidade?: Partial<Unidade>;
   empresa?: Empresa;
   recebimentos?: FaturaRecebimento[];
 }
@@ -607,6 +624,11 @@ export interface FaturaFornecedorConvenio {
   convenio_id: string;
   mes_competencia: number;
   ano_competencia: number;
+  tipo_periodo?: 'MENSAL' | 'QUINZENAL' | 'SEMANAL';
+  numero_periodo?: number;
+  quinzena?: number | null;
+  data_inicio_apuracao?: string | null;
+  data_fim_apuracao?: string | null;
   data_vencimento: string;
   valor_total_fatura: number;
   status: StatusFaturaFornecedorConvenio;

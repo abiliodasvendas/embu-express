@@ -117,12 +117,14 @@ export function useFaturasTabViewModel({
       const term = searchFatura.toLowerCase().trim();
       list = list.filter((f) => {
         const clienteNome = (f.cliente?.nome_fantasia || "").toLowerCase();
+        const unidadeNome = (f.unidade?.nome_unidade || "").toLowerCase();
         const idStr = (f.id || "").toLowerCase();
         const obs = (f.observacoes || "").toLowerCase();
         const empresaNome = (f.empresa?.nome_fantasia || "").toLowerCase();
         const osStr = (f.numero_os || "").toLowerCase();
         return (
           clienteNome.includes(term) ||
+          unidadeNome.includes(term) ||
           idStr.includes(term) ||
           obs.includes(term) ||
           empresaNome.includes(term) ||

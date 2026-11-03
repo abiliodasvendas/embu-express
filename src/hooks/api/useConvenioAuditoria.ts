@@ -5,14 +5,20 @@ export const CONVENIO_AUDITORIA_KEYS = {
   all: ["convenio-auditoria"] as const,
   resumoGeral: (mes: number, ano: number) =>
     [...CONVENIO_AUDITORIA_KEYS.all, "resumo-geral", mes, ano] as const,
-  detail: (id: string, mes: number, ano: number) =>
-    [...CONVENIO_AUDITORIA_KEYS.all, id, mes, ano] as const,
+  detail: (id: string, mes: number, ano: number, tipoPeriodo?: string, numeroPeriodo?: number) =>
+    [...CONVENIO_AUDITORIA_KEYS.all, id, mes, ano, tipoPeriodo, numeroPeriodo] as const,
 };
 
-export function useConvenioAuditoria(convenioId?: string, mes?: number, ano?: number) {
+export function useConvenioAuditoria(
+  convenioId?: string,
+  mes?: number,
+  ano?: number,
+  tipoPeriodo?: string,
+  numeroPeriodo?: number
+) {
   return useQuery({
-    queryKey: CONVENIO_AUDITORIA_KEYS.detail(convenioId || "", mes || 0, ano || 0),
-    queryFn: () => convenioAuditoriaApi.getAuditoria(convenioId!, mes!, ano!),
+    queryKey: CONVENIO_AUDITORIA_KEYS.detail(convenioId || "", mes || 0, ano || 0, tipoPeriodo, numeroPeriodo),
+    queryFn: () => convenioAuditoriaApi.getAuditoria(convenioId!, mes!, ano!, tipoPeriodo, numeroPeriodo),
     enabled: !!convenioId && !!mes && !!ano,
   });
 }
@@ -35,6 +41,9 @@ export function useLiquidarFaturaConvenio() {
       convenio_id: string;
       mes_competencia: number;
       ano_competencia: number;
+      tipo_periodo?: string;
+      numero_periodo?: number;
+      quinzena?: number | null;
       data_vencimento: string;
       valor_total_fatura: number;
       valor_pago: number;
@@ -48,6 +57,7 @@ export function useLiquidarFaturaConvenio() {
       queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
       queryClient.invalidateQueries({ queryKey: ["dre"] });
       queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
     },
   });
 }

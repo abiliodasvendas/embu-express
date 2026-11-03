@@ -7,6 +7,7 @@ import {
   UnidadeIdentificacaoSection,
   UnidadeEnderecoSection,
   UnidadeOperacaoSection,
+  UnidadeContratoSection,
 } from "./unidade";
 import type { Unidade } from "@/types/database";
 
@@ -95,6 +96,12 @@ export function UnidadeFormDialog({
             />
 
             <UnidadeOperacaoSection control={form.control} />
+
+            <UnidadeContratoSection
+              control={form.control}
+              watch={form.watch}
+              setValue={form.setValue}
+            />
           </form>
         </Form>
       </BaseDialog.Body>

@@ -1,12 +1,13 @@
+import { Calendar } from "lucide-react";
+
 interface FluxoCaixaMarcosSectionProps {
   diaSalariosStr: string;
-  diaConveniosStr: string;
+  diaConveniosStr?: string;
   diaValesStr: string;
 }
 
 export function FluxoCaixaMarcosSection({
   diaSalariosStr,
-  diaConveniosStr,
   diaValesStr,
 }: FluxoCaixaMarcosSectionProps) {
   return (
@@ -27,14 +28,14 @@ export function FluxoCaixaMarcosSection({
 
       <div className="p-3.5 bg-muted/30 border border-border rounded-[18px] flex items-center gap-3">
         <div className="w-9 h-9 rounded-[12px] bg-muted/70 text-foreground border border-border flex items-center justify-center font-bold text-xs shrink-0">
-          {diaConveniosStr}
+          <Calendar className="h-4 w-4 text-muted-foreground" />
         </div>
         <div className="min-w-0">
           <p className="text-xs font-bold text-foreground leading-tight truncate">
             Desembolso Convênios
           </p>
           <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 truncate">
-            Oficinas e Postos Parceiros
+            Vencimentos por Parceiro
           </p>
         </div>
       </div>

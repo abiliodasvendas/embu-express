@@ -10,6 +10,7 @@ import { cnpjMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { messages } from "@/constants/messages";
+import { PERIODICIDADE_FATURAMENTO, TIPO_COBRANCA_CLIENTE } from "@/constants/financeiro.constants";
 
 export interface UseUnidadeFormProps {
   isDialogOpen: boolean;
@@ -48,6 +49,12 @@ export function useUnidadeForm({
       km_contratados: 0,
       escala_semanal: [],
       ativo: true,
+      valor_contrato_mensal: 0,
+      periodicidade: PERIODICIDADE_FATURAMENTO.QUINZENAL,
+      dia_vencimento_padrao: 16,
+      empresa_emissora_padrao_id: undefined as unknown as number,
+      conta_bancaria_padrao_id: "",
+      tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
     },
   });
 
@@ -67,8 +74,14 @@ export function useUnidadeForm({
           cidade: editingUnidade.cidade,
           estado: editingUnidade.estado,
           km_contratados: editingUnidade.km_contratados,
-          escala_semanal: editingUnidade.escala_semanal,
+          escala_semanal: editingUnidade.escala_semanal || [],
           ativo: editingUnidade.ativo,
+          valor_contrato_mensal: Number(editingUnidade.valor_contrato_mensal || 0),
+          periodicidade: (editingUnidade.periodicidade as UnidadeFormData["periodicidade"]) || PERIODICIDADE_FATURAMENTO.QUINZENAL,
+          dia_vencimento_padrao: editingUnidade.dia_vencimento_padrao || 16,
+          empresa_emissora_padrao_id: editingUnidade.empresa_emissora_padrao_id ? Number(editingUnidade.empresa_emissora_padrao_id) : (undefined as unknown as number),
+          conta_bancaria_padrao_id: editingUnidade.conta_bancaria_padrao_id || "",
+          tipo_cobranca: (editingUnidade.tipo_cobranca as UnidadeFormData["tipo_cobranca"]) || TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
         });
       } else {
         form.reset({
@@ -86,6 +99,12 @@ export function useUnidadeForm({
           km_contratados: 0,
           escala_semanal: [],
           ativo: true,
+          valor_contrato_mensal: 0,
+          periodicidade: PERIODICIDADE_FATURAMENTO.QUINZENAL,
+          dia_vencimento_padrao: 16,
+          empresa_emissora_padrao_id: undefined as unknown as number,
+          conta_bancaria_padrao_id: "",
+          tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
         });
       }
     }
@@ -100,6 +119,12 @@ export function useUnidadeForm({
     form.reset({
       ...data,
       cnpj: cnpjMask(data.cnpj),
+      valor_contrato_mensal: 5000,
+      periodicidade: PERIODICIDADE_FATURAMENTO.QUINZENAL,
+      dia_vencimento_padrao: 16,
+      empresa_emissora_padrao_id: null,
+      conta_bancaria_padrao_id: null,
+      tipo_cobranca: TIPO_COBRANCA_CLIENTE.FIXO_MENSAL,
     });
   };
 

@@ -53,9 +53,9 @@ export function ClientMobileItem({
               )}
               {podeVerValores && (
                 <p className="text-xs font-bold text-foreground mt-1">
-                  {formatCurrency(client.valor_contrato_mensal || client.valor_base || 0)}
+                  {formatCurrency(client.valor_total_contrato || 0)}
                   <span className="text-[10px] font-normal text-muted-foreground ml-1">
-                    ({getPeriodicidadeLabel(client.periodicidade)})
+                    (Total Unidades)
                   </span>
                 </p>
               )}

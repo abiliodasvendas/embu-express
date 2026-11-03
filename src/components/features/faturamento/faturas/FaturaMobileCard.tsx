@@ -48,16 +48,21 @@ export function FaturaMobileCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="font-bold text-sm text-foreground truncate">
+            <h4 className="font-bold text-sm text-foreground">
               {fatura.cliente?.nome_fantasia || `Cliente #${fatura.cliente_id}`}
             </h4>
+            {fatura.unidade?.nome_unidade && (
+              <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-[8px]">
+                {fatura.unidade.nome_unidade}
+              </span>
+            )}
             {fatura.numero_os && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-[6px] bg-muted/60 text-muted-foreground font-mono text-[10px] font-medium">
                 #{fatura.numero_os}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
             <span className="font-medium text-foreground/80">
               {fatura.empresa?.nome_fantasia || "Empresa"}
             </span>

@@ -22,6 +22,12 @@ export function useLiquidarFaturaForm({ open, fatura, contas = [] }: UseLiquidar
 
   const getContaPadraoId = () => {
     if (!fatura || contas.length === 0) return "";
+    if (fatura.unidade?.conta_bancaria_padrao_id) {
+      const contaUnidade = contas.find(
+        (c) => c.ativo !== false && c.id === fatura.unidade?.conta_bancaria_padrao_id
+      );
+      if (contaUnidade) return contaUnidade.id;
+    }
     const contaEmpresa = contas.find((c) => c.ativo !== false && c.empresa_id === fatura.empresa_id);
     return contaEmpresa ? contaEmpresa.id : (contas[0]?.id || "");
   };
@@ -39,8 +45,7 @@ export function useLiquidarFaturaForm({ open, fatura, contas = [] }: UseLiquidar
   useEffect(() => {
     if (open && fatura) {
       const saldo = Math.max(0, Number(fatura.valor_faturado) - Number(fatura.valor_pago || 0));
-      const contaEmpresa = contas.find((c) => c.ativo !== false && c.empresa_id === fatura.empresa_id);
-      const defaultId = contaEmpresa ? contaEmpresa.id : (contas[0]?.id || "");
+      const defaultId = getContaPadraoId();
 
       form.reset({
         conta_bancaria_id: defaultId,

@@ -14,7 +14,7 @@ import {
   TipoPeriodoFaturaType,
 } from "@/constants/financeiro.constants";
 import { FaturaFormData } from "@/schemas/faturaSchema";
-import { Client } from "@/types/database";
+import { Unidade } from "@/types/database";
 import { meses } from "@/utils/formatters/constants";
 import {
   getSemanasCompetenciaUI,
@@ -24,22 +24,22 @@ import {
 
 interface FaturaCompetenciaPeriodoSectionProps {
   form: UseFormReturn<FaturaFormData>;
-  clientes: Client[];
+  unidades: Unidade[];
   selectedTipoPeriodo: string;
 }
 
 export function FaturaCompetenciaPeriodoSection({
   form,
-  clientes,
+  unidades,
   selectedTipoPeriodo,
 }: FaturaCompetenciaPeriodoSectionProps) {
   const mesAtual = form.watch("mes_competencia") || 1;
   const anoAtual = form.watch("ano_competencia") || new Date().getFullYear();
-  const clienteId = form.watch("cliente_id");
+  const unidadeId = form.watch("unidade_id");
 
-  const clienteSel = useMemo(
-    () => clientes.find((c) => c.id === clienteId),
-    [clientes, clienteId]
+  const unidadeSel = useMemo(
+    () => unidades.find((u) => u.id === unidadeId),
+    [unidades, unidadeId]
   );
 
   const semanas = useMemo(
@@ -53,9 +53,29 @@ export function FaturaCompetenciaPeriodoSection({
   );
 
   const mensal = useMemo(
-    () => getMensalCompetenciaUI(mesAtual, anoAtual, clienteSel?.dia_vencimento_padrao || 10),
-    [mesAtual, anoAtual, clienteSel]
+    () => getMensalCompetenciaUI(mesAtual, anoAtual, unidadeSel?.dia_vencimento_padrao || 10),
+    [mesAtual, anoAtual, unidadeSel]
   );
+
+  const atualizarVencimentoPorCompetencia = (
+    novoMes: number,
+    novoAno: number,
+    tipo: string,
+    numPeriodo: number
+  ) => {
+    if (tipo === TIPO_PERIODO_FATURA.SEMANAL) {
+      const s = getSemanasCompetenciaUI(novoMes, novoAno).find((item) => item.numero_periodo === numPeriodo) ||
+        getSemanasCompetenciaUI(novoMes, novoAno)[0];
+      if (s) form.setValue("data_vencimento", s.data_vencimento, { shouldValidate: true });
+    } else if (tipo === TIPO_PERIODO_FATURA.QUINZENAL) {
+      const q = getQuinzenasCompetenciaUI(novoMes, novoAno).find((item) => item.numero_periodo === numPeriodo) ||
+        getQuinzenasCompetenciaUI(novoMes, novoAno)[0];
+      if (q) form.setValue("data_vencimento", q.data_vencimento, { shouldValidate: true });
+    } else {
+      const m = getMensalCompetenciaUI(novoMes, novoAno, unidadeSel?.dia_vencimento_padrao || 10)[0];
+      if (m) form.setValue("data_vencimento", m.data_vencimento, { shouldValidate: true });
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -71,6 +91,12 @@ export function FaturaCompetenciaPeriodoSection({
                 onChange={(e) => {
                   const novoMes = Number(e.target.value);
                   field.onChange(novoMes);
+                  atualizarVencimentoPorCompetencia(
+                    novoMes,
+                    anoAtual,
+                    selectedTipoPeriodo,
+                    form.getValues("numero_periodo") || 1
+                  );
                 }}
                 className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-semibold shadow-xs"
               >
@@ -96,7 +122,16 @@ export function FaturaCompetenciaPeriodoSection({
               <Input
                 type="number"
                 value={field.value}
-                onChange={(e) => field.onChange(Number(e.target.value))}
+                onChange={(e) => {
+                  const novoAno = Number(e.target.value);
+                  field.onChange(novoAno);
+                  atualizarVencimentoPorCompetencia(
+                    mesAtual,
+                    novoAno,
+                    selectedTipoPeriodo,
+                    form.getValues("numero_periodo") || 1
+                  );
+                }}
                 className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium shadow-xs"
               />
             </FormControl>
@@ -119,9 +154,7 @@ export function FaturaCompetenciaPeriodoSection({
                   field.onChange(val);
                   form.setValue("numero_periodo", 1);
 
-                  const valorCadastrado = Number(
-                    clienteSel?.valor_contrato_mensal || clienteSel?.valor_base || 0
-                  );
+                  const valorCadastrado = Number(unidadeSel?.valor_contrato_mensal || 0);
 
                   if (val === TIPO_PERIODO_FATURA.SEMANAL) {
                     const s1 = semanas[0];

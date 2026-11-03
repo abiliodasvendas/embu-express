@@ -20,7 +20,6 @@ export default function Configuracoes() {
     configGeofencing,
     configConvenioLimite,
     configSalarios,
-    configConvenios,
     configVales,
   } = useConfiguracoesViewModel();
 
@@ -71,7 +70,6 @@ export default function Configuracoes() {
         <TabsContent value="financeiro" className="space-y-6 animate-in fade-in duration-200">
           <FinanceiroTab
             configSalarios={configSalarios}
-            configConvenios={configConvenios}
             configVales={configVales}
             configFeriado={configFeriado}
             configConvenioLimite={configConvenioLimite}

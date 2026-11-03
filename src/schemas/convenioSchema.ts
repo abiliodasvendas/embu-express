@@ -3,8 +3,10 @@ import { z } from "zod";
 export const convenioSchema = z.object({
   nome: z.string().min(2, "O nome do convênio deve ter pelo menos 2 caracteres"),
   ativo: z.boolean().default(true),
-  empresa_id: z.coerce.number().positive().optional().nullable(),
-  conta_bancaria_id: z.string().uuid().optional().nullable(),
+  empresa_id: z.coerce.number({ invalid_type_error: "Selecione a empresa pagadora" }).positive("A empresa pagadora é obrigatória"),
+  conta_bancaria_id: z.string({ required_error: "Selecione a conta bancária" }).min(1, "A conta bancária é obrigatória"),
+  dia_vencimento_padrao: z.coerce.number().int().min(1, "Dia de vencimento inválido").max(31, "Dia de vencimento inválido"),
+  periodicidade: z.enum(["MENSAL", "QUINZENAL", "SEMANAL"]),
 });
 
 export type ConvenioFormValues = z.infer<typeof convenioSchema>;
@@ -18,13 +20,13 @@ export const lancamentoConvenioSchema = z.object({
   is_parcelado: z.boolean().optional().default(false),
   quantidade_parcelas: z.coerce.number().min(2, "A quantidade mínima de parcelas é 2").optional().nullable(),
 }).superRefine((data, ctx) => {
-    if (data.is_parcelado && (!data.quantidade_parcelas || data.quantidade_parcelas < 2)) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Informe a quantidade de parcelas (mín. 2)",
-            path: ["quantidade_parcelas"],
-        });
-    }
+  if (data.is_parcelado && (!data.quantidade_parcelas || data.quantidade_parcelas < 2)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Informe a quantidade de parcelas (mín. 2)",
+      path: ["quantidade_parcelas"],
+    });
+  }
 });
 
 export type LancamentoConvenioFormValues = z.infer<typeof lancamentoConvenioSchema>;

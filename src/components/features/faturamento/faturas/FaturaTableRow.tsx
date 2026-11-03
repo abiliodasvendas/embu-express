@@ -51,9 +51,16 @@ export function FaturaTableRow({
         )}
       </td>
       <td className="py-3.5 px-4">
-        <span className="font-bold text-sm text-foreground block truncate">
-          {fatura.cliente?.nome_fantasia || `Cliente #${fatura.cliente_id}`}
-        </span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="font-bold text-sm text-foreground">
+            {fatura.cliente?.nome_fantasia || `Cliente #${fatura.cliente_id}`}
+          </span>
+          {fatura.unidade?.nome_unidade && (
+            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-[8px]">
+              {fatura.unidade.nome_unidade}
+            </span>
+          )}
+        </div>
       </td>
       <td className="py-3.5 px-4 text-xs font-medium text-foreground/80 whitespace-nowrap">
         {fatura.empresa?.nome_fantasia || "Empresa"}

@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { ScaleIndicators } from "@/components/common/ScaleIndicators";
-import { MapPin, MapPinned, Plus, Edit2, Trash2, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, MapPinned, Plus, Edit2, Trash2, Zap, ChevronLeft, ChevronRight, DollarSign, Calendar } from "lucide-react";
 import { cnpjMask } from "@/utils/masks";
+import { formatCurrency } from "@/utils/formatters/currency";
+import { getPeriodicidadeLabel } from "@/constants/financeiro.constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { Unidade } from "@/types/database";
 
@@ -135,6 +137,16 @@ export function ClientUnidadesSection({
                           {unidade.complemento && ` - ${unidade.complemento}`}.
                           {" "}{unidade.bairro.toLowerCase()}, {unidade.cidade.toLowerCase()} - {unidade.estado}
                         </p>
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-foreground bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">
+                            <DollarSign className="h-3 w-3" />
+                            {formatCurrency(Number(unidade.valor_contrato_mensal || 0))}/mês
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full border border-border">
+                            <Calendar className="h-3 w-3" />
+                            {getPeriodicidadeLabel(unidade.periodicidade)} • Venc. dia {unidade.dia_vencimento_padrao || 16}
+                          </span>
+                        </div>
                       </div>
                     </div>
 

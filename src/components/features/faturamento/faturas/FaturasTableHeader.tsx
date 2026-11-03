@@ -22,7 +22,7 @@ export function FaturasTableHeader({
           onSort={onSort}
         />
         <SortableHeader
-          label="Cliente"
+          label="Cliente / Unidade"
           sortKey="cliente"
           currentKey={sortKey}
           direction={sortDirection}

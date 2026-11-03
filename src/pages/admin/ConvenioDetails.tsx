@@ -89,6 +89,9 @@ export default function ConvenioDetails() {
         currentDate={vm.currentDate}
         onPrevMonth={vm.handlePrevMonth}
         onNextMonth={vm.handleNextMonth}
+        isQuinzenal={vm.isQuinzenal}
+        quinzena={vm.quinzena}
+        onSelectQuinzena={vm.setQuinzena}
       />
 
       <ConvenioDetailsKpis

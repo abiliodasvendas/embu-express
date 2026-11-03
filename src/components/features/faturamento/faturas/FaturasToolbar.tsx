@@ -63,7 +63,7 @@ export function FaturasToolbar({
           <TableSearchInput
             value={searchFatura}
             onChange={onSearchChange}
-            placeholder="Buscar por cliente, empresa ou OS..."
+            placeholder="Buscar por cliente, unidade, empresa ou OS..."
             className="w-full sm:w-64"
           />
 

@@ -90,7 +90,7 @@ export function FluxoCaixaKpiCards({
               {formatCurrency(fluxo.saldo_retido_convenios)}
             </h2>
             <p className="text-[11px] text-muted-foreground mt-1 truncate">
-              {`Descontado dia ${diaSalariosStr} • Travado p/ dia ${diaConveniosStr}`}
+              {`Descontado dia ${diaSalariosStr} • Programado por parceiro`}
             </p>
           </div>
         </div>

@@ -64,10 +64,10 @@ export function ClientTableRow({
       {podeVerValores && (
         <TableCell className="px-6 py-3.5 align-middle text-right">
           <span className="font-semibold text-foreground text-xs">
-            {formatCurrency(client.valor_contrato_mensal || client.valor_base || 0)}
+            {formatCurrency(client.valor_total_contrato || 0)}
           </span>
           <span className="block text-[10px] text-muted-foreground">
-            {getPeriodicidadeLabel(client.periodicidade)}
+            Total Unidades
           </span>
         </TableCell>
       )}

@@ -48,7 +48,7 @@ export function ConvenioTableRow({
           <div>
             <p className="font-bold text-foreground text-sm">{convenio.nome}</p>
             <span className="text-xs text-muted-foreground">
-              {resumoItem?.quantidade_lancamentos || 0} lançamentos
+              {convenio.periodicidade || "MENSAL"} • Venc. dia {convenio.dia_vencimento_padrao || 15}
             </span>
           </div>
         </div>

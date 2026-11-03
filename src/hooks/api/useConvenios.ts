@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/services/api/client";
 
-// Tipos
 export interface Convenio {
     id: string;
     nome: string;
@@ -24,10 +23,6 @@ export interface LancamentoConvenio {
     updated_at?: string;
     colaborador?: { id: string; nome_completo: string; cpf?: string };
 }
-
-// ---------------------------------------------
-// HOOKS ADMIN
-// ---------------------------------------------
 
 export function useConvenios(filters?: { ativo?: string }) {
     return useQuery({
@@ -69,7 +64,7 @@ export function useConvenioLancamentos(id: string, ano: number, mes: number) {
 export function useCreateConvenio() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (payload: { nome: string; ativo?: boolean; empresa_id?: number | null; conta_bancaria_id?: string | null }) => {
+        mutationFn: async (payload: { nome: string; ativo?: boolean; empresa_id?: number | null; conta_bancaria_id?: string | null; dia_vencimento_padrao?: number; periodicidade?: string }) => {
             const { data } = await api.post<Convenio>("/convenios", payload);
             return data;
         },
@@ -82,7 +77,7 @@ export function useCreateConvenio() {
 export function useUpdateConvenio() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, ...payload }: { id: string; nome?: string; ativo?: boolean; empresa_id?: number | null; conta_bancaria_id?: string | null }) => {
+        mutationFn: async ({ id, ...payload }: { id: string; nome?: string; ativo?: boolean; empresa_id?: number | null; conta_bancaria_id?: string | null; dia_vencimento_padrao?: number; periodicidade?: string }) => {
             const { data } = await api.put<Convenio>(`/convenios/${id}`, payload);
             return data;
         },
@@ -109,10 +104,6 @@ export function useDeleteConvenio() {
         }
     });
 }
-
-// ---------------------------------------------
-// HOOKS PUBLIC (PORTAL DO CONVÊNIO)
-// ---------------------------------------------
 
 export function usePublicConvenio(token: string) {
     return useQuery({

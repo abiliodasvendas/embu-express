@@ -9,10 +9,12 @@ export const convenioAuditoriaApi = {
   getAuditoria: (
     convenioId: string,
     mes: number,
-    ano: number
+    ano: number,
+    tipo_periodo?: string,
+    numero_periodo?: number
   ): Promise<AuditoriaConvenioResultado> =>
     apiClient
-      .get(`/convenios/${convenioId}/auditoria`, { params: { mes, ano } })
+      .get(`/convenios/${convenioId}/auditoria`, { params: { mes, ano, tipo_periodo, numero_periodo } })
       .then((res) => res.data),
 
   getResumoGeral: (
@@ -28,6 +30,9 @@ export const convenioAuditoriaApi = {
     convenio_id: string;
     mes_competencia: number;
     ano_competencia: number;
+    tipo_periodo?: string;
+    numero_periodo?: number;
+    quinzena?: number | null;
     data_vencimento: string;
     valor_total_fatura: number;
     valor_pago: number;

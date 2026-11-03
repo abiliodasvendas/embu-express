@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
 import { faturaFormSchema, FaturaFormData } from "@/schemas/faturaSchema";
-import { Client, Empresa, FaturaCliente } from "@/types/database";
+import { Client, Empresa, FaturaCliente, Unidade } from "@/types/database";
 import {
   STATUS_FATURA,
   TIPO_PERIODO_FATURA,
@@ -14,6 +14,7 @@ import {
 import { toLocalDateString } from "@/utils/formatters/date";
 import { useClients } from "@/hooks/api/useClients";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
+import { useUnidades } from "@/hooks/api/useUnidades";
 import { useFaturas } from "@/hooks/api/useFaturamento";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -54,6 +55,7 @@ export function useFaturaForm({
     resolver: zodResolver(faturaFormSchema),
     defaultValues: {
       cliente_id: 0,
+      unidade_id: 0,
       empresa_id: 0,
       mes_competencia: hoje.getMonth() + 1,
       ano_competencia: hoje.getFullYear(),
@@ -68,8 +70,24 @@ export function useFaturaForm({
     },
   });
 
+  const selectedClienteId = form.watch("cliente_id");
   const selectedTipoPeriodo = form.watch("tipo_periodo");
   const isPending = createMutation.isPending || updateMutation.isPending;
+
+  const { data: unidadesResponse = [] } = useUnidades(selectedClienteId, {
+    enabled: !!selectedClienteId,
+  });
+
+  const unidades: Unidade[] = Array.isArray(unidadesResponse)
+    ? unidadesResponse
+    : (unidadesResponse as { data?: Unidade[] })?.data || [];
+
+  const unidadesDisponiveis = (() => {
+    if (faturaToEdit?.unidade && !unidades.some((u) => u.id === faturaToEdit.unidade?.id)) {
+      return [faturaToEdit.unidade as Unidade, ...unidades];
+    }
+    return unidades;
+  })();
 
   useEffect(() => {
     if (open) {
@@ -85,6 +103,7 @@ export function useFaturaForm({
 
         form.reset({
           cliente_id: faturaToEdit.cliente_id,
+          unidade_id: faturaToEdit.unidade_id,
           empresa_id: faturaToEdit.empresa_id,
           mes_competencia: faturaToEdit.mes_competencia,
           ano_competencia: faturaToEdit.ano_competencia,
@@ -100,6 +119,7 @@ export function useFaturaForm({
       } else {
         form.reset({
           cliente_id: 0,
+          unidade_id: 0,
           empresa_id: 0,
           mes_competencia: hoje.getMonth() + 1,
           ano_competencia: hoje.getFullYear(),
@@ -116,20 +136,37 @@ export function useFaturaForm({
     }
   }, [open, faturaToEdit, form]);
 
+  useEffect(() => {
+    if (!faturaToEdit && selectedClienteId && unidadesDisponiveis.length === 1) {
+      const u = unidadesDisponiveis[0];
+      if (form.getValues("unidade_id") !== u.id) {
+        handleUnidadeChange(u.id);
+      }
+    }
+  }, [selectedClienteId, unidadesDisponiveis, faturaToEdit]);
+
   const handleClienteChange = (numId: number) => {
     form.setValue("cliente_id", numId, { shouldValidate: true });
-    const clienteSelecionado = clientes.find((c) => c.id === numId);
-    if (clienteSelecionado?.empresa_emissora_padrao_id) {
-      form.setValue("empresa_id", clienteSelecionado.empresa_emissora_padrao_id, { shouldValidate: true });
+    form.setValue("unidade_id", 0, { shouldValidate: true });
+  };
+
+  const handleUnidadeChange = (unidadeId: number) => {
+    form.setValue("unidade_id", unidadeId, { shouldValidate: true });
+    const unidadeSelecionada = unidadesDisponiveis.find((u) => u.id === unidadeId);
+    if (!unidadeSelecionada) return;
+
+    if (unidadeSelecionada.empresa_emissora_padrao_id) {
+      form.setValue("empresa_id", unidadeSelecionada.empresa_emissora_padrao_id, { shouldValidate: true });
     }
+
     const mes = form.getValues("mes_competencia") || hoje.getMonth() + 1;
     const ano = form.getValues("ano_competencia") || hoje.getFullYear();
 
     let periodicidadeFinal: TipoPeriodoFaturaType = TIPO_PERIODO_FATURA.QUINZENAL;
-    if (clienteSelecionado?.periodicidade) {
-      if (clienteSelecionado.periodicidade === PERIODICIDADE_FATURAMENTO.SEMANAL) {
+    if (unidadeSelecionada.periodicidade) {
+      if (unidadeSelecionada.periodicidade === PERIODICIDADE_FATURAMENTO.SEMANAL) {
         periodicidadeFinal = TIPO_PERIODO_FATURA.SEMANAL;
-      } else if (clienteSelecionado.periodicidade === PERIODICIDADE_FATURAMENTO.MENSAL) {
+      } else if (unidadeSelecionada.periodicidade === PERIODICIDADE_FATURAMENTO.MENSAL) {
         periodicidadeFinal = TIPO_PERIODO_FATURA.MENSAL;
       } else {
         periodicidadeFinal = TIPO_PERIODO_FATURA.QUINZENAL;
@@ -138,9 +175,7 @@ export function useFaturaForm({
       form.setValue("numero_periodo", 1);
     }
 
-    const valorCadastrado = Number(
-      clienteSelecionado?.valor_contrato_mensal || clienteSelecionado?.valor_base || 0
-    );
+    const valorCadastrado = Number(unidadeSelecionada.valor_contrato_mensal || 0);
 
     let valorSugerido = valorCadastrado;
     if (periodicidadeFinal === TIPO_PERIODO_FATURA.QUINZENAL) {
@@ -151,21 +186,19 @@ export function useFaturaForm({
       form.setValue("valor_faturado", valorSugerido, { shouldValidate: true });
     }
 
-    if (!form.getValues("data_vencimento")) {
-      if (periodicidadeFinal === TIPO_PERIODO_FATURA.SEMANAL) {
-        const s1 = getSemanasCompetenciaUI(mes, ano)[0];
-        if (s1) form.setValue("data_vencimento", s1.data_vencimento, { shouldValidate: true });
-      } else if (periodicidadeFinal === TIPO_PERIODO_FATURA.QUINZENAL) {
-        const q1 = getQuinzenasCompetenciaUI(mes, ano)[0];
-        if (q1) form.setValue("data_vencimento", q1.data_vencimento, { shouldValidate: true });
-      } else {
-        const m1 = getMensalCompetenciaUI(
-          mes,
-          ano,
-          clienteSelecionado?.dia_vencimento_padrao || 10
-        )[0];
-        if (m1) form.setValue("data_vencimento", m1.data_vencimento, { shouldValidate: true });
-      }
+    if (periodicidadeFinal === TIPO_PERIODO_FATURA.SEMANAL) {
+      const s1 = getSemanasCompetenciaUI(mes, ano)[0];
+      if (s1) form.setValue("data_vencimento", s1.data_vencimento, { shouldValidate: true });
+    } else if (periodicidadeFinal === TIPO_PERIODO_FATURA.QUINZENAL) {
+      const q1 = getQuinzenasCompetenciaUI(mes, ano)[0];
+      if (q1) form.setValue("data_vencimento", q1.data_vencimento, { shouldValidate: true });
+    } else {
+      const m1 = getMensalCompetenciaUI(
+        mes,
+        ano,
+        unidadeSelecionada.dia_vencimento_padrao || 10
+      )[0];
+      if (m1) form.setValue("data_vencimento", m1.data_vencimento, { shouldValidate: true });
     }
   };
 
@@ -202,6 +235,7 @@ export function useFaturaForm({
 
     const payload: Partial<FaturaCliente> = {
       cliente_id: values.cliente_id,
+      unidade_id: values.unidade_id,
       empresa_id: values.empresa_id,
       mes_competencia: values.mes_competencia,
       ano_competencia: values.ano_competencia,
@@ -241,11 +275,13 @@ export function useFaturaForm({
 
   const handleFillMock = () => {
     const primeiroCliente = clientes[0]?.id || 1;
+    const primeiraUnidade = unidades[0]?.id || 1;
     const primeiraEmpresa = empresas[0]?.id || 1;
     const mockData = mockGenerator.fatura(primeiroCliente, primeiraEmpresa);
     form.reset({
       ...mockData,
       cliente_id: primeiroCliente,
+      unidade_id: primeiraUnidade,
       empresa_id: primeiraEmpresa,
     });
   };
@@ -258,10 +294,12 @@ export function useFaturaForm({
   return {
     form,
     clientes,
+    unidades: unidadesDisponiveis,
     empresas,
     selectedTipoPeriodo,
     isPending,
     handleClienteChange,
+    handleUnidadeChange,
     onSubmit,
     handleClose,
     handleFillMock,

@@ -26,10 +26,12 @@ export function FaturaFormDialog({
   const {
     form,
     clientes,
+    unidades,
     empresas,
     selectedTipoPeriodo,
     isPending,
     handleClienteChange,
+    handleUnidadeChange,
     onSubmit,
     handleClose,
     handleFillMock,
@@ -73,12 +75,14 @@ export function FaturaFormDialog({
               <FaturaClienteEmpresaSection
                 form={form}
                 clientes={clientes}
+                unidades={unidades}
                 empresas={empresas}
                 onClienteChange={handleClienteChange}
+                onUnidadeChange={handleUnidadeChange}
               />
               <FaturaCompetenciaPeriodoSection
                 form={form}
-                clientes={clientes}
+                unidades={unidades}
                 selectedTipoPeriodo={selectedTipoPeriodo}
               />
               <FaturaValoresDatasSection form={form} />

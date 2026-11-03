@@ -221,7 +221,9 @@ export function useConveniosViewModel() {
       const fatura = resumoItem?.fatura_fornecedor;
       const mesVenc = mes === 12 ? 1 : mes + 1;
       const anoVenc = mes === 12 ? ano + 1 : ano;
-      const dataVencDefault = `${anoVenc}-${String(mesVenc).padStart(2, "0")}-15`;
+      const diaVenc = convenio.dia_vencimento_padrao || 15;
+      const dataVencDefault = `${anoVenc}-${String(mesVenc).padStart(2, "0")}-${String(diaVenc).padStart(2, "0")}`;
+      const periodicidade = convenio.periodicidade || "MENSAL";
 
       openLiquidarFaturaConvenioDialog({
         convenioId: convenio.id,
@@ -229,6 +231,9 @@ export function useConveniosViewModel() {
         faturaId: fatura?.is_previsao ? null : (fatura?.id || null),
         mesCompetencia: mes,
         anoCompetencia: ano,
+        tipoPeriodo: periodicidade,
+        numeroPeriodo: 1,
+        quinzena: periodicidade === "QUINZENAL" ? 1 : null,
         dataVencimento: fatura?.data_vencimento || dataVencDefault,
         valorTotalFatura: fatura?.valor_total_fatura || resumoItem?.total_consumido || 0,
         valorJaPago: fatura?.valor_pago || 0,

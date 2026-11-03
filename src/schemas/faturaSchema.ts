@@ -6,6 +6,10 @@ export const faturaFormSchema = z.object({
     required_error: "Selecione o cliente",
     invalid_type_error: "Selecione o cliente",
   }).min(1, "Selecione o cliente"),
+  unidade_id: z.coerce.number({
+    required_error: "Selecione a unidade",
+    invalid_type_error: "Selecione a unidade",
+  }).min(1, "Selecione a unidade"),
   empresa_id: z.coerce.number({
     required_error: "Selecione o CNPJ emissor",
     invalid_type_error: "Selecione o CNPJ emissor",

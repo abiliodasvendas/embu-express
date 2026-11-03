@@ -1,4 +1,4 @@
-import { CircleDollarSign, Calendar, Clock } from "lucide-react";
+import { CircleDollarSign, Clock } from "lucide-react";
 import { DayConfigCard } from "../cards/DayConfigCard";
 import { MoneyConfigCard } from "../cards/MoneyConfigCard";
 import { PercentConfigCard } from "../cards/PercentConfigCard";
@@ -6,7 +6,6 @@ import type { ConfigItem } from "@/hooks/ui/configuracoes";
 
 interface FinanceiroTabProps {
   configSalarios?: ConfigItem;
-  configConvenios?: ConfigItem;
   configVales?: ConfigItem;
   configFeriado?: ConfigItem;
   configConvenioLimite?: ConfigItem;
@@ -16,7 +15,6 @@ interface FinanceiroTabProps {
 
 export function FinanceiroTab({
   configSalarios,
-  configConvenios,
   configVales,
   configFeriado,
   configConvenioLimite,
@@ -34,18 +32,6 @@ export function FinanceiroTab({
           description="Dia padrão do mês previsto para pagamento do saldo líquido da folha anterior aos colaboradores."
           example="Ex: Se definido como 7, o fluxo de caixa projeta a saída do salário no dia 07 do mês."
           icon={CircleDollarSign}
-        />
-      )}
-
-      {configConvenios && (
-        <DayConfigCard
-          config={configConvenios}
-          onSave={(valor) => onSave(configConvenios.chave, valor)}
-          isSaving={isSaving(configConvenios.chave)}
-          title="Dia de Desembolso de Convênios"
-          description="Dia padrão do mês para pagamento e repasse de faturas de oficinas e postos parceiros."
-          example="Ex: Se definido como 15, os saldos retidos dos convênios serão programados para pagamento no dia 15."
-          icon={Calendar}
         />
       )}
 

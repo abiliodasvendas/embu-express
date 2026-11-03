@@ -101,7 +101,9 @@ export function LiquidarFaturaDialog({
       <BaseDialog.Header
         icon={<Banknote className="w-5 h-5 text-emerald-600" />}
         title="Receber / Dar Baixa na Fatura"
-        subtitle={`Cliente: ${fatura.cliente?.nome_fantasia || "Não identificado"} • Vencimento: ${new Date(
+        subtitle={`${fatura.cliente?.nome_fantasia || "Cliente"}${
+          fatura.unidade?.nome_unidade ? ` • ${fatura.unidade.nome_unidade}` : ""
+        } • Vencimento: ${new Date(
           fatura.data_vencimento + "T00:00:00"
         ).toLocaleDateString("pt-BR")}`}
         onClose={handleClose}
@@ -155,7 +157,7 @@ export function LiquidarFaturaDialog({
                         <option value="">Selecione a conta de recebimento...</option>
                         {contas.map((c) => (
                           <option key={c.id} value={c.id}>
-                            {formatContaBancaria(c)}
+                            {formatContaBancaria(c)} {c.empresa ? `(${c.empresa.nome_fantasia})` : ""}
                           </option>
                         ))}
                       </NativeSelect>

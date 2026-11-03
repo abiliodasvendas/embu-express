@@ -13,6 +13,9 @@ export interface UseLiquidarFaturaConvenioFormProps {
   faturaId?: string | null;
   mesCompetencia: number;
   anoCompetencia: number;
+  tipoPeriodo?: string;
+  numeroPeriodo?: number;
+  quinzena?: number | null;
   dataVencimento: string;
   valorTotalFatura: number;
   valorJaPago?: number | null;
@@ -26,6 +29,9 @@ export function useLiquidarFaturaConvenioForm({
   faturaId,
   mesCompetencia,
   anoCompetencia,
+  tipoPeriodo = "MENSAL",
+  numeroPeriodo = 1,
+  quinzena = null,
   dataVencimento,
   valorTotalFatura,
   valorJaPago = 0,
@@ -42,6 +48,9 @@ export function useLiquidarFaturaConvenioForm({
       convenio_id: convenioId,
       mes_competencia: mesCompetencia,
       ano_competencia: anoCompetencia,
+      tipo_periodo: tipoPeriodo,
+      numero_periodo: numeroPeriodo,
+      quinzena: quinzena,
       data_vencimento: dataVencimento,
       valor_total_fatura: valorTotalFatura,
       valor_pago: valorInicialPagar,
@@ -62,6 +71,9 @@ export function useLiquidarFaturaConvenioForm({
         convenio_id: convenioId,
         mes_competencia: mesCompetencia,
         ano_competencia: anoCompetencia,
+        tipo_periodo: tipoPeriodo,
+        numero_periodo: numeroPeriodo,
+        quinzena: quinzena,
         data_vencimento: dataVencimento,
         valor_total_fatura: valorTotalFatura,
         valor_pago: valorPagar,
@@ -77,6 +89,9 @@ export function useLiquidarFaturaConvenioForm({
     faturaId,
     mesCompetencia,
     anoCompetencia,
+    tipoPeriodo,
+    numeroPeriodo,
+    quinzena,
     dataVencimento,
     valorTotalFatura,
     valorJaPago,

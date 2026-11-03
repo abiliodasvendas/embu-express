@@ -60,7 +60,6 @@ export function useConfiguracoesViewModel() {
   const configGeofencing = configs?.find((c) => c.chave === "raio_geofencing_metros");
   const configConvenioLimite = configs?.find((c) => c.chave === "percentual_limite_convenio");
   const configSalarios = configs?.find((c) => c.chave === "dia_desembolso_salarios");
-  const configConvenios = configs?.find((c) => c.chave === "dia_desembolso_convenios");
   const configVales = configs?.find((c) => c.chave === "dia_desembolso_vales");
 
   return {
@@ -76,7 +75,6 @@ export function useConfiguracoesViewModel() {
     configGeofencing,
     configConvenioLimite,
     configSalarios,
-    configConvenios,
     configVales,
   };
 }

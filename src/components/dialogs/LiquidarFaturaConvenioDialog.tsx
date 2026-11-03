@@ -33,6 +33,9 @@ export interface LiquidarFaturaConvenioDialogProps {
   faturaId?: string | null;
   mesCompetencia: number;
   anoCompetencia: number;
+  tipoPeriodo?: string;
+  numeroPeriodo?: number;
+  quinzena?: number | null;
   dataVencimento: string;
   valorTotalFatura: number;
   valorJaPago?: number | null;
@@ -49,6 +52,9 @@ export function LiquidarFaturaConvenioDialog({
   faturaId,
   mesCompetencia,
   anoCompetencia,
+  tipoPeriodo,
+  numeroPeriodo,
+  quinzena,
   dataVencimento,
   valorTotalFatura,
   valorJaPago,
@@ -66,6 +72,9 @@ export function LiquidarFaturaConvenioDialog({
     faturaId,
     mesCompetencia,
     anoCompetencia,
+    tipoPeriodo,
+    numeroPeriodo,
+    quinzena,
     dataVencimento,
     valorTotalFatura,
     valorJaPago,
@@ -95,6 +104,9 @@ export function LiquidarFaturaConvenioDialog({
         convenio_id: values.convenio_id,
         mes_competencia: Number(values.mes_competencia),
         ano_competencia: Number(values.ano_competencia),
+        tipo_periodo: values.tipo_periodo || "MENSAL",
+        numero_periodo: Number(values.numero_periodo || 1),
+        quinzena: values.quinzena ? Number(values.quinzena) : null,
         data_vencimento: values.data_vencimento,
         valor_total_fatura: Number(values.valor_total_fatura),
         valor_pago: Number(values.valor_pago),

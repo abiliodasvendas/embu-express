@@ -20,7 +20,7 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatContaBancaria } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Handshake, Loader2 } from "lucide-react";
+import { Handshake, Loader2, Calendar, Clock } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { ConvenioFormValues, convenioSchema } from "@/schemas/convenioSchema";
@@ -49,15 +49,17 @@ export function ConvenioFormDialog({
     defaultValues: {
       nome: "",
       ativo: true,
-      empresa_id: null,
-      conta_bancaria_id: null,
+      empresa_id: undefined as unknown as number,
+      conta_bancaria_id: "",
+      dia_vencimento_padrao: 15,
+      periodicidade: "MENSAL",
     },
   });
 
   const selectedEmpresaId = form.watch("empresa_id");
 
   const contasFiltradas = useMemo(() => {
-    if (!selectedEmpresaId) return contasBancarias.filter((c) => c.ativo);
+    if (!selectedEmpresaId) return [];
     return contasBancarias.filter(
       (c) => c.ativo && Number(c.empresa_id) === Number(selectedEmpresaId)
     );
@@ -69,15 +71,19 @@ export function ConvenioFormDialog({
         form.reset({
           nome: convenioToEdit.nome,
           ativo: convenioToEdit.ativo,
-          empresa_id: convenioToEdit.empresa_id || null,
-          conta_bancaria_id: convenioToEdit.conta_bancaria_id || null,
+          empresa_id: convenioToEdit.empresa_id ? Number(convenioToEdit.empresa_id) : (undefined as unknown as number),
+          conta_bancaria_id: convenioToEdit.conta_bancaria_id || "",
+          dia_vencimento_padrao: convenioToEdit.dia_vencimento_padrao || 15,
+          periodicidade: (convenioToEdit.periodicidade as "MENSAL" | "QUINZENAL" | "SEMANAL") || "MENSAL",
         });
       } else {
         form.reset({
           nome: "",
           ativo: true,
-          empresa_id: null,
-          conta_bancaria_id: null,
+          empresa_id: undefined as unknown as number,
+          conta_bancaria_id: "",
+          dia_vencimento_padrao: 15,
+          periodicidade: "MENSAL",
         });
       }
     }
@@ -85,22 +91,23 @@ export function ConvenioFormDialog({
 
   const onSubmit = async (values: ConvenioFormValues) => {
     try {
+      const payload = {
+        nome: values.nome,
+        ativo: values.ativo,
+        empresa_id: Number(values.empresa_id),
+        conta_bancaria_id: values.conta_bancaria_id,
+        dia_vencimento_padrao: Number(values.dia_vencimento_padrao),
+        periodicidade: values.periodicidade,
+      };
+
       if (isEditing && convenioToEdit) {
         await updateConvenio.mutateAsync({
           id: convenioToEdit.id,
-          nome: values.nome,
-          ativo: values.ativo,
-          empresa_id: values.empresa_id ? Number(values.empresa_id) : null,
-          conta_bancaria_id: values.conta_bancaria_id || null,
+          ...payload,
         });
         toast.success("Convênio atualizado com sucesso!");
       } else {
-        await createConvenio.mutateAsync({
-          nome: values.nome,
-          ativo: values.ativo,
-          empresa_id: values.empresa_id ? Number(values.empresa_id) : null,
-          conta_bancaria_id: values.conta_bancaria_id || null,
-        });
+        await createConvenio.mutateAsync(payload);
         toast.success("Convênio criado com sucesso!");
       }
       safeCloseDialog(() => onOpenChange(false));
@@ -162,24 +169,79 @@ export function ConvenioFormDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
-                name="empresa_id"
+                name="periodicidade"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold text-foreground">
-                      Empresa Pagadora (Padrão)
+                      Periodicidade da Fatura <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <NativeSelect
                         {...field}
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                        className="h-11 rounded-[18px] bg-background"
+                        value={field.value || "MENSAL"}
+                        onChange={(e) => field.onChange(e.target.value as "MENSAL" | "QUINZENAL" | "SEMANAL")}
+                        className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
                       >
-                        <option value="">Nenhuma (definir na baixa)</option>
+                        <option value="MENSAL">Mensal</option>
+                        <option value="QUINZENAL">Quinzenal</option>
+                        <option value="SEMANAL">Semanal</option>
+                      </NativeSelect>
+                    </FormControl>
+                    <FormMessage className="text-xs text-destructive ml-1" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="dia_vencimento_padrao"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Dia do Vencimento <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="Ex: 15"
+                        className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 15)}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs text-destructive ml-1" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="empresa_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Empresa Pagadora <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <NativeSelect
+                        {...field}
+                        value={field.value ? String(field.value) : ""}
+                        onChange={(e) => {
+                          const novoId = e.target.value ? Number(e.target.value) : (undefined as unknown as number);
+                          field.onChange(novoId);
+                          form.setValue("conta_bancaria_id", "", { shouldValidate: true });
+                        }}
+                        className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
+                      >
+                        <option value="">Selecione a empresa pagadora...</option>
                         {empresas
                           .filter((e) => e.ativo)
                           .map((emp) => (
-                            <option key={emp.id} value={emp.id}>
+                            <option key={emp.id} value={String(emp.id)}>
                               {emp.nome_fantasia}
                             </option>
                           ))}
@@ -196,16 +258,23 @@ export function ConvenioFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold text-foreground">
-                      Conta Débito (Padrão)
+                      Conta Bancária <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <NativeSelect
                         {...field}
                         value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value || null)}
-                        className="h-11 rounded-[18px] bg-background"
+                        onChange={(e) => field.onChange(e.target.value || "")}
+                        disabled={!selectedEmpresaId}
+                        className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs disabled:opacity-60"
                       >
-                        <option value="">Nenhuma (definir na baixa)</option>
+                        <option value="">
+                          {!selectedEmpresaId
+                            ? "Selecione a empresa pagadora antes..."
+                            : contasFiltradas.length === 0
+                            ? "Nenhuma conta cadastrada nesta empresa"
+                            : "Selecione a conta bancária..."}
+                        </option>
                         {contasFiltradas.map((conta) => (
                           <option key={conta.id} value={conta.id}>
                             {formatContaBancaria(conta)}

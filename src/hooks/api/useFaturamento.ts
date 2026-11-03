@@ -49,6 +49,11 @@ export function useFaturas(
     onSuccess: () => invalidarConsultasFinanceiras(),
   });
 
+  const cancelarLoteMutation = useMutation({
+    mutationFn: (ids: string[]) => faturamentoApi.cancelarLote(ids),
+    onSuccess: () => invalidarConsultasFinanceiras(),
+  });
+
   const loteRecebimentoMutation = useMutation({
     mutationFn: (payload: LoteRecebimentoPayload) => faturamentoApi.processarLoteRecebimento(payload),
     onSuccess: () => invalidarConsultasFinanceiras(),
@@ -66,6 +71,7 @@ export function useFaturas(
     createMutation,
     updateMutation,
     deleteMutation,
+    cancelarLoteMutation,
     loteRecebimentoMutation,
     liquidarMutation,
   };

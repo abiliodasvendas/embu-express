@@ -2,6 +2,7 @@ import { AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FaturaStatusBadge } from "./FaturaStatusBadge";
 import { FaturaRowActions } from "./FaturaRowActions";
@@ -14,6 +15,8 @@ import type { FaturaCliente } from "@/types/database";
 
 interface FaturaTableRowProps {
   fatura: FaturaCliente;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
   onLiquidar: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
@@ -22,6 +25,8 @@ interface FaturaTableRowProps {
 
 export function FaturaTableRow({
   fatura,
+  isSelected = false,
+  onToggleSelect,
   onLiquidar,
   onEdit,
   onDelete,
@@ -40,7 +45,19 @@ export function FaturaTableRow({
     getFaturaPagamentoInfo(fatura.recebimentos);
 
   return (
-    <tr className="hover:bg-muted/40 transition-colors">
+    <tr
+      className={cn(
+        "hover:bg-muted/40 transition-colors",
+        isSelected && "bg-primary/[0.04] dark:bg-primary/[0.08]"
+      )}
+    >
+      <td className="py-3.5 px-3 text-center whitespace-nowrap">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => onToggleSelect?.(fatura.id)}
+          aria-label={`Selecionar fatura ${fatura.id}`}
+        />
+      </td>
       <td className="py-3.5 px-4 whitespace-nowrap">
         {fatura.numero_os ? (
           <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-muted/60 text-muted-foreground font-mono text-[11px] font-medium">

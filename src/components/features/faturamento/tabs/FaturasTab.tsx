@@ -3,6 +3,7 @@ import { FaturasKpis } from "../faturas/FaturasKpis";
 import { AgingRecebiveisCard } from "../faturas/AgingRecebiveisCard";
 import { FaturasToolbar } from "../faturas/FaturasToolbar";
 import { FaturasTable } from "../faturas/FaturasTable";
+import { FaturasBatchActionBar } from "../faturas/FaturasBatchActionBar";
 
 interface FaturasTabProps {
   mes: number;
@@ -64,6 +65,18 @@ export function FaturasTab({ mes, ano, setMes, setAno }: FaturasTabProps) {
         onLiquidar={vm.handleLiquidarFatura}
         onEdit={vm.handleEditFatura}
         onDelete={vm.handleDeleteFatura}
+        selectedIds={vm.selectedIds}
+        isAllSelected={vm.isAllSelected}
+        isSomeSelected={vm.isSomeSelected}
+        onToggleSelectAll={vm.handleToggleSelectAll}
+        onToggleSelect={vm.handleToggleSelect}
+      />
+
+      <FaturasBatchActionBar
+        selectedCount={vm.selectedCount}
+        isCanceling={vm.isCanceling}
+        onCancelarSelecionadas={vm.handleCancelarLote}
+        onClearSelection={vm.handleClearSelection}
       />
     </div>
   );

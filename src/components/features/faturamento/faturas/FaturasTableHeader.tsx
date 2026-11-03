@@ -1,19 +1,33 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import { SortableHeader } from "@/components/ui/SortableHeader";
 
 interface FaturasTableHeaderProps {
   sortKey: string;
   sortDirection: "asc" | "desc";
   onSort: (key: string) => void;
+  isAllSelected: boolean;
+  isSomeSelected: boolean;
+  onToggleSelectAll: () => void;
 }
 
 export function FaturasTableHeader({
   sortKey,
   sortDirection,
   onSort,
+  isAllSelected,
+  isSomeSelected,
+  onToggleSelectAll,
 }: FaturasTableHeaderProps) {
   return (
     <thead className="bg-surface-alt/60">
       <tr className="border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
+        <th className="py-3 px-3 w-10 text-center">
+          <Checkbox
+            checked={isAllSelected ? true : isSomeSelected ? "indeterminate" : false}
+            onCheckedChange={onToggleSelectAll}
+            aria-label="Selecionar todas as faturas"
+          />
+        </th>
         <SortableHeader
           label="OS"
           sortKey="numero_os"

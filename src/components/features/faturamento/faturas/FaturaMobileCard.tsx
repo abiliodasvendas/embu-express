@@ -1,5 +1,6 @@
-import { AlertCircle, Banknote, Edit2, Trash2 } from "lucide-react";
+import { AlertCircle, Banknote, Edit2, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { STATUS_FATURA } from "@/constants/financeiro.constants";
@@ -14,6 +15,8 @@ import type { FaturaCliente } from "@/types/database";
 
 interface FaturaMobileCardProps {
   fatura: FaturaCliente;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
   onLiquidar: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
@@ -22,6 +25,8 @@ interface FaturaMobileCardProps {
 
 export function FaturaMobileCard({
   fatura,
+  isSelected = false,
+  onToggleSelect,
   onLiquidar,
   onEdit,
   onDelete,
@@ -43,9 +48,23 @@ export function FaturaMobileCard({
     fatura.status !== STATUS_FATURA.LIQUIDADA &&
     fatura.status !== STATUS_FATURA.CANCELADA;
 
+  const podeCancelar = fatura.status !== STATUS_FATURA.CANCELADA;
+
   return (
-    <div className="bg-card rounded-[24px] border border-border p-4 shadow-xs space-y-3">
-      <div className="flex items-start justify-between gap-3">
+    <div
+      className={cn(
+        "bg-card rounded-[24px] border border-border p-4 shadow-xs space-y-3 transition-colors",
+        isSelected && "border-primary/50 bg-primary/[0.03] dark:bg-primary/[0.06]"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className="pt-0.5">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onToggleSelect?.(fatura.id)}
+            aria-label={`Selecionar fatura ${fatura.id}`}
+          />
+        </div>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-bold text-sm text-foreground">
@@ -62,81 +81,74 @@ export function FaturaMobileCard({
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-            <span className="font-medium text-foreground/80">
-              {fatura.empresa?.nome_fantasia || "Empresa"}
-            </span>
-            <span>•</span>
-            <span>{periodoTexto}</span>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            {fatura.empresa?.nome_fantasia || "Empresa"} • {periodoTexto}
+          </p>
         </div>
-        <div className="shrink-0">
-          <FaturaStatusBadge
-            status={fatura.status}
-            isPrevisao={fatura.is_previsao}
-          />
-        </div>
+        <FaturaStatusBadge
+          status={fatura.status}
+          isPrevisao={fatura.is_previsao}
+        />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border text-xs">
+      <div className="grid grid-cols-2 gap-2 text-xs border-y border-border/60 py-2.5">
         <div>
           <span className="text-[11px] text-muted-foreground block">Vencimento</span>
           <span
             className={
               isVencido
-                ? "font-semibold text-destructive flex items-center gap-1 text-xs"
-                : "font-medium text-foreground text-xs"
+                ? "font-semibold text-destructive flex items-center gap-1"
+                : "font-medium text-foreground"
             }
           >
             {isVencido && <AlertCircle className="h-3 w-3 shrink-0" />}
             {formatDateToBR(fatura.data_vencimento)}
           </span>
           {isVencido && diasAtraso > 0 && (
-            <span className="text-[10px] text-destructive block">
-              {diasAtraso}d atraso
+            <span className="text-[10px] text-destructive font-medium block">
+              {diasAtraso} {diasAtraso === 1 ? "dia" : "dias"} de atraso
             </span>
           )}
         </div>
-        <div className="text-right sm:text-left">
-          <span className="text-[11px] text-muted-foreground block">Valor Total</span>
-          <span className="font-semibold text-foreground text-xs tabular-nums">
+        <div className="text-right">
+          <span className="text-[11px] text-muted-foreground block">Valor Faturado</span>
+          <span className="font-bold text-sm text-foreground tabular-nums">
             {formatCurrency(fatura.valor_faturado)}
           </span>
         </div>
         <div>
           <span className="text-[11px] text-muted-foreground block">Valor Pago</span>
           <span
-            className={cn(
-              "text-xs tabular-nums",
+            className={
               (fatura.valor_pago || 0) > 0
-                ? "font-semibold text-emerald-600 dark:text-emerald-400"
-                : "font-normal text-muted-foreground/50",
-            )}
+                ? "font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums"
+                : "text-muted-foreground/50"
+            }
           >
             {formatCurrency(fatura.valor_pago || 0)}
           </span>
         </div>
         <div className="text-right">
-          <span className="text-[11px] text-muted-foreground block">Data Pagto</span>
-          <span className="text-xs tabular-nums font-medium text-foreground">
-            {temPagamento && ultimaData ? (
-              <span>
-                {formatDateToBR(ultimaData)}
+          <span className="text-[11px] text-muted-foreground block">Último Pagto</span>
+          <span className="font-medium text-foreground tabular-nums">
+            {temPagamento ? (
+              <>
+                {formatDateToBR(ultimaData!)}
                 {quantidadeBaixas > 1 && (
-                  <span className="ml-1 text-[10px] font-semibold text-primary">
-                    (+{quantidadeBaixas - 1})
+                  <span className="text-[10px] text-primary ml-1 font-semibold">
+                    ({quantidadeBaixas}x)
                   </span>
                 )}
-              </span>
+              </>
             ) : (
-              <span className="text-muted-foreground/40">-</span>
+              "-"
             )}
           </span>
         </div>
       </div>
 
       {canEdit && (
-        <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between pt-1">
           <div>
             {podeReceber && (
               <Button
@@ -160,15 +172,17 @@ export function FaturaMobileCard({
             >
               <Edit2 className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
-              onClick={() => onDelete(fatura)}
-              title="Excluir Fatura"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {podeCancelar && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
+                onClick={() => onDelete(fatura)}
+                title="Cancelar Fatura"
+              >
+                <Ban className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       )}

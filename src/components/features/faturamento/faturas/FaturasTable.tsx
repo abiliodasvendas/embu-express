@@ -21,6 +21,11 @@ interface FaturasTableProps {
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
   canEdit?: boolean;
+  selectedIds: Set<string>;
+  isAllSelected: boolean;
+  isSomeSelected: boolean;
+  onToggleSelectAll: () => void;
+  onToggleSelect: (id: string) => void;
 }
 
 export function FaturasTable({
@@ -37,9 +42,14 @@ export function FaturasTable({
   onEdit,
   onDelete,
   canEdit = true,
+  selectedIds,
+  isAllSelected,
+  isSomeSelected,
+  onToggleSelectAll,
+  onToggleSelect,
 }: FaturasTableProps) {
   if (isLoading) {
-    return <TableSkeleton cols={10} rows={5} />;
+    return <TableSkeleton cols={11} rows={5} />;
   }
 
   if (faturas.length === 0) {
@@ -84,12 +94,17 @@ export function FaturasTable({
               sortKey={sortKey}
               sortDirection={sortDirection}
               onSort={onSort}
+              isAllSelected={isAllSelected}
+              isSomeSelected={isSomeSelected}
+              onToggleSelectAll={onToggleSelectAll}
             />
             <tbody className="divide-y divide-border/60">
               {faturas.map((f) => (
                 <FaturaTableRow
                   key={f.id}
                   fatura={f}
+                  isSelected={selectedIds.has(f.id)}
+                  onToggleSelect={onToggleSelect}
                   onLiquidar={onLiquidar}
                   onEdit={onEdit}
                   onDelete={onDelete}
@@ -106,6 +121,8 @@ export function FaturasTable({
           <FaturaMobileCard
             key={f.id}
             fatura={f}
+            isSelected={selectedIds.has(f.id)}
+            onToggleSelect={onToggleSelect}
             onLiquidar={onLiquidar}
             onEdit={onEdit}
             onDelete={onDelete}

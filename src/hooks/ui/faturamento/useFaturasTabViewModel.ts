@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { useLayout } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -42,6 +42,7 @@ export function useFaturasTabViewModel({
   const [empresaFaturaFiltro, setEmpresaFaturaFiltro] = useState<string>("todas");
   const [searchFatura, setSearchFatura] = useState<string>("");
   const [agingFaixaFiltro, setAgingFaixaFiltro] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: empresasList = [] } = useEmpresas({ ativo: "true" });
 
@@ -84,10 +85,15 @@ export function useFaturasTabViewModel({
     isLoading: isLoadingFaturas,
     isFetching: isFetchingFaturas,
     deleteMutation,
+    cancelarLoteMutation,
     refetch: refetchFaturas,
   } = useFaturas(filtrosFatura);
 
   const { data: aging } = useAgingRecebiveis(mes, ano);
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [mes, ano, periodoFiltro, statusFiltro, empresaFaturaFiltro]);
 
   const faturasExibidas = useMemo(() => {
     let list = faturas;
@@ -159,6 +165,37 @@ export function useFaturasTabViewModel({
     },
   });
 
+  const isAllSelected =
+    faturasOrdenadas.length > 0 && selectedIds.size >= faturasOrdenadas.length;
+  const isSomeSelected =
+    selectedIds.size > 0 && selectedIds.size < faturasOrdenadas.length;
+  const selectedCount = selectedIds.size;
+  const isCanceling = deleteMutation.isPending || cancelarLoteMutation.isPending;
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(faturasOrdenadas.map((f) => f.id)));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
   const kpis = useMemo(() => {
     let totalFaturado = 0;
     let totalRecebido = 0;
@@ -185,17 +222,44 @@ export function useFaturasTabViewModel({
 
   const handleDeleteFatura = (fatura: FaturaCliente) => {
     openConfirmationDialog({
-      title: "Excluir Fatura",
-      description: `Tem certeza que deseja excluir a fatura #${fatura.id.substring(0, 8)} de ${fatura.cliente?.nome_fantasia || "Cliente"}?`,
-      confirmText: "Excluir",
+      title: "Cancelar Fatura",
+      description: `Tem certeza que deseja cancelar a fatura #${fatura.id.substring(0, 8)} de ${fatura.cliente?.nome_fantasia || "Cliente"}? O status será alterado para Cancelada.`,
+      confirmText: "Cancelar Fatura",
       variant: "destructive",
       onConfirm: async () => {
         try {
           await deleteMutation.mutateAsync(fatura.id);
+          setSelectedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(fatura.id);
+            return next;
+          });
           await refetchFaturas();
-          toast.success("Fatura excluída com sucesso!");
+          toast.success("Fatura cancelada com sucesso!");
         } catch {
-          toast.error("Erro ao excluir fatura.");
+          toast.error("Erro ao cancelar fatura.");
+        }
+      },
+    });
+  };
+
+  const handleCancelarLote = () => {
+    if (selectedIds.size === 0) return;
+
+    openConfirmationDialog({
+      title: "Cancelar Faturas Selecionadas",
+      description: `Tem certeza que deseja cancelar as ${selectedIds.size} faturas selecionadas? O status será alterado para Cancelada.`,
+      confirmText: "Sim, Cancelar Faturas",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          const ids = Array.from(selectedIds);
+          const res = await cancelarLoteMutation.mutateAsync(ids);
+          setSelectedIds(new Set());
+          await refetchFaturas();
+          toast.success(`${res.canceladas || ids.length} faturas canceladas com sucesso!`);
+        } catch {
+          toast.error("Erro ao cancelar faturas selecionadas.");
         }
       },
     });
@@ -253,6 +317,15 @@ export function useFaturasTabViewModel({
     handleSortFaturas,
     isLoadingFaturas,
     isFetchingFaturas,
+    selectedIds,
+    isAllSelected,
+    isSomeSelected,
+    selectedCount,
+    isCanceling,
+    handleToggleSelect,
+    handleToggleSelectAll,
+    handleClearSelection,
+    handleCancelarLote,
     handleDeleteFatura,
     handleOpenNovaFatura,
     handleEditFatura,

@@ -49,6 +49,9 @@ export const faturamentoApi = {
   deleteFatura: (id: string): Promise<void> =>
     apiClient.delete(`/faturamento/${id}`).then(res => res.data),
 
+  cancelarLote: (ids: string[]): Promise<{ canceladas: number }> =>
+    apiClient.post("/faturamento/cancelar-lote", { ids }).then(res => res.data),
+
   processarLoteRecebimento: (payload: LoteRecebimentoPayload): Promise<LoteRecebimento> =>
     apiClient.post("/faturamento/lote-recebimento", payload).then(res => res.data),
 

@@ -5,8 +5,16 @@ export const convenioSchema = z.object({
   ativo: z.boolean().default(true),
   empresa_id: z.coerce.number({ invalid_type_error: "Selecione a empresa pagadora" }).positive("A empresa pagadora é obrigatória"),
   conta_bancaria_id: z.string({ required_error: "Selecione a conta bancária" }).min(1, "A conta bancária é obrigatória"),
-  dia_vencimento_padrao: z.coerce.number().int().min(1, "Dia de vencimento inválido").max(31, "Dia de vencimento inválido"),
+  dia_vencimento_padrao: z.coerce.number().int().min(1, "Dia de vencimento inválido").max(31, "Dia de vencimento inválido").optional().nullable(),
   periodicidade: z.enum(["MENSAL", "QUINZENAL", "SEMANAL"]),
+}).superRefine((data, ctx) => {
+  if (data.periodicidade === "MENSAL" && (!data.dia_vencimento_padrao || data.dia_vencimento_padrao < 1 || data.dia_vencimento_padrao > 31)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "O dia do vencimento é obrigatório para periodicidade mensal",
+      path: ["dia_vencimento_padrao"],
+    });
+  }
 });
 
 export type ConvenioFormValues = z.infer<typeof convenioSchema>;

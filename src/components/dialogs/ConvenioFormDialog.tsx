@@ -1,5 +1,6 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
+import { Banner } from "@/components/ui/Banner";
 import {
   Form,
   FormControl,
@@ -57,6 +58,7 @@ export function ConvenioFormDialog({
   });
 
   const selectedEmpresaId = form.watch("empresa_id");
+  const periodicidade = form.watch("periodicidade");
 
   const contasFiltradas = useMemo(() => {
     if (!selectedEmpresaId) return [];
@@ -166,7 +168,7 @@ export function ConvenioFormDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className={`grid grid-cols-1 gap-3 ${periodicidade === "MENSAL" ? "sm:grid-cols-2" : ""}`}>
               <FormField
                 control={form.control}
                 name="periodicidade"
@@ -192,33 +194,51 @@ export function ConvenioFormDialog({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="dia_vencimento_padrao"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-foreground">
-                      Dia do Vencimento <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={31}
-                        placeholder="Informe o dia (1 a 31)"
-                        className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs text-destructive ml-1" />
-                  </FormItem>
-                )}
-              />
+              {periodicidade === "MENSAL" && (
+                <FormField
+                  control={form.control}
+                  name="dia_vencimento_padrao"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Dia do Vencimento <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={31}
+                          placeholder="Informe o dia (1 a 31)"
+                          className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs text-destructive ml-1" />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
+
+            {periodicidade === "QUINZENAL" && (
+              <Banner
+                variant="info"
+                title="Vencimentos Quinzenais do Convênio"
+                description="A 1ª Quinzena vence no dia 16 e a 2ª Quinzena vence no último dia do mês."
+              />
+            )}
+
+            {periodicidade === "SEMANAL" && (
+              <Banner
+                variant="info"
+                title="Ciclo Semanal do Convênio"
+                description="Apuração de segunda a domingo com vencimento na terça-feira subsequente."
+              />
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField

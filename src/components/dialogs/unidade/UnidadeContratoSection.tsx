@@ -118,11 +118,7 @@ export function UnidadeContratoSection({ control, watch, setValue }: UnidadeCont
 
       <div
         className={`grid grid-cols-1 gap-3.5 ${
-          periodicidade === PERIODICIDADE_FATURAMENTO.QUINZENAL
-            ? "md:grid-cols-4"
-            : periodicidade === PERIODICIDADE_FATURAMENTO.MENSAL
-            ? "md:grid-cols-3"
-            : "md:grid-cols-2"
+          periodicidade === PERIODICIDADE_FATURAMENTO.MENSAL ? "md:grid-cols-3" : "md:grid-cols-2"
         }`}
       >
         <FormField
@@ -184,62 +180,6 @@ export function UnidadeContratoSection({ control, watch, setValue }: UnidadeCont
           />
         )}
 
-        {periodicidade === PERIODICIDADE_FATURAMENTO.QUINZENAL && (
-          <>
-            <FormField
-              control={control}
-              name="dia_vencimento_padrao"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs font-semibold text-foreground">
-                    1º Vencimento <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={31}
-                      placeholder="Ex: 16"
-                      value={field.value ?? ""}
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
-                      }
-                      className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs text-destructive" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name="dia_vencimento_segunda_quinzena"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs font-semibold text-foreground">
-                    2º Vencimento <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={31}
-                      placeholder="Ex: 30"
-                      value={field.value ?? ""}
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
-                      }
-                      className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium focus:border-primary shadow-xs"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs text-destructive" />
-                </FormItem>
-              )}
-            />
-          </>
-        )}
-
         <FormField
           control={control}
           name="valor_contrato_mensal"
@@ -261,6 +201,14 @@ export function UnidadeContratoSection({ control, watch, setValue }: UnidadeCont
           )}
         />
       </div>
+
+      {periodicidade === PERIODICIDADE_FATURAMENTO.QUINZENAL && (
+        <Banner
+          variant="info"
+          title="Vencimentos Quinzenais da Unidade"
+          description="A 1ª Quinzena vence no dia 16 e a 2ª Quinzena vence no último dia do mês."
+        />
+      )}
 
       {periodicidade === PERIODICIDADE_FATURAMENTO.SEMANAL && (
         <Banner

@@ -102,8 +102,8 @@ export function ClientFormDialog({
       const message = err.response?.data?.message || err.message || "";
       toast.error(
         editingClient
-          ? messages.cliente.erro.falhaAtualizar
-          : messages.cliente.erro.falhaCriar,
+          ? messages.cliente.erro.atualizar
+          : messages.cliente.erro.criar,
         { description: message }
       );
     }

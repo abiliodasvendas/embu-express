@@ -1,28 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+﻿import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/services/api/client";
-
-export interface Convenio {
-    id: string;
-    nome: string;
-    ativo: boolean;
-    token: string;
-    empresa_id?: number | null;
-    conta_bancaria_id?: string | null;
-    created_at: string;
-}
-
-export interface LancamentoConvenio {
-    id: string;
-    convenio_id: string;
-    colaborador_id: string | null;
-    data_lancamento: string;
-    valor: number;
-    descricao?: string;
-    moto_embu: boolean;
-    created_at: string;
-    updated_at?: string;
-    colaborador?: { id: string; nome_completo: string; cpf?: string };
-}
+import { Convenio, LancamentoConvenio } from "@/types/database";
+export type { Convenio, LancamentoConvenio };
 
 export function useConvenios(filters?: { ativo?: string }) {
     return useQuery({

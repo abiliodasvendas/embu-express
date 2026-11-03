@@ -196,14 +196,19 @@ export function useCollaboratorTurnForm({
     try {
       const parsedValues = turnSchema.parse(values) as TurnFormData;
 
-      const data = {
+      const data: Partial<ColaboradorCliente> = {
         ...parsedValues,
         colaborador_id: collaboratorId,
         cliente_id: parseInt(parsedValues.cliente_id),
         unidade_id: parseInt(parsedValues.unidade_id),
         empresa_id: parseInt(parsedValues.empresa_id),
         validar_localizacao: parsedValues.validar_localizacao,
-        horarios: parsedValues.horarios,
+        horarios: parsedValues.horarios.map((h) => ({
+          dia_semana: h.dia_semana,
+          hora_inicio: h.hora_inicio,
+          hora_fim: h.hora_fim,
+          tolerancia_pausa_min: h.tolerancia_pausa_min,
+        })),
       };
 
       if (turnToEdit) {

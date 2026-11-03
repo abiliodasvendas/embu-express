@@ -52,19 +52,23 @@ export function ClientList({
   );
 
   const getEmpresaEmissoraNome = (client: Client): string | null => {
-    if (client.empresa_emissora_padrao) {
-      if (typeof client.empresa_emissora_padrao === "object") {
-        const emp = Array.isArray(client.empresa_emissora_padrao)
-          ? client.empresa_emissora_padrao[0]
-          : client.empresa_emissora_padrao;
-        if (emp?.nome_fantasia || emp?.razao_social) {
-          return emp.nome_fantasia || emp.razao_social;
-        }
-      }
-    }
-    if (client.empresa_emissora_padrao_id) {
-      const emp = empresasMap.get(client.empresa_emissora_padrao_id);
-      return emp?.nome_fantasia || emp?.razao_social || null;
+    if (client.unidades && client.unidades.length > 0) {
+      const empresasNomes = client.unidades
+        .map((u) => {
+          if (u.empresa_emissora_padrao?.nome_fantasia || u.empresa_emissora_padrao?.razao_social) {
+            return u.empresa_emissora_padrao.nome_fantasia || u.empresa_emissora_padrao.razao_social;
+          }
+          if (u.empresa_emissora_padrao_id) {
+            const emp = empresasMap.get(u.empresa_emissora_padrao_id);
+            return emp?.nome_fantasia || emp?.razao_social;
+          }
+          return null;
+        })
+        .filter((nome): nome is string => Boolean(nome));
+
+      const distinct = Array.from(new Set(empresasNomes));
+      if (distinct.length === 1) return distinct[0];
+      if (distinct.length > 1) return `${distinct.length} empresas`;
     }
     return null;
   };

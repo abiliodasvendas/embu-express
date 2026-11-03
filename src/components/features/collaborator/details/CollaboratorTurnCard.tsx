@@ -186,7 +186,7 @@ export function CollaboratorTurnCard({
               {Boolean(link.valor_bonus) && (
                 <div className="bg-muted/40 p-2.5 rounded-[12px] border border-border">
                   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
-                    Zero Falta / Bônus
+                    Bônus Atividade
                   </span>
                   <span className="text-xs font-bold text-foreground">
                     {formatCurrency(link.valor_bonus)}

@@ -22,7 +22,7 @@ export const despesaFormSchema = z.object({
   valor_pago: z.coerce.number().optional().default(0),
   data_pagamento: z.string().optional(),
   is_parcelado: z.boolean().default(false),
-  quantidade_parcelas: z.coerce.number().min(2, "Mínimo 2 parcelas").max(60).optional(),
+  quantidade_parcelas: z.coerce.number().min(2, "Mínimo 2 parcelas").optional(),
   is_recorrente: z.boolean().default(false),
   meses_recorrencia: z.coerce.number().min(2).max(36).optional(),
   escopo: z.nativeEnum(DESPESA_ESCOPO_ACAO).optional(),

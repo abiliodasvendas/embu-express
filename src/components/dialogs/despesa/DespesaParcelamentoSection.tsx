@@ -217,7 +217,6 @@ export function DespesaParcelamentoSection({
                   <Input
                     type="number"
                     min={2}
-                    max={60}
                     placeholder="Ex: 10"
                     value={field.value || ""}
                     onChange={(e) => field.onChange(Number(e.target.value))}

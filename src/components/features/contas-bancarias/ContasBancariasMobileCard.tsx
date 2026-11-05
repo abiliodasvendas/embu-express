@@ -10,12 +10,14 @@ interface ContasBancariasMobileCardProps {
   conta: ContaBancariaComSaldo;
   onExcluir: (conta: ContaBancariaComSaldo) => void;
   isDeleting?: boolean;
+  canEdit?: boolean;
 }
 
 export function ContasBancariasMobileCard({
   conta,
   onExcluir,
   isDeleting = false,
+  canEdit = true,
 }: ContasBancariasMobileCardProps) {
   const saldoAtual = conta.saldo_atual || 0;
   const saldoProjetado = conta.saldo_projetado || 0;
@@ -46,15 +48,17 @@ export function ContasBancariasMobileCard({
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onExcluir(conta)}
-          disabled={isDeleting}
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[10px] shrink-0 cursor-pointer"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
+        {canEdit && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onExcluir(conta)}
+            disabled={isDeleting}
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[10px] shrink-0 cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       <div className="text-xs text-muted-foreground flex items-center justify-between flex-wrap gap-1 bg-muted/20 px-3 py-1.5 rounded-[14px]">

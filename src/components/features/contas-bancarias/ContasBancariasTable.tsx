@@ -48,7 +48,7 @@ export function ContasBancariasTable({
               <th className="py-3 px-4 w-[140px] text-right">Saídas (Real / Prev)</th>
               <th className="py-3 px-4 w-[140px] text-right">Saldo Atual (Realizado)</th>
               <th className="py-3 px-4 w-[130px] text-right">Saldo Projetado</th>
-              <th className="py-3 px-4 w-[70px] text-right">Ações</th>
+              {canEdit && <th className="py-3 px-4 w-[70px] text-right">Ações</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
@@ -58,6 +58,7 @@ export function ContasBancariasTable({
                 conta={conta}
                 onExcluir={onExcluir}
                 isDeleting={isDeleting}
+                canEdit={canEdit}
               />
             ))}
           </tbody>

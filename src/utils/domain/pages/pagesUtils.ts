@@ -103,11 +103,7 @@ export const pagesItems: PageItem[] = [
         title: "Contas Bancárias",
         href: ROUTES.PRIVATE.CONTAS_BANCARIAS,
         icon: Landmark,
-        permissionKey: [
-            PERMISSIONS.FATURAMENTO.VER,
-            PERMISSIONS.DESPESAS.VER,
-            PERMISSIONS.EMPRESAS.VER,
-        ],
+        permissionKey: PERMISSIONS.CONTAS_BANCARIAS.VER,
         category: MENU_CATEGORIES.FINANCEIRO,
     },
     {

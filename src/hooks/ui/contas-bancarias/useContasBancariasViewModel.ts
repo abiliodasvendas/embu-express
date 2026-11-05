@@ -1,15 +1,18 @@
 import { useState, useMemo } from "react";
-import { useDateFilters } from "@/hooks";
+import { useDateFilters, usePermissions } from "@/hooks";
 import { useContasBancarias, useContasBancariasSaldos } from "@/hooks/api/useContasBancarias";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useLayout } from "@/contexts/LayoutContext";
 import { ContaBancariaComSaldo } from "@/types/database";
+import { PERMISSIONS } from "@/constants/permissions.enum";
 import { toast } from "sonner";
 
 export type TipoContaFiltro = "TODOS" | "CORRENTE" | "POUPANCA" | "PAGAMENTO" | "INVESTIMENTO";
 
 export function useContasBancariasViewModel() {
   const { openContasBancariasDialog, openConfirmationDialog } = useLayout();
+  const { can } = usePermissions();
+  const canEdit = can(PERMISSIONS.CONTAS_BANCARIAS.EDITAR);
   const [busca, setBusca] = useState("");
   const [empresaId, setEmpresaId] = useState<number | null>(null);
   const [tipoConta, setTipoConta] = useState<TipoContaFiltro>("TODOS");
@@ -95,8 +98,9 @@ export function useContasBancariasViewModel() {
           await deleteMutation.mutateAsync(conta.id);
           toast.success("Conta bancária removida com sucesso.");
           refetch();
-        } catch {
-          toast.error("Erro ao remover conta bancária.");
+        } catch (error: unknown) {
+          const err = error as { message?: string; response?: { data?: { error?: string } } };
+          toast.error(err.response?.data?.error || err.message || "Erro ao remover conta bancária.");
         }
       },
     });
@@ -123,6 +127,7 @@ export function useContasBancariasViewModel() {
     isLoading: isLoadingSaldos || isLoadingEmpresas,
     isFetching,
     isDeleting: deleteMutation.isPending,
+    canEdit,
     refetch,
     handleNovaConta,
     handleExcluirConta,

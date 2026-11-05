@@ -322,7 +322,7 @@ const App = () => {
                       <Route path={ROUTES.PRIVATE.CONTAS_PAGAR.replace("/", "")} element={<ContasPagar />} />
                     </Route>
 
-                    <Route element={<RequirePermission permissions={[PERMISSIONS.FATURAMENTO.VER, PERMISSIONS.DESPESAS.VER, PERMISSIONS.EMPRESAS.VER]} useOrCondition={true} />}>
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.CONTAS_BANCARIAS.VER]} />}>
                       <Route path={ROUTES.PRIVATE.CONTAS_BANCARIAS.replace("/", "")} element={<ContasBancarias />} />
                     </Route>
 

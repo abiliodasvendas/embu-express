@@ -53,8 +53,9 @@ export function ContasBancariasDialog({
         tipo_conta: "CORRENTE",
       });
       safeCloseDialog(() => onOpenChange(false));
-    } catch {
-      toast.error("Erro ao cadastrar conta bancária.");
+    } catch (error: unknown) {
+      const err = error as { message?: string; response?: { data?: { error?: string } } };
+      toast.error(err.response?.data?.error || err.message || "Erro ao cadastrar conta bancária.");
     }
   };
 

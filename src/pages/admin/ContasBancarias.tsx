@@ -27,9 +27,8 @@ export default function ContasBancarias() {
     contasFiltradas,
     kpis,
     isLoading,
-    isFetching,
     isDeleting,
-    refetch,
+    canEdit,
     handleNovaConta,
     handleExcluirConta,
   } = useContasBancariasViewModel();
@@ -61,6 +60,7 @@ export default function ContasBancarias() {
         onTipoContaChange={setTipoConta}
         empresas={empresas}
         onNovaConta={handleNovaConta}
+        canEdit={canEdit}
       />
 
       <div className="hidden md:block">
@@ -69,6 +69,7 @@ export default function ContasBancarias() {
           onExcluir={handleExcluirConta}
           onNovaConta={handleNovaConta}
           isDeleting={isDeleting}
+          canEdit={canEdit}
         />
       </div>
 
@@ -79,6 +80,7 @@ export default function ContasBancarias() {
             onExcluir={handleExcluirConta}
             onNovaConta={handleNovaConta}
             isDeleting={isDeleting}
+            canEdit={canEdit}
           />
         ) : (
           contasFiltradas.map((conta) => (
@@ -87,6 +89,7 @@ export default function ContasBancarias() {
               conta={conta}
               onExcluir={handleExcluirConta}
               isDeleting={isDeleting}
+              canEdit={canEdit}
             />
           ))
         )}

@@ -10,12 +10,14 @@ interface ContasBancariasTableRowProps {
   conta: ContaBancariaComSaldo;
   onExcluir: (conta: ContaBancariaComSaldo) => void;
   isDeleting?: boolean;
+  canEdit?: boolean;
 }
 
 export function ContasBancariasTableRow({
   conta,
   onExcluir,
   isDeleting = false,
+  canEdit = true,
 }: ContasBancariasTableRowProps) {
   const saldoAtual = conta.saldo_atual || 0;
   const saldoProjetado = conta.saldo_projetado || 0;
@@ -96,18 +98,20 @@ export function ContasBancariasTableRow({
         </span>
       </td>
 
-      <td className="py-3.5 px-4 text-right whitespace-nowrap">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onExcluir(conta)}
-          disabled={isDeleting}
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[10px] cursor-pointer"
-          title="Excluir conta"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </td>
+      {canEdit && (
+        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onExcluir(conta)}
+            disabled={isDeleting}
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[10px] cursor-pointer"
+            title="Excluir conta"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </td>
+      )}
     </tr>
   );
 }

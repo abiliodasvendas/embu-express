@@ -16,7 +16,7 @@ export function useFechamentoGeralViewModel({
   selectedAno,
 }: UseFechamentoGeralViewModelProps) {
   const [adiantamentoFilter, setAdiantamentoFilter] =
-    useState<StatusAdiantamentoFilter>("pendente");
+    useState<StatusAdiantamentoFilter>("todos");
   const [fechamentoFilter, setFechamentoFilter] =
     useState<StatusFechamentoFilter>("pendente");
 

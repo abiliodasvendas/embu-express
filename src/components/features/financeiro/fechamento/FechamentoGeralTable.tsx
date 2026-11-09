@@ -4,6 +4,7 @@ import { ListSkeleton } from "@/components/skeletons";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusGeralFechamento } from "@/services/api/financeiro.api";
+import { STATUS } from "@/constants/roles";
 import { cn } from "@/lib/utils";
 import { Wallet, Eye } from "lucide-react";
 
@@ -62,9 +63,19 @@ export function FechamentoGeralTable({
                     {colab.nome_completo.charAt(0)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground text-sm truncate">
-                      {colab.nome_completo}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-foreground text-sm truncate">
+                        {colab.nome_completo}
+                      </h3>
+                      {colab.status_cadastro === STATUS.INATIVO && (
+                        <Badge
+                          variant="outline"
+                          className="font-semibold text-[10px] px-2 py-0.5 rounded-lg border bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800 shrink-0"
+                        >
+                          Inativo
+                        </Badge>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5 mt-0.5 leading-none">
                       {colab.clientes && colab.clientes.length > 0 ? (
                         colab.clientes.slice(0, 2).map((cliente, i) => (
@@ -79,7 +90,7 @@ export function FechamentoGeralTable({
                         ))
                       ) : (
                         <span className="text-[11px] text-muted-foreground font-medium">
-                          Sem turnos ativos
+                          Sem turnos no período
                         </span>
                       )}
                     </div>
@@ -155,9 +166,19 @@ export function FechamentoGeralTable({
                           {colab.nome_completo.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground text-sm">
-                            {colab.nome_completo}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-foreground text-sm">
+                              {colab.nome_completo}
+                            </p>
+                            {colab.status_cadastro === STATUS.INATIVO && (
+                              <Badge
+                                variant="outline"
+                                className="font-semibold text-[10px] px-2 py-0.5 rounded-lg border bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800 shrink-0"
+                              >
+                                Inativo
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex items-center gap-1.5 mt-0.5 leading-none">
                             {colab.clientes && colab.clientes.length > 0 ? (
                               colab.clientes.slice(0, 2).map((cliente, i) => (
@@ -174,7 +195,7 @@ export function FechamentoGeralTable({
                               ))
                             ) : (
                               <span className="text-[11px] text-muted-foreground font-medium">
-                                Sem turnos ativos
+                                Sem turnos no período
                               </span>
                             )}
                           </div>

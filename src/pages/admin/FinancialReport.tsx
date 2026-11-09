@@ -25,12 +25,22 @@ export function FinancialReport() {
     setPageTitle("Fechamento Financeiro");
   }, [setPageTitle]);
 
-  const { data: collaboratorsResponse } = useCollaborators({});
+  const { data: collaboratorsResponse } = useCollaborators({ all: true });
   const collaborators = useMemo(() => {
     if (!collaboratorsResponse) return [];
     if (Array.isArray(collaboratorsResponse)) return collaboratorsResponse;
     return (collaboratorsResponse as { data?: unknown[] }).data || [];
   }, [collaboratorsResponse]);
+
+  const selectedCollaboratorObj = useMemo(() => {
+    if (!vm.usuarioId) return undefined;
+    return (collaborators as Array<{ id?: unknown; nome_completo?: string }>).find(
+      (c) => String(c.id) === String(vm.usuarioId),
+    );
+  }, [collaborators, vm.usuarioId]);
+
+  const resolvedColaboradorNome =
+    vm.colaboradorNome || selectedCollaboratorObj?.nome_completo;
 
   const handleSelectColaborador = (colaboradorId: string) => {
     setSearchParams(
@@ -80,7 +90,7 @@ export function FinancialReport() {
               selectedUsuario={vm.filters.selectedUsuario || "todos"}
               onSelectUsuario={(val) => vm.setUsuario(val)}
               usuarioId={vm.usuarioId}
-              colaboradorNome={vm.colaboradorNome}
+              colaboradorNome={resolvedColaboradorNome}
               selectedMonth={vm.filters.selectedMes}
               selectedYear={vm.filters.selectedAno}
             />
@@ -89,7 +99,7 @@ export function FinancialReport() {
       ) : (
         <FinancialReportView
           usuarioId={vm.usuarioId}
-          colaboradorNome={vm.colaboradorNome}
+          colaboradorNome={resolvedColaboradorNome}
           selectedMonth={vm.filters.selectedMes}
           selectedYear={vm.filters.selectedAno}
         />

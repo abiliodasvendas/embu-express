@@ -324,12 +324,12 @@ export function useFinancialReportView({
   const handleConfirmarAdiantamento = () => {
     if (!extrato) return;
     const valorTotalAdiantamento =
-      extrato.totais?.total_adiantamento ??
+      extrato.totais?.total_adiantamento ||
       extrato.resumo_por_cliente?.reduce(
         (acc: number, r: ResumoClienteFinanceiro) =>
           acc + Number(r.valores_fixos?.adiantamento_config || 0),
         0,
-      ) ??
+      ) ||
       0;
 
     openConfirmarAdiantamentoDialog({

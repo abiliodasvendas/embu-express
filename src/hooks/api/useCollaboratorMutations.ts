@@ -16,6 +16,8 @@ async function invalidateCollaboratorCache(queryClient: QueryClient, id?: string
   await queryClient.invalidateQueries({ queryKey: ["collaborators"] });
   await queryClient.invalidateQueries({ queryKey: ["active-collaborators-filter"] });
   await queryClient.invalidateQueries({ queryKey: ["active-collaborators-combo"] });
+  await queryClient.invalidateQueries({ queryKey: ["financeiro-status-geral"] });
+  await queryClient.invalidateQueries({ queryKey: ["financeiro-dashboard"] });
 
   if (id) {
     // Invalida o colaborador específico

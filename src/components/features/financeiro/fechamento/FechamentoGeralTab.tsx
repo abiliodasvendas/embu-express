@@ -30,6 +30,8 @@ export function FechamentoGeralTab({
         onAdiantamentoFilterChange={vm.setAdiantamentoFilter}
         fechamentoFilter={vm.fechamentoFilter}
         onFechamentoFilterChange={vm.setFechamentoFilter}
+        statusCadastroFilter={vm.statusCadastroFilter}
+        onStatusCadastroFilterChange={vm.setStatusCadastroFilter}
       />
 
       <FechamentoGeralTable

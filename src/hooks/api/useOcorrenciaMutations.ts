@@ -20,6 +20,8 @@ async function invalidateOccurrenceCache(queryClient: QueryClient, colaboradorId
 
     queryClient.invalidateQueries({ queryKey: ["collaborators"] });
     queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
+    queryClient.invalidateQueries({ queryKey: ["financeiro-status-geral"] });
+    queryClient.invalidateQueries({ queryKey: ["financeiro-dashboard"] });
     queryClient.invalidateQueries({ queryKey: ["time-mirror"] });
 }
 

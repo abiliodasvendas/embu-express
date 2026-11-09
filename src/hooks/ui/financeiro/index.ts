@@ -8,6 +8,7 @@ export {
   useFechamentoGeralViewModel,
   type StatusAdiantamentoFilter,
   type StatusFechamentoFilter,
+  type StatusCadastroFilter,
 } from "./useFechamentoGeralViewModel";
 export {
   useFluxoCaixaTabViewModel,

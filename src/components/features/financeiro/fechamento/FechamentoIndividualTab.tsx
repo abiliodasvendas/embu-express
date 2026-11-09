@@ -1,10 +1,12 @@
 import { Users } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
+import { STATUS } from "@/constants/roles";
 import { FinancialReportView } from "../FinancialReportView";
 
 interface CollaboratorOption {
   id?: unknown;
   nome_completo?: unknown;
+  status?: unknown;
 }
 
 interface FechamentoIndividualTabProps {
@@ -46,10 +48,15 @@ export function FechamentoIndividualTab({
           <Combobox
             options={[
               { value: "todos", label: "Selecionar Colaborador" },
-              ...collaborators.map((c) => ({
-                value: String(c.id),
-                label: String(c.nome_completo),
-              })),
+              ...collaborators.map((c) => {
+                const isInactive = String(c.status || "").toUpperCase() === STATUS.INATIVO;
+                return {
+                  value: String(c.id),
+                  label: isInactive
+                    ? `${String(c.nome_completo)} (Inativo)`
+                    : String(c.nome_completo),
+                };
+              }),
             ]}
             value={selectedUsuario || "todos"}
             onSelect={(val) => onSelectUsuario(val === "todos" ? "todos" : val)}

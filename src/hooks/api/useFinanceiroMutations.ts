@@ -12,6 +12,8 @@ export function useFinanceiroMutations() {
             financeiroApi.processarPagamento(usuarioId, mes, ano),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-status-geral"] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-dashboard"] });
             toast.success(getMessage("financeiro.sucesso.pago"));
         },
         onError: (error: ApiError) => {
@@ -26,6 +28,8 @@ export function useFinanceiroMutations() {
             financeiroApi.confirmarAdiantamento(usuarioId, mes, ano, valor),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-status-geral"] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-dashboard"] });
             toast.success("Adiantamentos confirmados com sucesso!");
         },
         onError: (error: ApiError) => {
@@ -41,6 +45,8 @@ export function useFinanceiroMutations() {
             financeiroApi.desconfirmarAdiantamento(usuarioId, mes, ano),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-status-geral"] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-dashboard"] });
             toast.success("Confirmação de adiantamentos removida!");
         },
         onError: (error: ApiError) => {
@@ -55,6 +61,8 @@ export function useFinanceiroMutations() {
             financeiroApi.desfazerPagamento(usuarioId, mes, ano),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["financeiro-extrato", variables.usuarioId, variables.mes, variables.ano] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-status-geral"] });
+            queryClient.invalidateQueries({ queryKey: ["financeiro-dashboard"] });
             toast.success("Pagamento desfeito com sucesso!");
         },
         onError: (error: ApiError) => {

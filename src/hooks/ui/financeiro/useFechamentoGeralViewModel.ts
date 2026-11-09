@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useFinanceiroGeral } from "@/hooks/api/useFinanceiro";
 import { useCollaborators } from "@/hooks/api/useCollaborators";
 import { StatusGeralFechamento } from "@/services/api/financeiro.api";
+import { STATUS } from "@/constants/roles";
 
 interface UseFechamentoGeralViewModelProps {
   selectedMes: number;
@@ -10,6 +11,7 @@ interface UseFechamentoGeralViewModelProps {
 
 export type StatusAdiantamentoFilter = "todos" | "pendente" | "confirmado";
 export type StatusFechamentoFilter = "todos" | "pendente" | "confirmado";
+export type StatusCadastroFilter = "todos" | "ativo" | "inativo";
 
 export function useFechamentoGeralViewModel({
   selectedMes,
@@ -19,8 +21,10 @@ export function useFechamentoGeralViewModel({
     useState<StatusAdiantamentoFilter>("todos");
   const [fechamentoFilter, setFechamentoFilter] =
     useState<StatusFechamentoFilter>("pendente");
+  const [statusCadastroFilter, setStatusCadastroFilter] =
+    useState<StatusCadastroFilter>("todos");
 
-  const { data: collaboratorsResponse } = useCollaborators({});
+  const { data: collaboratorsResponse } = useCollaborators({ all: true });
   const collaborators = useMemo(() => {
     if (!collaboratorsResponse) return [];
     if (Array.isArray(collaboratorsResponse)) return collaboratorsResponse;
@@ -55,9 +59,15 @@ export function useFechamentoGeralViewModel({
         (fechamentoFilter === "confirmado" && colab.pago) ||
         (fechamentoFilter === "pendente" && !colab.pago);
 
-      return matchAdiantamento && matchFechamento;
+      const statusColab = (colab.status_cadastro || STATUS.ATIVO).toUpperCase();
+      const matchStatusCadastro =
+        statusCadastroFilter === "todos" ||
+        (statusCadastroFilter === "ativo" && statusColab === STATUS.ATIVO) ||
+        (statusCadastroFilter === "inativo" && statusColab === STATUS.INATIVO);
+
+      return matchAdiantamento && matchFechamento && matchStatusCadastro;
     });
-  }, [statusGeral, adiantamentoFilter, fechamentoFilter]);
+  }, [statusGeral, adiantamentoFilter, fechamentoFilter, statusCadastroFilter]);
 
   return {
     collaborators,
@@ -70,5 +80,7 @@ export function useFechamentoGeralViewModel({
     setAdiantamentoFilter,
     fechamentoFilter,
     setFechamentoFilter,
+    statusCadastroFilter,
+    setStatusCadastroFilter,
   };
 }

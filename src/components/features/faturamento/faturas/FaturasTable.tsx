@@ -50,7 +50,7 @@ export function FaturasTable({
   onToggleSelectAll,
   onToggleSelect,
 }: FaturasTableProps) {
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <TableSkeleton cols={11} rows={5} />;
   }
 

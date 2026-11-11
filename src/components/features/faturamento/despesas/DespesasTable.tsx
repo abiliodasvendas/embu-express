@@ -40,7 +40,7 @@ export function DespesasTable({
   onDelete,
   canEdit = true,
 }: DespesasTableProps) {
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <TableSkeleton cols={10} rows={5} />;
   }
 

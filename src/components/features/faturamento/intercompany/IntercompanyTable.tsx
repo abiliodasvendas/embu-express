@@ -40,31 +40,6 @@ export function IntercompanyTable({
   onDesfazerAcerto,
   canEdit = true,
 }: IntercompanyTableProps) {
-  if (isLoading) {
-    return <TableSkeleton cols={7} rows={4} />;
-  }
-
-  if (transferencias.length === 0) {
-    return (
-      <div className="rounded-[24px] border border-border bg-card shadow-xs p-8">
-        <UnifiedEmptyState
-          icon={ArrowRightLeft}
-          title="Nenhum acerto entre empresas encontrado"
-          description={
-            search
-              ? `Nenhuma transferência encontrada para "${search}".`
-              : "Nenhum acerto entre empresas registrado."
-          }
-          action={
-            search
-              ? { label: "Limpar busca", onClick: onClearSearch }
-              : undefined
-          }
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <IntercompanyToolbar
@@ -72,7 +47,28 @@ export function IntercompanyTable({
         onSearchChange={onSearchChange}
       />
 
-      <div className="hidden md:block relative rounded-[24px] border border-border overflow-hidden bg-card shadow-xs">
+      {isLoading || isFetching ? (
+        <TableSkeleton cols={7} rows={4} />
+      ) : transferencias.length === 0 ? (
+        <div className="rounded-[24px] border border-border bg-card shadow-xs p-8">
+          <UnifiedEmptyState
+            icon={ArrowRightLeft}
+            title="Nenhum acerto entre empresas encontrado"
+            description={
+              search
+                ? `Nenhuma transferência encontrada para "${search}".`
+                : "Nenhum acerto entre empresas registrado."
+            }
+            action={
+              search
+                ? { label: "Limpar busca", onClick: onClearSearch }
+                : undefined
+            }
+          />
+        </div>
+      ) : (
+        <>
+          <div className="hidden md:block relative rounded-[24px] border border-border overflow-hidden bg-card shadow-xs">
         {isFetching && (
           <div className="absolute top-0 left-0 right-0 h-1 bg-surface-alt overflow-hidden z-20">
             <div className="h-full bg-primary w-full animate-pulse" />
@@ -280,6 +276,8 @@ export function IntercompanyTable({
           </div>
         ))}
       </div>
+        </>
+      )}
     </div>
   );
 }

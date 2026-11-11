@@ -3,7 +3,6 @@ import { AlertCircle } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useDRE } from "@/hooks/api/useDRE";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
-import { DreSkeleton } from "@/components/features/relatorios/dre/DreSkeleton";
 import { DreHeader } from "@/components/features/relatorios/dre/DreHeader";
 import { DreKpiCards } from "@/components/features/relatorios/dre/DreKpiCards";
 import { DreDemonstrativoCorpo } from "@/components/features/relatorios/dre/DreDemonstrativoCorpo";
@@ -27,25 +26,17 @@ export function DreTab({ mes, ano }: DreTabProps) {
     modoVisao
   );
 
-  if (isLoading) {
-    return <DreSkeleton />;
-  }
-
-  if (isError || !dre) {
-    return (
-      <div className="flex flex-col items-center justify-center text-center p-8 border rounded-[18px] bg-card border-border">
-        <AlertCircle className="w-10 h-10 mb-2 text-destructive" />
-        <p className="font-semibold text-sm text-foreground">
-          Erro ao carregar o DRE da competência selecionada.
-        </p>
-      </div>
-    );
-  }
+  const showSkeleton = isLoading || isFetching;
+  const selectedEmpresaNome =
+    selectedEmpresaId === "todas"
+      ? "Consolidado (Holding)"
+      : empresas.find((e) => String(e.id) === selectedEmpresaId)?.nome_fantasia ||
+        "Empresa Selecionada";
 
   return (
     <div className="space-y-6">
       <DreHeader
-        empresaNome={dre.empresa_nome}
+        empresaNome={dre?.empresa_nome || selectedEmpresaNome}
         modoVisao={modoVisao}
         onModoVisaoChange={setModoVisao}
         selectedEmpresaId={selectedEmpresaId}
@@ -54,13 +45,23 @@ export function DreTab({ mes, ano }: DreTabProps) {
         onNovaDespesa={() => openDespesaFormDialog({ onSuccess: () => refetch() })}
       />
 
-      <DreKpiCards dre={dre} modoVisao={modoVisao} isLoading={isFetching} />
+      <DreKpiCards dre={dre} modoVisao={modoVisao} isLoading={showSkeleton} />
 
-      <DreDemonstrativoCorpo
-        dre={dre}
-        modoVisao={modoVisao}
-        onLancarDespesa={() => openDespesaFormDialog({ onSuccess: () => refetch() })}
-      />
+      {isError && !showSkeleton ? (
+        <div className="flex flex-col items-center justify-center text-center p-8 border rounded-[18px] bg-card border-border">
+          <AlertCircle className="w-10 h-10 mb-2 text-destructive" />
+          <p className="font-semibold text-sm text-foreground">
+            Erro ao carregar o DRE da competência selecionada.
+          </p>
+        </div>
+      ) : (
+        <DreDemonstrativoCorpo
+          dre={dre}
+          modoVisao={modoVisao}
+          isLoading={showSkeleton}
+          onLancarDespesa={() => openDespesaFormDialog({ onSuccess: () => refetch() })}
+        />
+      )}
     </div>
   );
 }

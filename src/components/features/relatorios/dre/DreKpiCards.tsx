@@ -5,13 +5,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DreConsolidado } from "@/services/api/dre.api";
 
 interface DreKpiCardsProps {
-  dre: DreConsolidado;
+  dre?: DreConsolidado;
   modoVisao: "realizado" | "projetado";
   isLoading?: boolean;
 }
 
 export function DreKpiCards({ dre, modoVisao, isLoading = false }: DreKpiCardsProps) {
-  const isPositivo = (dre.lucro_liquido || 0) >= 0;
+  const showSkeleton = isLoading || !dre;
+  const isPositivo = (dre?.lucro_liquido || 0) >= 0;
 
   const formatarPercentual = (valor: number) => {
     return `${(valor || 0).toFixed(2)}%`;
@@ -26,7 +27,7 @@ export function DreKpiCards({ dre, modoVisao, isLoading = false }: DreKpiCardsPr
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Total Faturado</p>
-            {isLoading ? (
+            {showSkeleton ? (
               <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
             ) : (
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
@@ -47,7 +48,7 @@ export function DreKpiCards({ dre, modoVisao, isLoading = false }: DreKpiCardsPr
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Custo de Pessoal</p>
-            {isLoading ? (
+            {showSkeleton ? (
               <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
             ) : (
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
@@ -68,7 +69,7 @@ export function DreKpiCards({ dre, modoVisao, isLoading = false }: DreKpiCardsPr
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Frota Própria</p>
-            {isLoading ? (
+            {showSkeleton ? (
               <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
             ) : (
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
@@ -87,7 +88,7 @@ export function DreKpiCards({ dre, modoVisao, isLoading = false }: DreKpiCardsPr
           <div
             className={cn(
               "w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0",
-              !isLoading && !isPositivo
+              !showSkeleton && !isPositivo
                 ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
                 : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
             )}
@@ -97,10 +98,10 @@ export function DreKpiCards({ dre, modoVisao, isLoading = false }: DreKpiCardsPr
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">
               {modoVisao === "realizado"
-                ? (isPositivo ? "Lucro Líquido Real" : "Prejuízo Real no Período")
-                : (isPositivo ? "Lucro Líquido Projetado" : "Prejuízo Projetado")}
+                ? (showSkeleton || isPositivo ? "Lucro Líquido Real" : "Prejuízo Real no Período")
+                : (showSkeleton || isPositivo ? "Lucro Líquido Projetado" : "Prejuízo Projetado")}
             </p>
-            {isLoading ? (
+            {showSkeleton ? (
               <>
                 <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
                 <Skeleton className="h-3.5 w-24 rounded-[6px] mt-1.5" />

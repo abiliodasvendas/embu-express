@@ -174,12 +174,10 @@ export default function ConvenioDetails() {
           </div>
         </div>
 
-        {vm.isLancamentosLoading ? (
-          <ListSkeleton count={4} />
-        ) : vm.activeTab === "auditoria" ? (
+        {vm.activeTab === "auditoria" ? (
           <ConvenioAuditoriaSection
             auditoria={vm.auditoria}
-            isLoading={vm.isAuditoriaLoading}
+            isLoading={vm.isAuditoriaLoading || vm.isLancamentosLoading}
             convenioId={vm.id!}
             convenioNome={vm.convenio.nome}
             mes={vm.mes}
@@ -190,6 +188,8 @@ export default function ConvenioDetails() {
             onDesfazerPagamento={vm.handleDesfazerPagamentoAuditoria}
             onOpenLancamentoDialog={(l) => vm.handleEditarLancamento(l)}
           />
+        ) : vm.isLancamentosLoading ? (
+          <ListSkeleton count={4} />
         ) : vm.activeTab === "colaboradores" ? (
           <ConvenioPorColaboradorTab
             groupedLancamentos={vm.groupedLancamentos}

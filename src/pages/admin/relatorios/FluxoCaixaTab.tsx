@@ -1,7 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import { useFluxoCaixaTabViewModel } from "@/hooks";
 import {
-  FluxoCaixaSkeleton,
   FluxoCaixaHeader,
   FluxoCaixaKpiCards,
   FluxoCaixaMarcosSection,
@@ -36,20 +35,7 @@ export function FluxoCaixaTab({ mes, ano }: FluxoCaixaTabProps) {
     handleSalvarSaldoInicial,
   } = useFluxoCaixaTabViewModel({ mes, ano });
 
-  if (isLoading) {
-    return <FluxoCaixaSkeleton />;
-  }
-
-  if (isError || !fluxo) {
-    return (
-      <div className="flex flex-col items-center justify-center text-center p-8 border rounded-[18px] bg-card border-border">
-        <AlertCircle className="w-10 h-10 mb-2 text-destructive" />
-        <p className="font-semibold text-sm text-foreground">
-          Erro ao carregar projeção de fluxo de caixa.
-        </p>
-      </div>
-    );
-  }
+  const showSkeleton = isLoading || isFetching;
 
   return (
     <div className="space-y-6">
@@ -69,7 +55,7 @@ export function FluxoCaixaTab({ mes, ano }: FluxoCaixaTabProps) {
         onSalvarSaldoInicial={handleSalvarSaldoInicial}
         diaSalariosStr={diaSalariosStr}
         diaConveniosStr={diaConveniosStr}
-        isLoading={isFetching}
+        isLoading={showSkeleton}
       />
 
       <FluxoCaixaMarcosSection
@@ -78,17 +64,30 @@ export function FluxoCaixaTab({ mes, ano }: FluxoCaixaTabProps) {
         diaValesStr={diaValesStr}
       />
 
-      <FluxoCaixaLiquidezChart
-        curvaDiaria={fluxo.curva_diaria}
-        isFetching={isFetching}
-      />
+      {isError && !showSkeleton ? (
+        <div className="flex flex-col items-center justify-center text-center p-8 border rounded-[18px] bg-card border-border">
+          <AlertCircle className="w-10 h-10 mb-2 text-destructive" />
+          <p className="font-semibold text-sm text-foreground">
+            Erro ao carregar projeção de fluxo de caixa.
+          </p>
+        </div>
+      ) : (
+        <>
+          <FluxoCaixaLiquidezChart
+            curvaDiaria={fluxo?.curva_diaria}
+            isLoading={isLoading}
+            isFetching={isFetching}
+          />
 
-      <FluxoCaixaDetalhamentoCard
-        curvaDiaria={fluxo.curva_diaria}
-        modoVisao={modoVisao}
-        setModoVisao={setModoVisao}
-        isFetching={isFetching}
-      />
+          <FluxoCaixaDetalhamentoCard
+            curvaDiaria={fluxo?.curva_diaria}
+            modoVisao={modoVisao}
+            setModoVisao={setModoVisao}
+            isLoading={isLoading}
+            isFetching={isFetching}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import type { FluxoCaixaResponse } from "@/services/api/fluxo-caixa.api";
 
 interface FluxoCaixaKpiCardsProps {
-  fluxo: FluxoCaixaResponse;
+  fluxo?: FluxoCaixaResponse;
   isEditingSaldo: boolean;
   setIsEditingSaldo: (val: boolean) => void;
   setSaldoInput: (val: string) => void;
@@ -28,6 +28,8 @@ export function FluxoCaixaKpiCards({
   diaSalariosStr,
   isLoading = false,
 }: FluxoCaixaKpiCardsProps) {
+  const showSkeleton = isLoading || !fluxo;
+
   return (
     <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex gap-3 overflow-x-auto [scrollbar-width:none] pb-1 sm:grid sm:grid-cols-2 lg:grid-cols-4">
       <div className="min-w-[200px] sm:min-w-0 flex-1 rounded-[20px] sm:rounded-[24px] border border-border bg-card p-4 sm:p-5 shadow-xs">
@@ -38,7 +40,7 @@ export function FluxoCaixaKpiCards({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium text-muted-foreground truncate">Saldo Inicial (Dia 01)</p>
-              {!isEditingSaldo && !isLoading && (
+              {!isEditingSaldo && !showSkeleton && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -52,7 +54,7 @@ export function FluxoCaixaKpiCards({
                 </Button>
               )}
             </div>
-            {isLoading ? (
+            {showSkeleton ? (
               <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
             ) : isEditingSaldo ? (
               <div className="flex items-center gap-2 mt-1">
@@ -90,7 +92,7 @@ export function FluxoCaixaKpiCards({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Saldo Retido p/ Convênios</p>
-            {isLoading ? (
+            {showSkeleton ? (
               <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
             ) : (
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
@@ -111,7 +113,7 @@ export function FluxoCaixaKpiCards({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Entradas vs Saídas</p>
-            {isLoading ? (
+            {showSkeleton ? (
               <div className="space-y-1.5 mt-1">
                 <Skeleton className="h-4 w-24 rounded-[6px]" />
                 <Skeleton className="h-4 w-24 rounded-[6px]" />
@@ -140,7 +142,7 @@ export function FluxoCaixaKpiCards({
           <div
             className={cn(
               "w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0",
-              !isLoading && fluxo.saldo_final_projetado < 0
+              !showSkeleton && fluxo.saldo_final_projetado < 0
                 ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
                 : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400",
             )}
@@ -149,7 +151,7 @@ export function FluxoCaixaKpiCards({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Saldo Projetado (Fim do Mês)</p>
-            {isLoading ? (
+            {showSkeleton ? (
               <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
             ) : (
               <h2

@@ -41,14 +41,6 @@ export function Convenios() {
         <div className="space-y-6 w-full animate-in fade-in duration-300 pb-12">
           <ConveniosHeader canEdit={vm.canEdit} onRegister={vm.handleRegister} />
 
-          {(vm.isFetching || vm.isResumoFetching) &&
-            !vm.isLoading &&
-            !vm.isResumoLoading && (
-              <div className="w-full bg-surface-alt h-1 overflow-hidden rounded-full">
-                <div className="bg-primary h-full w-full animate-indeterminate rounded-full" />
-              </div>
-            )}
-
           <Tabs defaultValue="parceiros" className="space-y-6">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
               <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex items-center overflow-x-auto [scrollbar-width:none]">

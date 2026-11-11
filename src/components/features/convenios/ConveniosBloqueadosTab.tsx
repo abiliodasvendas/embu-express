@@ -1,9 +1,9 @@
 import { ShieldCheck } from "lucide-react";
+import { ListSkeleton } from "@/components/skeletons";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useConveniosBloqueadosViewModel } from "@/hooks";
 import {
-  BloqueadosSkeleton,
   BloqueadosKpis,
   BloqueadosToolbar,
   BloqueadosMobileCard,
@@ -35,16 +35,13 @@ export function ConveniosBloqueadosTab() {
     handleClearSearch,
   } = useConveniosBloqueadosViewModel();
 
-  if (isLoading) {
-    return <BloqueadosSkeleton />;
-  }
-
   return (
     <div className="space-y-6">
       <BloqueadosKpis
         totalRestricoes={totalRestricoes}
         totalGeral={totalGeral}
         totalEspecifico={totalEspecifico}
+        isLoading={isLoading}
       />
 
       <BloqueadosToolbar
@@ -62,7 +59,9 @@ export function ConveniosBloqueadosTab() {
         convenios={convenios}
       />
 
-      {filtrados.length === 0 ? (
+      {isLoading ? (
+        <ListSkeleton />
+      ) : filtrados.length === 0 ? (
         <UnifiedEmptyState
           icon={ShieldCheck}
           title="Nenhuma restrição encontrada"

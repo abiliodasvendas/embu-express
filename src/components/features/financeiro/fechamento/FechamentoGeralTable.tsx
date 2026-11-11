@@ -18,10 +18,9 @@ interface FechamentoGeralTableProps {
 export function FechamentoGeralTable({
   colaboradores,
   isLoading,
-  hasData,
   onSelectColaborador,
 }: FechamentoGeralTableProps) {
-  if (isLoading && !hasData) {
+  if (isLoading) {
     return <ListSkeleton />;
   }
 

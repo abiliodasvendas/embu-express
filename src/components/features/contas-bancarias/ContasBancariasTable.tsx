@@ -1,4 +1,5 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { TableSkeleton } from "@/components/skeletons";
 import { ContaBancariaComSaldo } from "@/types/database";
 import { Landmark } from "lucide-react";
 import { ContasBancariasTableRow } from "./ContasBancariasTableRow";
@@ -8,6 +9,7 @@ interface ContasBancariasTableProps {
   onExcluir: (conta: ContaBancariaComSaldo) => void;
   onVerExtrato: (conta: ContaBancariaComSaldo) => void;
   onNovaConta?: () => void;
+  isLoading?: boolean;
   isDeleting?: boolean;
   canEdit?: boolean;
 }
@@ -17,9 +19,14 @@ export function ContasBancariasTable({
   onExcluir,
   onVerExtrato,
   onNovaConta,
+  isLoading = false,
   isDeleting = false,
   canEdit = true,
 }: ContasBancariasTableProps) {
+  if (isLoading) {
+    return <TableSkeleton cols={8} rows={4} />;
+  }
+
   if (contas.length === 0) {
     return (
       <div className="rounded-[24px] border border-border bg-card p-8 shadow-xs">

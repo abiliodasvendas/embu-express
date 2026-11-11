@@ -1,15 +1,18 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import { ShieldAlert, Store } from "lucide-react";
 
 interface BloqueadosKpisProps {
   totalRestricoes: number;
   totalGeral: number;
   totalEspecifico: number;
+  isLoading?: boolean;
 }
 
 export function BloqueadosKpis({
   totalRestricoes,
   totalGeral,
   totalEspecifico,
+  isLoading = false,
 }: BloqueadosKpisProps) {
   return (
     <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex sm:grid sm:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0">
@@ -22,9 +25,13 @@ export function BloqueadosKpis({
             <ShieldAlert className="h-5 w-5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-          {totalRestricoes}
-        </div>
+        {isLoading ? (
+          <Skeleton className="h-8 w-16 rounded-[8px] my-1" />
+        ) : (
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {totalRestricoes}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground mt-1">Colaboradores com bloqueios ativos</p>
       </div>
 
@@ -37,9 +44,13 @@ export function BloqueadosKpis({
             <ShieldAlert className="h-5 w-5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-          {totalGeral}
-        </div>
+        {isLoading ? (
+          <Skeleton className="h-8 w-16 rounded-[8px] my-1" />
+        ) : (
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {totalGeral}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground mt-1">Impedidos em todos os convênios</p>
       </div>
 
@@ -52,9 +63,13 @@ export function BloqueadosKpis({
             <Store className="h-5 w-5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-          {totalEspecifico}
-        </div>
+        {isLoading ? (
+          <Skeleton className="h-8 w-16 rounded-[8px] my-1" />
+        ) : (
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {totalEspecifico}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground mt-1">Restrições específicas ativas</p>
       </div>
     </div>

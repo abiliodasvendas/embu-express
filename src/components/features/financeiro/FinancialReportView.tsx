@@ -92,9 +92,13 @@ export function FinancialReportView({
             title="Selecione um colaborador"
             description="Escolha um colaborador para visualizar o rascunho do fechamento financeiro."
           />
-        ) : vm.isLoading ? (
-          <ListSkeleton />
-        ) : vm.extrato ? (
+        ) : !vm.isLoading && !vm.extrato ? (
+          <UnifiedEmptyState
+            icon={AlertCircle}
+            title={getMessage("financeiro.erro.carregar")}
+            description="Não foi possível processar o rascunho financeiro."
+          />
+        ) : (
           <div className="space-y-6">
             {modoComprovanteRenda && (
               <Banner
@@ -106,22 +110,25 @@ export function FinancialReportView({
               />
             )}
 
-            <ExtratoPrintable
-              modoComprovanteRenda={modoComprovanteRenda}
-              colaboradorNome={colaboradorNome}
-              cpf={cpf}
-              cargo={cargo}
-              mes={vm.selectedMonth}
-              ano={vm.selectedYear}
-              extrato={vm.extrato}
-              lancamentosConsolidados={vm.lancamentosConsolidados}
-            />
+            {vm.extrato && (
+              <ExtratoPrintable
+                modoComprovanteRenda={modoComprovanteRenda}
+                colaboradorNome={colaboradorNome}
+                cpf={cpf}
+                cargo={cargo}
+                mes={vm.selectedMonth}
+                ano={vm.selectedYear}
+                extrato={vm.extrato}
+                lancamentosConsolidados={vm.lancamentosConsolidados}
+              />
+            )}
 
             <div className="print:hidden space-y-6">
               <ExtratoKpis
                 extrato={vm.extrato}
                 modoComprovanteRenda={modoComprovanteRenda}
                 can={vm.can}
+                isLoading={vm.isLoading}
                 isConfirmingAdiantamento={vm.isConfirmingAdiantamento}
                 isPaying={vm.isPaying}
                 isUndoingPayment={vm.isUndoingPayment}
@@ -163,55 +170,55 @@ export function FinancialReportView({
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="turnos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
-                  <ExtratoTurnosTab
-                    extrato={vm.extrato}
-                    selectedMonth={vm.selectedMonth}
-                    selectedYear={vm.selectedYear}
-                    isSuperAdmin={vm.isSuperAdmin}
-                    onOpenOccurrenceDetails={(occ: OcorrenciaComTipo) =>
-                      vm.openOccurrenceDetailsDialog({
-                        occurrence: occ,
-                        onDelete: !occ.is_virtual ? () => vm.handleDeleteOcorrencia(occ) : undefined,
-                        onEdit: !occ.is_virtual ? () => vm.handleEditOcorrencia(occ) : undefined,
-                      })
-                    }
-                  />
-                </TabsContent>
+                {vm.isLoading || !vm.extrato ? (
+                  <ListSkeleton />
+                ) : (
+                  <>
+                    <TabsContent value="turnos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
+                      <ExtratoTurnosTab
+                        extrato={vm.extrato}
+                        selectedMonth={vm.selectedMonth}
+                        selectedYear={vm.selectedYear}
+                        isSuperAdmin={vm.isSuperAdmin}
+                        onOpenOccurrenceDetails={(occ: OcorrenciaComTipo) =>
+                          vm.openOccurrenceDetailsDialog({
+                            occurrence: occ,
+                            onDelete: !occ.is_virtual ? () => vm.handleDeleteOcorrencia(occ) : undefined,
+                            onEdit: !occ.is_virtual ? () => vm.handleEditOcorrencia(occ) : undefined,
+                          })
+                        }
+                      />
+                    </TabsContent>
 
-                <TabsContent value="convenios" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
-                  <ExtratoConveniosTab extrato={vm.extrato} />
-                </TabsContent>
+                    <TabsContent value="convenios" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
+                      <ExtratoConveniosTab extrato={vm.extrato} />
+                    </TabsContent>
 
-                <TabsContent value="avulsos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
-                  <ExtratoAvulsosTab
-                    extrato={vm.extrato}
-                    isSuperAdmin={vm.isSuperAdmin}
-                    onOpenOccurrenceDetails={(occ: OcorrenciaComTipo) =>
-                      vm.openOccurrenceDetailsDialog({
-                        occurrence: occ,
-                        onDelete: !occ.is_virtual ? () => vm.handleDeleteOcorrencia(occ) : undefined,
-                        onEdit: !occ.is_virtual ? () => vm.handleEditOcorrencia(occ) : undefined,
-                      })
-                    }
-                  />
-                </TabsContent>
+                    <TabsContent value="avulsos" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 print:hidden">
+                      <ExtratoAvulsosTab
+                        extrato={vm.extrato}
+                        isSuperAdmin={vm.isSuperAdmin}
+                        onOpenOccurrenceDetails={(occ: OcorrenciaComTipo) =>
+                          vm.openOccurrenceDetailsDialog({
+                            occurrence: occ,
+                            onDelete: !occ.is_virtual ? () => vm.handleDeleteOcorrencia(occ) : undefined,
+                            onEdit: !occ.is_virtual ? () => vm.handleEditOcorrencia(occ) : undefined,
+                          })
+                        }
+                      />
+                    </TabsContent>
 
-                <TabsContent value="consolidado" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <ExtratoConsolidadoTab
-                    extrato={vm.extrato}
-                    lancamentosConsolidados={vm.lancamentosConsolidados}
-                  />
-                </TabsContent>
+                    <TabsContent value="consolidado" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <ExtratoConsolidadoTab
+                        extrato={vm.extrato}
+                        lancamentosConsolidados={vm.lancamentosConsolidados}
+                      />
+                    </TabsContent>
+                  </>
+                )}
               </Tabs>
             </div>
           </div>
-        ) : (
-          <UnifiedEmptyState
-            icon={AlertCircle}
-            title={getMessage("financeiro.erro.carregar")}
-            description="Não foi possível processar o rascunho financeiro."
-          />
         )}
       </div>
     </PullToRefreshWrapper>

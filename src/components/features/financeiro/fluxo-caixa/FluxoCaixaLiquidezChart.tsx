@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   LineChart,
   Line,
@@ -11,32 +12,32 @@ import {
   ReferenceLine,
 } from "recharts";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { cn } from "@/lib/utils";
 import type { PontoFluxoDia } from "@/services/api/fluxo-caixa.api";
 
 interface FluxoCaixaLiquidezChartProps {
-  curvaDiaria: PontoFluxoDia[];
+  curvaDiaria?: PontoFluxoDia[];
+  isLoading?: boolean;
   isFetching: boolean;
 }
 
 export function FluxoCaixaLiquidezChart({
   curvaDiaria,
+  isLoading = false,
   isFetching,
 }: FluxoCaixaLiquidezChartProps) {
+  const showSkeleton = isLoading || isFetching || !curvaDiaria;
+
   return (
     <Card className="relative rounded-[20px] sm:rounded-[24px] border border-border shadow-xs bg-card p-6 overflow-hidden">
-      {isFetching && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-surface-alt overflow-hidden z-20">
-          <div className="h-full bg-primary w-full animate-pulse" />
-        </div>
-      )}
-      <div className={cn("transition-opacity duration-200", isFetching && "opacity-50")}>
-        <CardHeader className="p-0 pb-6">
-          <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
-            Curva de Liquidez Diária (Dia 01 ao Dia 31)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
+      <CardHeader className="p-0 pb-6">
+        <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
+          Curva de Liquidez Diária (Dia 01 ao Dia 31)
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {showSkeleton ? (
+          <Skeleton className="h-80 w-full rounded-[14px]" />
+        ) : (
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={curvaDiaria} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -110,8 +111,8 @@ export function FluxoCaixaLiquidezChart({
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </CardContent>
-      </div>
+        )}
+      </CardContent>
     </Card>
   );
 }

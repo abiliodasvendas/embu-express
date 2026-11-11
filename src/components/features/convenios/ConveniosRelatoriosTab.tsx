@@ -1,6 +1,7 @@
 import { useResumoGeralConvenios } from "@/hooks/api/useConvenioAuditoria";
 import { Button } from "@/components/ui/button";
-import { ListSkeleton, KpiGridSkeleton } from "@/components/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ListSkeleton } from "@/components/skeletons";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import {
   Table,
@@ -30,15 +31,7 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
   const navigate = useNavigate();
   const { data: resumo, isLoading, isFetching } = useResumoGeralConvenios(mes, ano);
 
-  if (isLoading || isFetching) {
-    return (
-      <div className="space-y-6">
-        <KpiGridSkeleton count={4} cols={4} />
-        <ListSkeleton />
-      </div>
-    );
-  }
-
+  const showSkeleton = isLoading || isFetching;
   const totais = resumo?.totais;
   const convenios = [...(resumo?.convenios || [])].sort((a, b) => b.total_consumido - a.total_consumido);
   const topColaboradores = resumo?.top_colaboradores || [];
@@ -49,16 +42,6 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
   const totalLancamentos = convenios.reduce((acc, c) => acc + c.quantidade_lancamentos, 0);
   const ticketMedioGeral = totalLancamentos > 0 ? totalGeral / totalLancamentos : 0;
   const totalMotoboysAtendidos = new Set(topColaboradores.map((c) => c.colaborador_id)).size;
-
-  if (totalGeral === 0 && convenios.length === 0) {
-    return (
-      <UnifiedEmptyState
-        icon={BarChart3}
-        title="Nenhum dado analítico no período"
-        description="Não foram encontrados lançamentos de convênio para o mês e ano selecionados."
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -72,10 +55,19 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
               <Receipt className="h-5 w-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            {formatarMoeda(totalGeral)}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">{totalLancamentos} manutenções / itens</p>
+          {showSkeleton ? (
+            <>
+              <Skeleton className="h-8 w-36 rounded-[8px] my-1" />
+              <Skeleton className="h-3.5 w-28 rounded-[6px] mt-1.5" />
+            </>
+          ) : (
+            <>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+                {formatarMoeda(totalGeral)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{totalLancamentos} manutenções / itens</p>
+            </>
+          )}
         </div>
 
         <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
@@ -87,10 +79,19 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
               <TrendingUp className="h-5 w-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            {formatarMoeda(ticketMedioGeral)}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">Custo médio por ordem de serviço</p>
+          {showSkeleton ? (
+            <>
+              <Skeleton className="h-8 w-36 rounded-[8px] my-1" />
+              <Skeleton className="h-3.5 w-32 rounded-[6px] mt-1.5" />
+            </>
+          ) : (
+            <>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+                {formatarMoeda(ticketMedioGeral)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Custo médio por ordem de serviço</p>
+            </>
+          )}
         </div>
 
         <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
@@ -102,12 +103,21 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
               <Store className="h-5 w-5" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-foreground tracking-tight truncate">
-            {maiorConvenio ? maiorConvenio.nome : "—"}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {maiorConvenio ? formatarMoeda(maiorConvenio.total_consumido) : "Sem movimentação"}
-          </p>
+          {showSkeleton ? (
+            <>
+              <Skeleton className="h-7 w-36 rounded-[8px] my-1" />
+              <Skeleton className="h-3.5 w-24 rounded-[6px] mt-1.5" />
+            </>
+          ) : (
+            <>
+              <div className="text-xl sm:text-2xl font-bold text-foreground tracking-tight truncate">
+                {maiorConvenio ? maiorConvenio.nome : "—"}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {maiorConvenio ? formatarMoeda(maiorConvenio.total_consumido) : "Sem movimentação"}
+              </p>
+            </>
+          )}
         </div>
 
         <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
@@ -119,12 +129,32 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
               <Users className="h-5 w-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            {totalMotoboysAtendidos}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">Colaboradores com ordens no mês</p>
+          {showSkeleton ? (
+            <>
+              <Skeleton className="h-8 w-16 rounded-[8px] my-1" />
+              <Skeleton className="h-3.5 w-32 rounded-[6px] mt-1.5" />
+            </>
+          ) : (
+            <>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+                {totalMotoboysAtendidos}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Colaboradores com ordens no mês</p>
+            </>
+          )}
         </div>
       </div>
+
+      {showSkeleton ? (
+        <ListSkeleton />
+      ) : totalGeral === 0 && convenios.length === 0 ? (
+        <UnifiedEmptyState
+          icon={BarChart3}
+          title="Nenhum dado analítico no período"
+          description="Não foram encontrados lançamentos de convênio para o mês e ano selecionados."
+        />
+      ) : (
+        <>
 
       {distribuicao.length > 0 && (
         <div className="rounded-[24px] border border-border bg-card shadow-xs p-5 space-y-4">
@@ -291,6 +321,8 @@ export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

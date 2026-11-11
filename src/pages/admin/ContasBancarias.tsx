@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useContasBancariasViewModel } from "@/hooks/ui/contas-bancarias/useContasBancariasViewModel";
+import { TableSkeleton } from "@/components/skeletons";
 import {
   ContasBancariasHeader,
   ContasBancariasKpis,
   ContasBancariasToolbar,
   ContasBancariasTable,
   ContasBancariasMobileCard,
-  ContasBancariasSkeleton,
 } from "@/components/features/contas-bancarias";
 
 export default function ContasBancarias() {
@@ -39,9 +39,7 @@ export default function ContasBancarias() {
     setPageTitle("Contas Bancárias");
   }, [setPageTitle]);
 
-  if (isLoading) {
-    return <ContasBancariasSkeleton />;
-  }
+  const showSkeleton = isLoading || isFetching;
 
   return (
     <div className="space-y-6 pb-24">
@@ -51,7 +49,7 @@ export default function ContasBancarias() {
         kpis={kpis}
         mes={mes}
         ano={ano}
-        isLoading={isLoading || isFetching}
+        isLoading={showSkeleton}
       />
 
       <ContasBancariasToolbar
@@ -76,13 +74,16 @@ export default function ContasBancarias() {
           onExcluir={handleExcluirConta}
           onVerExtrato={handleVerExtrato}
           onNovaConta={handleNovaConta}
+          isLoading={showSkeleton}
           isDeleting={isDeleting}
           canEdit={canEdit}
         />
       </div>
 
       <div className="block md:hidden space-y-3">
-        {contasFiltradas.length === 0 ? (
+        {showSkeleton ? (
+          <TableSkeleton cols={4} rows={4} />
+        ) : contasFiltradas.length === 0 ? (
           <ContasBancariasTable
             contas={[]}
             onExcluir={handleExcluirConta}

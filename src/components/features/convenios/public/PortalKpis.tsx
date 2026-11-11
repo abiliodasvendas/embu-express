@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { KpiGridSkeleton } from "@/components/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, FileText } from "lucide-react";
 
 interface PortalKpisProps {
@@ -13,14 +13,6 @@ export function PortalKpis({
   totalValueFormatted,
   lancamentosCount,
 }: PortalKpisProps) {
-  if (isLoading) {
-    return (
-      <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex sm:grid sm:grid-cols-2 gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0">
-        <KpiGridSkeleton count={2} cols={2} />
-      </div>
-    );
-  }
-
   return (
     <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex sm:grid sm:grid-cols-2 gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0">
       <Card className="rounded-[24px] border border-border bg-card shadow-xs min-w-[240px] sm:min-w-0 flex-1">
@@ -32,9 +24,13 @@ export function PortalKpis({
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Total do Mês
             </span>
-            <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-              {totalValueFormatted}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                {totalValueFormatted}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -48,9 +44,13 @@ export function PortalKpis({
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Lançamentos
             </span>
-            <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-              {lancamentosCount}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-7 w-14 rounded-[8px] mt-1" />
+            ) : (
+              <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                {lancamentosCount}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>

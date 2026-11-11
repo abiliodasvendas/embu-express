@@ -65,7 +65,7 @@ export function ConveniosTable({
   getConvenioActions,
   onLiquidarFatura,
 }: ConveniosTableProps) {
-  if (isInitialLoading) {
+  if (isInitialLoading || isFetching || isResumoFetching) {
     return <ListSkeleton />;
   }
 

@@ -47,7 +47,7 @@ export function AvulsasTable({
   canEdit = true,
   modo = "TODOS",
 }: AvulsasTableProps) {
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <TableSkeleton cols={8} rows={4} />;
   }
 

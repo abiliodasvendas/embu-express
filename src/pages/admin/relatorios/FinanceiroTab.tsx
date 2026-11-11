@@ -19,39 +19,9 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
     }).format(valor);
   };
 
-  if (isLoading || isFetching) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-card p-4 sm:p-5 rounded-[20px] sm:rounded-[24px] border border-border shadow-xs">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <Skeleton className="h-5 w-48 rounded-[6px]" />
-            <Skeleton className="h-4 w-36 rounded-[6px]" />
-            <Skeleton className="h-4 w-36 rounded-[6px]" />
-            <Skeleton className="h-7 w-44 rounded-[12px]" />
-          </div>
-        </div>
-        <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex gap-3 overflow-x-auto [scrollbar-width:none] pb-1 sm:grid sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="min-w-[200px] sm:min-w-0 flex-1 rounded-[20px] sm:rounded-[24px] border border-border bg-card p-4 sm:p-5 shadow-xs"
-            >
-              <div className="flex items-center gap-3.5">
-                <Skeleton className="w-10 h-10 rounded-[14px] shrink-0" />
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <Skeleton className="h-3.5 w-24 rounded-[6px]" />
-                  <Skeleton className="h-6 w-32 rounded-[8px]" />
-                  <Skeleton className="h-3 w-28 rounded-[6px]" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const showSkeleton = isLoading || isFetching || !data;
 
-  if (isError || !data) {
+  if (isError && !isLoading && !isFetching) {
     return (
       <div className="flex flex-col items-center justify-center text-center p-8 border rounded-[18px] bg-card border-border">
         <AlertCircle className="w-10 h-10 mb-2 text-destructive" />
@@ -60,13 +30,13 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
     );
   }
 
-  const totalFolhaBruta = data.totalFolhaBruta || data.totalFolha;
-  const totalAdiantamento = data.totalAdiantamentoPago || 0;
-  const totalDescontos = (data.totalDescontoFaltas || 0) + (data.totalDescontoConvenios || 0);
-  const saldoFinal = data.saldoFinalFolha || data.totalFolha;
-  const totalColabs = data.totalColaboradores || (data.pendentesCount + (data.pagosCount || 0));
-  const pagosCount = data.pagosCount || 0;
-  const percentPago = saldoFinal > 0 ? Math.min(100, Math.round((data.valorPago / saldoFinal) * 100)) : 0;
+  const totalFolhaBruta = data?.totalFolhaBruta || data?.totalFolha || 0;
+  const totalAdiantamento = data?.totalAdiantamentoPago || 0;
+  const totalDescontos = (data?.totalDescontoFaltas || 0) + (data?.totalDescontoConvenios || 0);
+  const saldoFinal = data?.saldoFinalFolha || data?.totalFolha || 0;
+  const totalColabs = data?.totalColaboradores || ((data?.pendentesCount || 0) + (data?.pagosCount || 0));
+  const pagosCount = data?.pagosCount || 0;
+  const percentPago = saldoFinal > 0 && data ? Math.min(100, Math.round((data.valorPago / saldoFinal) * 100)) : 0;
 
   return (
     <div className="space-y-6">
@@ -74,19 +44,35 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
         <div className="flex flex-wrap items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-muted-foreground uppercase tracking-wider">Composição do Mês:</span>
-            <span className="font-bold text-foreground text-sm">{formatarMoeda(totalFolhaBruta)}</span>
+            {showSkeleton ? (
+              <Skeleton className="h-5 w-24 rounded-[6px]" />
+            ) : (
+              <span className="font-bold text-foreground text-sm">{formatarMoeda(totalFolhaBruta)}</span>
+            )}
             <span className="text-muted-foreground font-normal">(Bruto)</span>
           </div>
           <div className="flex items-center gap-2 font-medium text-foreground">
-            <span>- {formatarMoeda(totalDescontos)}</span>
+            {showSkeleton ? (
+              <Skeleton className="h-4 w-20 rounded-[6px]" />
+            ) : (
+              <span>- {formatarMoeda(totalDescontos)}</span>
+            )}
             <span className="text-muted-foreground text-[11px] font-normal">(Faltas/Convênios)</span>
           </div>
           <div className="flex items-center gap-2 font-medium text-foreground">
-            <span>- {formatarMoeda(totalAdiantamento)}</span>
+            {showSkeleton ? (
+              <Skeleton className="h-4 w-20 rounded-[6px]" />
+            ) : (
+              <span>- {formatarMoeda(totalAdiantamento)}</span>
+            )}
             <span className="text-muted-foreground text-[11px] font-normal">(Vales Dia 20)</span>
           </div>
           <div className="flex items-center gap-2 font-bold text-sm bg-muted/70 border border-border px-3 py-1 rounded-[12px]">
-            <span>= {formatarMoeda(saldoFinal)}</span>
+            {showSkeleton ? (
+              <Skeleton className="h-5 w-24 rounded-[6px]" />
+            ) : (
+              <span>= {formatarMoeda(saldoFinal)}</span>
+            )}
             <span className="text-muted-foreground text-xs font-normal">(Saldo Dia 07)</span>
           </div>
         </div>
@@ -100,13 +86,22 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground truncate">Folha Bruta Prevista</p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-                {formatarMoeda(totalFolhaBruta)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1 truncate flex items-center gap-1">
-                <Users className="h-3 w-3 shrink-0" />
-                <span>Total ({totalColabs} prestadores)</span>
-              </p>
+              {showSkeleton ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-24 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                    {formatarMoeda(totalFolhaBruta)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1 truncate flex items-center gap-1">
+                    <Users className="h-3 w-3 shrink-0" />
+                    <span>Total ({totalColabs} prestadores)</span>
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -118,12 +113,21 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground truncate">Adiantamentos (Dia 20)</p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-                {formatarMoeda(totalAdiantamento)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1 truncate">
-                {data.colaboradoresAdiantamentoCount || 0} confirmados • Previsto: {formatarMoeda(data.totalAdiantamentoPrevisto || 0)}
-              </p>
+              {showSkeleton ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-32 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                    {formatarMoeda(totalAdiantamento)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1 truncate">
+                    {data.colaboradoresAdiantamentoCount || 0} confirmados • Previsto: {formatarMoeda(data.totalAdiantamentoPrevisto || 0)}
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -135,12 +139,21 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground truncate">Descontos da Folha</p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 mt-0.5 truncate">
-                -{formatarMoeda(totalDescontos)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1 truncate">
-                Faltas: {formatarMoeda(data.totalDescontoFaltas || 0)} • Convênios: {formatarMoeda(data.totalDescontoConvenios || 0)}
-              </p>
+              {showSkeleton ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-32 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 mt-0.5 truncate">
+                    -{formatarMoeda(totalDescontos)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1 truncate">
+                    Faltas: {formatarMoeda(data.totalDescontoFaltas || 0)} • Convênios: {formatarMoeda(data.totalDescontoConvenios || 0)}
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -153,14 +166,25 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground truncate">Saldo Líquido (Dia 07)</p>
-                <span className="text-[11px] font-bold text-foreground">{percentPago}%</span>
+                {!showSkeleton && (
+                  <span className="text-[11px] font-bold text-foreground">{percentPago}%</span>
+                )}
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-                {formatarMoeda(saldoFinal)}
-              </h2>
-              <div className="w-full bg-muted h-1 rounded-full mt-1.5 overflow-hidden">
-                <div className="bg-foreground h-full rounded-full transition-all duration-500" style={{ width: `${percentPago}%` }} />
-              </div>
+              {showSkeleton ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-1.5 w-full rounded-full mt-2" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                    {formatarMoeda(saldoFinal)}
+                  </h2>
+                  <div className="w-full bg-muted h-1 rounded-full mt-1.5 overflow-hidden">
+                    <div className="bg-foreground h-full rounded-full transition-all duration-500" style={{ width: `${percentPago}%` }} />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -172,12 +196,21 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground truncate">Já Liquidado (Dia 07)</p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
-                {formatarMoeda(data.valorPago)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1 truncate">
-                {pagosCount} de {totalColabs} prestadores liquidados
-              </p>
+              {showSkeleton ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-28 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
+                    {formatarMoeda(data.valorPago)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1 truncate">
+                    {pagosCount} de {totalColabs} prestadores liquidados
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -189,12 +222,21 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground truncate">Resta Liquidar (Dia 07)</p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-                {formatarMoeda(data.restaPagar)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1 truncate">
-                {data.pendentesCount} colaboradores pendentes
-              </p>
+              {showSkeleton ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-24 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                    {formatarMoeda(data.restaPagar)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1 truncate">
+                    {data.pendentesCount} colaboradores pendentes
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>

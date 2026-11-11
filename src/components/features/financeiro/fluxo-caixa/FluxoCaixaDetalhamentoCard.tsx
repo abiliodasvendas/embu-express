@@ -1,14 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { cn } from "@/lib/utils";
 import type { PontoFluxoDia } from "@/services/api/fluxo-caixa.api";
 import type { ModoVisaoFluxo } from "@/hooks/ui/financeiro/useFluxoCaixaTabViewModel";
 
 interface FluxoCaixaDetalhamentoCardProps {
-  curvaDiaria: PontoFluxoDia[];
+  curvaDiaria?: PontoFluxoDia[];
   modoVisao: ModoVisaoFluxo;
   setModoVisao: (modo: ModoVisaoFluxo) => void;
+  isLoading?: boolean;
   isFetching: boolean;
 }
 
@@ -16,58 +17,75 @@ export function FluxoCaixaDetalhamentoCard({
   curvaDiaria,
   modoVisao,
   setModoVisao,
+  isLoading = false,
   isFetching,
 }: FluxoCaixaDetalhamentoCardProps) {
+  const showSkeleton = isLoading || isFetching || !curvaDiaria;
+
   return (
     <Card className="relative rounded-[20px] sm:rounded-[24px] border border-border shadow-xs bg-card overflow-hidden">
-      {isFetching && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-surface-alt overflow-hidden z-20">
-          <div className="h-full bg-primary w-full animate-pulse" />
-        </div>
-      )}
-      <div className={cn("transition-opacity duration-200", isFetching && "opacity-50")}>
-        <CardHeader className="border-b border-border bg-muted/40 px-6 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Detalhamento Diário das Movimentações
-              </CardTitle>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                {modoVisao === "realizado"
-                  ? "Valores que efetivamente entraram e saíram no banco (Regime de Caixa)"
-                  : "Previsões esperadas pelo vencimento de faturas e despesas (Regime de Competência)"}
-              </p>
-            </div>
-            <div className="flex items-center p-1 bg-muted/60 rounded-[14px] border border-border shrink-0 self-start sm:self-auto">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 px-3 rounded-[10px] text-xs font-semibold ${
-                  modoVisao === "realizado"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                onClick={() => setModoVisao("realizado")}
-              >
-                Realizado (Efetivo)
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 px-3 rounded-[10px] text-xs font-semibold ${
-                  modoVisao === "projetado"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                onClick={() => setModoVisao("projetado")}
-              >
-                Projetado (Previsto)
-              </Button>
-            </div>
+      <CardHeader className="border-b border-border bg-muted/40 px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
+              Detalhamento Diário das Movimentações
+            </CardTitle>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {modoVisao === "realizado"
+                ? "Valores que efetivamente entraram e saíram no banco (Regime de Caixa)"
+                : "Previsões esperadas pelo vencimento de faturas e despesas (Regime de Competência)"}
+            </p>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y divide-border/60 max-h-[500px] overflow-y-auto">
+          <div className="flex items-center p-1 bg-muted/60 rounded-[14px] border border-border shrink-0 self-start sm:self-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-8 px-3 rounded-[10px] text-xs font-semibold ${
+                modoVisao === "realizado"
+                  ? "bg-card text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setModoVisao("realizado")}
+            >
+              Realizado (Efetivo)
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-8 px-3 rounded-[10px] text-xs font-semibold ${
+                modoVisao === "projetado"
+                  ? "bg-card text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setModoVisao("projetado")}
+            >
+              Projetado (Previsto)
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        {showSkeleton ? (
+          <div className="divide-y divide-border/60">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="p-4 sm:px-6 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <Skeleton className="w-10 h-10 rounded-[14px] shrink-0" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3.5 w-16 rounded-[6px]" />
+                    <Skeleton className="h-3 w-40 rounded-[6px]" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <Skeleton className="h-7 w-16 rounded-[6px]" />
+                  <Skeleton className="h-7 w-16 rounded-[6px]" />
+                  <Skeleton className="h-7 w-20 rounded-[6px]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+        <div className="divide-y divide-border/60 max-h-[500px] overflow-y-auto">
             {curvaDiaria.map((ponto) => {
               const entradas =
                 modoVisao === "realizado" ? ponto.entradas_realizadas : ponto.entradas_projetadas;
@@ -154,8 +172,8 @@ export function FluxoCaixaDetalhamentoCard({
               );
             })}
           </div>
-        </CardContent>
-      </div>
+        )}
+      </CardContent>
     </Card>
   );
 }

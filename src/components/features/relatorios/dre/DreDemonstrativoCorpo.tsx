@@ -1,21 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { DreConsolidado } from "@/services/api/dre.api";
 
 interface DreDemonstrativoCorpoProps {
-  dre: DreConsolidado;
+  dre?: DreConsolidado;
   modoVisao: "realizado" | "projetado";
   onLancarDespesa: () => void;
+  isLoading?: boolean;
 }
 
 export function DreDemonstrativoCorpo({
   dre,
   modoVisao,
   onLancarDespesa,
+  isLoading = false,
 }: DreDemonstrativoCorpoProps) {
-  const isPositivo = (dre.lucro_liquido || 0) >= 0;
+  const showSkeleton = isLoading || !dre;
+  const isPositivo = (dre?.lucro_liquido || 0) >= 0;
 
   const formatarPercentual = (valor: number) => {
     return `${(valor || 0).toFixed(2)}%`;
@@ -38,6 +42,16 @@ export function DreDemonstrativoCorpo({
         </div>
       </CardHeader>
       <CardContent className="p-0">
+        {showSkeleton ? (
+          <div className="divide-y divide-border">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+              <div key={i} className="flex justify-between items-center px-6 py-3">
+                <Skeleton className="h-4 w-64 max-w-[65%] rounded-[6px]" />
+                <Skeleton className="h-4 w-24 rounded-[6px]" />
+              </div>
+            ))}
+          </div>
+        ) : (
         <div className="divide-y divide-border text-xs sm:text-sm">
           <div className="flex justify-between items-center px-6 py-3.5 bg-muted/20 font-bold text-foreground">
             <span>(+) TOTAL COBRADO DOS CLIENTES (FATURAMENTO)</span>
@@ -243,6 +257,7 @@ export function DreDemonstrativoCorpo({
             </div>
           </div>
         </div>
+        )}
       </CardContent>
     </Card>
   );

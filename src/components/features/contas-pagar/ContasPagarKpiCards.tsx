@@ -25,7 +25,7 @@ export function ContasPagarKpiCards({
   const totalHoje = kpis?.total_vencendo_hoje || 0;
   const totalSemana = kpis?.total_semana || 0;
   const totalAtrasadas = kpis?.total_atrasadas || 0;
-  const totalProximas = Math.max(0, totalMes - totalHoje - totalSemana);
+  const totalProximas = Math.max(0, totalMes - totalHoje - totalSemana - totalAtrasadas);
 
   const percentualPago =
     totalGeral > 0 ? `${Math.round((totalPago / totalGeral) * 100)}% quitado` : "0%";

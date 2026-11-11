@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { ContaBancariaComSaldo } from "@/types/database";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { cnpjMask } from "@/utils/masks";
-import { Building2, Trash2 } from "lucide-react";
+import { Building2, ReceiptText, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ContasBancariasMobileCardProps {
   conta: ContaBancariaComSaldo;
   onExcluir: (conta: ContaBancariaComSaldo) => void;
+  onVerExtrato: (conta: ContaBancariaComSaldo) => void;
   isDeleting?: boolean;
   canEdit?: boolean;
 }
@@ -16,6 +17,7 @@ interface ContasBancariasMobileCardProps {
 export function ContasBancariasMobileCard({
   conta,
   onExcluir,
+  onVerExtrato,
   isDeleting = false,
   canEdit = true,
 }: ContasBancariasMobileCardProps) {
@@ -48,17 +50,28 @@ export function ContasBancariasMobileCard({
           </div>
         </div>
 
-        {canEdit && (
+        <div className="flex items-center gap-1.5 shrink-0">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={() => onExcluir(conta)}
-            disabled={isDeleting}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[10px] shrink-0 cursor-pointer"
+            onClick={() => onVerExtrato(conta)}
+            className="h-8 rounded-[18px] text-xs font-semibold px-3 gap-1 border-border hover:bg-muted cursor-pointer"
           >
-            <Trash2 className="w-4 h-4" />
+            <ReceiptText className="w-3.5 h-3.5 text-primary" />
+            <span>Extrato</span>
           </Button>
-        )}
+          {canEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onExcluir(conta)}
+              disabled={isDeleting}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[18px] shrink-0 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="text-xs text-muted-foreground flex items-center justify-between flex-wrap gap-1 bg-muted/20 px-3 py-1.5 rounded-[14px]">

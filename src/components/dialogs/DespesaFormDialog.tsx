@@ -29,6 +29,7 @@ export function DespesaFormDialog({
     empresas,
     contas,
     status,
+    tinhaPagamentoAnterior,
     isPending,
     onSubmit,
     handleClose,
@@ -72,7 +73,12 @@ export function DespesaFormDialog({
             <div className="space-y-4 pt-1">
               <DespesaIdentificacaoSection form={form} empresas={empresas} />
               <DespesaCompetenciaSection form={form} />
-              <DespesaPagamentoSection form={form} status={status} contas={contas} />
+              <DespesaPagamentoSection
+                form={form}
+                status={status}
+                contas={contas}
+                tinhaPagamentoAnterior={tinhaPagamentoAnterior}
+              />
               <DespesaParcelamentoSection form={form} despesaToEdit={despesaToEdit} />
             </div>
           </BaseDialog.Body>

@@ -6,6 +6,7 @@ import { ContasBancariasTableRow } from "./ContasBancariasTableRow";
 interface ContasBancariasTableProps {
   contas: ContaBancariaComSaldo[];
   onExcluir: (conta: ContaBancariaComSaldo) => void;
+  onVerExtrato: (conta: ContaBancariaComSaldo) => void;
   onNovaConta?: () => void;
   isDeleting?: boolean;
   canEdit?: boolean;
@@ -14,6 +15,7 @@ interface ContasBancariasTableProps {
 export function ContasBancariasTable({
   contas,
   onExcluir,
+  onVerExtrato,
   onNovaConta,
   isDeleting = false,
   canEdit = true,
@@ -48,7 +50,7 @@ export function ContasBancariasTable({
               <th className="py-3 px-4 w-[140px] text-right">Saídas (Real / Prev)</th>
               <th className="py-3 px-4 w-[140px] text-right">Saldo Atual (Realizado)</th>
               <th className="py-3 px-4 w-[130px] text-right">Saldo Projetado</th>
-              {canEdit && <th className="py-3 px-4 w-[70px] text-right">Ações</th>}
+              <th className="py-3 px-4 w-[130px] text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
@@ -57,6 +59,7 @@ export function ContasBancariasTable({
                 key={conta.id}
                 conta={conta}
                 onExcluir={onExcluir}
+                onVerExtrato={onVerExtrato}
                 isDeleting={isDeleting}
                 canEdit={canEdit}
               />

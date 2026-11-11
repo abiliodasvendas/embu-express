@@ -1,6 +1,5 @@
 import { isAxiosError } from "axios";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -11,7 +10,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/MoneyInput";
-import { NativeSelect } from "@/components/ui/native-select";
+import { ContaBancariaSelect } from "@/components/ui/ContaBancariaSelect";
 import { Banner } from "@/components/ui/Banner";
 import { useDespesas } from "@/hooks/api/useDespesas";
 import { useContasBancarias } from "@/hooks/api/useContasBancarias";
@@ -19,7 +18,7 @@ import { useLiquidarDespesaForm } from "@/hooks/form/useLiquidarDespesaForm";
 import { LiquidarDespesaFormData } from "@/schemas/liquidarDespesaSchema";
 import { DespesaOperacional } from "@/types/database";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
@@ -44,9 +43,7 @@ export function LiquidarDespesaDialog({
 
   if (!despesa) return null;
 
-  const contasFiltradas = despesa.empresa_id
-    ? contas.filter((c) => c.empresa_id === despesa.empresa_id)
-    : contas;
+  const contasAtivas = contas.filter((c) => c.ativo !== false);
 
   const handleClose = () => {
     safeCloseDialog(() => onOpenChange(false));
@@ -106,10 +103,10 @@ export function LiquidarDespesaDialog({
             </div>
           </Banner>
 
-          {contasFiltradas.length === 0 && (
+          {contasAtivas.length === 0 && (
             <Banner
               variant="warning"
-              description="A empresa vinculada a esta despesa não possui contas bancárias ativas cadastradas. Cadastre uma conta em Financeiro > Contas Bancárias para realizar a quitação."
+              description="Nenhuma conta bancária ativa cadastrada. Cadastre uma conta em Financeiro > Contas Bancárias para realizar a quitação."
             />
           )}
 
@@ -121,22 +118,15 @@ export function LiquidarDespesaDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-semibold text-foreground">
-                      Conta Bancária de Débito <span className="text-destructive">*</span>
+                      Conta Bancária Pagadora <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <NativeSelect
-                        {...field}
+                      <ContaBancariaSelect
+                        contas={contasAtivas}
                         value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        className="h-10 rounded-[14px]"
-                      >
-                        <option value="">Selecione a conta bancária pagadora...</option>
-                        {contasFiltradas.map((conta) => (
-                          <option key={conta.id} value={conta.id}>
-                            {conta.banco_nome} - Ag: {conta.agencia || "S/A"} CC: {conta.conta || "S/C"}
-                          </option>
-                        ))}
-                      </NativeSelect>
+                        onChange={field.onChange}
+                        disabled={pagarMutation.isPending || contasAtivas.length === 0}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +142,7 @@ export function LiquidarDespesaDialog({
                       Data do Pagamento <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} className="h-10 rounded-[14px]" />
+                      <Input type="date" {...field} className="h-10 rounded-[18px]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -171,7 +161,7 @@ export function LiquidarDespesaDialog({
                       <MoneyInput
                         value={field.value}
                         onChange={field.onChange}
-                        className="h-10 rounded-[14px]"
+                        className="h-10 rounded-[18px]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -183,33 +173,21 @@ export function LiquidarDespesaDialog({
         </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>
-        <Button
-          type="button"
-          variant="outline"
+        <BaseDialog.Action
+          label="Cancelar"
+          variant="secondary"
           onClick={handleClose}
           disabled={pagarMutation.isPending}
-          className="rounded-[14px]"
-        >
-          Cancelar
-        </Button>
-        <Button
+          type="button"
+        />
+        <BaseDialog.Action
+          label={pagarMutation.isPending ? "Liquidando..." : "Confirmar Quitação"}
+          variant="primary"
+          isLoading={pagarMutation.isPending}
+          disabled={contasAtivas.length === 0 || pagarMutation.isPending}
           type="submit"
           form="liquidar-despesa-form"
-          disabled={contasFiltradas.length === 0 || pagarMutation.isPending}
-          className="rounded-[14px] bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
-        >
-          {pagarMutation.isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Liquidando...
-            </>
-          ) : (
-            <>
-              <CheckCircle2 className="h-4 w-4" />
-              Confirmar Quitação
-            </>
-          )}
-        </Button>
+        />
       </BaseDialog.Footer>
     </BaseDialog>
   );

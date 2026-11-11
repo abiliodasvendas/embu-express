@@ -44,7 +44,7 @@ export default function ContasPagar() {
         <TabsList className="h-11 p-1 bg-muted/70 rounded-[18px] border border-border gap-1 w-full sm:w-auto inline-flex items-center overflow-x-auto [scrollbar-width:none]">
           <TabsTrigger value="geral">
             <CreditCard className="h-4 w-4" />
-            <span>Despesas e Convênios</span>
+            <span>Compromissos a Pagar</span>
           </TabsTrigger>
           {canViewAvulsas && (
             <TabsTrigger value="saidas">

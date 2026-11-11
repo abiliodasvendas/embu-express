@@ -60,6 +60,7 @@ export function DespesasTab({
         sortDirection={vm.sortDirDespesas}
         onSort={vm.handleSortDespesas}
         onLiquidar={vm.handleLiquidarDespesa}
+        onDesfazerPagamento={vm.handleDesfazerPagamentoDespesa}
         onEdit={vm.handleEditDespesa}
         onDelete={vm.handleDeleteDespesa}
       />

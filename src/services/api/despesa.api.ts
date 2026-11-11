@@ -51,4 +51,7 @@ export const despesaApi = {
 
   marcarPaga: (id: string, data: { data_pagamento: string; valor_pago?: number; conta_bancaria_id?: string }): Promise<DespesaOperacional> =>
     apiClient.patch(`/despesas/${id}/pagar`, data).then((res) => res.data),
+
+  desfazerPagamento: (id: string): Promise<DespesaOperacional> =>
+    apiClient.post(`/despesas/${id}/desfazer-pagamento`).then((res) => res.data),
 };

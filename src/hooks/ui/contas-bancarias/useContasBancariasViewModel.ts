@@ -10,7 +10,11 @@ import { toast } from "sonner";
 export type TipoContaFiltro = "TODOS" | "CORRENTE" | "POUPANCA" | "PAGAMENTO" | "INVESTIMENTO";
 
 export function useContasBancariasViewModel() {
-  const { openContasBancariasDialog, openConfirmationDialog } = useLayout();
+  const {
+    openContasBancariasDialog,
+    openConfirmationDialog,
+    openExtratoContaBancariaDialog,
+  } = useLayout();
   const { can } = usePermissions();
   const canEdit = can(PERMISSIONS.CONTAS_BANCARIAS.EDITAR);
   const [busca, setBusca] = useState("");
@@ -110,6 +114,18 @@ export function useContasBancariasViewModel() {
     openContasBancariasDialog({ empresaIdInicial: empresaId || undefined });
   };
 
+  const handleVerExtrato = (conta: ContaBancariaComSaldo) => {
+    openExtratoContaBancariaDialog({
+      contaId: conta.id,
+      bancoNome: conta.banco_nome,
+      agencia: conta.agencia,
+      contaNumero: conta.conta,
+      empresaNome: conta.empresa?.nome_fantasia || conta.empresa?.razao_social,
+      mesInicial: mes,
+      anoInicial: ano,
+    });
+  };
+
   return {
     busca,
     setBusca,
@@ -131,5 +147,6 @@ export function useContasBancariasViewModel() {
     refetch,
     handleNovaConta,
     handleExcluirConta,
+    handleVerExtrato,
   };
 }

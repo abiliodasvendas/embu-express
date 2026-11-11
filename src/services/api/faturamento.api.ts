@@ -58,6 +58,9 @@ export const faturamentoApi = {
   liquidarFatura: (id: string, payload: LiquidarFaturaPayload): Promise<FaturaCliente> =>
     apiClient.post(`/faturamento/${id}/liquidar`, payload).then(res => res.data),
 
+  desfazerLiquidacaoFatura: (id: string): Promise<FaturaCliente> =>
+    apiClient.post(`/faturamento/${id}/desfazer-liquidacao`, {}).then(res => res.data),
+
   getAgingRecebiveis: (filtros?: { mes?: number; ano?: number; empresa_id?: number }): Promise<AgingRecebiveisResultado> =>
     apiClient.get("/faturamento/aging", { params: filtros }).then(res => res.data),
 };

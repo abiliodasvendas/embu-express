@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { convenioAuditoriaApi } from "@/services/api/convenio-auditoria.api";
+import { contasPagarApi } from "@/services/api/contas-pagar.api";
 
 export const CONVENIO_AUDITORIA_KEYS = {
   all: ["convenio-auditoria"] as const,
@@ -57,6 +58,26 @@ export function useLiquidarFaturaConvenio() {
       queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
       queryClient.invalidateQueries({ queryKey: ["dre"] });
       queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias-saldos"] });
+      queryClient.invalidateQueries({ queryKey: ["conta-bancaria-extrato"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
+    },
+  });
+}
+
+export function useDesfazerPagamentoFaturaConvenio() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (faturaId: string) =>
+      contasPagarApi.desfazerLiquidacao(faturaId, "CONVENIO"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CONVENIO_AUDITORIA_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias-saldos"] });
+      queryClient.invalidateQueries({ queryKey: ["conta-bancaria-extrato"] });
       queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
     },
   });

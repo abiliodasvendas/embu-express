@@ -3,8 +3,13 @@ import { useContasPagar } from "@/hooks/api/useContasPagar";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useDespesas } from "@/hooks/api/useDespesas";
 import { useLayout } from "@/contexts/LayoutContext";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { ContaPagarItem, CategoriaDespesa, StatusDespesa } from "@/types/database";
-import { STATUS_DESPESA, TIPO_CONTA_PAGAR } from "@/constants/financeiro.constants";
+import {
+  CATEGORIA_COLABORADOR_CONTA_PAGAR,
+  STATUS_DESPESA,
+  TIPO_CONTA_PAGAR,
+} from "@/constants/financeiro.constants";
 import { toast } from "sonner";
 
 export function useContasPagarViewModel() {
@@ -14,7 +19,7 @@ export function useContasPagarViewModel() {
   const [empresaId, setEmpresaId] = useState<number | null>(null);
   const [status, setStatus] = useState<string>("TODOS");
   const [busca, setBusca] = useState<string>("");
-  const [tipoFiltro, setTipoFiltro] = useState<"TODOS" | "DESPESA" | "CONVENIO">("TODOS");
+  const [tipoFiltro, setTipoFiltro] = useState<"TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR">("TODOS");
   const [filtroPrazo, setFiltroPrazo] = useState<string | null>(null);
 
   const { data: empresas = [], isLoading: isLoadingEmpresas } = useEmpresas();
@@ -26,6 +31,8 @@ export function useContasPagarViewModel() {
     isLoading: isLoadingContas,
     isFetching,
     refetch,
+    liquidarMutation,
+    desfazerLiquidacaoMutation,
   } = useContasPagar({
     mes,
     ano,
@@ -39,6 +46,10 @@ export function useContasPagarViewModel() {
     openDespesaDeleteDialog,
     openLiquidarDespesaDialog,
     openLiquidarFaturaConvenioDialog,
+    openConfirmarAdiantamentoDialog,
+    openConfirmarPagamentoSalarioDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
   } = useLayout();
 
   const itensFiltrados = useMemo(() => {
@@ -73,6 +84,58 @@ export function useContasPagarViewModel() {
   }, [itens, tipoFiltro, filtroPrazo]);
 
   const handleLiquidarItem = (item: ContaPagarItem) => {
+    if (item.tipo === TIPO_CONTA_PAGAR.COLABORADOR) {
+      const refLabel =
+        item.mes_competencia && item.ano_competencia
+          ? `${String(item.mes_competencia).padStart(2, "0")}/${item.ano_competencia}`
+          : undefined;
+
+      if (item.categoria === CATEGORIA_COLABORADOR_CONTA_PAGAR.ADIANTAMENTO_SALARIAL) {
+        openConfirmarAdiantamentoDialog({
+          valorSugerido: item.valor_previsto,
+          colaboradorNome: item.colaborador_nome || item.descricao,
+          referenciaLabel: refLabel,
+          contaBancariaInicialId: item.conta_bancaria_id,
+          isLoading: liquidarMutation.isPending,
+          onConfirm: async ({ valor, contaBancariaId, dataPagamento }) => {
+            await liquidarMutation.mutateAsync({
+              id: item.id,
+              tipo: "COLABORADOR",
+              payload: {
+                valor_pago: valor,
+                conta_bancaria_id: contaBancariaId,
+                data_pagamento: dataPagamento,
+              },
+            });
+            toast.success("Adiantamento liquidado com sucesso!");
+            refetch();
+          },
+        });
+      } else {
+        openConfirmarPagamentoSalarioDialog({
+          valorLiquido: item.valor_previsto,
+          colaboradorNome: item.colaborador_nome || item.descricao,
+          referenciaLabel: refLabel,
+          contaBancariaInicialId: item.conta_bancaria_id,
+          isLoading: liquidarMutation.isPending,
+          onConfirm: async ({ contaBancariaId, dataPagamento }) => {
+            await liquidarMutation.mutateAsync({
+              id: item.id,
+              tipo: "COLABORADOR",
+              payload: {
+                valor_pago: item.valor_previsto,
+                conta_bancaria_id: contaBancariaId,
+                data_pagamento: dataPagamento,
+              },
+            });
+            toast.success("Salário liquidado com sucesso!");
+            refetch();
+          },
+        });
+      }
+      return;
+    }
+
     if (item.tipo === TIPO_CONTA_PAGAR.CONVENIO) {
       openLiquidarFaturaConvenioDialog({
         convenioId: item.id,
@@ -169,6 +232,28 @@ export function useContasPagarViewModel() {
     });
   };
 
+  const handleDesfazerLiquidacaoItem = (item: ContaPagarItem) => {
+    openConfirmationDialog({
+      title: "Desfazer Pagamento",
+      description: `Deseja realmente desfazer o pagamento de "${item.descricao}"? O lançamento retornará ao status Pendente e deixará de compor o saldo realizado da conta bancária.`,
+      confirmText: "Desfazer Pagamento",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await desfazerLiquidacaoMutation.mutateAsync({
+            id: item.id,
+            tipo: item.tipo,
+          });
+          safeCloseDialog(closeConfirmationDialog);
+          toast.success("Pagamento desfeito com sucesso!");
+          refetch();
+        } catch {
+          toast.error("Erro ao desfazer o pagamento.");
+        }
+      },
+    });
+  };
+
   return {
     mes,
     setMes,
@@ -191,6 +276,7 @@ export function useContasPagarViewModel() {
     isFetching,
     refetch,
     handleLiquidarItem,
+    handleDesfazerLiquidacaoItem,
     handleEditItem,
     handleDeleteItem,
     handleNovaDespesa,

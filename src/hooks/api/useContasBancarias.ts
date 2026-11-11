@@ -1,6 +1,6 @@
 import { contaBancariaApi } from "@/services/api/conta-bancaria.api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ContaBancaria, ContaBancariaComSaldo } from "@/types/database";
+import { ContaBancaria, ContaBancariaComSaldo, ExtratoBancarioResponse } from "@/types/database";
 
 export function useContasBancariasSaldos(params?: { empresa_id?: number; mes?: number; ano?: number }) {
   const query = useQuery<ContaBancariaComSaldo[]>({
@@ -12,6 +12,14 @@ export function useContasBancariasSaldos(params?: { empresa_id?: number; mes?: n
     ...query,
     contasComSaldo: query.data || [],
   };
+}
+
+export function useExtratoContaBancaria(contaId: string | undefined, mes: number, ano: number, enabled = true) {
+  return useQuery<ExtratoBancarioResponse>({
+    queryKey: ["conta-bancaria-extrato", contaId, mes, ano],
+    queryFn: () => contaBancariaApi.getExtrato(contaId!, { mes, ano }),
+    enabled: Boolean(contaId && mes && ano && enabled),
+  });
 }
 
 export function useContasBancarias(empresaId?: number) {

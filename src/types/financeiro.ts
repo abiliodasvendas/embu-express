@@ -66,10 +66,13 @@ export interface ExtratoMensal {
     adiantamento_confirmado: boolean;
     resumo_por_cliente: ResumoClienteFinanceiro[];
     mei_consolidado: MeiConsolidado;
-    ocorrencias: any[];
+    ocorrencias: unknown[];
     ocorrencias_avulsas: OcorrenciasAvulsas;
     totais: FinanceiroTotais;
     id_fechamento?: number;
     data_pagamento?: string;
+    conta_bancaria_id?: string | null;
+    adiantamento_conta_bancaria_id?: string | null;
+    adiantamento_data_pagamento?: string | null;
     lancamentos_convenios?: LancamentoConvenio[];
 }

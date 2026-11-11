@@ -18,6 +18,7 @@ interface DespesasTableProps {
   sortDirection: "asc" | "desc";
   onSort: (key: string) => void;
   onLiquidar: (despesa: DespesaOperacional) => void;
+  onDesfazerPagamento?: (despesa: DespesaOperacional) => void;
   onEdit: (despesa: DespesaOperacional) => void;
   onDelete: (despesa: DespesaOperacional) => void;
   canEdit?: boolean;
@@ -34,6 +35,7 @@ export function DespesasTable({
   sortDirection,
   onSort,
   onLiquidar,
+  onDesfazerPagamento,
   onEdit,
   onDelete,
   canEdit = true,
@@ -91,6 +93,7 @@ export function DespesasTable({
                   key={d.id}
                   despesa={d}
                   onLiquidar={onLiquidar}
+                  onDesfazerPagamento={onDesfazerPagamento}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   canEdit={canEdit}
@@ -107,6 +110,7 @@ export function DespesasTable({
             key={d.id}
             despesa={d}
             onLiquidar={onLiquidar}
+            onDesfazerPagamento={onDesfazerPagamento}
             onEdit={onEdit}
             onDelete={onDelete}
             canEdit={canEdit}

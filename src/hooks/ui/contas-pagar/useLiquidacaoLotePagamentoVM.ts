@@ -14,7 +14,7 @@ export function useLiquidacaoLotePagamentoVM() {
   const [ano, setAno] = useState<number>(currentDate.getFullYear());
   const [empresaId, setEmpresaId] = useState<number | null>(null);
   const [busca, setBusca] = useState<string>("");
-  const [tipoFiltro, setTipoFiltro] = useState<"TODOS" | "DESPESA" | "CONVENIO">("TODOS");
+  const [tipoFiltro, setTipoFiltro] = useState<"TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR">("TODOS");
 
   const [contaBancariaId, setContaBancariaId] = useState<string>("");
   const [dataPagamento, setDataPagamento] = useState<string>(toLocalDateString(new Date()));

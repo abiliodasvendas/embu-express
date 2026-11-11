@@ -26,6 +26,7 @@ export function ContasPagarGeralTab() {
     isFetching,
     refetch,
     handleLiquidarItem,
+    handleDesfazerLiquidacaoItem,
     handleEditItem,
     handleDeleteItem,
     handleNovaDespesa,
@@ -64,6 +65,7 @@ export function ContasPagarGeralTab() {
         itens={itens}
         isLoading={isLoading}
         onLiquidar={handleLiquidarItem}
+        onDesfazerLiquidacao={handleDesfazerLiquidacaoItem}
         onEdit={handleEditItem}
         onDelete={handleDeleteItem}
         onNovaDespesa={handleNovaDespesa}

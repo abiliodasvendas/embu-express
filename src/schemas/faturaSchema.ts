@@ -24,6 +24,7 @@ export const faturaFormSchema = z.object({
     required_error: "Informe o valor faturado",
     invalid_type_error: "Informe o valor faturado",
   }).min(0.01, "O valor faturado deve ser maior que zero"),
+  valor_pago: z.coerce.number().nonnegative().optional().default(0),
   status: z.nativeEnum(STATUS_FATURA).default(STATUS_FATURA.PENDENTE),
   numero_os: z.string().trim().optional(),
   observacoes: z.string().optional(),

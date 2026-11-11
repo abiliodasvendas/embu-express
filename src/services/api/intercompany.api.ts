@@ -25,4 +25,7 @@ export const intercompanyApi = {
     observacao?: string | null;
   }): Promise<TransferenciaIntercompany> =>
     apiClient.post("/intercompany/acerto", payload).then(res => res.data),
+
+  desfazerAcerto: (transferenciaId: string): Promise<TransferenciaIntercompany> =>
+    apiClient.post(`/intercompany/${transferenciaId}/desfazer-acerto`, {}).then(res => res.data),
 };

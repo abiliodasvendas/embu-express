@@ -7,6 +7,7 @@ import {
   Edit2,
   Power,
   Trash2,
+  RotateCcw,
 } from "lucide-react";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -16,11 +17,14 @@ import {
   useDeleteConvenio,
   useUpdateConvenio,
 } from "@/hooks/api/useConvenios";
-import { useResumoGeralConvenios } from "@/hooks/api/useConvenioAuditoria";
+import {
+  useResumoGeralConvenios,
+  useDesfazerPagamentoFaturaConvenio,
+} from "@/hooks/api/useConvenioAuditoria";
 import { useTodosBloqueiosConvenios } from "@/hooks/api/useBloqueiosConvenios";
 import { useSearchFilters, useStatusFilters } from "@/hooks/ui/useFilters";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
-import { STATUS_FATURA_CONVENIO } from "@/constants/financeiro.constants";
+import { PERIODICIDADE_FATURAMENTO, STATUS_FATURA_CONVENIO } from "@/constants/financeiro.constants";
 import { Convenio, ConvenioResumoItem } from "@/types/database";
 import { FilterOptions, StatusUsuario } from "@/types/enums";
 import { ActionItem } from "@/types/actions";
@@ -86,6 +90,7 @@ export function useConveniosViewModel() {
 
   const deleteConvenio = useDeleteConvenio();
   const updateConvenio = useUpdateConvenio();
+  const desfazerPagamentoConvenio = useDesfazerPagamentoFaturaConvenio();
 
   useEffect(() => {
     setPageTitle("Convênios & Despesas Operacionais");
@@ -223,7 +228,7 @@ export function useConveniosViewModel() {
       const anoVenc = mes === 12 ? ano + 1 : ano;
       const diaVenc = convenio.dia_vencimento_padrao || 15;
       const dataVencDefault = `${anoVenc}-${String(mesVenc).padStart(2, "0")}-${String(diaVenc).padStart(2, "0")}`;
-      const periodicidade = convenio.periodicidade || "MENSAL";
+      const periodicidade = convenio.periodicidade || PERIODICIDADE_FATURAMENTO.MENSAL;
 
       openLiquidarFaturaConvenioDialog({
         convenioId: convenio.id,
@@ -233,7 +238,7 @@ export function useConveniosViewModel() {
         anoCompetencia: ano,
         tipoPeriodo: periodicidade,
         numeroPeriodo: 1,
-        quinzena: periodicidade === "QUINZENAL" ? 1 : null,
+        quinzena: periodicidade === PERIODICIDADE_FATURAMENTO.QUINZENAL ? 1 : null,
         dataVencimento: fatura?.data_vencimento || dataVencDefault,
         valorTotalFatura: fatura?.valor_total_fatura || resumoItem?.total_consumido || 0,
         valorJaPago: fatura?.valor_pago || 0,
@@ -243,6 +248,27 @@ export function useConveniosViewModel() {
       });
     },
     [mes, ano, openLiquidarFaturaConvenioDialog, refetchResumo]
+  );
+
+  const handleDesfazerPagamentoFatura = useCallback(
+    (convenio: Convenio, faturaId: string) => {
+      openConfirmationDialog({
+        title: "Desfazer Pagamento",
+        description: `Tem certeza que deseja desfazer o pagamento da fatura do convênio "${convenio.nome}"? Os pagamentos registrados serão estornados e a fatura voltará para o status Pendente.`,
+        confirmText: "Desfazer Pagamento",
+        variant: "destructive",
+        onConfirm: async () => {
+          try {
+            await desfazerPagamentoConvenio.mutateAsync(faturaId);
+            await refetchResumo();
+            safeCloseDialog(closeConfirmationDialog);
+          } catch {
+            safeCloseDialog(closeConfirmationDialog);
+          }
+        },
+      });
+    },
+    [openConfirmationDialog, desfazerPagamentoConvenio, refetchResumo, closeConfirmationDialog]
   );
 
   const getConvenioActions = useCallback(
@@ -271,6 +297,22 @@ export function useConveniosViewModel() {
         });
       }
 
+      if (
+        canLiquidar &&
+        fatura &&
+        !fatura.is_previsao &&
+        (fatura.status === STATUS_FATURA_CONVENIO.PAGA ||
+          fatura.status === STATUS_FATURA_CONVENIO.PAGO_PARCIAL ||
+          (fatura.valor_pago || 0) > 0)
+      ) {
+        actions.push({
+          label: "Desfazer Pagamento",
+          icon: <RotateCcw className="h-4 w-4" />,
+          onClick: () => handleDesfazerPagamentoFatura(convenio, fatura.id),
+          isDestructive: true,
+        });
+      }
+
       if (canEdit) {
         actions.push(
           {
@@ -294,7 +336,7 @@ export function useConveniosViewModel() {
 
       return actions;
     },
-    [canEdit, canLiquidar, resumoMap, handleLiquidarFatura]
+    [canEdit, canLiquidar, resumoMap, handleLiquidarFatura, handleDesfazerPagamentoFatura]
   );
 
   return {

@@ -112,7 +112,7 @@ export function FinanceiroTab({ mes, ano }: FinanceiroTabProps) {
                 {formatarMoeda(totalAdiantamento)}
               </h2>
               <p className="text-[11px] text-muted-foreground mt-1 truncate">
-                {data.colaboradoresAdiantamentoCount || 0} de {totalColabs} confirmados
+                {data.colaboradoresAdiantamentoCount || 0} confirmados • Previsto: {formatarMoeda(data.totalAdiantamentoPrevisto || 0)}
               </p>
             </div>
           </div>

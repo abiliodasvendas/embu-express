@@ -11,6 +11,13 @@ export { useCollaboratorTurnForm } from "./form/useCollaboratorTurnForm";
 export { useSelfRegistrationForm } from "./form/useSelfRegistrationForm";
 export { useOccurrenceForm } from "./form/useOccurrenceForm";
 export { useUnidadeForm } from "./form/useUnidadeForm";
+export { useConfirmarAdiantamentoForm } from "./form/useConfirmarAdiantamentoForm";
+export { useConfirmarPagamentoSalarioForm } from "./form/useConfirmarPagamentoSalarioForm";
+export { useAcertoIntercompanyForm } from "./form/useAcertoIntercompanyForm";
+export { useLiquidarDespesaForm } from "./form/useLiquidarDespesaForm";
+export { useLiquidarFaturaForm } from "./form/useLiquidarFaturaForm";
+export { useLiquidarFaturaConvenioForm } from "./form/useLiquidarFaturaConvenioForm";
+export { useContaBancariaForm } from "./form/useContaBancariaForm";
 
 export * from "./ui/useAnimatedNumber";
 export * from "./ui/useDebounce";
@@ -49,6 +56,9 @@ export {
 export {
   useContasBancariasViewModel,
 } from "./ui/contas-bancarias/useContasBancariasViewModel";
+export {
+  useExtratoContaBancariaViewModel,
+} from "./ui/contas-bancarias/useExtratoContaBancariaViewModel";
 export {
   useLiquidacaoLotePagamentoVM,
 } from "./ui/contas-pagar/useLiquidacaoLotePagamentoVM";

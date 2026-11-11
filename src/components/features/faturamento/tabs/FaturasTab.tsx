@@ -63,6 +63,7 @@ export function FaturasTab({ mes, ano, setMes, setAno }: FaturasTabProps) {
         sortDirection={vm.sortDirFaturas}
         onSort={vm.handleSortFaturas}
         onLiquidar={vm.handleLiquidarFatura}
+        onDesfazerLiquidacao={vm.handleDesfazerLiquidacaoFatura}
         onEdit={vm.handleEditFatura}
         onDelete={vm.handleDeleteFatura}
         selectedIds={vm.selectedIds}

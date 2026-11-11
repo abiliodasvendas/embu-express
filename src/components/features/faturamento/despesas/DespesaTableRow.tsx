@@ -16,6 +16,7 @@ import type { DespesaOperacional } from "@/types/database";
 interface DespesaTableRowProps {
   despesa: DespesaOperacional;
   onLiquidar: (despesa: DespesaOperacional) => void;
+  onDesfazerPagamento?: (despesa: DespesaOperacional) => void;
   onEdit: (despesa: DespesaOperacional) => void;
   onDelete: (despesa: DespesaOperacional) => void;
   canEdit?: boolean;
@@ -24,6 +25,7 @@ interface DespesaTableRowProps {
 export function DespesaTableRow({
   despesa,
   onLiquidar,
+  onDesfazerPagamento,
   onEdit,
   onDelete,
   canEdit = true,
@@ -115,6 +117,7 @@ export function DespesaTableRow({
         <DespesaRowActions
           despesa={despesa}
           onLiquidar={onLiquidar}
+          onDesfazerPagamento={onDesfazerPagamento}
           onEdit={onEdit}
           onDelete={onDelete}
           canEdit={canEdit}

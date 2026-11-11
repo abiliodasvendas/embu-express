@@ -8,7 +8,7 @@ import { TransferenciaIntercompany } from "@/types/database";
 import { STATUS_INTERCOMPANY } from "@/constants/financeiro.constants";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { ArrowRightLeft } from "lucide-react";
+import { ArrowRightLeft, RotateCcw } from "lucide-react";
 import { IntercompanyToolbar } from "./IntercompanyToolbar";
 
 interface IntercompanyTableProps {
@@ -22,6 +22,7 @@ interface IntercompanyTableProps {
   sortDirection: "asc" | "desc";
   onSort: (key: string) => void;
   onRegistrarAcerto: (transferencia: TransferenciaIntercompany) => void;
+  onDesfazerAcerto?: (transferencia: TransferenciaIntercompany) => void;
   canEdit?: boolean;
 }
 
@@ -36,6 +37,7 @@ export function IntercompanyTable({
   sortDirection,
   onSort,
   onRegistrarAcerto,
+  onDesfazerAcerto,
   canEdit = true,
 }: IntercompanyTableProps) {
   if (isLoading) {
@@ -173,6 +175,18 @@ export function IntercompanyTable({
                       >
                         Registrar Acerto
                       </Button>
+                    ) : canEdit &&
+                      t.status === STATUS_INTERCOMPANY.COMPENSADO &&
+                      onDesfazerAcerto ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 rounded-[18px] text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => onDesfazerAcerto(t)}
+                        title="Desfazer Acerto"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      </Button>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
@@ -239,16 +253,28 @@ export function IntercompanyTable({
               </div>
             </div>
 
-            {canEdit && t.status === STATUS_INTERCOMPANY.PENDENTE_ACERTO && (
+            {canEdit && (
               <div className="pt-2 border-t border-border flex items-center justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 rounded-[18px] px-3 text-xs font-medium border-border hover:bg-muted text-foreground"
-                  onClick={() => onRegistrarAcerto(t)}
-                >
-                  Registrar Acerto
-                </Button>
+                {t.status === STATUS_INTERCOMPANY.PENDENTE_ACERTO ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-[18px] px-3 text-xs font-medium border-border hover:bg-muted text-foreground"
+                    onClick={() => onRegistrarAcerto(t)}
+                  >
+                    Registrar Acerto
+                  </Button>
+                ) : onDesfazerAcerto ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-[18px] px-2.5 text-xs font-medium border-border text-muted-foreground hover:text-destructive gap-1"
+                    onClick={() => onDesfazerAcerto(t)}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Desfazer Acerto</span>
+                  </Button>
+                ) : null}
               </div>
             )}
           </div>

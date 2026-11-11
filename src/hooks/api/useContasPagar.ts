@@ -16,6 +16,20 @@ export function useContasPagar(filtros?: ListContasPagarFiltros) {
     staleTime: 2 * 60 * 1000,
   });
 
+  const invalidateAllRelated = () => {
+    queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
+    queryClient.invalidateQueries({ queryKey: ["despesas"] });
+    queryClient.invalidateQueries({ queryKey: ["convenios"] });
+    queryClient.invalidateQueries({ queryKey: ["convenio-auditoria"] });
+    queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+    queryClient.invalidateQueries({ queryKey: ["dre"] });
+    queryClient.invalidateQueries({ queryKey: ["financeiro-extrato"] });
+    queryClient.invalidateQueries({ queryKey: ["financeiro-status-geral"] });
+    queryClient.invalidateQueries({ queryKey: ["financeiro-dashboard"] });
+    queryClient.invalidateQueries({ queryKey: ["contas-bancarias-saldos"] });
+    queryClient.invalidateQueries({ queryKey: ["conta-bancaria-extrato"] });
+  };
+
   const liquidarMutation = useMutation({
     mutationFn: ({
       id,
@@ -24,26 +38,31 @@ export function useContasPagar(filtros?: ListContasPagarFiltros) {
     }: {
       id: string;
       payload: LiquidarIndividualPayload;
-      tipo?: "DESPESA" | "CONVENIO";
+      tipo?: "DESPESA" | "CONVENIO" | "COLABORADOR";
     }) => contasPagarApi.liquidarIndividual(id, payload, tipo),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
-      queryClient.invalidateQueries({ queryKey: ["despesas"] });
-      queryClient.invalidateQueries({ queryKey: ["convenios"] });
-      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
-      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      invalidateAllRelated();
     },
   });
 
   const loteMutation = useMutation({
     mutationFn: (payload: LotePagamentoPayload) => contasPagarApi.processarLote(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
-      queryClient.invalidateQueries({ queryKey: ["despesas"] });
-      queryClient.invalidateQueries({ queryKey: ["convenios"] });
-      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
-      queryClient.invalidateQueries({ queryKey: ["dre"] });
+      invalidateAllRelated();
       queryClient.invalidateQueries({ queryKey: ["lotes-pagamento"] });
+    },
+  });
+
+  const desfazerLiquidacaoMutation = useMutation({
+    mutationFn: ({
+      id,
+      tipo,
+    }: {
+      id: string;
+      tipo?: "DESPESA" | "CONVENIO" | "COLABORADOR";
+    }) => contasPagarApi.desfazerLiquidacao(id, tipo),
+    onSuccess: () => {
+      invalidateAllRelated();
     },
   });
 
@@ -53,6 +72,7 @@ export function useContasPagar(filtros?: ListContasPagarFiltros) {
     kpis: query.data?.kpis,
     liquidarMutation,
     loteMutation,
+    desfazerLiquidacaoMutation,
   };
 }
 

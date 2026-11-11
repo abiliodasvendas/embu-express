@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { useLayout } from "@/hooks";
+import { toast } from "sonner";
+import { useLayout, safeCloseDialog } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useIntercompany } from "@/hooks/api/useIntercompany";
@@ -13,7 +14,11 @@ interface UseIntercompanyTabViewModelProps {
 export function useIntercompanyTabViewModel({
   enabled = true,
 }: UseIntercompanyTabViewModelProps = {}) {
-  const { openAcertoIntercompanyDialog } = useLayout();
+  const {
+    openAcertoIntercompanyDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+  } = useLayout();
   const { can, isSuperAdmin } = usePermissions();
   const canEdit = isSuperAdmin || can(PERMISSIONS.FATURAMENTO.EDITAR) || can(PERMISSIONS.DESPESAS.EDITAR);
   const [searchIntercompany, setSearchIntercompany] = useState<string>("");
@@ -24,6 +29,7 @@ export function useIntercompanyTabViewModel({
     isLoadingTransferencias,
     isFetchingTransferencias: isFetchingIntercompany,
     isLoadingMatriz,
+    desfazerAcertoMutation,
     refetch: refetchIntercompany,
   } = useIntercompany(undefined, { enabled });
 
@@ -64,6 +70,24 @@ export function useIntercompanyTabViewModel({
     });
   };
 
+  const handleDesfazerAcerto = (transferencia: TransferenciaIntercompany) => {
+    openConfirmationDialog({
+      title: "Desfazer Acerto entre Empresas",
+      description: `Deseja realmente desfazer o acerto entre ${transferencia.empresa_devedora?.nome_fantasia || "Empresa Devedora"} e ${transferencia.empresa_credora?.nome_fantasia || "Empresa Credora"}? A transferência voltará ao status Pendente Acerto.`,
+      confirmText: "Desfazer Acerto",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await desfazerAcertoMutation.mutateAsync(transferencia.id);
+          safeCloseDialog(closeConfirmationDialog);
+          toast.success("Acerto desfeito com sucesso!");
+        } catch {
+          toast.error("Erro ao desfazer o acerto.");
+        }
+      },
+    });
+  };
+
   return {
     canEdit,
     transferencias,
@@ -78,6 +102,7 @@ export function useIntercompanyTabViewModel({
     sortDirIntercompany,
     handleSortIntercompany,
     handleOpenAcerto,
+    handleDesfazerAcerto,
     refetchIntercompany,
   };
 }

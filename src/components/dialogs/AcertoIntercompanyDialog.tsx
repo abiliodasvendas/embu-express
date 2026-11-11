@@ -1,14 +1,21 @@
-import { useState, useEffect } from "react";
 import { isAxiosError } from "axios";
 import { BaseDialog } from "@/components/ui/BaseDialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useIntercompany } from "@/hooks/api/useIntercompany";
+import { useAcertoIntercompanyForm } from "@/hooks/form/useAcertoIntercompanyForm";
+import { AcertoIntercompanyFormData } from "@/schemas/acertoIntercompanySchema";
 import { TransferenciaIntercompany } from "@/types/database";
 import { toast } from "sonner";
 import { ArrowRightLeft } from "lucide-react";
-import { toLocalDateString } from "@/utils/formatters/date";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
@@ -26,31 +33,16 @@ export function AcertoIntercompanyDialog({
   onSuccess,
 }: AcertoIntercompanyDialogProps) {
   const { registrarAcertoMutation } = useIntercompany();
-
-  const [dataAcerto, setDataAcerto] = useState<string>(toLocalDateString());
-  const [observacao, setObservacao] = useState<string>("");
-
-  useEffect(() => {
-    if (open) {
-      setDataAcerto(toLocalDateString());
-      setObservacao("");
-    }
-  }, [open, transferencia]);
+  const { form } = useAcertoIntercompanyForm({ open, transferencia });
 
   if (!transferencia) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!dataAcerto) {
-      toast.error("Informe a data do acerto.");
-      return;
-    }
-
+  const handleSubmit = async (values: AcertoIntercompanyFormData) => {
     try {
       await registrarAcertoMutation.mutateAsync({
         transferencia_id: transferencia.id,
-        data_acerto: dataAcerto,
-        observacao: observacao || null,
+        data_acerto: values.data_acerto,
+        observacao: values.observacao?.trim() || null,
       });
       toast.success("Acerto entre empresas registrado com sucesso!");
       safeCloseDialog(() => onOpenChange(false));
@@ -74,7 +66,7 @@ export function AcertoIntercompanyDialog({
   return (
     <BaseDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={handleClose}
       maxWidth="md"
       lockClose={registrarAcertoMutation.isPending}
     >
@@ -84,71 +76,97 @@ export function AcertoIntercompanyDialog({
         subtitle="Confirmação de repasse bancário do dinheiro recebido no lugar de outra empresa."
         onClose={handleClose}
       />
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-        <BaseDialog.Body>
-          <div className="space-y-4 pt-1">
-            <div className="bg-muted/30 border border-border rounded-[18px] p-4 space-y-2 text-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground font-medium">Quem recebeu o dinheiro:</span>
-                <span className="font-semibold text-foreground">
-                  {transferencia.empresa_devedora?.nome_fantasia || "Empresa A"}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground font-medium">Dona da fatura (Quem vai receber):</span>
-                <span className="font-semibold text-foreground">
-                  {transferencia.empresa_credora?.nome_fantasia || "Empresa B"}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-border">
-                <span className="text-muted-foreground font-medium">Valor a Repassar:</span>
-                <span className="font-bold text-sm text-foreground">
-                  {formatCurrency(transferencia.valor)}
-                </span>
-              </div>
+      <BaseDialog.Body>
+        <div className="space-y-4 pt-1">
+          <div className="bg-muted/30 border border-border rounded-[18px] p-4 space-y-2 text-xs">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground font-medium">Quem recebeu o dinheiro:</span>
+              <span className="font-semibold text-foreground">
+                {transferencia.empresa_devedora?.nome_fantasia || "Empresa A"}
+              </span>
             </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                Data da Transferência / Acerto <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                type="date"
-                value={dataAcerto}
-                onChange={(e) => setDataAcerto(e.target.value)}
-                className="h-11 rounded-[18px] text-xs sm:text-sm font-medium"
-                required
-              />
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground font-medium">Dona da fatura (Quem vai receber):</span>
+              <span className="font-semibold text-foreground">
+                {transferencia.empresa_credora?.nome_fantasia || "Empresa B"}
+              </span>
             </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">Observação do Repasse</Label>
-              <Textarea
-                placeholder="Ex: TED realizada da CC 1234 para CC 5678..."
-                value={observacao}
-                onChange={(e) => setObservacao(e.target.value)}
-                rows={2}
-                className="rounded-[18px] text-xs sm:text-sm"
-              />
+            <div className="flex justify-between items-center pt-2 border-t border-border">
+              <span className="text-muted-foreground font-medium">Valor a Repassar:</span>
+              <span className="font-bold text-sm text-foreground">
+                {formatCurrency(transferencia.valor)}
+              </span>
             </div>
           </div>
-        </BaseDialog.Body>
-        <BaseDialog.Footer>
-          <BaseDialog.Action
-            label="Cancelar"
-            variant="secondary"
-            disabled={registrarAcertoMutation.isPending}
-            onClick={handleClose}
-            type="button"
-          />
-          <BaseDialog.Action
-            label="Confirmar Acerto"
-            variant="primary"
-            isLoading={registrarAcertoMutation.isPending}
-            type="submit"
-          />
-        </BaseDialog.Footer>
-      </form>
+
+          <Form {...form}>
+            <form
+              id="acerto-intercompany-form"
+              onSubmit={form.handleSubmit(handleSubmit)}
+              noValidate
+              className="space-y-4"
+            >
+              <FormField
+                control={form.control}
+                name="data_acerto"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Data da Transferência / Acerto <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        className="h-11 rounded-[18px] text-xs sm:text-sm font-medium bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="observacao"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Observação do Repasse
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Ex: TED realizada da CC 1234 para CC 5678..."
+                        rows={2}
+                        {...field}
+                        value={field.value || ""}
+                        className="rounded-[18px] text-xs sm:text-sm bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </div>
+      </BaseDialog.Body>
+      <BaseDialog.Footer>
+        <BaseDialog.Action
+          label="Cancelar"
+          variant="secondary"
+          disabled={registrarAcertoMutation.isPending}
+          onClick={handleClose}
+          type="button"
+        />
+        <BaseDialog.Action
+          label="Confirmar Acerto"
+          variant="primary"
+          isLoading={registrarAcertoMutation.isPending}
+          type="submit"
+          form="acerto-intercompany-form"
+        />
+      </BaseDialog.Footer>
     </BaseDialog>
   );
 }

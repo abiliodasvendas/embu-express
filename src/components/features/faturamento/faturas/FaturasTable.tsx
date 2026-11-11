@@ -18,6 +18,7 @@ interface FaturasTableProps {
   sortDirection: "asc" | "desc";
   onSort: (key: string) => void;
   onLiquidar: (fatura: FaturaCliente) => void;
+  onDesfazerLiquidacao?: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
   canEdit?: boolean;
@@ -39,6 +40,7 @@ export function FaturasTable({
   sortDirection,
   onSort,
   onLiquidar,
+  onDesfazerLiquidacao,
   onEdit,
   onDelete,
   canEdit = true,
@@ -106,6 +108,7 @@ export function FaturasTable({
                   isSelected={selectedIds.has(f.id)}
                   onToggleSelect={onToggleSelect}
                   onLiquidar={onLiquidar}
+                  onDesfazerLiquidacao={onDesfazerLiquidacao}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   canEdit={canEdit}
@@ -124,6 +127,7 @@ export function FaturasTable({
             isSelected={selectedIds.has(f.id)}
             onToggleSelect={onToggleSelect}
             onLiquidar={onLiquidar}
+            onDesfazerLiquidacao={onDesfazerLiquidacao}
             onEdit={onEdit}
             onDelete={onDelete}
             canEdit={canEdit}

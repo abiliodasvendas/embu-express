@@ -1,17 +1,38 @@
+import { useState } from "react";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Label } from "@/components/ui/label";
+import { Banner } from "@/components/ui/Banner";
+import { ContaBancariaSelect } from "@/components/ui/ContaBancariaSelect";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/MoneyInput";
 import { getMessage } from "@/constants/messages";
-import { cn } from "@/lib/utils";
+import { useContasBancarias } from "@/hooks/api/useContasBancarias";
+import { useConfirmarAdiantamentoForm } from "@/hooks/form/useConfirmarAdiantamentoForm";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
-import { AlertCircle, Wallet } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ConfirmarAdiantamentoFormData } from "@/schemas/confirmarAdiantamentoSchema";
+import { Wallet } from "lucide-react";
+
+export interface ConfirmarAdiantamentoSubmitPayload {
+  valor: number;
+  contaBancariaId: string;
+  dataPagamento: string;
+}
 
 export interface ConfirmarAdiantamentoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   valorSugerido: number;
-  onConfirm: (valor: number) => Promise<void>;
+  colaboradorNome?: string;
+  referenciaLabel?: string;
+  contaBancariaInicialId?: string | null;
+  onConfirm: (payload: ConfirmarAdiantamentoSubmitPayload) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -19,44 +40,32 @@ export default function ConfirmarAdiantamentoDialog({
   open,
   onOpenChange,
   valorSugerido,
+  colaboradorNome,
+  referenciaLabel,
+  contaBancariaInicialId,
   onConfirm,
   isLoading = false,
 }: ConfirmarAdiantamentoDialogProps) {
-  const [valor, setValor] = useState<number>(valorSugerido);
-  const [errorMessage, setErrorMessage] = useState<string>("");
+  const { contas = [] } = useContasBancarias();
+  const contasAtivas = contas.filter((c) => c.ativo !== false);
   const [internalLoading, setInternalLoading] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      setValor(valorSugerido);
-      if (!valorSugerido || valorSugerido <= 0) {
-        setErrorMessage("O valor do adiantamento deve ser maior que R$ 0,00.");
-      } else {
-        setErrorMessage("");
-      }
-    }
-  }, [open, valorSugerido]);
+  const { form } = useConfirmarAdiantamentoForm({
+    open,
+    valorSugerido,
+    contaBancariaInicialId,
+  });
 
   const showLoading = isLoading || internalLoading;
 
-  const handleValorChange = (newVal: number) => {
-    setValor(newVal);
-    if (!newVal || newVal <= 0) {
-      setErrorMessage("O valor do adiantamento deve ser maior que R$ 0,00.");
-    } else {
-      setErrorMessage("");
-    }
-  };
-
-  const handleConfirm = async () => {
-    if (!valor || valor <= 0) {
-      setErrorMessage("O valor do adiantamento deve ser maior que R$ 0,00.");
-      return;
-    }
-
+  const handleSubmit = async (values: ConfirmarAdiantamentoFormData) => {
     setInternalLoading(true);
     try {
-      await onConfirm(valor);
+      await onConfirm({
+        valor: Number(values.valor),
+        contaBancariaId: values.conta_bancaria_id,
+        dataPagamento: values.data_pagamento,
+      });
       safeCloseDialog(() => onOpenChange(false));
     } finally {
       setInternalLoading(false);
@@ -71,37 +80,102 @@ export default function ConfirmarAdiantamentoDialog({
   return (
     <BaseDialog
       open={open}
-      onOpenChange={onOpenChange}
-      maxWidth="sm"
+      onOpenChange={handleClose}
+      maxWidth="md"
       lockClose={showLoading}
     >
       <BaseDialog.Header
         icon={<Wallet className="w-5 h-5 text-foreground" />}
         title={getMessage("financeiro.confirmacao.adiantamento.titulo")}
-        subtitle={getMessage("financeiro.confirmacao.adiantamento.descricao")}
+        subtitle={
+          colaboradorNome
+            ? `${colaboradorNome}${referenciaLabel ? ` • Ref. ${referenciaLabel}` : ""}`
+            : getMessage("financeiro.confirmacao.adiantamento.descricao")
+        }
         onClose={handleClose}
       />
       <BaseDialog.Body>
-        <div className="w-full space-y-2 pt-1">
-          <Label htmlFor="valor_adiantamento" className="text-xs font-semibold text-foreground">
-            Valor do Adiantamento (R$)
-          </Label>
-          <MoneyInput
-            id="valor_adiantamento"
-            value={valor}
-            onChange={handleValorChange}
-            className={cn(
-              "h-11 rounded-[18px] text-sm font-semibold transition-all",
-              errorMessage && "border-destructive focus:border-destructive bg-destructive/10"
-            )}
-            disabled={showLoading}
-          />
-          {errorMessage && (
-            <p className="text-xs font-medium text-destructive mt-1.5 flex items-center gap-1.5 animate-in fade-in duration-150">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              {errorMessage}
-            </p>
+        <div className="w-full space-y-4 pt-1">
+          {contasAtivas.length === 0 && (
+            <Banner
+              variant="warning"
+              description="Nenhuma conta bancária ativa encontrada. Cadastre uma conta em Financeiro > Contas Bancárias para registrar o pagamento."
+            />
           )}
+
+          <Form {...form}>
+            <form
+              id="confirmar-adiantamento-form"
+              onSubmit={form.handleSubmit(handleSubmit)}
+              noValidate
+              className="space-y-4"
+            >
+              <FormField
+                control={form.control}
+                name="conta_bancaria_id"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-foreground">
+                      Conta Bancária Pagadora <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <ContaBancariaSelect
+                        contas={contasAtivas}
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        disabled={showLoading || contasAtivas.length === 0}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="data_pagamento"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Data do Pagamento <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          className="h-11 rounded-[18px] text-sm font-medium bg-background"
+                          disabled={showLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="valor"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-foreground">
+                        Valor do Adiantamento (R$) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <MoneyInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          className="h-11 rounded-[18px] text-sm font-semibold bg-background"
+                          disabled={showLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
         </div>
       </BaseDialog.Body>
       <BaseDialog.Footer>
@@ -113,12 +187,12 @@ export default function ConfirmarAdiantamentoDialog({
           type="button"
         />
         <BaseDialog.Action
-          label={showLoading ? "Processando..." : "Confirmar"}
+          label={showLoading ? "Processando..." : "Confirmar Adiantamento"}
           variant="primary"
           isLoading={showLoading}
-          onClick={handleConfirm}
-          disabled={showLoading || !valor || valor <= 0}
-          type="button"
+          disabled={showLoading || contasAtivas.length === 0}
+          type="submit"
+          form="confirmar-adiantamento-form"
         />
       </BaseDialog.Footer>
     </BaseDialog>

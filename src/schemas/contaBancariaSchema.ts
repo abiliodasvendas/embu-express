@@ -14,7 +14,9 @@ export const contaBancariaFormSchema = z.object({
     .min(2, "Informe o nome do banco"),
   agencia: z.string().optional().nullable(),
   conta: z.string().optional().nullable(),
-  tipo_conta: z.enum(["CORRENTE", "POUPANCA"]).default("CORRENTE"),
+  tipo_conta: z
+    .enum(["CORRENTE", "POUPANCA", "PAGAMENTO", "INVESTIMENTO"])
+    .default("CORRENTE"),
 });
 
 export type ContaBancariaFormData = z.infer<typeof contaBancariaFormSchema>;

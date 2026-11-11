@@ -1,4 +1,4 @@
-import { Banknote, Edit2, Ban } from "lucide-react";
+import { Banknote, Edit2, Ban, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { STATUS_FATURA } from "@/constants/financeiro.constants";
 import type { FaturaCliente } from "@/types/database";
@@ -6,6 +6,7 @@ import type { FaturaCliente } from "@/types/database";
 interface FaturaRowActionsProps {
   fatura: FaturaCliente;
   onLiquidar: (fatura: FaturaCliente) => void;
+  onDesfazerLiquidacao?: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
   canEdit?: boolean;
@@ -14,6 +15,7 @@ interface FaturaRowActionsProps {
 export function FaturaRowActions({
   fatura,
   onLiquidar,
+  onDesfazerLiquidacao,
   onEdit,
   onDelete,
   canEdit = true,
@@ -25,6 +27,12 @@ export function FaturaRowActions({
   const podeReceber =
     fatura.status !== STATUS_FATURA.LIQUIDADA &&
     fatura.status !== STATUS_FATURA.CANCELADA;
+
+  const podeDesfazerRecebimento =
+    !fatura.is_previsao &&
+    ((fatura.valor_pago || 0) > 0 ||
+      fatura.status === STATUS_FATURA.LIQUIDADA ||
+      fatura.status === STATUS_FATURA.PAGO_PARCIAL);
 
   const podeCancelar = fatura.status !== STATUS_FATURA.CANCELADA;
 
@@ -40,6 +48,17 @@ export function FaturaRowActions({
         >
           <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
           <span>Receber</span>
+        </Button>
+      )}
+      {podeDesfazerRecebimento && onDesfazerLiquidacao && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-[18px] text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          onClick={() => onDesfazerLiquidacao(fatura)}
+          title="Desfazer Recebimento"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
         </Button>
       )}
       <Button

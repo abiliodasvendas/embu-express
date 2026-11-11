@@ -684,6 +684,45 @@ export interface ContaPagarItem {
   total_parcelas?: number | null;
   is_recorrente?: boolean;
   recorrencia_origem_id?: string | null;
+  colaborador_id?: string | null;
+  colaborador_nome?: string | null;
+  mes_competencia?: number | null;
+  ano_competencia?: number | null;
+}
+
+export type OrigemExtratoBancario =
+  | "FATURA_CLIENTE"
+  | "ENTRADA_AVULSA"
+  | "DESPESA"
+  | "CONVENIO"
+  | "ADIANTAMENTO_COLABORADOR"
+  | "SALARIO_COLABORADOR"
+  | "SAIDA_AVULSA";
+
+export interface ExtratoBancarioItem {
+  id: string;
+  data: string;
+  tipo: "ENTRADA" | "SAIDA";
+  origem: OrigemExtratoBancario;
+  origem_label: string;
+  descricao: string;
+  valor: number;
+  saldo_apos: number;
+}
+
+export interface ExtratoBancarioResumo {
+  saldo_anterior: number;
+  total_entradas: number;
+  total_saidas: number;
+  resultado_periodo: number;
+  saldo_final: number;
+}
+
+export interface ExtratoBancarioResponse {
+  conta: ContaBancaria;
+  periodo: { mes: number; ano: number };
+  resumo: ExtratoBancarioResumo;
+  itens: ExtratoBancarioItem[];
 }
 
 export interface ContasPagarKpis {

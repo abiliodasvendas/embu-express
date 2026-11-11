@@ -31,6 +31,8 @@ export function useFaturas(
     queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
     queryClient.invalidateQueries({ queryKey: ["intercompany"] });
     queryClient.invalidateQueries({ queryKey: ["sugestao-medicao"] });
+    queryClient.invalidateQueries({ queryKey: ["contas-bancarias-saldos"] });
+    queryClient.invalidateQueries({ queryKey: ["conta-bancaria-extrato"] });
   };
 
   const createMutation = useMutation({
@@ -65,6 +67,11 @@ export function useFaturas(
     onSuccess: () => invalidarConsultasFinanceiras(),
   });
 
+  const desfazerLiquidacaoMutation = useMutation({
+    mutationFn: (id: string) => faturamentoApi.desfazerLiquidacaoFatura(id),
+    onSuccess: () => invalidarConsultasFinanceiras(),
+  });
+
   return {
     ...query,
     faturas: query.data || [],
@@ -74,5 +81,6 @@ export function useFaturas(
     cancelarLoteMutation,
     loteRecebimentoMutation,
     liquidarMutation,
+    desfazerLiquidacaoMutation,
   };
 }

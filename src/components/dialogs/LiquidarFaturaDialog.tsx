@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
+import { ContaBancariaSelect } from "@/components/ui/ContaBancariaSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Banner } from "@/components/ui/Banner";
@@ -21,8 +21,8 @@ import { useLiquidarFaturaForm } from "@/hooks/form/useLiquidarFaturaForm";
 import { LiquidarFaturaFormData } from "@/schemas/liquidarFaturaSchema";
 import { FaturaCliente } from "@/types/database";
 import { toast } from "sonner";
-import { Banknote, Loader2 } from "lucide-react";
-import { formatCurrency, formatContaBancaria } from "@/utils/formatters";
+import { Banknote } from "lucide-react";
+import { formatCurrency } from "@/utils/formatters";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 
 export interface LiquidarFaturaDialogProps {
@@ -149,18 +149,13 @@ export function LiquidarFaturaDialog({
                       Conta Bancária de Destino <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <NativeSelect
-                        {...field}
+                      <ContaBancariaSelect
+                        contas={contas.filter((c) => c.ativo !== false)}
                         value={field.value || ""}
-                        className="bg-background rounded-[18px]"
-                      >
-                        <option value="">Selecione a conta de recebimento...</option>
-                        {contas.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {formatContaBancaria(c)} {c.empresa ? `(${c.empresa.nome_fantasia})` : ""}
-                          </option>
-                        ))}
-                      </NativeSelect>
+                        onChange={field.onChange}
+                        placeholder="Selecione a conta de recebimento..."
+                        disabled={liquidarMutation.isPending}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

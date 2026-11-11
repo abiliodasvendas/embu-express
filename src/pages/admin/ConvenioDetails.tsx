@@ -187,6 +187,7 @@ export default function ConvenioDetails() {
             canEdit={vm.canEdit}
             canLiquidar={vm.canLiquidar}
             onOpenLiquidarDialog={vm.handleLiquidarFaturaAuditoria}
+            onDesfazerPagamento={vm.handleDesfazerPagamentoAuditoria}
             onOpenLancamentoDialog={(l) => vm.handleEditarLancamento(l)}
           />
         ) : vm.activeTab === "colaboradores" ? (

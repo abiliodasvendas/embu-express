@@ -1,5 +1,4 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -17,7 +16,7 @@ import { ContaBancariaFormData } from "@/schemas/contaBancariaSchema";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cnpjMask } from "@/utils/masks";
 import { toast } from "sonner";
-import { Landmark, Loader2 } from "lucide-react";
+import { Landmark } from "lucide-react";
 
 export interface ContasBancariasDialogProps {
   open: boolean;
@@ -34,13 +33,18 @@ export function ContasBancariasDialog({
   const { data: empresas = [], isLoading: isLoadingEmpresas } = useEmpresas();
   const { form } = useContaBancariaForm({ defaultEmpresaId: empresaIdInicial });
 
+  const handleClose = () => {
+    if (createMutation.isPending) return;
+    safeCloseDialog(() => onOpenChange(false));
+  };
+
   const onSubmit = async (values: ContaBancariaFormData) => {
     try {
       await createMutation.mutateAsync({
         empresa_id: Number(values.empresa_id),
         banco_nome: values.banco_nome.trim(),
         agencia: values.agencia?.trim() || undefined,
-        conta: values.conta.trim(),
+        conta: values.conta?.trim() || undefined,
         tipo_conta: values.tipo_conta,
       });
 
@@ -62,18 +66,19 @@ export function ContasBancariasDialog({
   return (
     <BaseDialog
       open={open}
-      onOpenChange={(val) => !val && safeCloseDialog(() => onOpenChange(false))}
+      onOpenChange={handleClose}
       maxWidth="md"
+      lockClose={createMutation.isPending}
     >
       <BaseDialog.Header
         icon={<Landmark className="h-5 w-5" />}
         title="Nova Conta Bancária"
         subtitle="Cadastre uma conta bancária vinculada a uma das empresas do grupo"
-        onClose={() => safeCloseDialog(() => onOpenChange(false))}
+        onClose={handleClose}
       />
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+        <form id="conta-bancaria-form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <BaseDialog.Body className="p-6 space-y-4">
             <FormField
               control={form.control}
@@ -88,7 +93,7 @@ export function ContasBancariasDialog({
                       value={field.value ? String(field.value) : ""}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                       disabled={isLoadingEmpresas}
-                      className="h-11 rounded-[14px] bg-background text-xs sm:text-sm font-medium"
+                      className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
                     >
                       <option value="">Selecione a empresa...</option>
                       {empresas.map((emp) => (
@@ -115,7 +120,7 @@ export function ContasBancariasDialog({
                     <Input
                       placeholder="Ex: Itaú, Santander, Bradesco, Banco do Brasil..."
                       {...field}
-                      className="h-11 rounded-[14px] bg-background text-xs sm:text-sm font-medium"
+                      className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
                     />
                   </FormControl>
                   <FormMessage className="text-xs text-destructive" />
@@ -136,7 +141,7 @@ export function ContasBancariasDialog({
                       <Input
                         placeholder="Ex: 0123"
                         {...field}
-                        className="h-11 rounded-[14px] bg-background text-xs sm:text-sm font-medium"
+                        className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
                       />
                     </FormControl>
                     <FormMessage className="text-xs text-destructive" />
@@ -157,7 +162,7 @@ export function ContasBancariasDialog({
                         placeholder="Ex: 12345-6"
                         {...field}
                         value={field.value || ""}
-                        className="h-11 rounded-[14px] bg-background text-xs sm:text-sm font-medium"
+                        className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
                       />
                     </FormControl>
                     <FormMessage className="text-xs text-destructive" />
@@ -177,7 +182,7 @@ export function ContasBancariasDialog({
                   <FormControl>
                     <NativeSelect
                       {...field}
-                      className="h-11 rounded-[14px] bg-background text-xs sm:text-sm font-medium"
+                      className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-medium"
                     >
                       <option value="CORRENTE">Conta Corrente</option>
                       <option value="POUPANCA">Poupança</option>
@@ -190,30 +195,25 @@ export function ContasBancariasDialog({
               )}
             />
           </BaseDialog.Body>
-
-          <BaseDialog.Footer className="p-4 border-t border-border flex items-center justify-end gap-2.5">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => safeCloseDialog(() => onOpenChange(false))}
-              className="h-10 rounded-[14px] px-4 text-xs font-medium cursor-pointer"
-            >
-              Cancelar
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="h-10 rounded-[14px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 text-xs shadow-xs cursor-pointer"
-            >
-              {createMutation.isPending && (
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-              )}
-              <span>Salvar Conta</span>
-            </Button>
-          </BaseDialog.Footer>
         </form>
       </Form>
+
+      <BaseDialog.Footer>
+        <BaseDialog.Action
+          label="Cancelar"
+          variant="secondary"
+          disabled={createMutation.isPending}
+          onClick={handleClose}
+          type="button"
+        />
+        <BaseDialog.Action
+          label="Salvar Conta"
+          variant="primary"
+          isLoading={createMutation.isPending}
+          type="submit"
+          form="conta-bancaria-form"
+        />
+      </BaseDialog.Footer>
     </BaseDialog>
   );
 }

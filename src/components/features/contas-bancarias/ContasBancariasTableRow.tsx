@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { ContaBancariaComSaldo } from "@/types/database";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { cnpjMask } from "@/utils/masks";
-import { Building2, Trash2 } from "lucide-react";
+import { Building2, ReceiptText, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ContasBancariasTableRowProps {
   conta: ContaBancariaComSaldo;
   onExcluir: (conta: ContaBancariaComSaldo) => void;
+  onVerExtrato: (conta: ContaBancariaComSaldo) => void;
   isDeleting?: boolean;
   canEdit?: boolean;
 }
@@ -16,6 +17,7 @@ interface ContasBancariasTableRowProps {
 export function ContasBancariasTableRow({
   conta,
   onExcluir,
+  onVerExtrato,
   isDeleting = false,
   canEdit = true,
 }: ContasBancariasTableRowProps) {
@@ -98,20 +100,32 @@ export function ContasBancariasTableRow({
         </span>
       </td>
 
-      {canEdit && (
-        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+        <div className="flex items-center justify-end gap-1.5">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={() => onExcluir(conta)}
-            disabled={isDeleting}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[10px] cursor-pointer"
-            title="Excluir conta"
+            onClick={() => onVerExtrato(conta)}
+            className="h-8 rounded-[18px] text-xs font-semibold px-3 gap-1.5 border-border hover:bg-muted cursor-pointer"
+            title="Ver Extrato da Conta"
           >
-            <Trash2 className="w-4 h-4" />
+            <ReceiptText className="w-3.5 h-3.5 text-primary" />
+            <span>Extrato</span>
           </Button>
-        </td>
-      )}
+          {canEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onExcluir(conta)}
+              disabled={isDeleting}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[18px] cursor-pointer"
+              title="Excluir conta"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      </td>
     </tr>
   );
 }

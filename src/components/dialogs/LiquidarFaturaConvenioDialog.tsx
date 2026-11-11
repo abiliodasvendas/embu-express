@@ -1,6 +1,5 @@
 import { isAxiosError } from "axios";
 import { BaseDialog } from "@/components/ui/BaseDialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/MoneyInput";
 import { NativeSelect } from "@/components/ui/native-select";
+import { ContaBancariaSelect } from "@/components/ui/ContaBancariaSelect";
 import { Banner } from "@/components/ui/Banner";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useContasBancarias } from "@/hooks/api/useContasBancarias";
@@ -20,9 +20,8 @@ import { useLiquidarFaturaConvenioForm } from "@/hooks/form/useLiquidarFaturaCon
 import { LiquidarFaturaConvenioFormData } from "@/schemas/liquidarFaturaConvenioSchema";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { formatContaBancaria } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
-import { CheckCircle2, Loader2, Handshake } from "lucide-react";
+import { Handshake } from "lucide-react";
 import { useMemo } from "react";
 
 export interface LiquidarFaturaConvenioDialogProps {
@@ -194,7 +193,7 @@ export function LiquidarFaturaConvenioDialog({
                         <MoneyInput
                           value={field.value}
                           onChange={field.onChange}
-                          className="h-10 rounded-[14px]"
+                          className="h-10 rounded-[18px]"
                         />
                       </FormControl>
                       <FormMessage />
@@ -214,7 +213,7 @@ export function LiquidarFaturaConvenioDialog({
                         <MoneyInput
                           value={field.value}
                           onChange={field.onChange}
-                          className="h-10 rounded-[14px]"
+                          className="h-10 rounded-[18px]"
                         />
                       </FormControl>
                       <FormMessage />
@@ -233,7 +232,7 @@ export function LiquidarFaturaConvenioDialog({
                         Data de Vencimento <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} className="h-10 rounded-[14px]" />
+                        <Input type="date" {...field} className="h-10 rounded-[18px]" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -249,7 +248,7 @@ export function LiquidarFaturaConvenioDialog({
                         Data do Pagamento <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} className="h-10 rounded-[14px]" />
+                        <Input type="date" {...field} className="h-10 rounded-[18px]" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -271,7 +270,7 @@ export function LiquidarFaturaConvenioDialog({
                           {...field}
                           value={field.value || ""}
                           onChange={(e) => field.onChange(Number(e.target.value))}
-                          className="h-10 rounded-[14px]"
+                          className="h-10 rounded-[18px]"
                         >
                           <option value="">Selecione a empresa...</option>
                           {empresas
@@ -297,19 +296,13 @@ export function LiquidarFaturaConvenioDialog({
                         Conta Bancária de Débito <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <NativeSelect
-                          {...field}
+                        <ContaBancariaSelect
+                          contas={contasFiltradas}
                           value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          className="h-10 rounded-[14px]"
-                        >
-                          <option value="">Selecione a conta...</option>
-                          {contasFiltradas.map((conta) => (
-                            <option key={conta.id} value={conta.id}>
-                              {formatContaBancaria(conta)}
-                            </option>
-                          ))}
-                        </NativeSelect>
+                          onChange={field.onChange}
+                          placeholder="Selecione a conta..."
+                          disabled={liquidarMutation.isPending}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -330,7 +323,7 @@ export function LiquidarFaturaConvenioDialog({
                         placeholder="Ex: Pago via PIX, desconto negociado, etc."
                         {...field}
                         value={field.value || ""}
-                        className="h-10 rounded-[14px]"
+                        className="h-10 rounded-[18px]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -343,28 +336,21 @@ export function LiquidarFaturaConvenioDialog({
       </BaseDialog.Body>
 
       <BaseDialog.Footer>
-        <Button
-          type="button"
-          variant="outline"
+        <BaseDialog.Action
+          label="Cancelar"
+          variant="secondary"
           onClick={handleClose}
           disabled={liquidarMutation.isPending}
-        >
-          Cancelar
-        </Button>
-        <Button
+          type="button"
+        />
+        <BaseDialog.Action
+          label={liquidarMutation.isPending ? "Processando..." : "Confirmar Pagamento"}
+          variant="primary"
+          isLoading={liquidarMutation.isPending}
+          disabled={liquidarMutation.isPending}
           type="submit"
           form="liquidar-fatura-convenio-form"
-          disabled={liquidarMutation.isPending}
-        >
-          {liquidarMutation.isPending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <>
-              <CheckCircle2 className="w-4 h-4 mr-1.5" />
-              Confirmar Pagamento
-            </>
-          )}
-        </Button>
+        />
       </BaseDialog.Footer>
     </BaseDialog>
   );

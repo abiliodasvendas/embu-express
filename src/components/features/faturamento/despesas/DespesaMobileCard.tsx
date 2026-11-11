@@ -1,4 +1,4 @@
-import { AlertCircle, Banknote, Edit2, Trash2 } from "lucide-react";
+import { AlertCircle, Banknote, Edit2, Trash2, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
@@ -12,6 +12,7 @@ import type { DespesaOperacional } from "@/types/database";
 interface DespesaMobileCardProps {
   despesa: DespesaOperacional;
   onLiquidar: (despesa: DespesaOperacional) => void;
+  onDesfazerPagamento?: (despesa: DespesaOperacional) => void;
   onEdit: (despesa: DespesaOperacional) => void;
   onDelete: (despesa: DespesaOperacional) => void;
   canEdit?: boolean;
@@ -20,6 +21,7 @@ interface DespesaMobileCardProps {
 export function DespesaMobileCard({
   despesa,
   onLiquidar,
+  onDesfazerPagamento,
   onEdit,
   onDelete,
   canEdit = true,
@@ -32,6 +34,9 @@ export function DespesaMobileCard({
   const podePagar =
     despesa.status !== STATUS_DESPESA.PAGO &&
     despesa.status !== STATUS_DESPESA.CANCELADO;
+  const podeDesfazerPagamento =
+    !isPrevisaoRecorrente &&
+    (despesa.status === STATUS_DESPESA.PAGO || (despesa.valor_pago || 0) > 0);
 
   return (
     <div className="bg-card rounded-[24px] border border-border p-4 shadow-xs space-y-3">
@@ -117,7 +122,7 @@ export function DespesaMobileCard({
 
       {canEdit && (
         <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
-          <div>
+          <div className="flex items-center gap-1.5">
             {podePagar && (
               <Button
                 variant="outline"
@@ -127,6 +132,17 @@ export function DespesaMobileCard({
               >
                 <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>Pagar</span>
+              </Button>
+            )}
+            {podeDesfazerPagamento && onDesfazerPagamento && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-[18px] px-2.5 text-xs font-medium border-border text-muted-foreground hover:text-destructive gap-1"
+                onClick={() => onDesfazerPagamento(despesa)}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Desfazer</span>
               </Button>
             )}
           </div>

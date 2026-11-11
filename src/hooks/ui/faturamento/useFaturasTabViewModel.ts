@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { useLayout } from "@/hooks";
+import { useLayout, safeCloseDialog } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useFaturas } from "@/hooks/api/useFaturamento";
@@ -32,6 +32,7 @@ export function useFaturasTabViewModel({
     openFaturaFormDialog,
     openLiquidarFaturaDialog,
     openConfirmationDialog,
+    closeConfirmationDialog,
   } = useLayout();
 
   const { can, isSuperAdmin, isLoading: isLoadingPermissions } = usePermissions();
@@ -86,6 +87,7 @@ export function useFaturasTabViewModel({
     isFetching: isFetchingFaturas,
     deleteMutation,
     cancelarLoteMutation,
+    desfazerLiquidacaoMutation,
     refetch: refetchFaturas,
   } = useFaturas(filtrosFatura);
 
@@ -235,6 +237,7 @@ export function useFaturasTabViewModel({
             return next;
           });
           await refetchFaturas();
+          safeCloseDialog(closeConfirmationDialog);
           toast.success("Fatura cancelada com sucesso!");
         } catch {
           toast.error("Erro ao cancelar fatura.");
@@ -257,6 +260,7 @@ export function useFaturasTabViewModel({
           const res = await cancelarLoteMutation.mutateAsync(ids);
           setSelectedIds(new Set());
           await refetchFaturas();
+          safeCloseDialog(closeConfirmationDialog);
           toast.success(`${res.canceladas || ids.length} faturas canceladas com sucesso!`);
         } catch {
           toast.error("Erro ao cancelar faturas selecionadas.");
@@ -287,6 +291,25 @@ export function useFaturasTabViewModel({
       fatura,
       onSuccess: async () => {
         await refetchFaturas();
+      },
+    });
+  };
+
+  const handleDesfazerLiquidacaoFatura = (fatura: FaturaCliente) => {
+    openConfirmationDialog({
+      title: "Desfazer Recebimento da Fatura",
+      description: `Deseja realmente desfazer o recebimento da fatura de ${fatura.cliente?.nome_fantasia || "Cliente"}? Os recebimentos registrados serão estornados e a fatura retornará ao status Pendente.`,
+      confirmText: "Desfazer Recebimento",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await desfazerLiquidacaoMutation.mutateAsync(fatura.id);
+          await refetchFaturas();
+          safeCloseDialog(closeConfirmationDialog);
+          toast.success("Recebimento da fatura desfeito com sucesso!");
+        } catch {
+          toast.error("Erro ao desfazer o recebimento da fatura.");
+        }
       },
     });
   };
@@ -330,5 +353,6 @@ export function useFaturasTabViewModel({
     handleOpenNovaFatura,
     handleEditFatura,
     handleLiquidarFatura,
+    handleDesfazerLiquidacaoFatura,
   };
 }

@@ -35,6 +35,19 @@ export function useIntercompany(
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["intercompany"] });
       queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias-saldos"] });
+      queryClient.invalidateQueries({ queryKey: ["conta-bancaria-extrato"] });
+      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+    },
+  });
+
+  const desfazerAcertoMutation = useMutation({
+    mutationFn: (transferenciaId: string) => intercompanyApi.desfazerAcerto(transferenciaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["intercompany"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+      queryClient.invalidateQueries({ queryKey: ["contas-bancarias-saldos"] });
+      queryClient.invalidateQueries({ queryKey: ["conta-bancaria-extrato"] });
       queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
     },
   });
@@ -51,5 +64,6 @@ export function useIntercompany(
       matrizSaldosQuery.refetch();
     },
     registrarAcertoMutation,
+    desfazerAcertoMutation,
   };
 }

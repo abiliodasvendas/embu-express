@@ -131,8 +131,30 @@ export interface OpenConvenioFormProps {
 
 export interface OpenConfirmarAdiantamentoDialogProps {
   valorSugerido: number;
-  onConfirm: (valor: number) => Promise<void>;
+  colaboradorNome?: string;
+  referenciaLabel?: string;
+  contaBancariaInicialId?: string | null;
+  onConfirm: (payload: { valor: number; contaBancariaId: string; dataPagamento: string }) => Promise<void>;
   isLoading?: boolean;
+}
+
+export interface OpenConfirmarPagamentoSalarioDialogProps {
+  valorLiquido: number;
+  colaboradorNome?: string;
+  referenciaLabel?: string;
+  contaBancariaInicialId?: string | null;
+  onConfirm: (payload: { contaBancariaId: string; dataPagamento: string }) => Promise<void>;
+  isLoading?: boolean;
+}
+
+export interface OpenExtratoContaBancariaDialogProps {
+  contaId: string;
+  bancoNome?: string;
+  agencia?: string | null;
+  contaNumero?: string | null;
+  empresaNome?: string;
+  mesInicial?: number;
+  anoInicial?: number;
 }
 
 export interface OpenFaturaFormProps {
@@ -234,6 +256,12 @@ export interface LayoutContextType {
 
   openConfirmarAdiantamentoDialog: (props: OpenConfirmarAdiantamentoDialogProps) => void;
   closeConfirmarAdiantamentoDialog: () => void;
+
+  openConfirmarPagamentoSalarioDialog: (props: OpenConfirmarPagamentoSalarioDialogProps) => void;
+  closeConfirmarPagamentoSalarioDialog: () => void;
+
+  openExtratoContaBancariaDialog: (props: OpenExtratoContaBancariaDialogProps) => void;
+  closeExtratoContaBancariaDialog: () => void;
 
 
   openCollaboratorFormDialog: (props: OpenCollaboratorFormProps) => void;

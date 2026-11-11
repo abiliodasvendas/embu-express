@@ -64,6 +64,7 @@ export function useFaturaForm({
       data_emissao: toLocalDateString(hoje),
       data_vencimento: "",
       valor_faturado: 0,
+      valor_pago: 0,
       status: STATUS_FATURA.PENDENTE,
       numero_os: "",
       observacoes: "",
@@ -72,6 +73,10 @@ export function useFaturaForm({
 
   const selectedClienteId = form.watch("cliente_id");
   const selectedTipoPeriodo = form.watch("tipo_periodo");
+  const status = form.watch("status");
+  const tinhaRecebimentoAnterior = Boolean(
+    faturaToEdit && Number(faturaToEdit.valor_pago || 0) > 0
+  );
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const { data: unidadesResponse = [] } = useUnidades(selectedClienteId, {
@@ -112,6 +117,12 @@ export function useFaturaForm({
           data_emissao: faturaToEdit.data_emissao,
           data_vencimento: faturaToEdit.data_vencimento,
           valor_faturado: faturaToEdit.valor_faturado,
+          valor_pago: Number(
+            faturaToEdit.valor_pago ||
+              (statusNormalizado === STATUS_FATURA.LIQUIDADA
+                ? faturaToEdit.valor_faturado
+                : 0)
+          ),
           status: statusNormalizado,
           numero_os: faturaToEdit.numero_os || "",
           observacoes: faturaToEdit.observacoes || "",
@@ -128,6 +139,7 @@ export function useFaturaForm({
           data_emissao: toLocalDateString(hoje),
           data_vencimento: "",
           valor_faturado: 0,
+          valor_pago: 0,
           status: STATUS_FATURA.PENDENTE,
           numero_os: "",
           observacoes: "",
@@ -233,6 +245,16 @@ export function useFaturaForm({
       }
     }
 
+    const valorPagoFinal =
+      values.status === STATUS_FATURA.LIQUIDADA ||
+      values.status === STATUS_FATURA.PAGO_PARCIAL
+        ? values.valor_pago && values.valor_pago > 0
+          ? values.valor_pago
+          : values.status === STATUS_FATURA.LIQUIDADA
+          ? values.valor_faturado
+          : 0
+        : 0;
+
     const payload: Partial<FaturaCliente> = {
       cliente_id: values.cliente_id,
       unidade_id: values.unidade_id,
@@ -247,6 +269,7 @@ export function useFaturaForm({
       data_emissao: values.data_emissao,
       data_vencimento: values.data_vencimento,
       valor_faturado: values.valor_faturado,
+      valor_pago: valorPagoFinal,
       status: values.status,
       numero_os: values.numero_os?.trim() || null,
       observacoes: values.observacoes?.trim() || null,
@@ -297,6 +320,8 @@ export function useFaturaForm({
     unidades: unidadesDisponiveis,
     empresas,
     selectedTipoPeriodo,
+    status,
+    tinhaRecebimentoAnterior,
     isPending,
     handleClienteChange,
     handleUnidadeChange,

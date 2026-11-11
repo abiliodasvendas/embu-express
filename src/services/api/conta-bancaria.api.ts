@@ -1,4 +1,4 @@
-import { ContaBancaria, ContaBancariaComSaldo } from "@/types/database";
+import { ContaBancaria, ContaBancariaComSaldo, ExtratoBancarioResponse } from "@/types/database";
 import { apiClient } from "./client";
 
 export const contaBancariaApi = {
@@ -7,6 +7,9 @@ export const contaBancariaApi = {
 
   listComSaldos: (params?: { empresa_id?: number; mes?: number; ano?: number }): Promise<ContaBancariaComSaldo[]> =>
     apiClient.get("/contas-bancarias/saldos", { params }).then(res => res.data),
+
+  getExtrato: (id: string, params: { mes: number; ano: number }): Promise<ExtratoBancarioResponse> =>
+    apiClient.get(`/contas-bancarias/${id}/extrato`, { params }).then(res => res.data),
 
   getById: (id: string): Promise<ContaBancaria> =>
     apiClient.get(`/contas-bancarias/${id}`).then(res => res.data),

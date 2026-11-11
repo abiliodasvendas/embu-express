@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps, OpenFaturaFormProps, OpenLiquidarFaturaDialogProps, OpenAcertoIntercompanyProps, OpenAlocacaoTemporariaProps, OpenContasBancariasProps, OpenDespesaFormProps, OpenDespesaDeleteProps, OpenLiquidarDespesaDialogProps, OpenMovimentacaoAvulsaFormProps, OpenUnidadeFormProps, OpenLancamentoConvenioFormProps, OpenGerenciarBloqueioConvenioProps, OpenLiquidarFaturaConvenioProps } from './LayoutContext';
+import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenConfirmarPagamentoSalarioDialogProps, OpenExtratoContaBancariaDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps, OpenFaturaFormProps, OpenLiquidarFaturaDialogProps, OpenAcertoIntercompanyProps, OpenAlocacaoTemporariaProps, OpenContasBancariasProps, OpenDespesaFormProps, OpenDespesaDeleteProps, OpenLiquidarDespesaDialogProps, OpenMovimentacaoAvulsaFormProps, OpenUnidadeFormProps, OpenLancamentoConvenioFormProps, OpenGerenciarBloqueioConvenioProps, OpenLiquidarFaturaConvenioProps } from './LayoutContext';
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
 
 // Dialogs
@@ -8,6 +8,8 @@ import { CollaboratorFormDialog } from "@/components/dialogs/CollaboratorFormDia
 import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ConfirmarAdiantamentoDialog from "@/components/dialogs/ConfirmarAdiantamentoDialog";
+import ConfirmarPagamentoSalarioDialog from "@/components/dialogs/ConfirmarPagamentoSalarioDialog";
+import ExtratoContaBancariaDialog from "@/components/dialogs/ExtratoContaBancariaDialog";
 
 import { TimeRecordDialog } from "@/components/dialogs/TimeRecordDialog";
 import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
@@ -61,6 +63,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   // --- Dialog States ---
   const [confirmationDialogState, setConfirmationDialogState] = useState<{ open: boolean; props?: OpenConfirmationDialogProps }>({ open: false });
   const [confirmarAdiantamentoDialogState, setConfirmarAdiantamentoDialogState] = useState<{ open: boolean; props?: OpenConfirmarAdiantamentoDialogProps }>({ open: false });
+  const [confirmarPagamentoSalarioDialogState, setConfirmarPagamentoSalarioDialogState] = useState<{ open: boolean; props?: OpenConfirmarPagamentoSalarioDialogProps }>({ open: false });
+  const [extratoContaBancariaDialogState, setExtratoContaBancariaDialogState] = useState<{ open: boolean; props?: OpenExtratoContaBancariaDialogProps }>({ open: false });
   const [collaboratorFormDialogState, setCollaboratorFormDialogState] = useState<{ open: boolean; props?: OpenCollaboratorFormProps }>({ open: false });
   const [clientFormDialogState, setClientFormDialogState] = useState<{ open: boolean; props?: OpenClientFormProps }>({ open: false });
   const [empresaFormDialogState, setEmpresaFormDialogState] = useState<{ open: boolean; props?: OpenEmpresaFormProps }>({ open: false });
@@ -107,6 +111,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   const openConfirmarAdiantamentoDialog = (props: OpenConfirmarAdiantamentoDialogProps) => setConfirmarAdiantamentoDialogState({ open: true, props });
   const closeConfirmarAdiantamentoDialog = () => closeDialog(() => setConfirmarAdiantamentoDialogState((prev) => ({ ...prev, open: false })));
+
+  const openConfirmarPagamentoSalarioDialog = (props: OpenConfirmarPagamentoSalarioDialogProps) => setConfirmarPagamentoSalarioDialogState({ open: true, props });
+  const closeConfirmarPagamentoSalarioDialog = () => closeDialog(() => setConfirmarPagamentoSalarioDialogState((prev) => ({ ...prev, open: false })));
+
+  const openExtratoContaBancariaDialog = (props: OpenExtratoContaBancariaDialogProps) => setExtratoContaBancariaDialogState({ open: true, props });
+  const closeExtratoContaBancariaDialog = () => closeDialog(() => setExtratoContaBancariaDialogState((prev) => ({ ...prev, open: false })));
 
 
   const openCollaboratorFormDialog = (props: OpenCollaboratorFormProps) => setCollaboratorFormDialogState({ open: true, props });
@@ -229,6 +239,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       pageTitle, setPageTitle, pageSubtitle, setPageSubtitle,
       openConfirmationDialog, closeConfirmationDialog,
       openConfirmarAdiantamentoDialog, closeConfirmarAdiantamentoDialog,
+      openConfirmarPagamentoSalarioDialog, closeConfirmarPagamentoSalarioDialog,
+      openExtratoContaBancariaDialog, closeExtratoContaBancariaDialog,
       openCollaboratorFormDialog, closeCollaboratorFormDialog,
       openClientFormDialog, closeClientFormDialog,
       openEmpresaFormDialog, closeEmpresaFormDialog,
@@ -269,7 +281,37 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     }}>
       {children}
       {confirmationDialogState.props && <ConfirmationDialog open={confirmationDialogState.open} onOpenChange={(open) => setConfirmationDialogState((prev) => ({ ...prev, open }))} title={confirmationDialogState.props.title} description={confirmationDialogState.props.description} onConfirm={confirmationDialogState.props.onConfirm} confirmText={confirmationDialogState.props.confirmText} cancelText={confirmationDialogState.props.cancelText} variant={confirmationDialogState.props.variant} isLoading={confirmationDialogState.props.isLoading} />}
-      {confirmarAdiantamentoDialogState.props && <ConfirmarAdiantamentoDialog open={confirmarAdiantamentoDialogState.open} onOpenChange={(open) => setConfirmarAdiantamentoDialogState((prev) => ({ ...prev, open }))} valorSugerido={confirmarAdiantamentoDialogState.props.valorSugerido} onConfirm={confirmarAdiantamentoDialogState.props.onConfirm} isLoading={confirmarAdiantamentoDialogState.props.isLoading} />}
+      {confirmarAdiantamentoDialogState.props && (
+        <ConfirmarAdiantamentoDialog
+          open={confirmarAdiantamentoDialogState.open}
+          onOpenChange={(open) => setConfirmarAdiantamentoDialogState((prev) => ({ ...prev, open }))}
+          valorSugerido={confirmarAdiantamentoDialogState.props.valorSugerido}
+          colaboradorNome={confirmarAdiantamentoDialogState.props.colaboradorNome}
+          referenciaLabel={confirmarAdiantamentoDialogState.props.referenciaLabel}
+          contaBancariaInicialId={confirmarAdiantamentoDialogState.props.contaBancariaInicialId}
+          onConfirm={confirmarAdiantamentoDialogState.props.onConfirm}
+          isLoading={confirmarAdiantamentoDialogState.props.isLoading}
+        />
+      )}
+      {confirmarPagamentoSalarioDialogState.props && (
+        <ConfirmarPagamentoSalarioDialog
+          open={confirmarPagamentoSalarioDialogState.open}
+          onOpenChange={(open) => setConfirmarPagamentoSalarioDialogState((prev) => ({ ...prev, open }))}
+          valorLiquido={confirmarPagamentoSalarioDialogState.props.valorLiquido}
+          colaboradorNome={confirmarPagamentoSalarioDialogState.props.colaboradorNome}
+          referenciaLabel={confirmarPagamentoSalarioDialogState.props.referenciaLabel}
+          contaBancariaInicialId={confirmarPagamentoSalarioDialogState.props.contaBancariaInicialId}
+          onConfirm={confirmarPagamentoSalarioDialogState.props.onConfirm}
+          isLoading={confirmarPagamentoSalarioDialogState.props.isLoading}
+        />
+      )}
+      {extratoContaBancariaDialogState.open && extratoContaBancariaDialogState.props && (
+        <ExtratoContaBancariaDialog
+          open={true}
+          onOpenChange={(open) => !open && closeExtratoContaBancariaDialog()}
+          {...extratoContaBancariaDialogState.props}
+        />
+      )}
 
       {collaboratorFormDialogState.open && <CollaboratorFormDialog open={true} onOpenChange={(open) => !open && setCollaboratorFormDialogState(prev => ({ ...prev, open: false }))} onSuccess={(data) => { collaboratorFormDialogState.props?.onSuccess?.(data); setCollaboratorFormDialogState(prev => ({ ...prev, open: false })); }} collaboratorToEdit={collaboratorFormDialogState.props?.editingCollaborator} />}
       {clientFormDialogState.open && <ClientFormDialog isOpen={true} onClose={closeClientFormDialog} editingClient={clientFormDialogState.props?.editingClient} onSuccess={() => { clientFormDialogState.props?.onSuccess?.(); closeClientFormDialog(); }} />}

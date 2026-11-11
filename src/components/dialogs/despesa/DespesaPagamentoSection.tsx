@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { MoneyInput } from "@/components/ui/MoneyInput";
+import { Banner } from "@/components/ui/Banner";
 import { STATUS_DESPESA } from "@/constants/financeiro.constants";
 import { DespesaFormData } from "@/schemas/despesaSchema";
 import { ContaBancaria } from "@/types/database";
@@ -17,13 +18,18 @@ interface DespesaPagamentoSectionProps {
   form: UseFormReturn<DespesaFormData>;
   status: string;
   contas: ContaBancaria[];
+  tinhaPagamentoAnterior?: boolean;
 }
 
 export function DespesaPagamentoSection({
   form,
   status,
   contas,
+  tinhaPagamentoAnterior = false,
 }: DespesaPagamentoSectionProps) {
+  const exibirAvisoEstorno =
+    tinhaPagamentoAnterior && status !== STATUS_DESPESA.PAGO;
+
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -58,7 +64,23 @@ export function DespesaPagamentoSection({
               </FormLabel>
               <FormControl>
                 <NativeSelect
-                  {...field}
+                  value={field.value}
+                  onChange={(e) => {
+                    const nextStatus = e.target.value as DespesaFormData["status"];
+                    field.onChange(nextStatus);
+                    if (nextStatus === STATUS_DESPESA.PAGO) {
+                      if (!form.getValues("valor_pago") || form.getValues("valor_pago") === 0) {
+                        form.setValue("valor_pago", form.getValues("valor_previsto") || 0, {
+                          shouldValidate: true,
+                        });
+                      }
+                      if (!form.getValues("data_pagamento")) {
+                        form.setValue("data_pagamento", form.getValues("data_vencimento") || "", {
+                          shouldValidate: true,
+                        });
+                      }
+                    }
+                  }}
                   className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
                 >
                   <option value={STATUS_DESPESA.PENDENTE}>A Pagar (Pendente)</option>
@@ -113,7 +135,7 @@ export function DespesaPagamentoSection({
                 </FormLabel>
                 <FormControl>
                   <MoneyInput
-                    value={field.value || form.getValues("valor_previsto")}
+                    value={field.value ?? 0}
                     onChange={field.onChange}
                     placeholder="0,00"
                     className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
@@ -145,6 +167,14 @@ export function DespesaPagamentoSection({
             )}
           />
         </div>
+      )}
+
+      {exibirAvisoEstorno && (
+        <Banner
+          variant="warning"
+          title="Estorno de pagamento"
+          description="Ao salvar com este status, o valor pago anteriormente será estornado e zerado."
+        />
       )}
     </>
   );

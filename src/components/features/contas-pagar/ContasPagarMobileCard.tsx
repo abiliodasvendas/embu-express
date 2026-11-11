@@ -2,13 +2,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
-import { ContaPagarItem } from "@/types/database";
-import { CheckCircle2, Layers, AlertCircle, Edit2, Trash2, Repeat } from "lucide-react";
-import { STATUS_DESPESA, TIPO_CONTA_PAGAR } from "@/constants/financeiro.constants";
+import { CategoriaDespesa, ContaPagarItem } from "@/types/database";
+import { CheckCircle2, Layers, AlertCircle, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
+import {
+  CATEGORIA_COLABORADOR_LABELS,
+  CATEGORIA_DESPESA_LABELS,
+  STATUS_DESPESA,
+  TIPO_CONTA_PAGAR,
+} from "@/constants/financeiro.constants";
 
 interface ContasPagarMobileCardProps {
   item: ContaPagarItem;
   onLiquidar: (item: ContaPagarItem) => void;
+  onDesfazerLiquidacao?: (item: ContaPagarItem) => void;
   onEdit?: (item: ContaPagarItem) => void;
   onDelete?: (item: ContaPagarItem) => void;
   canEdit?: boolean;
@@ -17,6 +23,7 @@ interface ContasPagarMobileCardProps {
 export function ContasPagarMobileCard({
   item,
   onLiquidar,
+  onDesfazerLiquidacao,
   onEdit,
   onDelete,
   canEdit = true,
@@ -35,7 +42,11 @@ export function ContasPagarMobileCard({
               {item.descricao}
             </h4>
             <span className="inline-flex items-center px-1.5 py-0.5 rounded-[6px] bg-muted/60 text-muted-foreground font-mono text-[10px] font-medium">
-              {item.tipo === TIPO_CONTA_PAGAR.CONVENIO ? "CONVÊNIO" : "DESPESA"}
+              {item.tipo === TIPO_CONTA_PAGAR.CONVENIO
+                ? "CONVÊNIO"
+                : item.tipo === TIPO_CONTA_PAGAR.COLABORADOR
+                ? "COLABORADOR"
+                : "DESPESA"}
             </span>
             {item.total_parcelas && item.total_parcelas > 1 ? (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-[6px] bg-primary/10 text-primary font-mono text-[10px] font-semibold">
@@ -53,7 +64,11 @@ export function ContasPagarMobileCard({
               {item.empresa_nome || "Empresa não informada"}
             </span>
             <span>•</span>
-            <span>{item.categoria}</span>
+            <span>
+              {CATEGORIA_COLABORADOR_LABELS[item.categoria] ||
+                CATEGORIA_DESPESA_LABELS[item.categoria as CategoriaDespesa] ||
+                item.categoria}
+            </span>
             {item.conta_bancaria_nome && (
               <>
                 <span>•</span>
@@ -159,7 +174,7 @@ export function ContasPagarMobileCard({
                 variant="ghost"
                 size="icon"
                 onClick={() => onEdit?.(item)}
-                className="h-8 w-8 rounded-[12px] text-muted-foreground hover:text-foreground"
+                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
                 title="Editar Despesa"
               >
                 <Edit2 className="h-3.5 w-3.5" />
@@ -168,7 +183,7 @@ export function ContasPagarMobileCard({
                 variant="ghost"
                 size="icon"
                 onClick={() => onDelete?.(item)}
-                className="h-8 w-8 rounded-[12px] text-muted-foreground hover:text-destructive"
+                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
                 title="Excluir Despesa"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -180,10 +195,22 @@ export function ContasPagarMobileCard({
             <Button
               size="sm"
               onClick={() => onLiquidar(item)}
-              className="h-8 rounded-[12px] text-xs font-semibold px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1 shadow-2xs"
+              className="h-8 rounded-[18px] text-xs font-semibold px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1 shadow-2xs"
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Liquidar</span>
+            </Button>
+          )}
+
+          {(isPago || item.valor_pago > 0) && canEdit && onDesfazerLiquidacao && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDesfazerLiquidacao(item)}
+              className="h-8 rounded-[18px] text-xs font-medium px-2.5 text-muted-foreground hover:text-destructive border-border gap-1"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Desfazer</span>
             </Button>
           )}
         </div>

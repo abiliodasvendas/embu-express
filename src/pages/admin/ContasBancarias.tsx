@@ -31,6 +31,7 @@ export default function ContasBancarias() {
     canEdit,
     handleNovaConta,
     handleExcluirConta,
+    handleVerExtrato,
   } = useContasBancariasViewModel();
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function ContasBancarias() {
         <ContasBancariasTable
           contas={contasFiltradas}
           onExcluir={handleExcluirConta}
+          onVerExtrato={handleVerExtrato}
           onNovaConta={handleNovaConta}
           isDeleting={isDeleting}
           canEdit={canEdit}
@@ -78,6 +80,7 @@ export default function ContasBancarias() {
           <ContasBancariasTable
             contas={[]}
             onExcluir={handleExcluirConta}
+            onVerExtrato={handleVerExtrato}
             onNovaConta={handleNovaConta}
             isDeleting={isDeleting}
             canEdit={canEdit}
@@ -88,6 +91,7 @@ export default function ContasBancarias() {
               key={conta.id}
               conta={conta}
               onExcluir={handleExcluirConta}
+              onVerExtrato={handleVerExtrato}
               isDeleting={isDeleting}
               canEdit={canEdit}
             />

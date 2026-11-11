@@ -18,6 +18,7 @@ import {
   DollarSign,
   CreditCard,
   CheckCircle2,
+  RotateCcw,
 } from "lucide-react";
 import {
   Table,
@@ -38,6 +39,7 @@ interface ConvenioAuditoriaSectionProps {
   canEdit: boolean;
   canLiquidar?: boolean;
   onOpenLiquidarDialog: () => void;
+  onDesfazerPagamento?: () => void;
   onOpenLancamentoDialog: (lancamento?: LancamentoConvenio | null) => void;
 }
 
@@ -47,6 +49,7 @@ export function ConvenioAuditoriaSection({
   canEdit,
   canLiquidar,
   onOpenLiquidarDialog,
+  onDesfazerPagamento,
 }: ConvenioAuditoriaSectionProps) {
   const podeLiquidar = canLiquidar !== undefined ? canLiquidar : canEdit;
   const [filtroCategoria, setFiltroCategoria] = useState<
@@ -135,16 +138,34 @@ export function ConvenioAuditoriaSection({
                 Sem consumo
               </span>
             )}
-            {podeLiquidar && !isFaturaPaga && temConsumo && (
-              <button
-                type="button"
-                onClick={onOpenLiquidarDialog}
-                className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <CreditCard className="h-3 w-3" />
-                Quitar Fatura
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {podeLiquidar && !isFaturaPaga && temConsumo && (
+                <button
+                  type="button"
+                  onClick={onOpenLiquidarDialog}
+                  className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <CreditCard className="h-3 w-3" />
+                  Quitar Fatura
+                </button>
+              )}
+              {podeLiquidar &&
+                onDesfazerPagamento &&
+                auditoria.fatura_fornecedor &&
+                !auditoria.fatura_fornecedor.is_previsao &&
+                (isFaturaPaga ||
+                  auditoria.fatura_fornecedor.status === STATUS_FATURA_CONVENIO.PAGO_PARCIAL ||
+                  (auditoria.fatura_fornecedor.valor_pago || 0) > 0) && (
+                  <button
+                    type="button"
+                    onClick={onDesfazerPagamento}
+                    className="text-xs font-semibold text-destructive hover:text-destructive/80 flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Desfazer
+                  </button>
+                )}
+            </div>
           </div>
         </div>
 

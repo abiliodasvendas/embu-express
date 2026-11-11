@@ -57,6 +57,11 @@ export function useDespesaForm({
 
   const status = form.watch("status");
   const selectedEmpresaId = form.watch("empresa_id");
+  const tinhaPagamentoAnterior = Boolean(
+    despesaToEdit &&
+      (despesaToEdit.status === STATUS_DESPESA.PAGO ||
+        Number(despesaToEdit.valor_pago || 0) > 0)
+  );
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const contasFiltradas = selectedEmpresaId && selectedEmpresaId !== "holding"
@@ -77,8 +82,17 @@ export function useDespesaForm({
           valor_previsto: despesaToEdit.valor_previsto,
           status: despesaToEdit.status,
           conta_bancaria_id: despesaToEdit.conta_bancaria_id || "",
-          valor_pago: despesaToEdit.valor_pago || 0,
-          data_pagamento: despesaToEdit.data_pagamento || "",
+          valor_pago: Number(
+            despesaToEdit.valor_pago ||
+              (despesaToEdit.status === STATUS_DESPESA.PAGO
+                ? despesaToEdit.valor_previsto
+                : 0)
+          ),
+          data_pagamento:
+            despesaToEdit.data_pagamento ||
+            (despesaToEdit.status === STATUS_DESPESA.PAGO
+              ? despesaToEdit.data_vencimento
+              : ""),
           is_parcelado: false,
           quantidade_parcelas: undefined,
           is_recorrente: !!despesaToEdit.is_recorrente,
@@ -182,6 +196,7 @@ export function useDespesaForm({
     empresas,
     contas: contasFiltradas,
     status,
+    tinhaPagamentoAnterior,
     isPending,
     onSubmit,
     handleClose,

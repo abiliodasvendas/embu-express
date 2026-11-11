@@ -10,14 +10,30 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { MoneyInput } from "@/components/ui/MoneyInput";
+import { Banner } from "@/components/ui/Banner";
 import { STATUS_FATURA } from "@/constants/financeiro.constants";
 import { FaturaFormData } from "@/schemas/faturaSchema";
 
 interface FaturaValoresDatasSectionProps {
   form: UseFormReturn<FaturaFormData>;
+  status?: string;
+  tinhaRecebimentoAnterior?: boolean;
 }
 
-export function FaturaValoresDatasSection({ form }: FaturaValoresDatasSectionProps) {
+export function FaturaValoresDatasSection({
+  form,
+  status,
+  tinhaRecebimentoAnterior = false,
+}: FaturaValoresDatasSectionProps) {
+  const currentStatus = status || form.watch("status");
+  const exibirValorRecebido =
+    currentStatus === STATUS_FATURA.LIQUIDADA ||
+    currentStatus === STATUS_FATURA.PAGO_PARCIAL;
+  const exibirAvisoEstorno =
+    tinhaRecebimentoAnterior &&
+    (currentStatus === STATUS_FATURA.PENDENTE ||
+      currentStatus === STATUS_FATURA.CANCELADA);
+
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -96,7 +112,18 @@ export function FaturaValoresDatasSection({ form }: FaturaValoresDatasSectionPro
               <FormControl>
                 <NativeSelect
                   value={field.value}
-                  onChange={field.onChange}
+                  onChange={(e) => {
+                    const nextStatus = e.target.value as FaturaFormData["status"];
+                    field.onChange(nextStatus);
+                    if (
+                      nextStatus === STATUS_FATURA.LIQUIDADA &&
+                      (!form.getValues("valor_pago") || form.getValues("valor_pago") === 0)
+                    ) {
+                      form.setValue("valor_pago", form.getValues("valor_faturado") || 0, {
+                        shouldValidate: true,
+                      });
+                    }
+                  }}
                   className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-semibold shadow-xs"
                 >
                   <option value={STATUS_FATURA.PENDENTE}>Pendente / Aguardando</option>
@@ -110,6 +137,39 @@ export function FaturaValoresDatasSection({ form }: FaturaValoresDatasSectionPro
           )}
         />
       </div>
+
+      {exibirValorRecebido && (
+        <div className="p-3.5 bg-muted/30 border border-border rounded-[18px]">
+          <FormField
+            control={form.control}
+            name="valor_pago"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-xs font-semibold text-foreground">
+                  Valor Efetivamente Recebido (R$)
+                </FormLabel>
+                <FormControl>
+                  <MoneyInput
+                    value={field.value ?? 0}
+                    onChange={field.onChange}
+                    placeholder="0,00"
+                    className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-semibold shadow-xs"
+                  />
+                </FormControl>
+                <FormMessage className="text-xs text-destructive" />
+              </FormItem>
+            )}
+          />
+        </div>
+      )}
+
+      {exibirAvisoEstorno && (
+        <Banner
+          variant="warning"
+          title="Estorno de recebimento"
+          description="Ao salvar com este status, o valor recebido anteriormente será estornado e zerado."
+        />
+      )}
 
       <FormField
         control={form.control}

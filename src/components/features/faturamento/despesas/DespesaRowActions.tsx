@@ -1,11 +1,13 @@
-import { Banknote, Edit2, Trash2 } from "lucide-react";
+import { Banknote, Edit2, Trash2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { STATUS_DESPESA } from "@/constants/financeiro.constants";
+import { isPrevisaoFixa } from "./despesaTableUtils";
 import type { DespesaOperacional } from "@/types/database";
 
 interface DespesaRowActionsProps {
   despesa: DespesaOperacional;
   onLiquidar: (despesa: DespesaOperacional) => void;
+  onDesfazerPagamento?: (despesa: DespesaOperacional) => void;
   onEdit: (despesa: DespesaOperacional) => void;
   onDelete: (despesa: DespesaOperacional) => void;
   canEdit?: boolean;
@@ -14,6 +16,7 @@ interface DespesaRowActionsProps {
 export function DespesaRowActions({
   despesa,
   onLiquidar,
+  onDesfazerPagamento,
   onEdit,
   onDelete,
   canEdit = true,
@@ -25,6 +28,10 @@ export function DespesaRowActions({
   const podePagar =
     despesa.status !== STATUS_DESPESA.PAGO &&
     despesa.status !== STATUS_DESPESA.CANCELADO;
+
+  const podeDesfazerPagamento =
+    !isPrevisaoFixa(despesa.id) &&
+    (despesa.status === STATUS_DESPESA.PAGO || (despesa.valor_pago || 0) > 0);
 
   return (
     <div className="flex items-center justify-center gap-1.5">
@@ -38,6 +45,17 @@ export function DespesaRowActions({
         >
           <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
           <span>Pagar</span>
+        </Button>
+      )}
+      {podeDesfazerPagamento && onDesfazerPagamento && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-[18px] text-muted-foreground hover:text-destructive"
+          onClick={() => onDesfazerPagamento(despesa)}
+          title="Desfazer Pagamento (Estornar)"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
         </Button>
       )}
       <Button

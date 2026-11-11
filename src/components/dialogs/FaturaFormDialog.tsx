@@ -29,6 +29,8 @@ export function FaturaFormDialog({
     unidades,
     empresas,
     selectedTipoPeriodo,
+    status,
+    tinhaRecebimentoAnterior,
     isPending,
     handleClienteChange,
     handleUnidadeChange,
@@ -85,7 +87,11 @@ export function FaturaFormDialog({
                 unidades={unidades}
                 selectedTipoPeriodo={selectedTipoPeriodo}
               />
-              <FaturaValoresDatasSection form={form} />
+              <FaturaValoresDatasSection
+                form={form}
+                status={status}
+                tinhaRecebimentoAnterior={tinhaRecebimentoAnterior}
+              />
             </div>
           </BaseDialog.Body>
           <BaseDialog.Footer>

@@ -14,8 +14,8 @@ interface ContasPagarToolbarProps {
   onAnoChange: (ano: number) => void;
   empresaId: number | null;
   onEmpresaChange: (id: number | null) => void;
-  tipoFiltro: "TODOS" | "DESPESA" | "CONVENIO";
-  onTipoChange: (tipo: "TODOS" | "DESPESA" | "CONVENIO") => void;
+  tipoFiltro: "TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR";
+  onTipoChange: (tipo: "TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR") => void;
   status: string;
   onStatusChange: (status: string) => void;
   empresas: Empresa[];
@@ -59,7 +59,7 @@ export function ContasPagarToolbar({
         <NativeSelect
           value={String(mes)}
           onChange={(e) => onMesChange(Number(e.target.value))}
-          className="h-10 w-[130px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[130px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           {meses.map((m, i) => (
             <option key={i + 1} value={String(i + 1)}>
@@ -71,7 +71,7 @@ export function ContasPagarToolbar({
         <NativeSelect
           value={String(ano)}
           onChange={(e) => onAnoChange(Number(e.target.value))}
-          className="h-10 w-[90px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[90px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           {[anoAtual - 1, anoAtual, anoAtual + 1].map((a) => (
             <option key={a} value={String(a)}>
@@ -83,7 +83,7 @@ export function ContasPagarToolbar({
         <NativeSelect
           value={empresaId ? String(empresaId) : "todas"}
           onChange={(e) => onEmpresaChange(e.target.value === "todas" ? null : Number(e.target.value))}
-          className="h-10 w-[180px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[180px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="todas">Todas as Empresas</option>
           {empresas.map((emp) => (
@@ -95,18 +95,21 @@ export function ContasPagarToolbar({
 
         <NativeSelect
           value={tipoFiltro}
-          onChange={(e) => onTipoChange(e.target.value as "TODOS" | "DESPESA" | "CONVENIO")}
-          className="h-10 w-[140px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          onChange={(e) =>
+            onTipoChange(e.target.value as "TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR")
+          }
+          className="h-10 w-[160px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="TODOS">Todos os Tipos</option>
           <option value="DESPESA">Apenas Despesas</option>
           <option value="CONVENIO">Apenas Convênios</option>
+          <option value="COLABORADOR">Apenas Colaboradores</option>
         </NativeSelect>
 
         <NativeSelect
           value={status}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="h-10 w-[140px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[140px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="TODOS">Todos os Status</option>
           <option value="PENDENTE">Pendentes</option>
@@ -119,7 +122,7 @@ export function ContasPagarToolbar({
       {canEdit && (
         <Button
           onClick={onNovaDespesa}
-          className="h-10 rounded-[14px] bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-4 gap-2 shadow-xs text-xs cursor-pointer select-none"
+          className="h-10 rounded-[18px] bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-4 gap-2 shadow-xs text-xs cursor-pointer select-none"
         >
           <Plus className="h-4 w-4" />
           <span>Nova Despesa</span>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useLayout } from "@/hooks";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useDespesas } from "@/hooks/api/useDespesas";
@@ -33,6 +34,7 @@ export function useDespesasTabViewModel({
     openDespesaFormDialog,
     openLiquidarDespesaDialog,
     openConfirmationDialog,
+    closeConfirmationDialog,
   } = useLayout();
 
   const { can, isSuperAdmin } = usePermissions();
@@ -50,6 +52,7 @@ export function useDespesasTabViewModel({
     isLoading: isLoadingDespesas,
     isFetching: isFetchingDespesas,
     deleteMutation: deleteDespesaMutation,
+    desfazerPagamentoMutation,
     refetch: refetchDespesas,
   } = useDespesas({ mes, ano }, { enabled });
 
@@ -185,6 +188,25 @@ export function useDespesasTabViewModel({
     });
   };
 
+  const handleDesfazerPagamentoDespesa = (desp: DespesaOperacional) => {
+    openConfirmationDialog({
+      title: "Desfazer Pagamento",
+      description: `Deseja estornar o pagamento de "${desp.descricao}" (${formatCurrency(desp.valor_pago || desp.valor_previsto)})? A despesa voltará ao status Pendente.`,
+      confirmText: "Sim, Desfazer Pagamento",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await desfazerPagamentoMutation.mutateAsync(desp.id);
+          safeCloseDialog(closeConfirmationDialog);
+          await refetchDespesas();
+          toast.success("Pagamento estornado com sucesso!");
+        } catch {
+          toast.error("Erro ao estornar pagamento da despesa.");
+        }
+      },
+    });
+  };
+
   return {
     canEdit,
     mes,
@@ -212,5 +234,6 @@ export function useDespesasTabViewModel({
     handleOpenNovaDespesa,
     handleEditDespesa,
     handleLiquidarDespesa,
+    handleDesfazerPagamentoDespesa,
   };
 }

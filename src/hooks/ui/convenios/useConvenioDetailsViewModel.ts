@@ -10,8 +10,12 @@ import {
   useDeleteAdminLancamento,
   useUpdateConvenio,
 } from "@/hooks/api/useConvenios";
-import { useConvenioAuditoria } from "@/hooks/api/useConvenioAuditoria";
+import {
+  useConvenioAuditoria,
+  useDesfazerPagamentoFaturaConvenio,
+} from "@/hooks/api/useConvenioAuditoria";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+import { DAVID_CAITITE_ID, PERIODICIDADE_FATURAMENTO } from "@/constants/financeiro.constants";
 import { LancamentoConvenio } from "@/types/database";
 import { formatCurrency } from "@/utils/formatters/currency";
 
@@ -48,12 +52,13 @@ export function useConvenioDetailsViewModel() {
 
   const deleteLancamento = useDeleteAdminLancamento();
   const updateConvenio = useUpdateConvenio();
+  const desfazerPagamentoConvenio = useDesfazerPagamentoFaturaConvenio();
 
   const mes = currentDate.getMonth() + 1;
   const ano = currentDate.getFullYear();
 
   const { data: convenio, isLoading: isConvenioLoading } = useConvenio(id || "");
-  const isQuinzenal = convenio?.periodicidade === "QUINZENAL";
+  const isQuinzenal = convenio?.periodicidade === PERIODICIDADE_FATURAMENTO.QUINZENAL;
 
   const { data: lancamentos = [], isLoading: isLancamentosLoading } =
     useConvenioLancamentos(id || "", ano, mes);
@@ -65,7 +70,7 @@ export function useConvenioDetailsViewModel() {
     id || "",
     mes,
     ano,
-    isQuinzenal ? "QUINZENAL" : "MENSAL",
+    isQuinzenal ? PERIODICIDADE_FATURAMENTO.QUINZENAL : PERIODICIDADE_FATURAMENTO.MENSAL,
     isQuinzenal ? quinzena : 1
   );
 
@@ -186,7 +191,7 @@ export function useConvenioDetailsViewModel() {
       faturaId: fatura?.is_previsao ? null : (fatura?.id || null),
       mesCompetencia: mes,
       anoCompetencia: ano,
-      tipoPeriodo: isQuinzenal ? "QUINZENAL" : "MENSAL",
+      tipoPeriodo: isQuinzenal ? PERIODICIDADE_FATURAMENTO.QUINZENAL : PERIODICIDADE_FATURAMENTO.MENSAL,
       numeroPeriodo: isQuinzenal ? quinzena : 1,
       quinzena: isQuinzenal ? quinzena : null,
       dataVencimento: fatura?.data_vencimento || dataVencDefault,
@@ -197,6 +202,27 @@ export function useConvenioDetailsViewModel() {
       onSuccess: () => refetchAuditoria(),
     });
   }, [id, mes, ano, isQuinzenal, quinzena, auditoria, convenio, openLiquidarFaturaConvenioDialog, refetchAuditoria]);
+
+  const handleDesfazerPagamentoAuditoria = useCallback(() => {
+    const fatura = auditoria?.fatura_fornecedor;
+    if (!fatura?.id || fatura.is_previsao) return;
+
+    openConfirmationDialog({
+      title: "Desfazer Pagamento",
+      description: `Tem certeza que deseja desfazer o pagamento da fatura do convênio "${convenio?.nome || "Convênio"}"? Os pagamentos registrados serão estornados e a fatura voltará para o status Pendente.`,
+      confirmText: "Desfazer Pagamento",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await desfazerPagamentoConvenio.mutateAsync(fatura.id);
+          await refetchAuditoria();
+          safeCloseDialog(closeConfirmationDialog);
+        } catch {
+          safeCloseDialog(closeConfirmationDialog);
+        }
+      },
+    });
+  }, [auditoria, convenio, openConfirmationDialog, desfazerPagamentoConvenio, refetchAuditoria, closeConfirmationDialog]);
 
   const sortedLancamentos = useMemo(() => {
     return [...lancamentos].sort((a, b) => {
@@ -217,7 +243,6 @@ export function useConvenioDetailsViewModel() {
 
   const groupedLancamentos = useMemo((): GroupedLancamento[] => {
     const groups: Record<string, GroupedLancamento> = {};
-    const DAVID_CAITITE_ID = "e7c2c19c-3b36-402a-9e73-9a3c3c3c3c3c";
 
     filteredLancamentos.forEach((l) => {
       const isMotoEmbuOuEmpresa =
@@ -310,6 +335,7 @@ export function useConvenioDetailsViewModel() {
     handleEditarLancamento,
     handleEditarConvenio,
     handleLiquidarFaturaAuditoria,
+    handleDesfazerPagamentoAuditoria,
     navigate,
   };
 }

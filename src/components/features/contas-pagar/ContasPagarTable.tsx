@@ -3,16 +3,23 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { ContaPagarItem } from "@/types/database";
-import { CheckCircle2, Layers, CreditCard, Edit2, Trash2, Repeat } from "lucide-react";
+import { CheckCircle2, Layers, CreditCard, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { TableSkeleton } from "@/components/skeletons";
 import { ContasPagarMobileCard } from "./ContasPagarMobileCard";
-import { STATUS_DESPESA, TIPO_CONTA_PAGAR } from "@/constants/financeiro.constants";
+import {
+  CATEGORIA_COLABORADOR_LABELS,
+  CATEGORIA_DESPESA_LABELS,
+  STATUS_DESPESA,
+  TIPO_CONTA_PAGAR,
+} from "@/constants/financeiro.constants";
+import { CategoriaDespesa } from "@/types/database";
 
 interface ContasPagarTableProps {
   itens: ContaPagarItem[];
   isLoading: boolean;
   onLiquidar: (item: ContaPagarItem) => void;
+  onDesfazerLiquidacao?: (item: ContaPagarItem) => void;
   onEdit?: (item: ContaPagarItem) => void;
   onDelete?: (item: ContaPagarItem) => void;
   onNovaDespesa?: () => void;
@@ -23,6 +30,7 @@ export function ContasPagarTable({
   itens,
   isLoading,
   onLiquidar,
+  onDesfazerLiquidacao,
   onEdit,
   onDelete,
   onNovaDespesa,
@@ -38,7 +46,7 @@ export function ContasPagarTable({
         <UnifiedEmptyState
           icon={CreditCard}
           title="Nenhum compromisso a pagar encontrado"
-          description="Nenhuma despesa ou fatura de convênio para os filtros selecionados."
+          description="Nenhuma despesa, fatura de convênio ou lançamento de colaborador para os filtros selecionados."
           action={canEdit && onNovaDespesa ? { label: "Nova Despesa", onClick: onNovaDespesa } : undefined}
         />
       </div>
@@ -108,7 +116,11 @@ export function ContasPagarTable({
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1 items-start">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-muted/60 text-muted-foreground font-mono text-[11px] font-medium">
-                          {item.tipo === TIPO_CONTA_PAGAR.CONVENIO ? "CONVÊNIO" : "DESPESA"}
+                          {item.tipo === TIPO_CONTA_PAGAR.CONVENIO
+                            ? "CONVÊNIO"
+                            : item.tipo === TIPO_CONTA_PAGAR.COLABORADOR
+                            ? "COLABORADOR"
+                            : "DESPESA"}
                         </span>
                         {item.total_parcelas && item.total_parcelas > 1 ? (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded-[6px] bg-primary/10 text-primary font-mono text-[10px] font-semibold">
@@ -128,7 +140,9 @@ export function ContasPagarTable({
                         {item.descricao}
                       </span>
                       <span className="text-[11px] text-muted-foreground block">
-                        {item.categoria}
+                        {CATEGORIA_COLABORADOR_LABELS[item.categoria] ||
+                          CATEGORIA_DESPESA_LABELS[item.categoria as CategoriaDespesa] ||
+                          item.categoria}
                       </span>
                     </td>
 
@@ -185,7 +199,7 @@ export function ContasPagarTable({
                               variant="ghost"
                               size="icon"
                               onClick={() => onEdit?.(item)}
-                              className="h-8 w-8 rounded-[12px] text-muted-foreground hover:text-foreground"
+                              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
                               title="Editar Despesa"
                             >
                               <Edit2 className="h-3.5 w-3.5" />
@@ -194,7 +208,7 @@ export function ContasPagarTable({
                               variant="ghost"
                               size="icon"
                               onClick={() => onDelete?.(item)}
-                              className="h-8 w-8 rounded-[12px] text-muted-foreground hover:text-destructive"
+                              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
                               title="Excluir Despesa"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -203,20 +217,48 @@ export function ContasPagarTable({
                         )}
 
                         {!isPago ? (
-                          <Button
-                            size="sm"
-                            onClick={() => onLiquidar(item)}
-                            className="h-8 rounded-[12px] text-xs font-semibold px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            Liquidar
-                          </Button>
-                        ) : item.lote_pagamento_id ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <Layers className="h-3 w-3" /> Lote
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {item.valor_pago > 0 && canEdit && onDesfazerLiquidacao && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onDesfazerLiquidacao(item)}
+                                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                                title="Desfazer Pagamento"
+                              >
+                                <RotateCcw className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => onLiquidar(item)}
+                              className="h-8 rounded-[18px] text-xs font-semibold px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1 cursor-pointer"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Liquidar
+                            </Button>
+                          </div>
                         ) : (
-                          <span className="text-[11px] text-muted-foreground">Baixa Manual</span>
+                          <div className="flex items-center gap-1.5">
+                            {item.lote_pagamento_id ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                <Layers className="h-3 w-3" /> Lote
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground">Baixa Manual</span>
+                            )}
+                            {canEdit && onDesfazerLiquidacao && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onDesfazerLiquidacao(item)}
+                                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                                title="Desfazer Pagamento"
+                              >
+                                <RotateCcw className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>
@@ -234,6 +276,7 @@ export function ContasPagarTable({
             key={`${item.tipo}_${item.id}`}
             item={item}
             onLiquidar={onLiquidar}
+            onDesfazerLiquidacao={onDesfazerLiquidacao}
             onEdit={onEdit}
             onDelete={onDelete}
             canEdit={canEdit}

@@ -1,4 +1,4 @@
-import { AlertCircle, Banknote, Edit2, Ban } from "lucide-react";
+import { AlertCircle, Banknote, Edit2, Ban, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency } from "@/utils/formatters/currency";
@@ -18,6 +18,7 @@ interface FaturaMobileCardProps {
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
   onLiquidar: (fatura: FaturaCliente) => void;
+  onDesfazerLiquidacao?: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
   canEdit?: boolean;
@@ -28,6 +29,7 @@ export function FaturaMobileCard({
   isSelected = false,
   onToggleSelect,
   onLiquidar,
+  onDesfazerLiquidacao,
   onEdit,
   onDelete,
   canEdit = true,
@@ -47,6 +49,12 @@ export function FaturaMobileCard({
   const podeReceber =
     fatura.status !== STATUS_FATURA.LIQUIDADA &&
     fatura.status !== STATUS_FATURA.CANCELADA;
+
+  const podeDesfazerRecebimento =
+    !fatura.is_previsao &&
+    ((fatura.valor_pago || 0) > 0 ||
+      fatura.status === STATUS_FATURA.LIQUIDADA ||
+      fatura.status === STATUS_FATURA.PAGO_PARCIAL);
 
   const podeCancelar = fatura.status !== STATUS_FATURA.CANCELADA;
 
@@ -149,7 +157,7 @@ export function FaturaMobileCard({
 
       {canEdit && (
         <div className="flex items-center justify-between pt-1">
-          <div>
+          <div className="flex items-center gap-1.5">
             {podeReceber && (
               <Button
                 variant="outline"
@@ -159,6 +167,17 @@ export function FaturaMobileCard({
               >
                 <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>Receber</span>
+              </Button>
+            )}
+            {podeDesfazerRecebimento && onDesfazerLiquidacao && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-[18px] px-2.5 text-xs font-medium border-border text-muted-foreground hover:text-destructive gap-1"
+                onClick={() => onDesfazerLiquidacao(fatura)}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Desfazer</span>
               </Button>
             )}
           </div>

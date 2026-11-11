@@ -3,7 +3,7 @@ import { apiClient } from "./client";
 
 export interface ItemPagamentoLotePayload {
   id: string;
-  tipo: "DESPESA" | "CONVENIO";
+  tipo: "DESPESA" | "CONVENIO" | "COLABORADOR";
   valor_alocado: number;
 }
 
@@ -47,9 +47,17 @@ export const contasPagarApi = {
   liquidarIndividual: (
     id: string,
     payload: LiquidarIndividualPayload,
-    tipo?: "DESPESA" | "CONVENIO"
+    tipo?: "DESPESA" | "CONVENIO" | "COLABORADOR"
   ): Promise<unknown> =>
     apiClient
       .post(`/contas-pagar/${id}/liquidar`, payload, { params: { tipo } })
+      .then((res) => res.data),
+
+  desfazerLiquidacao: (
+    id: string,
+    tipo?: "DESPESA" | "CONVENIO" | "COLABORADOR"
+  ): Promise<unknown> =>
+    apiClient
+      .post(`/contas-pagar/${id}/desfazer-liquidacao`, {}, { params: { tipo } })
       .then((res) => res.data),
 };

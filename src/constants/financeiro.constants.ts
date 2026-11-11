@@ -171,9 +171,22 @@ export type DespesaEscopoAcao = typeof DESPESA_ESCOPO_ACAO[keyof typeof DESPESA_
 export const TIPO_CONTA_PAGAR = {
     DESPESA: 'DESPESA',
     CONVENIO: 'CONVENIO',
+    COLABORADOR: 'COLABORADOR',
 } as const;
 
 export type TipoContaPagarType = typeof TIPO_CONTA_PAGAR[keyof typeof TIPO_CONTA_PAGAR];
+
+export const CATEGORIA_COLABORADOR_CONTA_PAGAR = {
+    ADIANTAMENTO_SALARIAL: 'ADIANTAMENTO_SALARIAL',
+    PAGAMENTO_SALARIO: 'PAGAMENTO_SALARIO',
+} as const;
+
+export type CategoriaColaboradorContaPagarType = typeof CATEGORIA_COLABORADOR_CONTA_PAGAR[keyof typeof CATEGORIA_COLABORADOR_CONTA_PAGAR];
+
+export const CATEGORIA_COLABORADOR_LABELS: Record<string, string> = {
+    ADIANTAMENTO_SALARIAL: 'Adiantamento Salarial (Vale)',
+    PAGAMENTO_SALARIO: 'Pagamento de Salário / Fechamento',
+};
 
 export const TIPO_MOVIMENTACAO_AVULSA = {
     ENTRADA: 'ENTRADA',
@@ -236,4 +249,7 @@ export type NivelRiscoValeType = typeof NIVEL_RISCO_VALE[keyof typeof NIVEL_RISC
 export const CLIENTES_ESPECIAIS = {
     INTERNO: 'INTERNO',
 } as const;
+
+export const DAVID_CAITITE_ID = "e7c2c19c-3b36-402a-9e73-9a3c3c3c3c3c";
+
 

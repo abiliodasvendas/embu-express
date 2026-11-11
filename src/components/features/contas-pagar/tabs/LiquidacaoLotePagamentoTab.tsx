@@ -9,7 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { formatContaBancaria } from "@/utils/formatters/contaBancaria";
+import {
+  CATEGORIA_COLABORADOR_CONTA_PAGAR,
+  CATEGORIA_COLABORADOR_LABELS,
+  CATEGORIA_DESPESA_LABELS,
+} from "@/constants/financeiro.constants";
+import { CategoriaDespesa } from "@/types/database";
+import { ContaBancariaSelect } from "@/components/ui/ContaBancariaSelect";
 import { formatDateToBR } from "@/utils/formatters/date";
 import {
   Wallet,
@@ -53,18 +59,12 @@ export function LiquidacaoLotePagamentoTab({ onVoltar }: LiquidacaoLotePagamento
                 <span>Conta Bancária Pagadora (Origem)</span>
                 <span className="text-destructive">*</span>
               </label>
-              <NativeSelect
+              <ContaBancariaSelect
+                contas={vm.contas}
                 value={vm.contaBancariaId}
-                onChange={(e) => vm.setContaBancariaId(e.target.value)}
-                className="h-11 rounded-[18px] bg-background border-border text-xs sm:text-sm font-medium"
-              >
-                <option value="">Selecione a conta pagadora...</option>
-                {vm.contas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {formatContaBancaria(c)}
-                  </option>
-                ))}
-              </NativeSelect>
+                onChange={vm.setContaBancariaId}
+                placeholder="Selecione a conta pagadora..."
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -179,12 +179,17 @@ export function LiquidacaoLotePagamentoTab({ onVoltar }: LiquidacaoLotePagamento
 
               <NativeSelect
                 value={vm.tipoFiltro}
-                onChange={(e) => vm.setTipoFiltro(e.target.value as "TODOS" | "DESPESA" | "CONVENIO")}
-                className="h-9 text-xs rounded-[14px] bg-background border-border min-w-[130px]"
+                onChange={(e) =>
+                  vm.setTipoFiltro(
+                    e.target.value as "TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR",
+                  )
+                }
+                className="h-9 text-xs rounded-[14px] bg-background border-border min-w-[150px]"
               >
                 <option value="TODOS">Todos os tipos</option>
                 <option value="DESPESA">Apenas Despesas</option>
                 <option value="CONVENIO">Apenas Convênios</option>
+                <option value="COLABORADOR">Apenas Colaboradores</option>
               </NativeSelect>
 
               <NativeSelect
@@ -244,7 +249,11 @@ export function LiquidacaoLotePagamentoTab({ onVoltar }: LiquidacaoLotePagamento
 
                         <TableCell className="py-2">
                           <Badge variant="secondary" className="rounded-[10px] text-[10px] font-semibold">
-                            {item.tipo === "CONVENIO" ? "CONVÊNIO" : "DESPESA"}
+                            {item.tipo === "CONVENIO"
+                              ? "CONVÊNIO"
+                              : item.tipo === "COLABORADOR"
+                              ? "COLABORADOR"
+                              : "DESPESA"}
                           </Badge>
                         </TableCell>
 
@@ -252,7 +261,10 @@ export function LiquidacaoLotePagamentoTab({ onVoltar }: LiquidacaoLotePagamento
                           <div className="flex flex-col">
                             <span className="text-xs font-semibold text-foreground line-clamp-1">{item.descricao}</span>
                             <span className="text-[10px] text-muted-foreground">
-                              {item.empresa_nome ? `${item.empresa_nome} • ` : ""}{item.categoria}
+                              {item.empresa_nome ? `${item.empresa_nome} • ` : ""}
+                              {CATEGORIA_COLABORADOR_LABELS[item.categoria] ||
+                                CATEGORIA_DESPESA_LABELS[item.categoria as CategoriaDespesa] ||
+                                item.categoria}
                             </span>
                           </div>
                         </TableCell>
@@ -269,6 +281,7 @@ export function LiquidacaoLotePagamentoTab({ onVoltar }: LiquidacaoLotePagamento
                           {isSelected ? (
                             <MoneyInput
                               value={valorAlocado}
+                              disabled={item.categoria === CATEGORIA_COLABORADOR_CONTA_PAGAR.PAGAMENTO_SALARIO}
                               onChange={(val) => vm.handleAlocacaoChange(item.id, Number(val) || 0)}
                               className="h-8 text-right text-xs font-semibold rounded-[10px] max-w-[130px] ml-auto"
                             />

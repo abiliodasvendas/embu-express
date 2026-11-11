@@ -16,25 +16,25 @@ export function useDespesas(
     enabled: options?.enabled,
   });
 
+  const invalidarConsultasDespesas = () => {
+    queryClient.invalidateQueries({ queryKey: ["despesas"] });
+    queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
+    queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
+    queryClient.invalidateQueries({ queryKey: ["contas-bancarias-saldos"] });
+    queryClient.invalidateQueries({ queryKey: ["conta-bancaria-extrato"] });
+    queryClient.invalidateQueries({ queryKey: ["dre"] });
+    queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
+  };
+
   const createMutation = useMutation({
     mutationFn: (data: CreateDespesaPayload) => despesaApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["despesas"] });
-      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
-      queryClient.invalidateQueries({ queryKey: ["dre"] });
-      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
-    },
+    onSuccess: () => invalidarConsultasDespesas(),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateDespesaPayload> }) =>
       despesaApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["despesas"] });
-      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
-      queryClient.invalidateQueries({ queryKey: ["dre"] });
-      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
-    },
+    onSuccess: () => invalidarConsultasDespesas(),
   });
 
   const deleteMutation = useMutation({
@@ -44,23 +44,18 @@ export function useDespesas(
       }
       return despesaApi.delete(params.id, params.escopo);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["despesas"] });
-      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
-      queryClient.invalidateQueries({ queryKey: ["dre"] });
-      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
-    },
+    onSuccess: () => invalidarConsultasDespesas(),
   });
 
   const pagarMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { data_pagamento: string; valor_pago?: number; conta_bancaria_id?: string } }) =>
       despesaApi.marcarPaga(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["despesas"] });
-      queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
-      queryClient.invalidateQueries({ queryKey: ["dre"] });
-      queryClient.invalidateQueries({ queryKey: ["fluxo-caixa"] });
-    },
+    onSuccess: () => invalidarConsultasDespesas(),
+  });
+
+  const desfazerPagamentoMutation = useMutation({
+    mutationFn: (id: string) => despesaApi.desfazerPagamento(id),
+    onSuccess: () => invalidarConsultasDespesas(),
   });
 
   return {
@@ -70,5 +65,6 @@ export function useDespesas(
     updateMutation,
     deleteMutation,
     pagarMutation,
+    desfazerPagamentoMutation,
   };
 }

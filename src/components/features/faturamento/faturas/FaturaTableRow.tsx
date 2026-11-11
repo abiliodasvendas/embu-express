@@ -18,6 +18,7 @@ interface FaturaTableRowProps {
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
   onLiquidar: (fatura: FaturaCliente) => void;
+  onDesfazerLiquidacao?: (fatura: FaturaCliente) => void;
   onEdit: (fatura: FaturaCliente) => void;
   onDelete: (fatura: FaturaCliente) => void;
   canEdit?: boolean;
@@ -28,6 +29,7 @@ export function FaturaTableRow({
   isSelected = false,
   onToggleSelect,
   onLiquidar,
+  onDesfazerLiquidacao,
   onEdit,
   onDelete,
   canEdit = true,
@@ -172,6 +174,7 @@ export function FaturaTableRow({
         <FaturaRowActions
           fatura={fatura}
           onLiquidar={onLiquidar}
+          onDesfazerLiquidacao={onDesfazerLiquidacao}
           onEdit={onEdit}
           onDelete={onDelete}
           canEdit={canEdit}

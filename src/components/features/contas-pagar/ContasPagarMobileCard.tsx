@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { CategoriaDespesa, ContaPagarItem } from "@/types/database";
-import { CheckCircle2, Layers, AlertCircle, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
+import { CheckCircle2, AlertCircle, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
 import {
   CATEGORIA_COLABORADOR_LABELS,
   CATEGORIA_DESPESA_LABELS,
@@ -152,68 +152,52 @@ export function ContasPagarMobileCard({
         </div>
       </div>
 
-      <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
-        <div>
-          {isPago ? (
-            item.lote_pagamento_id ? (
-              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Layers className="h-3 w-3" /> Lote
-              </span>
-            ) : (
-              <span className="text-[11px] text-muted-foreground">Baixa Manual</span>
-            )
-          ) : (
-            <span className="text-[11px] text-muted-foreground">Aguardando Liquidação</span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          {item.tipo === TIPO_CONTA_PAGAR.DESPESA && canEdit && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onEdit?.(item)}
-                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
-                title="Editar Despesa"
-              >
-                <Edit2 className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete?.(item)}
-                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
-                title="Excluir Despesa"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </>
-          )}
-
-          {!isPago && canEdit && (
+      <div className="pt-2 border-t border-border flex items-center justify-end gap-1.5">
+        {item.tipo === TIPO_CONTA_PAGAR.DESPESA && canEdit && (
+          <>
             <Button
-              size="sm"
-              onClick={() => onLiquidar(item)}
-              className="h-8 rounded-[18px] text-xs font-semibold px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1 shadow-2xs"
+              variant="ghost"
+              size="icon"
+              onClick={() => onEdit?.(item)}
+              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
+              title="Editar Despesa"
             >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Liquidar</span>
+              <Edit2 className="h-3.5 w-3.5" />
             </Button>
-          )}
-
-          {(isPago || item.valor_pago > 0) && canEdit && onDesfazerLiquidacao && (
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDesfazerLiquidacao(item)}
-              className="h-8 rounded-[18px] text-xs font-medium px-2.5 text-muted-foreground hover:text-destructive border-border gap-1"
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete?.(item)}
+              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
+              title="Excluir Despesa"
             >
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span>Desfazer</span>
+              <Trash2 className="h-3.5 w-3.5" />
             </Button>
-          )}
-        </div>
+          </>
+        )}
+
+        {!isPago && canEdit && (
+          <Button
+            size="sm"
+            onClick={() => onLiquidar(item)}
+            className="h-8 rounded-[18px] text-xs font-semibold px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1 shadow-2xs"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>Liquidar</span>
+          </Button>
+        )}
+
+        {(isPago || item.valor_pago > 0) && canEdit && onDesfazerLiquidacao && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDesfazerLiquidacao(item)}
+            className="h-8 rounded-[18px] text-xs font-medium px-2.5 text-muted-foreground hover:text-destructive border-border gap-1"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span>Desfazer</span>
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { ContaPagarItem } from "@/types/database";
-import { CheckCircle2, Layers, CreditCard, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
+import { CheckCircle2, CreditCard, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { TableSkeleton } from "@/components/skeletons";
 import { ContasPagarMobileCard } from "./ContasPagarMobileCard";
@@ -239,26 +239,18 @@ export function ContasPagarTable({
                             </Button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5">
-                            {item.lote_pagamento_id ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                                <Layers className="h-3 w-3" /> Lote
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-muted-foreground">Baixa Manual</span>
-                            )}
-                            {canEdit && onDesfazerLiquidacao && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => onDesfazerLiquidacao(item)}
-                                className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                                title="Desfazer Pagamento"
-                              >
-                                <RotateCcw className="h-3.5 w-3.5" />
-                              </Button>
-                            )}
-                          </div>
+                          canEdit &&
+                          onDesfazerLiquidacao && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => onDesfazerLiquidacao(item)}
+                              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                              title="Desfazer Pagamento"
+                            >
+                              <RotateCcw className="h-3.5 w-3.5" />
+                            </Button>
+                          )
                         )}
                       </div>
                     </td>

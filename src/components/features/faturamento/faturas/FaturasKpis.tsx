@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DollarSign,
   CheckCircle2,
@@ -16,9 +17,10 @@ interface FaturasKpisProps {
   };
   mes: number;
   ano: number;
+  isLoading?: boolean;
 }
 
-export function FaturasKpis({ kpis, mes, ano }: FaturasKpisProps) {
+export function FaturasKpis({ kpis, mes, ano, isLoading = false }: FaturasKpisProps) {
   const percentualQuitado =
     kpis.totalFaturado > 0
       ? `${Math.round((kpis.totalRecebido / kpis.totalFaturado) * 100)}% quitado`
@@ -33,12 +35,21 @@ export function FaturasKpis({ kpis, mes, ano }: FaturasKpisProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Total Faturado</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(kpis.totalFaturado)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Mês {mes}/{ano}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-16 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                  {formatCurrency(kpis.totalFaturado)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Mês {mes}/{ano}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -50,12 +61,21 @@ export function FaturasKpis({ kpis, mes, ano }: FaturasKpisProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Recebido / Baixado</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
-              {formatCurrency(kpis.totalRecebido)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {percentualQuitado}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-20 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
+                  {formatCurrency(kpis.totalRecebido)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {percentualQuitado}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -67,10 +87,19 @@ export function FaturasKpis({ kpis, mes, ano }: FaturasKpisProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Saldo a Receber</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(kpis.totalPendente)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">Pendente no período</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-24 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                  {formatCurrency(kpis.totalPendente)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">Pendente no período</p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -80,7 +109,7 @@ export function FaturasKpis({ kpis, mes, ano }: FaturasKpisProps) {
           <div
             className={cn(
               "w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0",
-              kpis.totalVencido > 0
+              !isLoading && kpis.totalVencido > 0
                 ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
                 : "bg-muted/70 border-border text-foreground"
             )}
@@ -89,15 +118,24 @@ export function FaturasKpis({ kpis, mes, ano }: FaturasKpisProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Em Atraso</p>
-            <h2
-              className={cn(
-                "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
-                kpis.totalVencido > 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground"
-              )}
-            >
-              {formatCurrency(kpis.totalVencido)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">Vencidas e não quitadas</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-28 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2
+                  className={cn(
+                    "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
+                    kpis.totalVencido > 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground"
+                  )}
+                >
+                  {formatCurrency(kpis.totalVencido)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">Vencidas e não quitadas</p>
+              </>
+            )}
           </div>
         </div>
       </div>

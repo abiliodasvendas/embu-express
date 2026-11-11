@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { TrendingDown } from "lucide-react";
 import { AgingRecebiveisResultado } from "@/types/database";
@@ -7,13 +8,24 @@ interface AgingRecebiveisCardProps {
   aging?: AgingRecebiveisResultado;
   selectedFaixa: string | null;
   onSelectFaixa: (faixa: string | null) => void;
+  isLoading?: boolean;
 }
+
+const FAIXAS_PADRAO = [
+  { faixa: "A_VENCER", descricao: "No Prazo (A Vencer)" },
+  { faixa: "ATRASO_1_15", descricao: "1 a 15 dias em atraso" },
+  { faixa: "ATRASO_16_30", descricao: "16 a 30 dias em atraso" },
+  { faixa: "ATRASO_MAIOR_30", descricao: "Acima de 30 dias" },
+];
 
 export function AgingRecebiveisCard({
   aging,
   selectedFaixa,
   onSelectFaixa,
+  isLoading = false,
 }: AgingRecebiveisCardProps) {
+  const showSkeleton = isLoading || !aging;
+
   return (
     <div className="rounded-[20px] sm:rounded-[24px] border border-border bg-card p-5 md:p-6 shadow-xs space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
@@ -36,47 +48,70 @@ export function AgingRecebiveisCard({
             <span className="font-medium text-muted-foreground uppercase text-[11px]">
               Capital Retido:
             </span>
-            <span className="font-bold text-foreground">
-              {formatCurrency(aging?.capital_giro_retido_rua || 0)}
-            </span>
+            {showSkeleton ? (
+              <Skeleton className="h-4 w-20 rounded-[6px]" />
+            ) : (
+              <span className="font-bold text-foreground">
+                {formatCurrency(aging.capital_giro_retido_rua || 0)}
+              </span>
+            )}
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {aging?.faixas.map((f) => {
-          const isSelected = selectedFaixa === f.faixa;
+        {showSkeleton
+          ? FAIXAS_PADRAO.map((f) => (
+              <div
+                key={f.faixa}
+                className="text-left p-3.5 rounded-[16px] border border-border bg-card"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    {f.descricao}
+                  </span>
+                  <Skeleton className="h-4 w-14 rounded-[6px]" />
+                </div>
+                <Skeleton className="h-5 w-24 rounded-[6px] my-1" />
+                <div className="text-[10px] text-muted-foreground mt-0.5">
+                  Clique para filtrar
+                </div>
+              </div>
+            ))
+          : aging.faixas.map((f) => {
+              const isSelected = selectedFaixa === f.faixa;
 
-          return (
-            <button
-              key={f.faixa}
-              type="button"
-              onClick={() => onSelectFaixa(isSelected ? null : f.faixa)}
-              className={`text-left p-3.5 rounded-[16px] border transition-all cursor-pointer ${isSelected
-                  ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : "border-border bg-card hover:bg-muted/40"
-                }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-medium text-muted-foreground">
-                  {f.descricao}
-                </span>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] h-4 px-1.5 font-medium border-border bg-muted/60"
+              return (
+                <button
+                  key={f.faixa}
+                  type="button"
+                  onClick={() => onSelectFaixa(isSelected ? null : f.faixa)}
+                  className={`text-left p-3.5 rounded-[16px] border transition-all cursor-pointer ${
+                    isSelected
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border bg-card hover:bg-muted/40"
+                  }`}
                 >
-                  {f.quantidade_faturas} faturas
-                </Badge>
-              </div>
-              <div className="text-base font-bold text-foreground">
-                {formatCurrency(f.valor_total)}
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">
-                {isSelected ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
-              </div>
-            </button>
-          );
-        })}
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-medium text-muted-foreground">
+                      {f.descricao}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] h-4 px-1.5 font-medium border-border bg-muted/60"
+                    >
+                      {f.quantidade_faturas} faturas
+                    </Badge>
+                  </div>
+                  <div className="text-base font-bold text-foreground">
+                    {formatCurrency(f.valor_total)}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
+                    {isSelected ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
+                  </div>
+                </button>
+              );
+            })}
       </div>
     </div>
   );

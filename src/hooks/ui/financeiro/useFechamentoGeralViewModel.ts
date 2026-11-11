@@ -34,6 +34,7 @@ export function useFechamentoGeralViewModel({
   const {
     data: statusGeral = [],
     isLoading: isGlobalLoading,
+    isFetching: isGlobalFetching,
     refetch: refetchGeral,
   } = useFinanceiroGeral(selectedMes, selectedAno);
 
@@ -72,7 +73,7 @@ export function useFechamentoGeralViewModel({
   return {
     collaborators,
     statusGeral,
-    isGlobalLoading,
+    isGlobalLoading: isGlobalLoading || isGlobalFetching,
     refetchGeral,
     estatisticas,
     colaboradoresFiltrados,

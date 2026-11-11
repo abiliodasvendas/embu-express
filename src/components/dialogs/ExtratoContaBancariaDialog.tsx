@@ -1,6 +1,7 @@
 import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Badge } from "@/components/ui/badge";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TableSearchInput } from "@/components/ui/TableSearchInput";
 import {
   useExtratoContaBancariaViewModel,
@@ -137,14 +138,18 @@ export function ExtratoContaBancariaDialog({
               <span>Saldo Anterior</span>
               <Landmark className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
-            <span
-              className={cn(
-                "text-sm sm:text-base font-bold tabular-nums block",
-                resumo.saldo_anterior < 0 ? "text-rose-600" : "text-foreground"
-              )}
-            >
-              {formatCurrency(resumo.saldo_anterior)}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-5 w-24 rounded-[6px] mt-0.5" />
+            ) : (
+              <span
+                className={cn(
+                  "text-sm sm:text-base font-bold tabular-nums block",
+                  resumo.saldo_anterior < 0 ? "text-rose-600" : "text-foreground"
+                )}
+              >
+                {formatCurrency(resumo.saldo_anterior)}
+              </span>
+            )}
           </div>
 
           <div className="p-3.5 rounded-[18px] border border-emerald-500/20 bg-emerald-500/5">
@@ -152,9 +157,13 @@ export function ExtratoContaBancariaDialog({
               <span className="font-medium">Entradas no Mês (+)</span>
               <ArrowDownLeft className="w-3.5 h-3.5" />
             </div>
-            <span className="text-sm sm:text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400 block">
-              + {formatCurrency(resumo.total_entradas)}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-5 w-24 rounded-[6px] mt-0.5" />
+            ) : (
+              <span className="text-sm sm:text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400 block">
+                + {formatCurrency(resumo.total_entradas)}
+              </span>
+            )}
           </div>
 
           <div className="p-3.5 rounded-[18px] border border-rose-500/20 bg-rose-500/5">
@@ -162,9 +171,13 @@ export function ExtratoContaBancariaDialog({
               <span className="font-medium">Saídas no Mês (-)</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
-            <span className="text-sm sm:text-base font-bold tabular-nums text-rose-600 dark:text-rose-400 block">
-              - {formatCurrency(resumo.total_saidas)}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-5 w-24 rounded-[6px] mt-0.5" />
+            ) : (
+              <span className="text-sm sm:text-base font-bold tabular-nums text-rose-600 dark:text-rose-400 block">
+                - {formatCurrency(resumo.total_saidas)}
+              </span>
+            )}
           </div>
 
           <div className="p-3.5 rounded-[18px] border border-border bg-card shadow-2xs">
@@ -172,16 +185,20 @@ export function ExtratoContaBancariaDialog({
               <span className="font-medium">Saldo Final do Período</span>
               <Wallet className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
-            <span
-              className={cn(
-                "text-sm sm:text-base font-bold tabular-nums block",
-                resumo.saldo_final < 0
-                  ? "text-rose-600 dark:text-rose-400"
-                  : "text-foreground"
-              )}
-            >
-              {formatCurrency(resumo.saldo_final)}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-5 w-24 rounded-[6px] mt-0.5" />
+            ) : (
+              <span
+                className={cn(
+                  "text-sm sm:text-base font-bold tabular-nums block",
+                  resumo.saldo_final < 0
+                    ? "text-rose-600 dark:text-rose-400"
+                    : "text-foreground"
+                )}
+              >
+                {formatCurrency(resumo.saldo_final)}
+              </span>
+            )}
           </div>
         </div>
 

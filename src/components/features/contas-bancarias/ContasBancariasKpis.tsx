@@ -1,4 +1,5 @@
 import { formatCurrency } from "@/utils/formatters/currency";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Landmark, TrendingUp, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,9 +15,15 @@ interface ContasBancariasKpisProps {
   };
   mes: number;
   ano: number;
+  isLoading?: boolean;
 }
 
-export function ContasBancariasKpis({ kpis, mes, ano }: ContasBancariasKpisProps) {
+export function ContasBancariasKpis({
+  kpis,
+  mes,
+  ano,
+  isLoading = false,
+}: ContasBancariasKpisProps) {
   const isSaldoNegativo = kpis.saldoAtual < 0;
 
   return (
@@ -28,17 +35,26 @@ export function ContasBancariasKpis({ kpis, mes, ano }: ContasBancariasKpisProps
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Saldo Realizado</p>
-            <h2
-              className={cn(
-                "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
-                isSaldoNegativo ? "text-rose-600 dark:text-rose-400" : "text-foreground"
-              )}
-            >
-              {formatCurrency(kpis.saldoAtual)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {kpis.totalContas} {kpis.totalContas === 1 ? "conta ativa" : "contas ativas"}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-20 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2
+                  className={cn(
+                    "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
+                    isSaldoNegativo ? "text-rose-600 dark:text-rose-400" : "text-foreground"
+                  )}
+                >
+                  {formatCurrency(kpis.saldoAtual)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {kpis.totalContas} {kpis.totalContas === 1 ? "conta ativa" : "contas ativas"}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -50,12 +66,21 @@ export function ContasBancariasKpis({ kpis, mes, ano }: ContasBancariasKpisProps
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Saldo Projetado</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(kpis.saldoProjetado)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Competência {mes}/{ano}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-24 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                  {formatCurrency(kpis.saldoProjetado)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Competência {mes}/{ano}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -67,12 +92,21 @@ export function ContasBancariasKpis({ kpis, mes, ano }: ContasBancariasKpisProps
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Entradas no Mês</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
-              {formatCurrency(kpis.entradasRealizadas)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1 truncate">
-              Previsto: {formatCurrency(kpis.entradasPrevistas)}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-28 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
+                  {formatCurrency(kpis.entradasRealizadas)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1 truncate">
+                  Previsto: {formatCurrency(kpis.entradasPrevistas)}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -84,12 +118,21 @@ export function ContasBancariasKpis({ kpis, mes, ano }: ContasBancariasKpisProps
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Saídas no Mês</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(kpis.saidasRealizadas)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1 truncate">
-              Previsto: {formatCurrency(kpis.saidasPrevistas)}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-28 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                  {formatCurrency(kpis.saidasRealizadas)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1 truncate">
+                  Previsto: {formatCurrency(kpis.saidasPrevistas)}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

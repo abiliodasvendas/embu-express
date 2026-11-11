@@ -40,6 +40,7 @@ export function ContasPagarGeralTab() {
         ano={ano}
         selectedFiltroPrazo={filtroPrazo}
         onSelectFiltroPrazo={setFiltroPrazo}
+        isLoading={isLoading || isFetching}
       />
 
       <ContasPagarToolbar
@@ -63,7 +64,7 @@ export function ContasPagarGeralTab() {
 
       <ContasPagarTable
         itens={itens}
-        isLoading={isLoading}
+        isLoading={isLoading || isFetching}
         onLiquidar={handleLiquidarItem}
         onDesfazerLiquidacao={handleDesfazerLiquidacaoItem}
         onEdit={handleEditItem}

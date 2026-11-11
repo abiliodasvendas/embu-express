@@ -1,6 +1,7 @@
 import { Wallet, Lock, ArrowUpRight, ArrowDownRight, Calendar, Edit2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { cn } from "@/lib/utils";
 import type { FluxoCaixaResponse } from "@/services/api/fluxo-caixa.api";
@@ -14,6 +15,7 @@ interface FluxoCaixaKpiCardsProps {
   onSalvarSaldoInicial: () => void;
   diaSalariosStr: string;
   diaConveniosStr: string;
+  isLoading?: boolean;
 }
 
 export function FluxoCaixaKpiCards({
@@ -24,7 +26,7 @@ export function FluxoCaixaKpiCards({
   isSavingSaldo,
   onSalvarSaldoInicial,
   diaSalariosStr,
-  diaConveniosStr,
+  isLoading = false,
 }: FluxoCaixaKpiCardsProps) {
   return (
     <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex gap-3 overflow-x-auto [scrollbar-width:none] pb-1 sm:grid sm:grid-cols-2 lg:grid-cols-4">
@@ -36,7 +38,7 @@ export function FluxoCaixaKpiCards({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium text-muted-foreground truncate">Saldo Inicial (Dia 01)</p>
-              {!isEditingSaldo && (
+              {!isEditingSaldo && !isLoading && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -50,7 +52,9 @@ export function FluxoCaixaKpiCards({
                 </Button>
               )}
             </div>
-            {isEditingSaldo ? (
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : isEditingSaldo ? (
               <div className="flex items-center gap-2 mt-1">
                 <Input
                   className="h-8 rounded-[12px] text-xs font-semibold bg-background"
@@ -86,9 +90,13 @@ export function FluxoCaixaKpiCards({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Saldo Retido p/ Convênios</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(fluxo.saldo_retido_convenios)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {formatCurrency(fluxo.saldo_retido_convenios)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1 truncate">
               {`Descontado dia ${diaSalariosStr} • Programado por parceiro`}
             </p>
@@ -103,16 +111,23 @@ export function FluxoCaixaKpiCards({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Entradas vs Saídas</p>
-            <div className="mt-0.5">
-              <div className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 truncate">
-                <ArrowUpRight className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="truncate">{formatCurrency(fluxo.total_entradas_projetadas)}</span>
+            {isLoading ? (
+              <div className="space-y-1.5 mt-1">
+                <Skeleton className="h-4 w-24 rounded-[6px]" />
+                <Skeleton className="h-4 w-24 rounded-[6px]" />
               </div>
-              <div className="text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1 mt-0.5 truncate">
-                <ArrowDownRight className="h-3 w-3 text-rose-600 dark:text-rose-400 shrink-0" />
-                <span className="truncate">{formatCurrency(fluxo.total_saidas_projetadas)}</span>
+            ) : (
+              <div className="mt-0.5">
+                <div className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 truncate">
+                  <ArrowUpRight className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="truncate">{formatCurrency(fluxo.total_entradas_projetadas)}</span>
+                </div>
+                <div className="text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1 mt-0.5 truncate">
+                  <ArrowDownRight className="h-3 w-3 text-rose-600 dark:text-rose-400 shrink-0" />
+                  <span className="truncate">{formatCurrency(fluxo.total_saidas_projetadas)}</span>
+                </div>
               </div>
-            </div>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1 truncate">
               Projeção total do período
             </p>
@@ -125,25 +140,29 @@ export function FluxoCaixaKpiCards({
           <div
             className={cn(
               "w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0",
-              fluxo.saldo_final_projetado >= 0
-                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
-                : "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400",
+              !isLoading && fluxo.saldo_final_projetado < 0
+                ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
+                : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400",
             )}
           >
             <Calendar className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Saldo Projetado (Fim do Mês)</p>
-            <h2
-              className={cn(
-                "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
-                fluxo.saldo_final_projetado >= 0
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-rose-600 dark:text-rose-400",
-              )}
-            >
-              {formatCurrency(fluxo.saldo_final_projetado)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2
+                className={cn(
+                  "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
+                  fluxo.saldo_final_projetado >= 0
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-rose-600 dark:text-rose-400",
+                )}
+              >
+                {formatCurrency(fluxo.saldo_final_projetado)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1 truncate">
               Estimativa de fechamento
             </p>

@@ -28,9 +28,9 @@ const formatarMoeda = (valor: number) => {
 
 export function ConveniosRelatoriosTab({ mes, ano }: ConveniosRelatoriosTabProps) {
   const navigate = useNavigate();
-  const { data: resumo, isLoading } = useResumoGeralConvenios(mes, ano);
+  const { data: resumo, isLoading, isFetching } = useResumoGeralConvenios(mes, ano);
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="space-y-6">
         <KpiGridSkeleton count={4} cols={4} />

@@ -1,5 +1,5 @@
 import { Wallet, CheckCircle2 } from "lucide-react";
-import { KpiGridSkeleton } from "@/components/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface FechamentoGeralKpisProps {
   estatisticas: {
@@ -14,10 +14,6 @@ export function FechamentoGeralKpis({
   estatisticas,
   isLoading,
 }: FechamentoGeralKpisProps) {
-  if (isLoading && !estatisticas.total) {
-    return <KpiGridSkeleton count={2} cols={2} />;
-  }
-
   const percentualAdiantamento =
     estatisticas.total > 0
       ? `${Math.round((estatisticas.adiantamentosConfirmados / estatisticas.total) * 100)}% confirmados`
@@ -39,15 +35,24 @@ export function FechamentoGeralKpis({
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Adiantamentos Pagos
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {estatisticas.adiantamentosConfirmados}{" "}
-              <span className="text-muted-foreground text-sm font-normal">
-                / {estatisticas.total}
-              </span>
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {percentualAdiantamento}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-24 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-28 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                  {estatisticas.adiantamentosConfirmados}{" "}
+                  <span className="text-muted-foreground text-sm font-normal">
+                    / {estatisticas.total}
+                  </span>
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {percentualAdiantamento}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -61,15 +66,24 @@ export function FechamentoGeralKpis({
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Fechamento Mensal Pago
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {estatisticas.pagamentosConcluidos}{" "}
-              <span className="text-muted-foreground text-sm font-normal">
-                / {estatisticas.total}
-              </span>
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {percentualFechamento}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-24 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-28 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                  {estatisticas.pagamentosConcluidos}{" "}
+                  <span className="text-muted-foreground text-sm font-normal">
+                    / {estatisticas.total}
+                  </span>
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {percentualFechamento}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

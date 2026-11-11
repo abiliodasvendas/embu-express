@@ -31,7 +31,13 @@ export function MovimentacoesAvulsasTab({
 
   return (
     <div className="space-y-6">
-      <AvulsasKpis kpis={vm.kpisAvulsas} mes={vm.mes} ano={vm.ano} modo={modo} />
+      <AvulsasKpis
+        kpis={vm.kpisAvulsas}
+        mes={vm.mes}
+        ano={vm.ano}
+        modo={modo}
+        isLoading={vm.isLoadingMovimentacoes || vm.isFetchingMovimentacoes}
+      />
 
       <AvulsasToolbar
         searchMovimentacao={vm.searchMovimentacao}

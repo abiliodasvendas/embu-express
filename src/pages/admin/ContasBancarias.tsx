@@ -27,6 +27,7 @@ export default function ContasBancarias() {
     contasFiltradas,
     kpis,
     isLoading,
+    isFetching,
     isDeleting,
     canEdit,
     handleNovaConta,
@@ -46,7 +47,12 @@ export default function ContasBancarias() {
     <div className="space-y-6 pb-24">
       <ContasBancariasHeader />
 
-      <ContasBancariasKpis kpis={kpis} mes={mes} ano={ano} />
+      <ContasBancariasKpis
+        kpis={kpis}
+        mes={mes}
+        ano={ano}
+        isLoading={isLoading || isFetching}
+      />
 
       <ContasBancariasToolbar
         busca={busca}

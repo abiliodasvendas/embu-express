@@ -69,6 +69,7 @@ export function FluxoCaixaTab({ mes, ano }: FluxoCaixaTabProps) {
         onSalvarSaldoInicial={handleSalvarSaldoInicial}
         diaSalariosStr={diaSalariosStr}
         diaConveniosStr={diaConveniosStr}
+        isLoading={isFetching}
       />
 
       <FluxoCaixaMarcosSection

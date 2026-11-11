@@ -1,4 +1,5 @@
 import { LockOverlay } from "@/components/common/LockOverlay";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAnimatedNumber } from "@/hooks/ui/useAnimatedNumber";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
@@ -18,6 +19,7 @@ interface KPICardProps {
   restricted?: boolean;
   onClick?: () => void;
   format?: "currency" | "number";
+  isLoading?: boolean;
 }
 
 export function KPICard({
@@ -34,6 +36,7 @@ export function KPICard({
   restricted,
   onClick,
   format = "currency",
+  isLoading = false,
 }: KPICardProps) {
   const isReactNode = React.isValidElement(value);
   
@@ -90,7 +93,7 @@ export function KPICard({
           {title}
         </p>
         <div className="text-base sm:text-lg font-bold text-foreground leading-tight">
-          {renderValue()}
+          {isLoading ? <Skeleton className="h-6 w-24 rounded-[6px] mt-0.5" /> : renderValue()}
         </div>
         
         {(count !== undefined || countText) && (
@@ -98,7 +101,9 @@ export function KPICard({
             "text-[10px] font-medium mt-0.5",
             countVisible ? "text-muted-foreground" : "text-muted-foreground blur-xs select-none opacity-60"
           )}>
-            {countText ? countText : (
+            {isLoading ? (
+              <Skeleton className="h-3 w-16 rounded-[4px] mt-1" />
+            ) : countText ? countText : (
               <>
                 {Math.round(animatedCount)}{" "}
                 {Math.round(animatedCount) === 1 ? countLabel : `${countLabel}s`}

@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { ContasPagarKpis } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Receipt, CheckCircle2, Clock, AlertCircle, Calendar } from "lucide-react";
 
 interface ContasPagarKpiCardsProps {
@@ -10,6 +11,7 @@ interface ContasPagarKpiCardsProps {
   ano: number;
   selectedFiltroPrazo: string | null;
   onSelectFiltroPrazo: (filtro: string | null) => void;
+  isLoading?: boolean;
 }
 
 export function ContasPagarKpiCards({
@@ -18,6 +20,7 @@ export function ContasPagarKpiCards({
   ano,
   selectedFiltroPrazo,
   onSelectFiltroPrazo,
+  isLoading = false,
 }: ContasPagarKpiCardsProps) {
   const totalMes = kpis?.total_a_pagar_mes || 0;
   const totalPago = kpis?.total_pago_mes || 0;
@@ -40,12 +43,21 @@ export function ContasPagarKpiCards({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground">Total Previsto</p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-                {formatCurrency(totalGeral > 0 ? totalGeral : totalMes)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Mês {mes}/{ano}
-              </p>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-16 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                    {formatCurrency(totalGeral > 0 ? totalGeral : totalMes)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Mês {mes}/{ano}
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -57,10 +69,19 @@ export function ContasPagarKpiCards({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground">Pago / Quitado</p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
-                {formatCurrency(totalPago)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1">{percentualPago}</p>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-20 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
+                    {formatCurrency(totalPago)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1">{percentualPago}</p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -72,10 +93,19 @@ export function ContasPagarKpiCards({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground">Saldo a Pagar</p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-                {formatCurrency(totalMes)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1">Pendente no período</p>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-24 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                    {formatCurrency(totalMes)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1">Pendente no período</p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -85,7 +115,7 @@ export function ContasPagarKpiCards({
             <div
               className={cn(
                 "w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0",
-                totalAtrasadas > 0
+                !isLoading && totalAtrasadas > 0
                   ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
                   : "bg-muted/70 border-border text-foreground"
               )}
@@ -94,15 +124,24 @@ export function ContasPagarKpiCards({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground">Em Atraso</p>
-              <h2
-                className={cn(
-                  "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
-                  totalAtrasadas > 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground"
-                )}
-              >
-                {formatCurrency(totalAtrasadas)}
-              </h2>
-              <p className="text-[11px] text-muted-foreground mt-1">Vencidas e não quitadas</p>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                  <Skeleton className="h-3.5 w-28 rounded-[6px] mt-1.5" />
+                </>
+              ) : (
+                <>
+                  <h2
+                    className={cn(
+                      "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
+                      totalAtrasadas > 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground"
+                    )}
+                  >
+                    {formatCurrency(totalAtrasadas)}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground mt-1">Vencidas e não quitadas</p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -129,9 +168,13 @@ export function ContasPagarKpiCards({
               <span className="font-medium text-muted-foreground uppercase text-[11px]">
                 Total Pendente:
               </span>
-              <span className="font-bold text-foreground">
-                {formatCurrency(totalMes)}
-              </span>
+              {isLoading ? (
+                <Skeleton className="h-4 w-20 rounded-[6px]" />
+              ) : (
+                <span className="font-bold text-foreground">
+                  {formatCurrency(totalMes)}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -139,9 +182,10 @@ export function ContasPagarKpiCards({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button
             type="button"
+            disabled={isLoading}
             onClick={() => onSelectFiltroPrazo(selectedFiltroPrazo === "HOJE" ? null : "HOJE")}
             className={cn(
-              "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer",
+              "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer disabled:cursor-default",
               selectedFiltroPrazo === "HOJE"
                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                 : "border-border bg-card hover:bg-muted/40"
@@ -153,9 +197,13 @@ export function ContasPagarKpiCards({
                 Hoje
               </Badge>
             </div>
-            <div className="text-base font-bold text-foreground">
-              {formatCurrency(totalHoje)}
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-5 w-24 rounded-[6px] my-1" />
+            ) : (
+              <div className="text-base font-bold text-foreground">
+                {formatCurrency(totalHoje)}
+              </div>
+            )}
             <div className="text-[10px] text-muted-foreground mt-0.5">
               {selectedFiltroPrazo === "HOJE" ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
             </div>
@@ -163,9 +211,10 @@ export function ContasPagarKpiCards({
 
           <button
             type="button"
+            disabled={isLoading}
             onClick={() => onSelectFiltroPrazo(selectedFiltroPrazo === "SEMANA" ? null : "SEMANA")}
             className={cn(
-              "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer",
+              "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer disabled:cursor-default",
               selectedFiltroPrazo === "SEMANA"
                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                 : "border-border bg-card hover:bg-muted/40"
@@ -177,9 +226,13 @@ export function ContasPagarKpiCards({
                 Semana
               </Badge>
             </div>
-            <div className="text-base font-bold text-foreground">
-              {formatCurrency(totalSemana)}
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-5 w-24 rounded-[6px] my-1" />
+            ) : (
+              <div className="text-base font-bold text-foreground">
+                {formatCurrency(totalSemana)}
+              </div>
+            )}
             <div className="text-[10px] text-muted-foreground mt-0.5">
               {selectedFiltroPrazo === "SEMANA" ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
             </div>
@@ -187,9 +240,10 @@ export function ContasPagarKpiCards({
 
           <button
             type="button"
+            disabled={isLoading}
             onClick={() => onSelectFiltroPrazo(selectedFiltroPrazo === "PROXIMAS" ? null : "PROXIMAS")}
             className={cn(
-              "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer",
+              "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer disabled:cursor-default",
               selectedFiltroPrazo === "PROXIMAS"
                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                 : "border-border bg-card hover:bg-muted/40"
@@ -201,9 +255,13 @@ export function ContasPagarKpiCards({
                 Futuro
               </Badge>
             </div>
-            <div className="text-base font-bold text-foreground">
-              {formatCurrency(totalProximas)}
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-5 w-24 rounded-[6px] my-1" />
+            ) : (
+              <div className="text-base font-bold text-foreground">
+                {formatCurrency(totalProximas)}
+              </div>
+            )}
             <div className="text-[10px] text-muted-foreground mt-0.5">
               {selectedFiltroPrazo === "PROXIMAS" ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
             </div>
@@ -211,9 +269,10 @@ export function ContasPagarKpiCards({
 
           <button
             type="button"
+            disabled={isLoading}
             onClick={() => onSelectFiltroPrazo(selectedFiltroPrazo === "ATRASADAS" ? null : "ATRASADAS")}
             className={cn(
-              "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer",
+              "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer disabled:cursor-default",
               selectedFiltroPrazo === "ATRASADAS"
                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                 : "border-border bg-card hover:bg-muted/40"
@@ -225,9 +284,13 @@ export function ContasPagarKpiCards({
                 Atrasadas
               </Badge>
             </div>
-            <div className={cn("text-base font-bold", totalAtrasadas > 0 ? "text-rose-600" : "text-foreground")}>
-              {formatCurrency(totalAtrasadas)}
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-5 w-24 rounded-[6px] my-1" />
+            ) : (
+              <div className={cn("text-base font-bold", totalAtrasadas > 0 ? "text-rose-600" : "text-foreground")}>
+                {formatCurrency(totalAtrasadas)}
+              </div>
+            )}
             <div className="text-[10px] text-muted-foreground mt-0.5">
               {selectedFiltroPrazo === "ATRASADAS" ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
             </div>

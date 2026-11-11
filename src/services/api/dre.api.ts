@@ -45,7 +45,7 @@ export const dreApi = {
     mes: number,
     ano: number,
     empresaId?: number,
-    tipoVisao: "realizado" | "projetado" = "projetado"
+    tipoVisao: "realizado" | "projetado" = "realizado"
   ): Promise<DreConsolidado> =>
     apiClient
       .get("/dre", {

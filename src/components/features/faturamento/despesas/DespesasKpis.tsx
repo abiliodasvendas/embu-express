@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Receipt, CheckCircle2, AlertCircle, Layers } from "lucide-react";
 
 interface DespesasKpisProps {
@@ -12,9 +13,10 @@ interface DespesasKpisProps {
   };
   mes: number;
   ano: number;
+  isLoading?: boolean;
 }
 
-export function DespesasKpis({ kpis, mes, ano }: DespesasKpisProps) {
+export function DespesasKpis({ kpis, mes, ano, isLoading = false }: DespesasKpisProps) {
   const percentualPago =
     kpis.totalPrevisto > 0
       ? `${Math.round((kpis.totalPago / kpis.totalPrevisto) * 100)}% quitado`
@@ -29,12 +31,21 @@ export function DespesasKpis({ kpis, mes, ano }: DespesasKpisProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Total Previsto</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(kpis.totalPrevisto)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Mês {mes}/{ano}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-16 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                  {formatCurrency(kpis.totalPrevisto)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Mês {mes}/{ano}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -46,10 +57,19 @@ export function DespesasKpis({ kpis, mes, ano }: DespesasKpisProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Pago / Liquidado</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
-              {formatCurrency(kpis.totalPago)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground mt-1">{percentualPago}</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-20 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
+                  {formatCurrency(kpis.totalPago)}
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-1">{percentualPago}</p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -59,7 +79,7 @@ export function DespesasKpis({ kpis, mes, ano }: DespesasKpisProps) {
           <div
             className={cn(
               "w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0",
-              kpis.totalVencido > 0
+              !isLoading && kpis.totalVencido > 0
                 ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
                 : "bg-muted/70 border-border text-foreground"
             )}
@@ -68,14 +88,18 @@ export function DespesasKpis({ kpis, mes, ano }: DespesasKpisProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Em Atraso</p>
-            <h2
-              className={cn(
-                "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
-                kpis.totalVencido > 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground"
-              )}
-            >
-              {formatCurrency(kpis.totalVencido)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2
+                className={cn(
+                  "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
+                  kpis.totalVencido > 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground"
+                )}
+              >
+                {formatCurrency(kpis.totalVencido)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1">Vencidas e pendentes</p>
           </div>
         </div>
@@ -88,9 +112,13 @@ export function DespesasKpis({ kpis, mes, ano }: DespesasKpisProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Compromissos Fixos</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(kpis.totalRecorrentes)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {formatCurrency(kpis.totalRecorrentes)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1">Despesas fixas recorrentes</p>
           </div>
         </div>

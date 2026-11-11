@@ -39,7 +39,12 @@ export function useExtratoContaBancariaViewModel({
     }
   }, [open, mesInicial, anoInicial]);
 
-  const { data: extrato, isLoading } = useExtratoContaBancaria(contaId, mes, ano, open);
+  const { data: extrato, isLoading, isFetching } = useExtratoContaBancaria(
+    contaId,
+    mes,
+    ano,
+    open
+  );
 
   const contaInfo = extrato?.conta;
   const nomeBanco = contaInfo?.banco_nome || bancoNome || "Conta Bancária";
@@ -93,6 +98,6 @@ export function useExtratoContaBancariaViewModel({
     resumo,
     itensFiltrados,
     anosDisponiveis,
-    isLoading,
+    isLoading: isLoading || isFetching,
   };
 }

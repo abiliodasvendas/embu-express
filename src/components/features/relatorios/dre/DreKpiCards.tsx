@@ -1,14 +1,16 @@
 import { DollarSign, TrendingUp, Wrench, Percent } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DreConsolidado } from "@/services/api/dre.api";
 
 interface DreKpiCardsProps {
   dre: DreConsolidado;
   modoVisao: "realizado" | "projetado";
+  isLoading?: boolean;
 }
 
-export function DreKpiCards({ dre, modoVisao }: DreKpiCardsProps) {
+export function DreKpiCards({ dre, modoVisao, isLoading = false }: DreKpiCardsProps) {
   const isPositivo = (dre.lucro_liquido || 0) >= 0;
 
   const formatarPercentual = (valor: number) => {
@@ -24,9 +26,13 @@ export function DreKpiCards({ dre, modoVisao }: DreKpiCardsProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Total Faturado</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(dre.faturamento_bruto)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {formatCurrency(dre.faturamento_bruto)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1 truncate">
               {modoVisao === "realizado" ? "Medições & Faturas Efetivas" : "Projeção Contratual Plena"}
             </p>
@@ -41,9 +47,13 @@ export function DreKpiCards({ dre, modoVisao }: DreKpiCardsProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Custo de Pessoal</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(dre.custos_diretos.custo_pessoal_folha)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {formatCurrency(dre.custos_diretos.custo_pessoal_folha)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1 truncate font-medium">
               {modoVisao === "realizado" ? "Folha Liquidada & Vales Pagos" : "Estimativa da Folha (Teto Aberto)"}
             </p>
@@ -58,9 +68,13 @@ export function DreKpiCards({ dre, modoVisao }: DreKpiCardsProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-muted-foreground truncate">Frota Própria</p>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(dre.custos_diretos.manutencao_frota_propria)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {formatCurrency(dre.custos_diretos.manutencao_frota_propria)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1 truncate">
               {modoVisao === "realizado" ? "Manutenção e Combustível Liquidado" : "Manutenção e Combustível Próprio"}
             </p>
@@ -73,9 +87,9 @@ export function DreKpiCards({ dre, modoVisao }: DreKpiCardsProps) {
           <div
             className={cn(
               "w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0",
-              isPositivo
-                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
-                : "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
+              !isLoading && !isPositivo
+                ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
+                : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
             )}
           >
             <Percent className="h-5 w-5" />
@@ -86,26 +100,35 @@ export function DreKpiCards({ dre, modoVisao }: DreKpiCardsProps) {
                 ? (isPositivo ? "Lucro Líquido Real" : "Prejuízo Real no Período")
                 : (isPositivo ? "Lucro Líquido Projetado" : "Prejuízo Projetado")}
             </p>
-            <h2
-              className={cn(
-                "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
-                isPositivo
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-rose-600 dark:text-rose-400"
-              )}
-            >
-              {formatCurrency(dre.lucro_liquido)}
-            </h2>
-            <p
-              className={cn(
-                "text-[11px] font-semibold mt-1 truncate",
-                isPositivo
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-rose-600 dark:text-rose-400"
-              )}
-            >
-              Margem Líquida: {formatarPercentual(dre.margem_liquida_percentual)}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-28 rounded-[8px] mt-1" />
+                <Skeleton className="h-3.5 w-24 rounded-[6px] mt-1.5" />
+              </>
+            ) : (
+              <>
+                <h2
+                  className={cn(
+                    "text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate",
+                    isPositivo
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400"
+                  )}
+                >
+                  {formatCurrency(dre.lucro_liquido)}
+                </h2>
+                <p
+                  className={cn(
+                    "text-[11px] font-semibold mt-1 truncate",
+                    isPositivo
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400"
+                  )}
+                >
+                  Margem Líquida: {formatarPercentual(dre.margem_liquida_percentual)}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

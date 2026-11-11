@@ -60,11 +60,15 @@ export function useConvenioDetailsViewModel() {
   const { data: convenio, isLoading: isConvenioLoading } = useConvenio(id || "");
   const isQuinzenal = convenio?.periodicidade === PERIODICIDADE_FATURAMENTO.QUINZENAL;
 
-  const { data: lancamentos = [], isLoading: isLancamentosLoading } =
-    useConvenioLancamentos(id || "", ano, mes);
+  const {
+    data: lancamentos = [],
+    isLoading: isLancamentosLoading,
+    isFetching: isLancamentosFetching,
+  } = useConvenioLancamentos(id || "", ano, mes);
   const {
     data: auditoria,
     isLoading: isAuditoriaLoading,
+    isFetching: isAuditoriaFetching,
     refetch: refetchAuditoria,
   } = useConvenioAuditoria(
     id || "",
@@ -303,9 +307,9 @@ export function useConvenioDetailsViewModel() {
     convenio,
     isConvenioLoading,
     lancamentos,
-    isLancamentosLoading,
+    isLancamentosLoading: isLancamentosLoading || isLancamentosFetching,
     auditoria,
-    isAuditoriaLoading,
+    isAuditoriaLoading: isAuditoriaLoading || isAuditoriaFetching,
     canEdit,
     canLiquidar,
     currentDate,

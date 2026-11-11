@@ -1,4 +1,5 @@
 import { PONTO_STATUS_UI_CONFIG } from "@/config/ponto-ui";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ManagementStatus } from "@/types/enums";
 import { cn } from "@/lib/utils";
 
@@ -7,13 +8,15 @@ interface TimeTrackingKpiFiltersProps {
   counts: Record<string, number>;
   onFilterClick: (status: ManagementStatus | "ALL") => void;
   className?: string;
+  isLoading?: boolean;
 }
 
 export function TimeTrackingKpiFilters({
   activeFilter,
   counts,
   onFilterClick,
-  className
+  className,
+  isLoading = false,
 }: TimeTrackingKpiFiltersProps) {
   const statuses = [
     ManagementStatus.ALL,
@@ -72,14 +75,18 @@ export function TimeTrackingKpiFilters({
               {config.label}
             </span>
 
-            <span
-              className={cn(
-                "text-lg sm:text-xl font-bold tabular-nums transition-colors",
-                isActive ? config.color : "text-foreground"
-              )}
-            >
-              {String(count).padStart(2, "0")}
-            </span>
+            {isLoading ? (
+              <Skeleton className="h-6 w-8 rounded-[6px] mt-0.5" />
+            ) : (
+              <span
+                className={cn(
+                  "text-lg sm:text-xl font-bold tabular-nums transition-colors",
+                  isActive ? config.color : "text-foreground"
+                )}
+              >
+                {String(count).padStart(2, "0")}
+              </span>
+            )}
           </button>
         );
       })}

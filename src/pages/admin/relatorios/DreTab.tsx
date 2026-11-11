@@ -16,11 +16,16 @@ interface DreTabProps {
 export function DreTab({ mes, ano }: DreTabProps) {
   const { openDespesaFormDialog } = useLayout();
   const [selectedEmpresaId, setSelectedEmpresaId] = useState<string>("todas");
-  const [modoVisao, setModoVisao] = useState<"realizado" | "projetado">("projetado");
+  const [modoVisao, setModoVisao] = useState<"realizado" | "projetado">("realizado");
   const empresaIdNumber = selectedEmpresaId === "todas" ? undefined : Number(selectedEmpresaId);
 
   const { data: empresas = [] } = useEmpresas();
-  const { data: dre, isLoading, isError, refetch } = useDRE(mes, ano, empresaIdNumber, modoVisao);
+  const { data: dre, isLoading, isFetching, isError, refetch } = useDRE(
+    mes,
+    ano,
+    empresaIdNumber,
+    modoVisao
+  );
 
   if (isLoading) {
     return <DreSkeleton />;
@@ -49,7 +54,7 @@ export function DreTab({ mes, ano }: DreTabProps) {
         onNovaDespesa={() => openDespesaFormDialog({ onSuccess: () => refetch() })}
       />
 
-      <DreKpiCards dre={dre} modoVisao={modoVisao} />
+      <DreKpiCards dre={dre} modoVisao={modoVisao} isLoading={isFetching} />
 
       <DreDemonstrativoCorpo
         dre={dre}

@@ -12,7 +12,7 @@ export function ConveniosParceirosTab({ vm }: ConveniosParceirosTabProps) {
     <div className="space-y-6">
       <ConveniosKpis
         totais={vm.totais}
-        isLoading={vm.isInitialResumoLoading}
+        isLoading={vm.isInitialResumoLoading || vm.isResumoFetching}
       />
 
       <ConveniosToolbar

@@ -1,6 +1,6 @@
 import { Users, Banknote, TrendingDown, Percent } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { KpiGridSkeleton } from "@/components/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TotaisRetaguarda {
   total_reservas: number;
@@ -21,10 +21,6 @@ export function RetaguardaKpiCards({
   totalItens,
   isLoading,
 }: RetaguardaKpiCardsProps) {
-  if (isLoading && totalItens === 0) {
-    return <KpiGridSkeleton count={4} cols={4} />;
-  }
-
   return (
     <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex gap-3 overflow-x-auto [scrollbar-width:none] pb-1 sm:grid sm:grid-cols-4">
       <div className="min-w-[200px] sm:min-w-0 flex-1 rounded-[20px] sm:rounded-[24px] border border-border bg-card p-4 sm:p-5 shadow-xs">
@@ -36,9 +32,13 @@ export function RetaguardaKpiCards({
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Efetivo da Reserva
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {totalItens}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {totalItens}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1">Colaboradores internos</p>
           </div>
         </div>
@@ -53,9 +53,13 @@ export function RetaguardaKpiCards({
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Custo da Equipe
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(totais.custo_total_retaguarda)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-8 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {formatCurrency(totais.custo_total_retaguarda)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1">Folha base mensal</p>
           </div>
         </div>
@@ -70,9 +74,13 @@ export function RetaguardaKpiCards({
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Prejuízo Ociosidade
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {formatCurrency(totais.prejuizo_total_ociosidade)}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-8 w-28 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {formatCurrency(totais.prejuizo_total_ociosidade)}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1">Dias sem alocação em cliente</p>
           </div>
         </div>
@@ -87,9 +95,13 @@ export function RetaguardaKpiCards({
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Taxa de Eficiência
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
-              {totais.custo_total_retaguarda > 0 ? `${totais.taxaEficiencia}%` : "0%"}
-            </h2>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16 rounded-[8px] mt-1" />
+            ) : (
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-0.5 truncate">
+                {totais.custo_total_retaguarda > 0 ? `${totais.taxaEficiencia}%` : "0%"}
+              </h2>
+            )}
             <p className="text-[11px] text-muted-foreground mt-1">Aproveitamento operacional</p>
           </div>
         </div>

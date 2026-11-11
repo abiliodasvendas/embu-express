@@ -91,7 +91,15 @@ export function useFaturasTabViewModel({
     refetch: refetchFaturas,
   } = useFaturas(filtrosFatura);
 
-  const { data: aging } = useAgingRecebiveis(mes, ano);
+  const {
+    data: aging,
+    isLoading: isLoadingAging,
+    isFetching: isFetchingAging,
+  } = useAgingRecebiveis(
+    mes,
+    ano,
+    empresaFaturaFiltro !== "todas" ? Number(empresaFaturaFiltro) : undefined
+  );
 
   useEffect(() => {
     setSelectedIds(new Set());
@@ -340,6 +348,8 @@ export function useFaturasTabViewModel({
     handleSortFaturas,
     isLoadingFaturas,
     isFetchingFaturas,
+    isLoadingAging,
+    isFetchingAging,
     selectedIds,
     isAllSelected,
     isSomeSelected,

@@ -5,7 +5,7 @@ export function useDRE(
   mes: number,
   ano: number,
   empresaId?: number,
-  tipoVisao: "realizado" | "projetado" = "projetado"
+  tipoVisao: "realizado" | "projetado" = "realizado"
 ) {
   return useQuery<DreConsolidado>({
     queryKey: ["dre", mes, ano, empresaId, tipoVisao],

@@ -62,6 +62,7 @@ export default function TimeTracking() {
                     counts={vm.dynamicKpiCounts}
                     onFilterClick={vm.handleKpiClick}
                     className="pt-2"
+                    isLoading={vm.isInitialLoading || vm.isFetching}
                 />
 
                 <div className="space-y-4 relative">

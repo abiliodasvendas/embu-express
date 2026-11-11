@@ -26,9 +26,9 @@ export function useRetaguarda(mes: number, ano: number) {
 
   return {
     monitor: monitorQuery.data,
-    isLoadingMonitor: monitorQuery.isLoading,
+    isLoadingMonitor: monitorQuery.isLoading || monitorQuery.isFetching,
     alertas: alertaValesQuery.data || [],
-    isLoadingAlertas: alertaValesQuery.isLoading,
+    isLoadingAlertas: alertaValesQuery.isLoading || alertaValesQuery.isFetching,
     criarAlocacaoMutation,
     refetch: () => {
       monitorQuery.refetch();

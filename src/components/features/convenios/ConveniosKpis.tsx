@@ -1,4 +1,4 @@
-import { KpiGridSkeleton } from "@/components/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { FileText, Receipt, ShieldCheck, Users } from "lucide-react";
 
@@ -13,10 +13,6 @@ interface ConveniosKpisProps {
 }
 
 export function ConveniosKpis({ totais, isLoading }: ConveniosKpisProps) {
-  if (isLoading) {
-    return <KpiGridSkeleton count={4} cols={4} />;
-  }
-
   return (
     <div className="-mx-4 sm:mx-0 px-4 sm:px-0 flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1 sm:pb-0">
       <div className="min-w-[260px] sm:min-w-0 shrink-0 sm:shrink flex-1 sm:flex-initial rounded-[24px] border border-border bg-card shadow-xs p-5 hover:shadow-md transition-all">
@@ -28,9 +24,13 @@ export function ConveniosKpis({ totais, isLoading }: ConveniosKpisProps) {
             <Receipt className="h-5 w-5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-          {formatCurrency(totais?.total_geral_consumido || 0)}
-        </div>
+        {isLoading ? (
+          <Skeleton className="h-8 w-36 rounded-[8px] my-1" />
+        ) : (
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {formatCurrency(totais?.total_geral_consumido || 0)}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground mt-1">Soma de postos e oficinas parceiras</p>
       </div>
 
@@ -43,9 +43,13 @@ export function ConveniosKpis({ totais, isLoading }: ConveniosKpisProps) {
             <Users className="h-5 w-5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-          {formatCurrency(totais?.total_motoboys || 0)}
-        </div>
+        {isLoading ? (
+          <Skeleton className="h-8 w-36 rounded-[8px] my-1" />
+        ) : (
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {formatCurrency(totais?.total_motoboys || 0)}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground mt-1">Deduções aplicadas nos holerites</p>
       </div>
 
@@ -58,9 +62,13 @@ export function ConveniosKpis({ totais, isLoading }: ConveniosKpisProps) {
             <ShieldCheck className="h-5 w-5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-          {formatCurrency(totais?.total_moto_embu_david || 0)}
-        </div>
+        {isLoading ? (
+          <Skeleton className="h-8 w-36 rounded-[8px] my-1" />
+        ) : (
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {formatCurrency(totais?.total_moto_embu_david || 0)}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground mt-1">Custos assumidos pela empresa</p>
       </div>
 
@@ -73,9 +81,13 @@ export function ConveniosKpis({ totais, isLoading }: ConveniosKpisProps) {
             <FileText className="h-5 w-5" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-          {formatCurrency(totais?.total_faturas_fornecedores || 0)}
-        </div>
+        {isLoading ? (
+          <Skeleton className="h-8 w-36 rounded-[8px] my-1" />
+        ) : (
+          <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {formatCurrency(totais?.total_faturas_fornecedores || 0)}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground mt-1">Faturas conciliadas com parceiros</p>
       </div>
     </div>

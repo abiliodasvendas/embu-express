@@ -28,7 +28,12 @@ export function DespesasTab({
 
   return (
     <div className="space-y-6">
-      <DespesasKpis kpis={vm.kpisDespesas} mes={vm.mes} ano={vm.ano} />
+      <DespesasKpis
+        kpis={vm.kpisDespesas}
+        mes={vm.mes}
+        ano={vm.ano}
+        isLoading={vm.isLoadingDespesas || vm.isFetchingDespesas}
+      />
 
       <DespesasToolbar
         searchDespesa={vm.searchDespesa}

@@ -58,19 +58,19 @@ export function DespesasToolbar({
       : Object.entries(CATEGORIA_DESPESA_LABELS);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
+    <div className="flex flex-wrap items-center justify-between gap-2.5">
+      <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
         <TableSearchInput
           value={searchDespesa}
           onChange={onSearchChange}
           placeholder="Buscar despesa por descrição..."
-          className="w-full sm:w-64"
+          className="w-full sm:w-52 lg:w-60 xl:w-64"
         />
 
         <NativeSelect
           value={String(mes)}
           onChange={(e) => onMesChange(Number(e.target.value))}
-          className="h-10 w-[130px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[120px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           {meses.map((m, i) => (
             <option key={i + 1} value={String(i + 1)}>
@@ -82,7 +82,7 @@ export function DespesasToolbar({
         <NativeSelect
           value={String(ano)}
           onChange={(e) => onAnoChange(Number(e.target.value))}
-          className="h-10 w-[90px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[84px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           {[anoAtual - 1, anoAtual, anoAtual + 1].map((a) => (
             <option key={a} value={String(a)}>
@@ -94,7 +94,7 @@ export function DespesasToolbar({
         <NativeSelect
           value={empresaDespesaFiltro}
           onChange={(e) => onEmpresaChange(e.target.value)}
-          className="h-10 w-[180px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[165px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="todas">Todas as Empresas</option>
           <option value="holding">Geral Holding (Rateio)</option>
@@ -108,7 +108,7 @@ export function DespesasToolbar({
         <NativeSelect
           value={categoriaDespesaFiltro}
           onChange={(e) => onCategoriaChange(e.target.value)}
-          className="h-10 w-[180px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[160px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="todas">Todas as Categorias</option>
           {opcoesCategoria.map(([catKey, catLabel]) => (
@@ -121,7 +121,7 @@ export function DespesasToolbar({
         <NativeSelect
           value={statusDespesaFiltro}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="h-10 w-[160px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[138px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="todos">Todos os Status</option>
           <option value={STATUS_DESPESA.PENDENTE}>A Pagar (Pendente)</option>
@@ -135,7 +135,7 @@ export function DespesasToolbar({
         <Button
           size="sm"
           onClick={onNovaDespesa}
-          className="h-11 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0"
+          className="h-10 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
         >
           <Plus className="h-4 w-4" />
           <span>Nova Despesa</span>

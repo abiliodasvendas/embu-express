@@ -34,13 +34,13 @@ export function ExtratoToolbar({
   onNovoLancamento,
 }: ExtratoToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3.5 rounded-[24px] border border-border">
-      <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[240px]">
+    <div className="flex flex-wrap items-center justify-between gap-2.5 bg-muted/30 p-3.5 rounded-[24px] border border-border">
+      <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
         <TableSearchInput
           value={busca}
           onChange={onBuscaChange}
           placeholder="Buscar no histórico do extrato..."
-          className="w-full sm:w-60"
+          className="w-full sm:w-52 lg:w-60"
         />
 
         <NativeSelect
@@ -48,7 +48,7 @@ export function ExtratoToolbar({
           onChange={(e) =>
             onTipoFiltroChange(e.target.value as TipoFiltroExtrato)
           }
-          className="h-10 w-[150px] rounded-[18px] bg-card border-border text-xs font-medium"
+          className="h-10 w-[148px] rounded-[18px] bg-card border-border text-xs font-medium"
         >
           <option value={FILTRO_EXTRATO_TIPO.TODOS}>Todas Movimentações</option>
           <option value={FILTRO_EXTRATO_TIPO.ENTRADA}>Apenas Entradas (+)</option>
@@ -58,7 +58,7 @@ export function ExtratoToolbar({
         <NativeSelect
           value={String(mes)}
           onChange={(e) => onMesChange(Number(e.target.value))}
-          className="h-10 w-[130px] rounded-[18px] bg-card border-border text-xs font-semibold"
+          className="h-10 w-[120px] rounded-[18px] bg-card border-border text-xs font-semibold"
         >
           {meses.map((nomeMes, idx) => (
             <option key={idx + 1} value={String(idx + 1)}>
@@ -70,7 +70,7 @@ export function ExtratoToolbar({
         <NativeSelect
           value={String(ano)}
           onChange={(e) => onAnoChange(Number(e.target.value))}
-          className="h-10 w-[90px] rounded-[18px] bg-card border-border text-xs font-semibold"
+          className="h-10 w-[84px] rounded-[18px] bg-card border-border text-xs font-semibold"
         >
           {anosDisponiveis.map((a) => (
             <option key={a} value={String(a)}>

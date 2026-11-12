@@ -2,10 +2,8 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import { TableSearchInput } from "@/components/ui/TableSearchInput";
 import { Empresa } from "@/types/database";
-import { ESCOPO_CATEGORIA_FINANCEIRA } from "@/constants/financeiro.constants";
-import { useLayout } from "@/contexts/LayoutContext";
 import { meses } from "@/utils/formatters/constants";
-import { Plus, Tags } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface ContasPagarToolbarProps {
   busca: string;
@@ -44,29 +42,22 @@ export function ContasPagarToolbar({
   onNovaDespesa,
   canEdit = true,
 }: ContasPagarToolbarProps) {
-  const { openCategoriasFinanceirasDialog } = useLayout();
   const anoAtual = new Date().getFullYear();
 
-  const handleOpenCategorias = () => {
-    openCategoriasFinanceirasDialog({
-      escopoInicial: ESCOPO_CATEGORIA_FINANCEIRA.DESPESA,
-    });
-  };
-
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
+    <div className="flex flex-wrap items-center justify-between gap-2.5">
+      <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
         <TableSearchInput
           value={busca}
           onChange={onBuscaChange}
           placeholder="Buscar por descrição, fornecedor ou categoria..."
-          className="w-full sm:w-64"
+          className="w-full sm:w-52 lg:w-60 xl:w-64"
         />
 
         <NativeSelect
           value={String(mes)}
           onChange={(e) => onMesChange(Number(e.target.value))}
-          className="h-10 w-[130px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[120px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           {meses.map((m, i) => (
             <option key={i + 1} value={String(i + 1)}>
@@ -78,7 +69,7 @@ export function ContasPagarToolbar({
         <NativeSelect
           value={String(ano)}
           onChange={(e) => onAnoChange(Number(e.target.value))}
-          className="h-10 w-[90px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[84px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           {[anoAtual - 1, anoAtual, anoAtual + 1].map((a) => (
             <option key={a} value={String(a)}>
@@ -90,7 +81,7 @@ export function ContasPagarToolbar({
         <NativeSelect
           value={empresaId ? String(empresaId) : "todas"}
           onChange={(e) => onEmpresaChange(e.target.value === "todas" ? null : Number(e.target.value))}
-          className="h-10 w-[180px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[165px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="todas">Todas as Empresas</option>
           {empresas.map((emp) => (
@@ -105,7 +96,7 @@ export function ContasPagarToolbar({
           onChange={(e) =>
             onTipoChange(e.target.value as "TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR")
           }
-          className="h-10 w-[160px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[145px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="TODOS">Todos os Tipos</option>
           <option value="DESPESA">Apenas Despesas</option>
@@ -116,7 +107,7 @@ export function ContasPagarToolbar({
         <NativeSelect
           value={status}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="h-10 w-[140px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[138px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="TODOS">Todos os Status</option>
           <option value="PENDENTE">Pendentes</option>
@@ -127,24 +118,13 @@ export function ContasPagarToolbar({
       </div>
 
       {canEdit && (
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleOpenCategorias}
-            className="h-10 rounded-[18px] bg-card hover:bg-surface-alt border-border text-foreground font-semibold px-3.5 gap-1.5 shadow-xs text-xs cursor-pointer select-none"
-          >
-            <Tags className="h-3.5 w-3.5 text-primary" />
-            <span>Categorias</span>
-          </Button>
-          <Button
-            onClick={onNovaDespesa}
-            className="h-10 rounded-[18px] bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-4 gap-2 shadow-xs text-xs cursor-pointer select-none"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Nova Despesa</span>
-          </Button>
-        </div>
+        <Button
+          onClick={onNovaDespesa}
+          className="h-10 rounded-[18px] bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-4 gap-2 shadow-xs text-xs shrink-0 cursor-pointer select-none"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Nova Despesa</span>
+        </Button>
       )}
     </div>
   );

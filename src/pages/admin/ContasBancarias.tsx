@@ -44,7 +44,10 @@ export default function ContasBancarias() {
 
   return (
     <div className="space-y-6 pb-24">
-      <ContasBancariasHeader />
+      <ContasBancariasHeader
+        onNovaTransferencia={handleNovaTransferencia}
+        canEdit={canEdit}
+      />
 
       <ContasBancariasKpis
         kpis={kpis}

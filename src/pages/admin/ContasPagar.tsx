@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout, useDateFilters } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { ESCOPO_CATEGORIA_FINANCEIRA } from "@/constants/financeiro.constants";
 import { ContasPagarHeader } from "@/components/features/contas-pagar/ContasPagarHeader";
 import { ContasPagarGeralTab } from "@/components/features/contas-pagar/tabs/ContasPagarGeralTab";
 import { LiquidacaoLotePagamentoTab } from "@/components/features/contas-pagar/tabs/LiquidacaoLotePagamentoTab";
@@ -38,6 +39,11 @@ export default function ContasPagar() {
         isLiquidacaoActive={activeTab === "lote"}
         onToggleLiquidacao={() => setActiveTab(activeTab === "lote" ? "geral" : "lote")}
         canLiquidacao={canEdit}
+        escopoCategorias={
+          activeTab === "saidas"
+            ? ESCOPO_CATEGORIA_FINANCEIRA.SAIDA_AVULSA
+            : ESCOPO_CATEGORIA_FINANCEIRA.DESPESA
+        }
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

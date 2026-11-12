@@ -4,7 +4,7 @@ import { TableSearchInput } from "@/components/ui/TableSearchInput";
 import { Empresa } from "@/types/database";
 import { meses } from "@/utils/formatters/constants";
 import { TipoContaFiltro } from "@/hooks/ui/contas-bancarias/useContasBancariasViewModel";
-import { ArrowLeftRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface ContasBancariasToolbarProps {
   busca: string;
@@ -36,25 +36,24 @@ export function ContasBancariasToolbar({
   onTipoContaChange,
   empresas,
   onNovaConta,
-  onNovaTransferencia,
   canEdit = true,
 }: ContasBancariasToolbarProps) {
   const anoAtual = new Date().getFullYear();
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
+    <div className="flex flex-wrap items-center justify-between gap-2.5">
+      <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
         <TableSearchInput
           value={busca}
           onChange={onBuscaChange}
           placeholder="Buscar banco, agência, conta ou empresa..."
-          className="w-full sm:w-64"
+          className="w-full sm:w-56 lg:w-64"
         />
 
         <NativeSelect
           value={String(mes)}
           onChange={(e) => onMesChange(Number(e.target.value))}
-          className="h-10 w-[130px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[120px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           {meses.map((m, i) => (
             <option key={i + 1} value={String(i + 1)}>
@@ -66,7 +65,7 @@ export function ContasBancariasToolbar({
         <NativeSelect
           value={String(ano)}
           onChange={(e) => onAnoChange(Number(e.target.value))}
-          className="h-10 w-[90px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[84px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           {[anoAtual - 1, anoAtual, anoAtual + 1].map((a) => (
             <option key={a} value={String(a)}>
@@ -80,7 +79,7 @@ export function ContasBancariasToolbar({
           onChange={(e) =>
             onEmpresaChange(e.target.value === "todas" ? null : Number(e.target.value))
           }
-          className="h-10 w-[180px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[170px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="todas">Todas as Empresas</option>
           {empresas.map((emp) => (
@@ -93,7 +92,7 @@ export function ContasBancariasToolbar({
         <NativeSelect
           value={tipoConta}
           onChange={(e) => onTipoContaChange(e.target.value as TipoContaFiltro)}
-          className="h-10 w-[140px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
+          className="h-10 w-[140px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="TODOS">Todos os Tipos</option>
           <option value="CORRENTE">Conta Corrente</option>
@@ -104,28 +103,14 @@ export function ContasBancariasToolbar({
       </div>
 
       {canEdit && (
-        <div className="flex items-center gap-2 shrink-0">
-          {onNovaTransferencia && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onNovaTransferencia}
-              className="h-10 rounded-[14px] bg-card hover:bg-surface-alt border-border text-foreground font-semibold px-3.5 gap-1.5 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
-            >
-              <ArrowLeftRight className="h-3.5 w-3.5 text-primary" />
-              <span>Transferir entre Contas</span>
-            </Button>
-          )}
-          <Button
-            size="sm"
-            onClick={onNovaConta}
-            className="h-10 rounded-[14px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Nova Conta Bancária</span>
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          onClick={onNovaConta}
+          className="h-10 rounded-[18px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Nova Conta Bancária</span>
+        </Button>
       )}
     </div>
   );

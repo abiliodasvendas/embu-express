@@ -2,7 +2,7 @@ import { AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
-import { CATEGORIA_DESPESA_LABELS } from "@/constants/financeiro.constants";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 import { cn } from "@/lib/utils";
 import { DespesaStatusBadge } from "./DespesaStatusBadge";
 import { DespesaRowActions } from "./DespesaRowActions";
@@ -30,6 +30,7 @@ export function DespesaTableRow({
   onDelete,
   canEdit = true,
 }: DespesaTableRowProps) {
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
   const { isVencido, diasAtraso } = getDespesaAtrasoInfo(
     despesa.data_vencimento,
     despesa.status,
@@ -83,7 +84,7 @@ export function DespesaTableRow({
           : despesa.empresa?.nome_fantasia || "Empresa"}
       </td>
       <td className="py-3.5 px-4 text-xs font-medium text-muted-foreground whitespace-nowrap">
-        {CATEGORIA_DESPESA_LABELS[despesa.categoria] || despesa.categoria}
+        {getCategoriaLabel(despesa.categoria)}
       </td>
       <td className="py-3.5 px-4 text-xs font-medium text-muted-foreground whitespace-nowrap">
         <span>{tipoTexto}</span>

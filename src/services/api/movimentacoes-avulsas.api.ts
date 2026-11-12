@@ -12,10 +12,19 @@ export interface CreateMovimentacaoAvulsaPayload {
   comprovante_url?: string | null;
 }
 
+export interface CreateTransferenciaContasPayload {
+  conta_origem_id: string;
+  conta_destino_id: string;
+  valor: number;
+  data_movimentacao: string;
+  descricao?: string;
+}
+
 export interface ListMovimentacoesAvulsasFiltros {
   mes?: number;
   ano?: number;
   empresa_id?: number;
+  conta_bancaria_id?: string;
   tipo_movimentacao?: TipoMovimentacaoAvulsa;
   categoria?: CategoriaMovimentacaoAvulsa;
 }
@@ -29,6 +38,11 @@ export const movimentacoesAvulsasApi = {
 
   create: (data: CreateMovimentacaoAvulsaPayload): Promise<MovimentacaoAvulsa> =>
     apiClient.post("/movimentacoes-avulsas", data).then((res) => res.data),
+
+  createTransferencia: (
+    data: CreateTransferenciaContasPayload
+  ): Promise<{ saida: MovimentacaoAvulsa; entrada: MovimentacaoAvulsa }> =>
+    apiClient.post("/movimentacoes-avulsas/transferencia", data).then((res) => res.data),
 
   update: (id: string, data: Partial<CreateMovimentacaoAvulsaPayload>): Promise<MovimentacaoAvulsa> =>
     apiClient.put(`/movimentacoes-avulsas/${id}`, data).then((res) => res.data),

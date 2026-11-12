@@ -5,6 +5,7 @@ import {
   STATUS_DESPESA,
   CATEGORIA_DESPESA_LABELS,
 } from "@/constants/financeiro.constants";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 import { meses } from "@/utils/formatters/constants";
 import { Plus } from "lucide-react";
 
@@ -49,7 +50,12 @@ export function DespesasToolbar({
   onNovaDespesa,
   canEdit = true,
 }: DespesasToolbarProps) {
+  const { categoriasDespesa } = useCategoriasFinanceirasLabelMap();
   const anoAtual = new Date().getFullYear();
+  const opcoesCategoria =
+    categoriasDespesa.length > 0
+      ? categoriasDespesa.map((c) => [c.codigo, c.nome] as const)
+      : Object.entries(CATEGORIA_DESPESA_LABELS);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -105,7 +111,7 @@ export function DespesasToolbar({
           className="h-10 w-[180px] rounded-[14px] bg-card border-border shadow-xs text-xs font-medium"
         >
           <option value="todas">Todas as Categorias</option>
-          {Object.entries(CATEGORIA_DESPESA_LABELS).map(([catKey, catLabel]) => (
+          {opcoesCategoria.map(([catKey, catLabel]) => (
             <option key={catKey} value={catKey}>
               {catLabel}
             </option>

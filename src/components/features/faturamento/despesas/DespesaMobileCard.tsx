@@ -3,7 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
-import { CATEGORIA_DESPESA_LABELS, STATUS_DESPESA } from "@/constants/financeiro.constants";
+import { STATUS_DESPESA } from "@/constants/financeiro.constants";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 import { cn } from "@/lib/utils";
 import { DespesaStatusBadge } from "./DespesaStatusBadge";
 import { getDespesaAtrasoInfo, isPrevisaoFixa } from "./despesaTableUtils";
@@ -26,6 +27,7 @@ export function DespesaMobileCard({
   onDelete,
   canEdit = true,
 }: DespesaMobileCardProps) {
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
   const { isVencido, diasAtraso } = getDespesaAtrasoInfo(
     despesa.data_vencimento,
     despesa.status,
@@ -62,7 +64,7 @@ export function DespesaMobileCard({
                 : despesa.empresa?.nome_fantasia || "Empresa"}
             </span>
             <span>•</span>
-            <span>{CATEGORIA_DESPESA_LABELS[despesa.categoria] || despesa.categoria}</span>
+            <span>{getCategoriaLabel(despesa.categoria)}</span>
           </div>
         </div>
         <div className="shrink-0">

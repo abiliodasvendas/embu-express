@@ -5,7 +5,8 @@ import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { SortableHeader } from "@/components/ui/SortableHeader";
 import { cn } from "@/lib/utils";
 import { MovimentacaoAvulsa } from "@/types/database";
-import { CATEGORIA_MOVIMENTACAO_AVULSA_LABELS } from "@/constants/financeiro.constants";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
+import { TIPO_MOVIMENTACAO_AVULSA } from "@/constants/financeiro.constants";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { formatCurrency, formatContaBancaria } from "@/utils/formatters";
 import {
@@ -47,30 +48,32 @@ export function AvulsasTable({
   canEdit = true,
   modo = "TODOS",
 }: AvulsasTableProps) {
-  if (isLoading || isFetching) {
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
+
+  if (isLoading) {
     return <TableSkeleton cols={8} rows={4} />;
   }
 
   if (movimentacoes.length === 0) {
     const emptyTitle =
-      modo === "ENTRADA"
+      modo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
         ? "Nenhuma entrada avulsa encontrada"
-        : modo === "SAIDA"
+        : modo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
         ? "Nenhuma saída avulsa encontrada"
         : "Nenhuma movimentação avulsa encontrada";
 
     const emptyDesc = search
       ? `Nenhum lançamento encontrado para "${search}".`
-      : modo === "ENTRADA"
+      : modo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
       ? "Nenhuma receita ou crédito avulso registrado na competência selecionada."
-      : modo === "SAIDA"
+      : modo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
       ? "Nenhuma despesa ou saída avulsa registrada na competência selecionada."
       : "Nenhuma movimentação avulsa encontrada na competência selecionada.";
 
     const actionLabel =
-      modo === "ENTRADA"
+      modo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
         ? "Nova Entrada"
-        : modo === "SAIDA"
+        : modo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
         ? "Nova Saída"
         : "Novo Lançamento";
 
@@ -163,7 +166,7 @@ export function AvulsasTable({
                     {formatDateToBR(m.data_movimentacao)}
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
-                    {m.tipo_movimentacao === "ENTRADA" ? (
+                    {m.tipo_movimentacao === TIPO_MOVIMENTACAO_AVULSA.ENTRADA ? (
                       <Badge
                         variant="outline"
                         className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 text-[11px] font-medium px-2.5 py-0.5 rounded-[18px] gap-1"
@@ -180,7 +183,7 @@ export function AvulsasTable({
                     )}
                   </td>
                   <td className="py-3.5 px-4 text-muted-foreground whitespace-nowrap font-medium text-xs">
-                    {CATEGORIA_MOVIMENTACAO_AVULSA_LABELS[m.categoria] || m.categoria}
+                    {getCategoriaLabel(m.categoria)}
                   </td>
                   <td className="py-3.5 px-4">
                     <span className="font-bold text-sm text-foreground block max-w-xs truncate">
@@ -202,12 +205,12 @@ export function AvulsasTable({
                   <td
                     className={cn(
                       "py-3.5 px-4 text-right font-semibold text-xs sm:text-sm tabular-nums whitespace-nowrap",
-                      m.tipo_movimentacao === "ENTRADA"
+                      m.tipo_movimentacao === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
                         ? "text-emerald-600 dark:text-emerald-400"
                         : "text-rose-600 dark:text-rose-400"
                     )}
                   >
-                    {m.tipo_movimentacao === "ENTRADA" ? "+ " : "- "}
+                    {m.tipo_movimentacao === TIPO_MOVIMENTACAO_AVULSA.ENTRADA ? "+ " : "- "}
                     {formatCurrency(m.valor)}
                   </td>
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -259,11 +262,11 @@ export function AvulsasTable({
                     {m.empresa?.nome_fantasia || "Empresa"}
                   </span>
                   <span>•</span>
-                  <span>{CATEGORIA_MOVIMENTACAO_AVULSA_LABELS[m.categoria] || m.categoria}</span>
+                  <span>{getCategoriaLabel(m.categoria)}</span>
                 </div>
               </div>
               <div className="shrink-0">
-                {m.tipo_movimentacao === "ENTRADA" ? (
+                {m.tipo_movimentacao === TIPO_MOVIMENTACAO_AVULSA.ENTRADA ? (
                   <Badge
                     variant="outline"
                     className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 text-[11px] font-medium px-2.5 py-0.5 rounded-[18px] gap-1"
@@ -298,12 +301,12 @@ export function AvulsasTable({
                 <span
                   className={cn(
                     "font-semibold text-xs tabular-nums",
-                    m.tipo_movimentacao === "ENTRADA"
+                    m.tipo_movimentacao === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
                       ? "text-emerald-600 dark:text-emerald-400"
                       : "text-rose-600 dark:text-rose-400"
                   )}
                 >
-                  {m.tipo_movimentacao === "ENTRADA" ? "+ " : "- "}
+                  {m.tipo_movimentacao === TIPO_MOVIMENTACAO_AVULSA.ENTRADA ? "+ " : "- "}
                   {formatCurrency(m.valor)}
                 </span>
               </div>

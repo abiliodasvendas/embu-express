@@ -138,7 +138,7 @@ export const CATEGORIA_DESPESA = {
 
 export type CategoriaDespesaType = typeof CATEGORIA_DESPESA[keyof typeof CATEGORIA_DESPESA];
 
-export const CATEGORIA_DESPESA_LABELS: Record<CategoriaDespesaType, string> = {
+export const CATEGORIA_DESPESA_LABELS: Record<string, string> = {
     DESPESA_FIXA: 'Despesa Operacional Fixa',
     DESPESA_ADMINISTRATIVA: 'Despesa Administrativa / Escritório / Contas',
     CARTAO_CREDITO: 'Cartão de Crédito Corporativo',
@@ -205,11 +205,12 @@ export const CATEGORIA_MOVIMENTACAO_AVULSA = {
     REEMBOLSO_DESPESA: 'REEMBOLSO_DESPESA',
     TARIFA_BANCARIA: 'TARIFA_BANCARIA',
     OUTRAS_SAIDAS: 'OUTRAS_SAIDAS',
+    TRANSFERENCIA_ENTRE_CONTAS: 'TRANSFERENCIA_ENTRE_CONTAS',
 } as const;
 
 export type CategoriaMovimentacaoAvulsaType = typeof CATEGORIA_MOVIMENTACAO_AVULSA[keyof typeof CATEGORIA_MOVIMENTACAO_AVULSA];
 
-export const CATEGORIA_MOVIMENTACAO_AVULSA_LABELS: Record<CategoriaMovimentacaoAvulsaType, string> = {
+export const CATEGORIA_MOVIMENTACAO_AVULSA_LABELS: Record<string, string> = {
     FRETE_ESPORADICO: 'Frete Esporádico / À Vista',
     RENDIMENTO_APLICACAO: 'Rendimento de Aplicação',
     REEMBOLSO_CLIENTE: 'Reembolso de Cliente',
@@ -219,6 +220,39 @@ export const CATEGORIA_MOVIMENTACAO_AVULSA_LABELS: Record<CategoriaMovimentacaoA
     REEMBOLSO_DESPESA: 'Reembolso de Despesa',
     TARIFA_BANCARIA: 'Tarifa / Custo Bancário',
     OUTRAS_SAIDAS: 'Outras Saídas',
+    TRANSFERENCIA_ENTRE_CONTAS: 'Transferência entre Contas',
+};
+
+export const ESCOPO_CATEGORIA_FINANCEIRA = {
+    ENTRADA_AVULSA: 'ENTRADA_AVULSA',
+    SAIDA_AVULSA: 'SAIDA_AVULSA',
+    DESPESA: 'DESPESA',
+} as const;
+
+export type EscopoCategoriaFinanceiraType = typeof ESCOPO_CATEGORIA_FINANCEIRA[keyof typeof ESCOPO_CATEGORIA_FINANCEIRA];
+
+export const GRUPO_DRE_CATEGORIA = {
+    RECEITA_OPERACIONAL: 'RECEITA_OPERACIONAL',
+    DESPESA_FIXA: 'DESPESA_FIXA',
+    TRIBUTO_DAS: 'TRIBUTO_DAS',
+    PROLABORE: 'PROLABORE',
+    PARCELAMENTO_FISCAL: 'PARCELAMENTO_FISCAL',
+    INVESTIMENTO_FINANCIAMENTO: 'INVESTIMENTO_FINANCIAMENTO',
+    DESPESA_FINANCEIRA: 'DESPESA_FINANCEIRA',
+    NAO_AFETA_DRE: 'NAO_AFETA_DRE',
+} as const;
+
+export type GrupoDreCategoriaType = typeof GRUPO_DRE_CATEGORIA[keyof typeof GRUPO_DRE_CATEGORIA];
+
+export const GRUPO_DRE_LABELS: Record<GrupoDreCategoriaType, string> = {
+    RECEITA_OPERACIONAL: 'Receita Operacional (Soma no DRE)',
+    DESPESA_FIXA: 'Despesa Fixa / Operacional (Entra no DRE)',
+    TRIBUTO_DAS: 'Simples Nacional / DAS (Entra no DRE)',
+    PROLABORE: 'Pró-Labore / Sócios (Entra no DRE)',
+    PARCELAMENTO_FISCAL: 'Parcelamento Fiscal / Acordos (Entra no DRE)',
+    INVESTIMENTO_FINANCIAMENTO: 'Investimentos / Financiamentos (Entra no DRE)',
+    DESPESA_FINANCEIRA: 'Despesa Financeira / Tarifas (Entra no DRE)',
+    NAO_AFETA_DRE: 'Movimentação Neutra / Não afeta o DRE',
 };
 
 export const CATEGORIAS_ENTRADA: CategoriaMovimentacaoAvulsaType[] = [
@@ -245,6 +279,35 @@ export const NIVEL_RISCO_VALE = {
 } as const;
 
 export type NivelRiscoValeType = typeof NIVEL_RISCO_VALE[keyof typeof NIVEL_RISCO_VALE];
+
+export const MODO_LANCAMENTO_AVULSO = {
+    ENTRADA: 'ENTRADA',
+    SAIDA: 'SAIDA',
+    TRANSFERENCIA: 'TRANSFERENCIA',
+} as const;
+
+export type ModoLancamentoAvulsoType = typeof MODO_LANCAMENTO_AVULSO[keyof typeof MODO_LANCAMENTO_AVULSO];
+
+export const FILTRO_EXTRATO_TIPO = {
+    TODOS: 'TODOS',
+    ENTRADA: 'ENTRADA',
+    SAIDA: 'SAIDA',
+} as const;
+
+export type FiltroExtratoTipoType = typeof FILTRO_EXTRATO_TIPO[keyof typeof FILTRO_EXTRATO_TIPO];
+
+export const ORIGEM_EXTRATO_BANCARIO = {
+    FATURA_CLIENTE: 'FATURA_CLIENTE',
+    ENTRADA_AVULSA: 'ENTRADA_AVULSA',
+    SAIDA_AVULSA: 'SAIDA_AVULSA',
+    TRANSFERENCIA_ENTRE_CONTAS: 'TRANSFERENCIA_ENTRE_CONTAS',
+    DESPESA: 'DESPESA',
+    CONVENIO: 'CONVENIO',
+    ADIANTAMENTO_COLABORADOR: 'ADIANTAMENTO_COLABORADOR',
+    SALARIO_COLABORADOR: 'SALARIO_COLABORADOR',
+} as const;
+
+export type OrigemExtratoBancarioType = typeof ORIGEM_EXTRATO_BANCARIO[keyof typeof ORIGEM_EXTRATO_BANCARIO];
 
 export const CLIENTES_ESPECIAIS = {
     INTERNO: 'INTERNO',

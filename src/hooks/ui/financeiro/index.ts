@@ -14,3 +14,7 @@ export {
   useFluxoCaixaTabViewModel,
   type ModoVisaoFluxo,
 } from "./useFluxoCaixaTabViewModel";
+export {
+  useCategoriasFinanceirasDialogViewModel,
+  type UseCategoriasFinanceirasDialogViewModelProps,
+} from "./useCategoriasFinanceirasDialogViewModel";

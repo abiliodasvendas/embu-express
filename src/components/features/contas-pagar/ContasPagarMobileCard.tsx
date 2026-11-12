@@ -2,14 +2,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
-import { CategoriaDespesa, ContaPagarItem } from "@/types/database";
+import { ContaPagarItem } from "@/types/database";
 import { CheckCircle2, AlertCircle, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
 import {
   CATEGORIA_COLABORADOR_LABELS,
-  CATEGORIA_DESPESA_LABELS,
   STATUS_DESPESA,
   TIPO_CONTA_PAGAR,
 } from "@/constants/financeiro.constants";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 
 interface ContasPagarMobileCardProps {
   item: ContaPagarItem;
@@ -28,6 +28,7 @@ export function ContasPagarMobileCard({
   onDelete,
   canEdit = true,
 }: ContasPagarMobileCardProps) {
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
   const hoje = new Date().toISOString().split("T")[0];
   const isPago = item.status === STATUS_DESPESA.PAGO;
   const isVencido = !isPago && item.data_vencimento < hoje;
@@ -66,8 +67,7 @@ export function ContasPagarMobileCard({
             <span>•</span>
             <span>
               {CATEGORIA_COLABORADOR_LABELS[item.categoria] ||
-                CATEGORIA_DESPESA_LABELS[item.categoria as CategoriaDespesa] ||
-                item.categoria}
+                getCategoriaLabel(item.categoria)}
             </span>
             {item.conta_bancaria_nome && (
               <>

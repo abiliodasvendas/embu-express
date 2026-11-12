@@ -9,11 +9,10 @@ import { TableSkeleton } from "@/components/skeletons";
 import { ContasPagarMobileCard } from "./ContasPagarMobileCard";
 import {
   CATEGORIA_COLABORADOR_LABELS,
-  CATEGORIA_DESPESA_LABELS,
   STATUS_DESPESA,
   TIPO_CONTA_PAGAR,
 } from "@/constants/financeiro.constants";
-import { CategoriaDespesa } from "@/types/database";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 
 interface ContasPagarTableProps {
   itens: ContaPagarItem[];
@@ -36,6 +35,8 @@ export function ContasPagarTable({
   onNovaDespesa,
   canEdit = true,
 }: ContasPagarTableProps) {
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
+
   if (isLoading) {
     return <TableSkeleton cols={8} rows={5} />;
   }
@@ -141,8 +142,7 @@ export function ContasPagarTable({
                       </span>
                       <span className="text-[11px] text-muted-foreground block">
                         {CATEGORIA_COLABORADOR_LABELS[item.categoria] ||
-                          CATEGORIA_DESPESA_LABELS[item.categoria as CategoriaDespesa] ||
-                          item.categoria}
+                          getCategoriaLabel(item.categoria)}
                       </span>
                     </td>
 

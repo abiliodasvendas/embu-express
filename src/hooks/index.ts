@@ -2,6 +2,7 @@ export { usePermissions } from "./business/usePermissions";
 export { useTimeTrackingBusiness } from "./business/useTimeTrackingBusiness";
 export { useOccurrenceBusiness } from "./business/useOccurrenceBusiness";
 export { useFinancialReportBusiness } from "./business/useFinancialReportBusiness";
+export { useCategoriasFinanceirasLabelMap } from "./business/useCategoriasFinanceirasBusiness";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
 export { useRegistrarPontoBusiness } from "./business/useRegistrarPontoBusiness";
@@ -18,6 +19,7 @@ export { useLiquidarDespesaForm } from "./form/useLiquidarDespesaForm";
 export { useLiquidarFaturaForm } from "./form/useLiquidarFaturaForm";
 export { useLiquidarFaturaConvenioForm } from "./form/useLiquidarFaturaConvenioForm";
 export { useContaBancariaForm } from "./form/useContaBancariaForm";
+export { useMovimentacaoAvulsaForm } from "./form/useMovimentacaoAvulsaForm";
 
 export * from "./ui/useAnimatedNumber";
 export * from "./ui/useDebounce";
@@ -66,6 +68,7 @@ export {
   useFinancialReportView,
   useFechamentoGeralViewModel,
   useFluxoCaixaTabViewModel,
+  useCategoriasFinanceirasDialogViewModel,
 } from "./ui/financeiro";
 export {
   useCollaboratorDetailsViewModel,
@@ -109,5 +112,11 @@ export { useCreateOcorrencia, useDeleteOcorrencia, useUpdateOcorrencia } from ".
 export { useClientActions } from "./business/useClientActions";
 export { useCollaboratorActions } from "./business/useCollaboratorActions";
 export { useCollaboratorMap } from "./api/useCollaboratorMap";
+export {
+  useCategoriasFinanceirasQuery,
+  useCreateCategoriaFinanceira,
+  useUpdateCategoriaFinanceira,
+  useDeleteCategoriaFinanceira,
+} from "./api/useCategoriasFinanceiras";
 
 export { useLayout } from "../contexts/LayoutContext";

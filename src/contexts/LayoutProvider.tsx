@@ -1,8 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenConfirmarPagamentoSalarioDialogProps, OpenExtratoContaBancariaDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps, OpenFaturaFormProps, OpenLiquidarFaturaDialogProps, OpenAcertoIntercompanyProps, OpenAlocacaoTemporariaProps, OpenContasBancariasProps, OpenDespesaFormProps, OpenDespesaDeleteProps, OpenLiquidarDespesaDialogProps, OpenMovimentacaoAvulsaFormProps, OpenUnidadeFormProps, OpenLancamentoConvenioFormProps, OpenGerenciarBloqueioConvenioProps, OpenLiquidarFaturaConvenioProps } from './LayoutContext';
+import { LayoutContext, OpenConfirmationDialogProps, OpenConfirmarAdiantamentoDialogProps, OpenConfirmarPagamentoSalarioDialogProps, OpenExtratoContaBancariaDialogProps, OpenCollaboratorFormProps, OpenClientFormProps, OpenEmpresaFormProps, OpenPerfilFormProps, OpenMileageDialogProps, OpenCollaboratorTurnProps, OpenTimeRecordDetailsProps, OpenTimeRecordProps, OpenSuccessRegistrationProps, OpenOccurrenceFormProps, OpenFeriadoFormProps, OpenEndTurnProps, OpenOccurrenceDetailsProps, OpenPasswordGuardProps, OpenAlocarEquipamentoProps, OpenItemEquipamentoFormProps, OpenCategoriasProps, OpenAlocadosPorItemProps, OpenCreateTicketProps, OpenTicketDetailsProps, OpenConvenioFormProps, OpenFaturaFormProps, OpenLiquidarFaturaDialogProps, OpenAcertoIntercompanyProps, OpenAlocacaoTemporariaProps, OpenContasBancariasProps, OpenDespesaFormProps, OpenDespesaDeleteProps, OpenLiquidarDespesaDialogProps, OpenMovimentacaoAvulsaFormProps, OpenCategoriasFinanceirasDialogProps, OpenUnidadeFormProps, OpenLancamentoConvenioFormProps, OpenGerenciarBloqueioConvenioProps, OpenLiquidarFaturaConvenioProps } from './LayoutContext';
 import { useDialogClose } from "@/hooks/ui/useDialogClose";
-
-// Dialogs
 import { ClientFormDialog } from "@/components/dialogs/ClientFormDialog";
 import { CollaboratorFormDialog } from "@/components/dialogs/CollaboratorFormDialog";
 import { CollaboratorTurnDialog } from "@/components/dialogs/CollaboratorTurnDialog";
@@ -10,7 +8,6 @@ import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ConfirmarAdiantamentoDialog from "@/components/dialogs/ConfirmarAdiantamentoDialog";
 import ConfirmarPagamentoSalarioDialog from "@/components/dialogs/ConfirmarPagamentoSalarioDialog";
 import ExtratoContaBancariaDialog from "@/components/dialogs/ExtratoContaBancariaDialog";
-
 import { TimeRecordDialog } from "@/components/dialogs/TimeRecordDialog";
 import { EmpresaFormDialog } from "@/components/dialogs/EmpresaFormDialog";
 import { FeriadoFormDialog } from "@/components/dialogs/FeriadoFormDialog";
@@ -42,25 +39,23 @@ import { DespesaFormDialog } from "@/components/dialogs/DespesaFormDialog";
 import { DespesaDeleteDialog } from "@/components/dialogs/DespesaDeleteDialog";
 import { LiquidarDespesaDialog } from "@/components/dialogs/LiquidarDespesaDialog";
 import { MovimentacaoAvulsaFormDialog } from "@/components/dialogs/MovimentacaoAvulsaFormDialog";
+import { CategoriasFinanceirasDialog } from "@/components/dialogs/CategoriasFinanceirasDialog";
 import { UnidadeFormDialog } from "@/components/dialogs/UnidadeFormDialog";
 import { LancamentoForm } from "@/components/features/convenios/public/LancamentoForm";
 import { GerenciarBloqueioConvenioDialog } from "@/components/dialogs/GerenciarBloqueioConvenioDialog";
 import { LiquidarFaturaConvenioDialog } from "@/components/dialogs/LiquidarFaturaConvenioDialog";
-
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
   const [pageSubtitle, setPageSubtitle] = useState('Por favor, aguarde.');
   const { closeDialog } = useDialogClose();
 
-  // Sync document title with page title
   useEffect(() => {
     if (pageTitle && pageTitle !== 'Carregando...') {
       document.title = `${pageTitle} | Embu Express`;
     }
   }, [pageTitle]);
 
-  // --- Dialog States ---
   const [confirmationDialogState, setConfirmationDialogState] = useState<{ open: boolean; props?: OpenConfirmationDialogProps }>({ open: false });
   const [confirmarAdiantamentoDialogState, setConfirmarAdiantamentoDialogState] = useState<{ open: boolean; props?: OpenConfirmarAdiantamentoDialogProps }>({ open: false });
   const [confirmarPagamentoSalarioDialogState, setConfirmarPagamentoSalarioDialogState] = useState<{ open: boolean; props?: OpenConfirmarPagamentoSalarioDialogProps }>({ open: false });
@@ -99,6 +94,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [despesaDeleteDialogState, setDespesaDeleteDialogState] = useState<{ open: boolean; props?: OpenDespesaDeleteProps }>({ open: false });
   const [liquidarDespesaDialogState, setLiquidarDespesaDialogState] = useState<{ open: boolean; props?: OpenLiquidarDespesaDialogProps }>({ open: false });
   const [movimentacaoAvulsaDialogState, setMovimentacaoAvulsaDialogState] = useState<{ open: boolean; props?: OpenMovimentacaoAvulsaFormProps }>({ open: false });
+  const [categoriasFinanceirasDialogState, setCategoriasFinanceirasDialogState] = useState<{ open: boolean; props?: OpenCategoriasFinanceirasDialogProps }>({ open: false });
   const [unidadeFormDialogState, setUnidadeFormDialogState] = useState<{ open: boolean; props?: OpenUnidadeFormProps }>({ open: false });
   const [lancamentoConvenioDialogState, setLancamentoConvenioDialogState] = useState<{ open: boolean; props?: OpenLancamentoConvenioFormProps }>({ open: false });
   const [gerenciarBloqueioConvenioDialogState, setGerenciarBloqueioConvenioDialogState] = useState<{ open: boolean; props?: OpenGerenciarBloqueioConvenioProps }>({ open: false });
@@ -221,6 +217,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const openMovimentacaoAvulsaDialog = (props?: OpenMovimentacaoAvulsaFormProps) => setMovimentacaoAvulsaDialogState({ open: true, props });
   const closeMovimentacaoAvulsaDialog = () => closeDialog(() => setMovimentacaoAvulsaDialogState((prev) => ({ ...prev, open: false })));
 
+  const openCategoriasFinanceirasDialog = (props?: OpenCategoriasFinanceirasDialogProps) => setCategoriasFinanceirasDialogState({ open: true, props });
+  const closeCategoriasFinanceirasDialog = () => closeDialog(() => setCategoriasFinanceirasDialogState((prev) => ({ ...prev, open: false })));
+
   const openUnidadeFormDialog = (props: OpenUnidadeFormProps) => setUnidadeFormDialogState({ open: true, props });
   const closeUnidadeFormDialog = () => closeDialog(() => setUnidadeFormDialogState((prev) => ({ ...prev, open: false })));
 
@@ -275,6 +274,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openDespesaDeleteDialog, closeDespesaDeleteDialog,
       openLiquidarDespesaDialog, closeLiquidarDespesaDialog,
       openMovimentacaoAvulsaDialog, closeMovimentacaoAvulsaDialog,
+      openCategoriasFinanceirasDialog, closeCategoriasFinanceirasDialog,
       openUnidadeFormDialog, closeUnidadeFormDialog,
       openLancamentoConvenioDialog, closeLancamentoConvenioDialog,
       openGerenciarBloqueioConvenioDialog, closeGerenciarBloqueioConvenioDialog, openLiquidarFaturaConvenioDialog, closeLiquidarFaturaConvenioDialog,
@@ -370,7 +370,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onOpenChange={(open) => !open && closeMovimentacaoAvulsaDialog()}
           movimentacaoToEdit={movimentacaoAvulsaDialogState.props?.movimentacaoToEdit}
           forcedTipo={movimentacaoAvulsaDialogState.props?.forcedTipo}
+          initialMode={movimentacaoAvulsaDialogState.props?.initialMode}
+          contaBancariaInicialId={movimentacaoAvulsaDialogState.props?.contaBancariaInicialId}
+          empresaIdInicial={movimentacaoAvulsaDialogState.props?.empresaIdInicial}
           onSuccess={movimentacaoAvulsaDialogState.props?.onSuccess}
+        />
+      )}
+      {categoriasFinanceirasDialogState.open && (
+        <CategoriasFinanceirasDialog
+          open={true}
+          onOpenChange={(open) => !open && closeCategoriasFinanceirasDialog()}
+          escopoInicial={categoriasFinanceirasDialogState.props?.escopoInicial}
+          onCategoryCreated={categoriasFinanceirasDialogState.props?.onCategoryCreated}
         />
       )}
       {unidadeFormDialogState.open && unidadeFormDialogState.props && <UnidadeFormDialog isOpen={true} onClose={closeUnidadeFormDialog} clienteId={unidadeFormDialogState.props.clienteId} editingUnidade={unidadeFormDialogState.props.editingUnidade} onSuccess={() => { unidadeFormDialogState.props?.onSuccess?.(); closeUnidadeFormDialog(); }} />}

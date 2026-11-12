@@ -1,12 +1,17 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useLayout } from "@/hooks";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useMovimentacoesAvulsas } from "@/hooks/api/useMovimentacoesAvulsas";
 import { useTableSort } from "@/hooks/ui/useTableSort";
 import { MovimentacaoAvulsa } from "@/types/database";
-import { CATEGORIA_MOVIMENTACAO_AVULSA_LABELS } from "@/constants/financeiro.constants";
+import {
+  CATEGORIA_MOVIMENTACAO_AVULSA,
+  TIPO_MOVIMENTACAO_AVULSA,
+} from "@/constants/financeiro.constants";
 import { formatCurrency, formatContaBancaria } from "@/utils/formatters";
 
 interface UseMovimentacoesAvulsasTabViewModelProps {
@@ -29,27 +34,49 @@ export function useMovimentacoesAvulsasTabViewModel({
   const {
     openMovimentacaoAvulsaDialog,
     openConfirmationDialog,
+    closeConfirmationDialog,
   } = useLayout();
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
 
   const { can, isSuperAdmin } = usePermissions();
   const canEdit = isSuperAdmin || can(PERMISSIONS.MOVIMENTACOES_AVULSAS.EDITAR);
 
   const [tipoMovimentacaoFiltro, setTipoMovimentacaoFiltro] = useState<string>(
-    modo === "ENTRADA" ? "ENTRADA" : modo === "SAIDA" ? "SAIDA" : "todos"
+    modo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+      ? TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+      : modo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
+      ? TIPO_MOVIMENTACAO_AVULSA.SAIDA
+      : "todos"
   );
   const [searchMovimentacao, setSearchMovimentacao] = useState<string>("");
 
   const {
-    movimentacoes,
+    movimentacoes: todasMovimentacoes,
     isLoading: isLoadingMovimentacoes,
     isFetching: isFetchingMovimentacoes,
     deleteMutation: deleteMovimentacaoMutation,
     refetch: refetchMovimentacoes,
   } = useMovimentacoesAvulsas({ mes, ano }, { enabled });
 
+  const movimentacoes = useMemo(
+    () =>
+      todasMovimentacoes.filter(
+        (m) =>
+          m.categoria !==
+            CATEGORIA_MOVIMENTACAO_AVULSA.TRANSFERENCIA_ENTRE_CONTAS &&
+          !m.transferencia_par_id
+      ),
+    [todasMovimentacoes]
+  );
+
   const movimentacoesFiltradas = useMemo(() => {
     let list = movimentacoes;
-    const filtroEfetivo = modo === "ENTRADA" ? "ENTRADA" : modo === "SAIDA" ? "SAIDA" : tipoMovimentacaoFiltro;
+    const filtroEfetivo =
+      modo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+        ? TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+        : modo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
+        ? TIPO_MOVIMENTACAO_AVULSA.SAIDA
+        : tipoMovimentacaoFiltro;
     if (filtroEfetivo !== "todos") {
       list = list.filter((m) => m.tipo_movimentacao === filtroEfetivo);
     }
@@ -57,14 +84,28 @@ export function useMovimentacoesAvulsasTabViewModel({
       const term = searchMovimentacao.toLowerCase().trim();
       list = list.filter((m) => {
         const desc = (m.descricao || "").toLowerCase();
-        const cat = (CATEGORIA_MOVIMENTACAO_AVULSA_LABELS[m.categoria] || m.categoria || "").toLowerCase();
+        const cat = getCategoriaLabel(m.categoria).toLowerCase();
         const emp = (m.empresa?.nome_fantasia || "").toLowerCase();
-        const contaStr = formatContaBancaria(m.conta_bancaria, m.empresa?.nome_fantasia).toLowerCase();
-        return desc.includes(term) || cat.includes(term) || emp.includes(term) || contaStr.includes(term);
+        const contaStr = formatContaBancaria(
+          m.conta_bancaria,
+          m.empresa?.nome_fantasia
+        ).toLowerCase();
+        return (
+          desc.includes(term) ||
+          cat.includes(term) ||
+          emp.includes(term) ||
+          contaStr.includes(term)
+        );
       });
     }
     return list;
-  }, [movimentacoes, modo, tipoMovimentacaoFiltro, searchMovimentacao]);
+  }, [
+    movimentacoes,
+    modo,
+    tipoMovimentacaoFiltro,
+    searchMovimentacao,
+    getCategoriaLabel,
+  ]);
 
   const {
     sortedData: movimentacoesOrdenadas,
@@ -78,9 +119,10 @@ export function useMovimentacoesAvulsasTabViewModel({
       data_movimentacao: (m) => m.data_movimentacao || "",
       descricao: (m) => m.descricao || "",
       tipo_movimentacao: (m) => m.tipo_movimentacao || "",
-      categoria: (m) => CATEGORIA_MOVIMENTACAO_AVULSA_LABELS[m.categoria] || m.categoria || "",
+      categoria: (m) => getCategoriaLabel(m.categoria),
       valor: (m) => Number(m.valor || 0),
-      conta_bancaria: (m) => formatContaBancaria(m.conta_bancaria, m.empresa?.nome_fantasia),
+      conta_bancaria: (m) =>
+        formatContaBancaria(m.conta_bancaria, m.empresa?.nome_fantasia),
     },
   });
 
@@ -95,18 +137,21 @@ export function useMovimentacoesAvulsasTabViewModel({
 
     for (const m of movimentacoes) {
       const val = Number(m.valor || 0);
-      if (m.tipo_movimentacao === "ENTRADA") {
+      if (m.tipo_movimentacao === TIPO_MOVIMENTACAO_AVULSA.ENTRADA) {
         totalEntradas += val;
         qtdEntradas++;
-        if (m.categoria === "FRETE_ESPORADICO") {
+        if (m.categoria === CATEGORIA_MOVIMENTACAO_AVULSA.FRETE_ESPORADICO) {
           totalFretesEsporadicos += val;
         }
       } else {
         totalSaidas += val;
         qtdSaidas++;
-        if (m.categoria === "TARIFA_BANCARIA") {
+        if (m.categoria === CATEGORIA_MOVIMENTACAO_AVULSA.TARIFA_BANCARIA) {
           totalTarifasBancarias += val;
-        } else if (m.categoria === "DESPESA_OPERACIONAL_AVULSA") {
+        } else if (
+          m.categoria ===
+          CATEGORIA_MOVIMENTACAO_AVULSA.DESPESA_OPERACIONAL_AVULSA
+        ) {
           totalDespesasOperacionais += val;
         }
       }
@@ -126,16 +171,29 @@ export function useMovimentacoesAvulsasTabViewModel({
   }, [movimentacoes]);
 
   const handleDeleteMovimentacao = (mov: MovimentacaoAvulsa) => {
+    const isTransferencia =
+      mov.categoria ===
+        CATEGORIA_MOVIMENTACAO_AVULSA.TRANSFERENCIA_ENTRE_CONTAS ||
+      Boolean(mov.transferencia_par_id);
     openConfirmationDialog({
-      title: "Excluir Movimentação Avulsa",
-      description: `Tem certeza que deseja excluir o lançamento "${mov.descricao}" no valor de ${formatCurrency(mov.valor)}?`,
+      title: isTransferencia
+        ? "Excluir Transferência entre Contas"
+        : "Excluir Movimentação Avulsa",
+      description: isTransferencia
+        ? `Tem certeza que deseja excluir a transferência "${mov.descricao}" no valor de ${formatCurrency(mov.valor)}? O lançamento espelhado na outra conta bancária também será removido automaticamente.`
+        : `Tem certeza que deseja excluir o lançamento "${mov.descricao}" no valor de ${formatCurrency(mov.valor)}?`,
       confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {
         try {
           await deleteMovimentacaoMutation.mutateAsync(mov.id);
           await refetchMovimentacoes();
-          toast.success("Movimentação avulsa excluída com sucesso!");
+          toast.success(
+            isTransferencia
+              ? "Transferência entre contas excluída com sucesso!"
+              : "Movimentação avulsa excluída com sucesso!"
+          );
+          safeCloseDialog(closeConfirmationDialog);
         } catch {
           toast.error("Erro ao excluir movimentação avulsa.");
         }
@@ -145,7 +203,12 @@ export function useMovimentacoesAvulsasTabViewModel({
 
   const handleOpenNovaMovimentacao = () => {
     openMovimentacaoAvulsaDialog({
-      forcedTipo: modo === "ENTRADA" ? "ENTRADA" : modo === "SAIDA" ? "SAIDA" : undefined,
+      forcedTipo:
+        modo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+          ? TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+          : modo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
+          ? TIPO_MOVIMENTACAO_AVULSA.SAIDA
+          : undefined,
       onSuccess: () => {
         refetchMovimentacoes();
       },
@@ -155,7 +218,12 @@ export function useMovimentacoesAvulsasTabViewModel({
   const handleEditMovimentacao = (mov: MovimentacaoAvulsa) => {
     openMovimentacaoAvulsaDialog({
       movimentacaoToEdit: mov,
-      forcedTipo: modo === "ENTRADA" ? "ENTRADA" : modo === "SAIDA" ? "SAIDA" : undefined,
+      forcedTipo:
+        modo === TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+          ? TIPO_MOVIMENTACAO_AVULSA.ENTRADA
+          : modo === TIPO_MOVIMENTACAO_AVULSA.SAIDA
+          ? TIPO_MOVIMENTACAO_AVULSA.SAIDA
+          : undefined,
       onSuccess: () => {
         refetchMovimentacoes();
       },

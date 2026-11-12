@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import { TableSearchInput } from "@/components/ui/TableSearchInput";
 import { Empresa } from "@/types/database";
+import { ESCOPO_CATEGORIA_FINANCEIRA } from "@/constants/financeiro.constants";
+import { useLayout } from "@/contexts/LayoutContext";
 import { meses } from "@/utils/formatters/constants";
-import { Plus, RotateCcw } from "lucide-react";
+import { Plus, Tags } from "lucide-react";
 
 interface ContasPagarToolbarProps {
   busca: string;
@@ -41,10 +43,15 @@ export function ContasPagarToolbar({
   empresas,
   onNovaDespesa,
   canEdit = true,
-  onRefresh,
-  isFetching = false,
 }: ContasPagarToolbarProps) {
+  const { openCategoriasFinanceirasDialog } = useLayout();
   const anoAtual = new Date().getFullYear();
+
+  const handleOpenCategorias = () => {
+    openCategoriasFinanceirasDialog({
+      escopoInicial: ESCOPO_CATEGORIA_FINANCEIRA.DESPESA,
+    });
+  };
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -120,13 +127,24 @@ export function ContasPagarToolbar({
       </div>
 
       {canEdit && (
-        <Button
-          onClick={onNovaDespesa}
-          className="h-10 rounded-[18px] bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-4 gap-2 shadow-xs text-xs cursor-pointer select-none"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Nova Despesa</span>
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleOpenCategorias}
+            className="h-10 rounded-[18px] bg-card hover:bg-surface-alt border-border text-foreground font-semibold px-3.5 gap-1.5 shadow-xs text-xs cursor-pointer select-none"
+          >
+            <Tags className="h-3.5 w-3.5 text-primary" />
+            <span>Categorias</span>
+          </Button>
+          <Button
+            onClick={onNovaDespesa}
+            className="h-10 rounded-[18px] bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-4 gap-2 shadow-xs text-xs cursor-pointer select-none"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Nova Despesa</span>
+          </Button>
+        </div>
       )}
     </div>
   );

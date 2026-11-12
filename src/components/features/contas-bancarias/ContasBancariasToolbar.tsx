@@ -4,7 +4,7 @@ import { TableSearchInput } from "@/components/ui/TableSearchInput";
 import { Empresa } from "@/types/database";
 import { meses } from "@/utils/formatters/constants";
 import { TipoContaFiltro } from "@/hooks/ui/contas-bancarias/useContasBancariasViewModel";
-import { Plus } from "lucide-react";
+import { ArrowLeftRight, Plus } from "lucide-react";
 
 interface ContasBancariasToolbarProps {
   busca: string;
@@ -19,6 +19,7 @@ interface ContasBancariasToolbarProps {
   onTipoContaChange: (tipo: TipoContaFiltro) => void;
   empresas: Empresa[];
   onNovaConta: () => void;
+  onNovaTransferencia?: () => void;
   canEdit?: boolean;
 }
 
@@ -35,6 +36,7 @@ export function ContasBancariasToolbar({
   onTipoContaChange,
   empresas,
   onNovaConta,
+  onNovaTransferencia,
   canEdit = true,
 }: ContasBancariasToolbarProps) {
   const anoAtual = new Date().getFullYear();
@@ -102,14 +104,28 @@ export function ContasBancariasToolbar({
       </div>
 
       {canEdit && (
-        <Button
-          size="sm"
-          onClick={onNovaConta}
-          className="h-10 rounded-[14px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Nova Conta Bancária</span>
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          {onNovaTransferencia && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onNovaTransferencia}
+              className="h-10 rounded-[14px] bg-card hover:bg-surface-alt border-border text-foreground font-semibold px-3.5 gap-1.5 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
+            >
+              <ArrowLeftRight className="h-3.5 w-3.5 text-primary" />
+              <span>Transferir entre Contas</span>
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={onNovaConta}
+            className="h-10 rounded-[14px] bg-primary hover:bg-primary-hover text-primary-foreground font-semibold px-4 gap-2 shadow-xs transition-all active:scale-95 text-xs shrink-0 cursor-pointer select-none"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Nova Conta Bancária</span>
+          </Button>
+        </div>
       )}
     </div>
   );

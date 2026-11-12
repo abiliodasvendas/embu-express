@@ -13,6 +13,7 @@ import {
   calcularKpisContasPagar,
   filtrarContasPagarPorStatusEPrazo,
 } from "@/hooks/business/contasPagarHelper";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 import { toast } from "sonner";
 
 export function useContasPagarViewModel() {
@@ -27,6 +28,7 @@ export function useContasPagarViewModel() {
 
   const { data: empresas = [], isLoading: isLoadingEmpresas } = useEmpresas();
   const { deleteMutation: deleteDespesaMutation } = useDespesas();
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
 
   const {
     itens = [],
@@ -64,12 +66,13 @@ export function useContasPagarViewModel() {
         (i) =>
           i.descricao.toLowerCase().includes(termo) ||
           i.categoria.toLowerCase().includes(termo) ||
+          getCategoriaLabel(i.categoria).toLowerCase().includes(termo) ||
           (i.empresa_nome && i.empresa_nome.toLowerCase().includes(termo)) ||
           (i.colaborador_nome && i.colaborador_nome.toLowerCase().includes(termo))
       );
     }
     return list;
-  }, [itens, tipoFiltro, busca]);
+  }, [itens, tipoFiltro, busca, getCategoriaLabel]);
 
   const kpis = useMemo<ContasPagarKpis | undefined>(
     () => calcularKpisContasPagar(itensBasePorTipoEBusca, Boolean(kpisBackend)),

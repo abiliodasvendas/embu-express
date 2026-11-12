@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, CategoriaItem, Ticket, Convenio, FaturaCliente, TransferenciaIntercompany, DespesaOperacional, MovimentacaoAvulsa, TipoMovimentacaoAvulsa, Unidade, LancamentoConvenio, FaturaFornecedorConvenio } from '@/types/database';
+import { createContext, ReactNode, useContext } from 'react';
+import { Client, ColaboradorCliente, Usuario as Collaborator, Empresa, Feriado, Ocorrencia, Perfil, RegistroPonto, ItemEquipamento, Ticket, Convenio, FaturaCliente, TransferenciaIntercompany, DespesaOperacional, MovimentacaoAvulsa, TipoMovimentacaoAvulsa, Unidade, LancamentoConvenio, CategoriaFinanceira, EscopoCategoriaFinanceira } from '@/types/database';
 import { OccurrenceFormData } from '@/schemas/occurrenceSchema';
 import { OccurrenceFormMode } from '@/types/enums';
 import { DespesaEscopoAcao } from '@/constants/financeiro.constants';
@@ -210,7 +210,15 @@ export interface OpenLiquidarDespesaDialogProps {
 export interface OpenMovimentacaoAvulsaFormProps {
   movimentacaoToEdit?: MovimentacaoAvulsa | null;
   forcedTipo?: TipoMovimentacaoAvulsa;
+  initialMode?: "ENTRADA" | "SAIDA" | "TRANSFERENCIA";
+  contaBancariaInicialId?: string | null;
+  empresaIdInicial?: number | null;
   onSuccess?: () => void;
+}
+
+export interface OpenCategoriasFinanceirasDialogProps {
+  escopoInicial?: EscopoCategoriaFinanceira;
+  onCategoryCreated?: (categoria: CategoriaFinanceira) => void;
 }
 
 export interface OpenUnidadeFormProps {
@@ -369,6 +377,9 @@ export interface LayoutContextType {
 
   openMovimentacaoAvulsaDialog: (props?: OpenMovimentacaoAvulsaFormProps) => void;
   closeMovimentacaoAvulsaDialog: () => void;
+
+  openCategoriasFinanceirasDialog: (props?: OpenCategoriasFinanceirasDialogProps) => void;
+  closeCategoriasFinanceirasDialog: () => void;
 
   openUnidadeFormDialog: (props: OpenUnidadeFormProps) => void;
   closeUnidadeFormDialog: () => void;

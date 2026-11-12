@@ -31,6 +31,7 @@ export default function ContasBancarias() {
     isDeleting,
     canEdit,
     handleNovaConta,
+    handleNovaTransferencia,
     handleExcluirConta,
     handleVerExtrato,
   } = useContasBancariasViewModel();
@@ -65,6 +66,7 @@ export default function ContasBancarias() {
         onTipoContaChange={setTipoConta}
         empresas={empresas}
         onNovaConta={handleNovaConta}
+        onNovaTransferencia={handleNovaTransferencia}
         canEdit={canEdit}
       />
 

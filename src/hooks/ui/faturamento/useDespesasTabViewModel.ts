@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useLayout } from "@/hooks";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { useDespesas } from "@/hooks/api/useDespesas";
 import { useEmpresas } from "@/hooks/api/useEmpresas";
@@ -38,6 +39,7 @@ export function useDespesasTabViewModel({
   } = useLayout();
 
   const { can, isSuperAdmin } = usePermissions();
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
   const canEdit = isSuperAdmin || can(PERMISSIONS.DESPESAS.EDITAR);
 
   const [empresaDespesaFiltro, setEmpresaDespesaFiltro] = useState<string>("todas");
@@ -83,14 +85,14 @@ export function useDespesasTabViewModel({
       const term = searchDespesa.toLowerCase().trim();
       list = list.filter((d) => {
         const desc = (d.descricao || "").toLowerCase();
-        const cat = (CATEGORIA_DESPESA_LABELS[d.categoria] || d.categoria || "").toLowerCase();
+        const cat = getCategoriaLabel(d.categoria).toLowerCase();
         const emp = (d.is_holding ? "holding" : d.empresa?.nome_fantasia || "").toLowerCase();
         return desc.includes(term) || cat.includes(term) || emp.includes(term);
       });
     }
 
     return list;
-  }, [despesas, statusDespesaFiltro, categoriaDespesaFiltro, empresaDespesaFiltro, searchDespesa]);
+  }, [despesas, statusDespesaFiltro, categoriaDespesaFiltro, empresaDespesaFiltro, searchDespesa, getCategoriaLabel]);
 
   const {
     sortedData: despesasOrdenadas,
@@ -104,7 +106,7 @@ export function useDespesasTabViewModel({
       data_vencimento: (d) => d.data_vencimento || "",
       descricao: (d) => d.descricao || "",
       empresa: (d) => (d.is_holding ? "Geral Holding (Rateio)" : d.empresa?.nome_fantasia || ""),
-      categoria: (d) => CATEGORIA_DESPESA_LABELS[d.categoria] || d.categoria || "",
+      categoria: (d) => getCategoriaLabel(d.categoria),
       valor_previsto: (d) => Number(d.valor_previsto || 0),
       valor_pago: (d) => Number(d.valor_pago || 0),
       data_pagamento: (d) => d.data_pagamento || "",

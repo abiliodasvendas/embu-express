@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
@@ -8,9 +9,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { CATEGORIA_DESPESA_LABELS } from "@/constants/financeiro.constants";
+import {
+  CATEGORIA_DESPESA_LABELS,
+  ESCOPO_CATEGORIA_FINANCEIRA,
+} from "@/constants/financeiro.constants";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
+import { useLayout } from "@/contexts/LayoutContext";
 import { DespesaFormData } from "@/schemas/despesaSchema";
 import { Empresa } from "@/types/database";
+import { Tags } from "lucide-react";
 
 interface DespesaIdentificacaoSectionProps {
   form: UseFormReturn<DespesaFormData>;
@@ -21,6 +28,44 @@ export function DespesaIdentificacaoSection({
   form,
   empresas,
 }: DespesaIdentificacaoSectionProps) {
+  const { openCategoriasFinanceirasDialog } = useLayout();
+  const { categoriasDespesa, getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
+  const categoriaSelecionada = form.watch("categoria");
+
+  const opcoesCategorias = useMemo(() => {
+    const listaBase =
+      categoriasDespesa.length > 0
+        ? categoriasDespesa.map((c) => ({ codigo: c.codigo, nome: c.nome }))
+        : Object.entries(CATEGORIA_DESPESA_LABELS).map(([codigo, nome]) => ({
+            codigo,
+            nome,
+          }));
+
+    if (
+      categoriaSelecionada &&
+      !listaBase.some((item) => item.codigo === categoriaSelecionada)
+    ) {
+      return [
+        ...listaBase,
+        {
+          codigo: categoriaSelecionada,
+          nome: getCategoriaLabel(categoriaSelecionada),
+        },
+      ];
+    }
+
+    return listaBase;
+  }, [categoriasDespesa, categoriaSelecionada, getCategoriaLabel]);
+
+  const handleGerenciarCategorias = () => {
+    openCategoriasFinanceirasDialog({
+      escopoInicial: ESCOPO_CATEGORIA_FINANCEIRA.DESPESA,
+      onCategoryCreated: (novaCat) => {
+        form.setValue("categoria", novaCat.codigo);
+      },
+    });
+  };
+
   return (
     <>
       <FormField
@@ -49,17 +94,27 @@ export function DespesaIdentificacaoSection({
           name="categoria"
           render={({ field }) => (
             <FormItem className="space-y-1.5">
-              <FormLabel className="text-xs font-semibold text-foreground">
-                Categoria de Despesa <span className="text-destructive">*</span>
-              </FormLabel>
+              <div className="flex items-center justify-between gap-2">
+                <FormLabel className="text-xs font-semibold text-foreground">
+                  Categoria de Despesa <span className="text-destructive">*</span>
+                </FormLabel>
+                <button
+                  type="button"
+                  onClick={handleGerenciarCategorias}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  <Tags className="w-3 h-3" />
+                  <span>+ Nova / Gerenciar</span>
+                </button>
+              </div>
               <FormControl>
                 <NativeSelect
                   {...field}
                   className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
                 >
-                  {Object.entries(CATEGORIA_DESPESA_LABELS).map(([catKey, catLabel]) => (
-                    <option key={catKey} value={catKey}>
-                      {catLabel}
+                  {opcoesCategorias.map((op) => (
+                    <option key={op.codigo} value={op.codigo}>
+                      {op.nome}
                     </option>
                   ))}
                 </NativeSelect>

@@ -4,6 +4,7 @@ import { useContasBancarias, useContasBancariasSaldos } from "@/hooks/api/useCon
 import { useEmpresas } from "@/hooks/api/useEmpresas";
 import { useLayout } from "@/contexts/LayoutContext";
 import { ContaBancariaComSaldo } from "@/types/database";
+import { MODO_LANCAMENTO_AVULSO } from "@/constants/financeiro.constants";
 import { PERMISSIONS } from "@/constants/permissions.enum";
 import { toast } from "sonner";
 
@@ -14,6 +15,7 @@ export function useContasBancariasViewModel() {
     openContasBancariasDialog,
     openConfirmationDialog,
     openExtratoContaBancariaDialog,
+    openMovimentacaoAvulsaDialog,
   } = useLayout();
   const { can } = usePermissions();
   const canEdit = can(PERMISSIONS.CONTAS_BANCARIAS.EDITAR);
@@ -114,6 +116,16 @@ export function useContasBancariasViewModel() {
     openContasBancariasDialog({ empresaIdInicial: empresaId || undefined });
   };
 
+  const handleNovaTransferencia = () => {
+    openMovimentacaoAvulsaDialog({
+      initialMode: MODO_LANCAMENTO_AVULSO.TRANSFERENCIA,
+      empresaIdInicial: empresaId || undefined,
+      onSuccess: () => {
+        refetch();
+      },
+    });
+  };
+
   const handleVerExtrato = (conta: ContaBancariaComSaldo) => {
     openExtratoContaBancariaDialog({
       contaId: conta.id,
@@ -146,6 +158,7 @@ export function useContasBancariasViewModel() {
     canEdit,
     refetch,
     handleNovaConta,
+    handleNovaTransferencia,
     handleExcluirConta,
     handleVerExtrato,
   };

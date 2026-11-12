@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { CATEGORIA_DESPESA, STATUS_DESPESA, DESPESA_ESCOPO_ACAO } from "@/constants/financeiro.constants";
+import { STATUS_DESPESA, DESPESA_ESCOPO_ACAO } from "@/constants/financeiro.constants";
 
 export const despesaFormSchema = z.object({
   descricao: z.string({
     required_error: "Informe a descrição da conta",
   }).min(2, "Informe a descrição da conta"),
-  categoria: z.nativeEnum(CATEGORIA_DESPESA, {
+  categoria: z.string({
     required_error: "Selecione a categoria de despesa",
-  }),
+  }).min(1, "Selecione a categoria de despesa"),
   empresa_id: z.string().default("holding"),
   is_holding: z.boolean().default(true),
   mes_competencia: z.coerce.number().min(1).max(12),

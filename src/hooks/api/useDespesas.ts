@@ -18,6 +18,7 @@ export function useDespesas(
 
   const invalidarConsultasDespesas = () => {
     queryClient.invalidateQueries({ queryKey: ["despesas"] });
+    queryClient.invalidateQueries({ queryKey: ["categorias-financeiras"] });
     queryClient.invalidateQueries({ queryKey: ["contas-pagar"] });
     queryClient.invalidateQueries({ queryKey: ["contas-bancarias"] });
     queryClient.invalidateQueries({ queryKey: ["contas-bancarias-saldos"] });

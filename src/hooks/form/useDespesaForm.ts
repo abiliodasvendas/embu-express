@@ -68,6 +68,22 @@ export function useDespesaForm({
     ? contas.filter((c) => c.empresa_id === Number(selectedEmpresaId))
     : contas;
 
+  const contaBancariaIdAtual = form.watch("conta_bancaria_id");
+
+  useEffect(() => {
+    if (
+      selectedEmpresaId &&
+      selectedEmpresaId !== "holding" &&
+      contaBancariaIdAtual &&
+      contas.length > 0
+    ) {
+      const contaObj = contas.find((c) => c.id === contaBancariaIdAtual);
+      if (contaObj && Number(contaObj.empresa_id) !== Number(selectedEmpresaId)) {
+        form.setValue("conta_bancaria_id", "");
+      }
+    }
+  }, [selectedEmpresaId, contaBancariaIdAtual, contas, form]);
+
   useEffect(() => {
     if (open) {
       if (despesaToEdit) {
@@ -162,8 +178,9 @@ export function useDespesaForm({
       onSuccess?.();
     } catch (err: unknown) {
       const msg =
-        isAxiosError(err) && err.response?.data?.message
-          ? String(err.response.data.message)
+        isAxiosError(err) &&
+        (err.response?.data?.error || err.response?.data?.message)
+          ? String(err.response.data.error || err.response.data.message)
           : err instanceof Error
           ? err.message
           : "Erro ao salvar despesa.";

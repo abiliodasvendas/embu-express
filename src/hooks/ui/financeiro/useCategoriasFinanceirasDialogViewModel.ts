@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { isAxiosError } from "axios";
+import { toast } from "sonner";
 import {
   useCategoriasFinanceirasQuery,
   useCreateCategoriaFinanceira,
@@ -18,6 +20,16 @@ import {
 } from "@/constants/financeiro.constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (isAxiosError(error)) {
+    const data = error.response?.data as { error?: string; message?: string } | undefined;
+    if (data?.error) return data.error;
+    if (data?.message) return data.message;
+  }
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
 
 export interface UseCategoriasFinanceirasDialogViewModelProps {
   open: boolean;
@@ -82,20 +94,13 @@ export function useCategoriasFinanceirasDialogViewModel({
         { value: GRUPO_DRE_CATEGORIA.NAO_AFETA_DRE, label: GRUPO_DRE_LABELS.NAO_AFETA_DRE },
       ];
     }
-    if (escopoAtivo === ESCOPO_CATEGORIA_FINANCEIRA.SAIDA_AVULSA) {
-      return [
-        { value: GRUPO_DRE_CATEGORIA.DESPESA_FIXA, label: GRUPO_DRE_LABELS.DESPESA_FIXA },
-        { value: GRUPO_DRE_CATEGORIA.DESPESA_FINANCEIRA, label: GRUPO_DRE_LABELS.DESPESA_FINANCEIRA },
-        { value: GRUPO_DRE_CATEGORIA.NAO_AFETA_DRE, label: GRUPO_DRE_LABELS.NAO_AFETA_DRE },
-      ];
-    }
     return [
       { value: GRUPO_DRE_CATEGORIA.DESPESA_FIXA, label: GRUPO_DRE_LABELS.DESPESA_FIXA },
+      { value: GRUPO_DRE_CATEGORIA.DESPESA_FINANCEIRA, label: GRUPO_DRE_LABELS.DESPESA_FINANCEIRA },
       { value: GRUPO_DRE_CATEGORIA.TRIBUTO_DAS, label: GRUPO_DRE_LABELS.TRIBUTO_DAS },
       { value: GRUPO_DRE_CATEGORIA.PROLABORE, label: GRUPO_DRE_LABELS.PROLABORE },
       { value: GRUPO_DRE_CATEGORIA.PARCELAMENTO_FISCAL, label: GRUPO_DRE_LABELS.PARCELAMENTO_FISCAL },
       { value: GRUPO_DRE_CATEGORIA.INVESTIMENTO_FINANCIAMENTO, label: GRUPO_DRE_LABELS.INVESTIMENTO_FINANCIAMENTO },
-      { value: GRUPO_DRE_CATEGORIA.DESPESA_FINANCEIRA, label: GRUPO_DRE_LABELS.DESPESA_FINANCEIRA },
       { value: GRUPO_DRE_CATEGORIA.NAO_AFETA_DRE, label: GRUPO_DRE_LABELS.NAO_AFETA_DRE },
     ];
   }, [escopoAtivo]);
@@ -112,15 +117,24 @@ export function useCategoriasFinanceirasDialogViewModel({
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!novoNome.trim()) return;
+    const nomeLimpo = novoNome.trim();
+    if (nomeLimpo.length < 2) {
+      toast.error("O nome da categoria deve ter ao menos 2 caracteres.");
+      return;
+    }
 
-    const criada = await createMutation.mutateAsync({
-      nome: novoNome.trim(),
-      escopo: escopoAtivo,
-      grupo_dre: novoGrupoDre,
-    });
-    setNovoNome("");
-    onCategoryCreated?.(criada);
+    try {
+      const criada = await createMutation.mutateAsync({
+        nome: nomeLimpo,
+        escopo: escopoAtivo,
+        grupo_dre: novoGrupoDre,
+      });
+      toast.success("Categoria criada com sucesso!");
+      setNovoNome("");
+      onCategoryCreated?.(criada);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Erro ao criar categoria financeira."));
+    }
   };
 
   const handleStartEdit = (cat: CategoriaFinanceira) => {
@@ -134,22 +148,39 @@ export function useCategoriasFinanceirasDialogViewModel({
   };
 
   const handleSaveEdit = async (id: string) => {
-    if (!editingNome.trim()) return;
-    await updateMutation.mutateAsync({
-      id,
-      data: {
-        nome: editingNome.trim(),
-        grupo_dre: editingGrupoDre,
-      },
-    });
-    setEditingId(null);
+    const nomeLimpo = editingNome.trim();
+    if (nomeLimpo.length < 2) {
+      toast.error("O nome da categoria deve ter ao menos 2 caracteres.");
+      return;
+    }
+
+    try {
+      await updateMutation.mutateAsync({
+        id,
+        data: {
+          nome: nomeLimpo,
+          grupo_dre: editingGrupoDre,
+        },
+      });
+      toast.success("Categoria atualizada com sucesso!");
+      setEditingId(null);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Erro ao atualizar categoria financeira."));
+    }
   };
 
   const handleToggleAtivo = async (cat: CategoriaFinanceira) => {
-    await updateMutation.mutateAsync({
-      id: cat.id,
-      data: { ativo: !cat.ativo },
-    });
+    try {
+      await updateMutation.mutateAsync({
+        id: cat.id,
+        data: { ativo: !cat.ativo },
+      });
+      toast.success(
+        cat.ativo ? "Categoria inativada com sucesso!" : "Categoria reativada com sucesso!"
+      );
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Erro ao atualizar status da categoria."));
+    }
   };
 
   const handleDelete = (cat: CategoriaFinanceira) => {
@@ -160,8 +191,13 @@ export function useCategoriasFinanceirasDialogViewModel({
       cancelText: "Cancelar",
       variant: "destructive",
       onConfirm: async () => {
-        await deleteMutation.mutateAsync(cat.id);
-        safeCloseDialog(closeConfirmationDialog);
+        try {
+          await deleteMutation.mutateAsync(cat.id);
+          toast.success("Categoria excluída com sucesso!");
+          safeCloseDialog(closeConfirmationDialog);
+        } catch (err) {
+          toast.error(extractErrorMessage(err, "Não foi possível excluir esta categoria."));
+        }
       },
     });
   };

@@ -24,8 +24,26 @@ export const despesaFormSchema = z.object({
   is_parcelado: z.boolean().default(false),
   quantidade_parcelas: z.coerce.number().min(2, "Mínimo 2 parcelas").optional(),
   is_recorrente: z.boolean().default(false),
-  meses_recorrencia: z.coerce.number().min(2).max(36).optional(),
+  meses_recorrencia: z.coerce.number().min(2).max(24).optional(),
   escopo: z.nativeEnum(DESPESA_ESCOPO_ACAO).optional(),
+}).superRefine((data, ctx) => {
+  if (
+    data.status === STATUS_DESPESA.PAGO &&
+    (!data.conta_bancaria_id || !data.conta_bancaria_id.trim())
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["conta_bancaria_id"],
+      message: "Selecione a conta bancária utilizada no pagamento",
+    });
+  }
+  if (data.is_parcelado && (!data.quantidade_parcelas || data.quantidade_parcelas < 2)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["quantidade_parcelas"],
+      message: "Mínimo 2 parcelas",
+    });
+  }
 });
 
 export type DespesaFormData = z.infer<typeof despesaFormSchema>;

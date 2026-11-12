@@ -69,6 +69,13 @@ export const movimentacaoAvulsaFormSchema = z
           message: "Selecione a empresa",
         });
       }
+      if (!data.conta_bancaria_id || data.conta_bancaria_id === "none") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["conta_bancaria_id"],
+          message: "Selecione a conta bancária",
+        });
+      }
       if (!data.categoria || !data.categoria.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

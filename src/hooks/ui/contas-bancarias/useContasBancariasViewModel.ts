@@ -6,6 +6,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { ContaBancariaComSaldo } from "@/types/database";
 import { MODO_LANCAMENTO_AVULSO } from "@/constants/financeiro.constants";
 import { PERMISSIONS } from "@/constants/permissions.enum";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { toast } from "sonner";
 
 export type TipoContaFiltro = "TODOS" | "CORRENTE" | "POUPANCA" | "PAGAMENTO" | "INVESTIMENTO";
@@ -14,6 +15,7 @@ export function useContasBancariasViewModel() {
   const {
     openContasBancariasDialog,
     openConfirmationDialog,
+    closeConfirmationDialog,
     openExtratoContaBancariaDialog,
     openMovimentacaoAvulsaDialog,
   } = useLayout();
@@ -104,6 +106,7 @@ export function useContasBancariasViewModel() {
           await deleteMutation.mutateAsync(conta.id);
           toast.success("Conta bancária removida com sucesso.");
           refetch();
+          safeCloseDialog(closeConfirmationDialog);
         } catch (error: unknown) {
           const err = error as { message?: string; response?: { data?: { error?: string } } };
           toast.error(err.response?.data?.error || err.message || "Erro ao remover conta bancária.");

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Banner } from "@/components/ui/Banner";
 import {
   CATEGORIA_DESPESA_LABELS,
   ESCOPO_CATEGORIA_FINANCEIRA,
@@ -29,33 +30,46 @@ export function DespesaIdentificacaoSection({
   empresas,
 }: DespesaIdentificacaoSectionProps) {
   const { openCategoriasFinanceirasDialog } = useLayout();
-  const { categoriasDespesa, getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
+  const { categorias, categoriasDespesa, getCategoriaLabel } =
+    useCategoriasFinanceirasLabelMap();
   const categoriaSelecionada = form.watch("categoria");
 
   const opcoesCategorias = useMemo(() => {
     const listaBase =
       categoriasDespesa.length > 0
-        ? categoriasDespesa.map((c) => ({ codigo: c.codigo, nome: c.nome }))
+        ? categoriasDespesa.map((c) => ({
+            codigo: c.codigo,
+            nome: c.nome,
+            afeta_dre: c.afeta_dre,
+          }))
         : Object.entries(CATEGORIA_DESPESA_LABELS).map(([codigo, nome]) => ({
             codigo,
             nome,
+            afeta_dre: true,
           }));
 
     if (
       categoriaSelecionada &&
       !listaBase.some((item) => item.codigo === categoriaSelecionada)
     ) {
+      const catInativa = categorias.find((c) => c.codigo === categoriaSelecionada);
       return [
         ...listaBase,
         {
           codigo: categoriaSelecionada,
-          nome: getCategoriaLabel(categoriaSelecionada),
+          nome: catInativa?.nome || getCategoriaLabel(categoriaSelecionada),
+          afeta_dre: catInativa?.afeta_dre ?? true,
         },
       ];
     }
 
     return listaBase;
-  }, [categoriasDespesa, categoriaSelecionada, getCategoriaLabel]);
+  }, [categorias, categoriasDespesa, categoriaSelecionada, getCategoriaLabel]);
+
+  const categoriaSelecionadaAfetaDre = useMemo(() => {
+    const found = opcoesCategorias.find((c) => c.codigo === categoriaSelecionada);
+    return found?.afeta_dre ?? true;
+  }, [opcoesCategorias, categoriaSelecionada]);
 
   const handleGerenciarCategorias = () => {
     openCategoriasFinanceirasDialog({
@@ -154,6 +168,13 @@ export function DespesaIdentificacaoSection({
           )}
         />
       </div>
+
+      {!categoriaSelecionadaAfetaDre && (
+        <Banner
+          variant="info"
+          description="Esta categoria é neutra e não afetará o cálculo do DRE (Resultado Real do Mês)."
+        />
+      )}
     </>
   );
 }

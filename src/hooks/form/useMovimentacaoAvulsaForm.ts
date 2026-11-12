@@ -335,9 +335,14 @@ export function useMovimentacaoAvulsaForm({
 
   const handleFillMock = () => {
     const empId = empresas[0]?.id || 1;
+    const contaDefault =
+      contasAtivas.find((c) => Number(c.empresa_id) === Number(empId))?.id ||
+      contasAtivas[0]?.id ||
+      "none";
     const mockData = mockGenerator.movimentacaoAvulsa(empId);
     form.reset({
       ...mockData,
+      conta_bancaria_id: contaDefault,
       modo_lancamento: mockData.tipo_movimentacao,
       conta_destino_id: "",
     });

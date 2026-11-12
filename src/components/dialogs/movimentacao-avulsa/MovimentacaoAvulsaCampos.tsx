@@ -224,7 +224,7 @@ export function MovimentacaoAvulsaCampos({
                   onChange={field.onChange}
                   className="h-11 rounded-[18px] bg-background text-xs sm:text-sm font-semibold"
                 >
-                  <option value="none">Nenhuma conta específica</option>
+                  <option value="none">Selecione a conta bancária</option>
                   {contasEmpresa.map((c) => (
                     <option key={c.id} value={c.id}>
                       {formatContaBancaria(c)}

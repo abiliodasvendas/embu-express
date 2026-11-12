@@ -11,18 +11,24 @@ export interface UseConfirmarAdiantamentoFormProps {
   open: boolean;
   valorSugerido: number;
   contaBancariaInicialId?: string | null;
+  dataPagamentoInicial?: string | null;
 }
 
 export function useConfirmarAdiantamentoForm({
   open,
   valorSugerido,
   contaBancariaInicialId,
+  dataPagamentoInicial,
 }: UseConfirmarAdiantamentoFormProps) {
+  const defaultDate = dataPagamentoInicial
+    ? dataPagamentoInicial.slice(0, 10)
+    : toLocalDateString();
+
   const form = useForm<ConfirmarAdiantamentoFormData>({
     resolver: zodResolver(confirmarAdiantamentoFormSchema),
     defaultValues: {
       conta_bancaria_id: contaBancariaInicialId || "",
-      data_pagamento: toLocalDateString(),
+      data_pagamento: defaultDate,
       valor: Number(valorSugerido || 0),
     },
   });
@@ -31,11 +37,13 @@ export function useConfirmarAdiantamentoForm({
     if (open) {
       form.reset({
         conta_bancaria_id: contaBancariaInicialId || "",
-        data_pagamento: toLocalDateString(),
+        data_pagamento: dataPagamentoInicial
+          ? dataPagamentoInicial.slice(0, 10)
+          : toLocalDateString(),
         valor: Number(valorSugerido || 0),
       });
     }
-  }, [open, valorSugerido, contaBancariaInicialId, form]);
+  }, [open, valorSugerido, contaBancariaInicialId, dataPagamentoInicial, form]);
 
   return { form };
 }

@@ -30,6 +30,8 @@ export interface ConfirmarPagamentoSalarioDialogProps {
   colaboradorNome?: string;
   referenciaLabel?: string;
   contaBancariaInicialId?: string | null;
+  dataPagamentoInicial?: string | null;
+  isEditMode?: boolean;
   onConfirm: (payload: ConfirmarPagamentoSalarioSubmitPayload) => Promise<void>;
   isLoading?: boolean;
 }
@@ -41,6 +43,8 @@ export function ConfirmarPagamentoSalarioDialog({
   colaboradorNome,
   referenciaLabel,
   contaBancariaInicialId,
+  dataPagamentoInicial,
+  isEditMode = false,
   onConfirm,
   isLoading = false,
 }: ConfirmarPagamentoSalarioDialogProps) {
@@ -51,6 +55,7 @@ export function ConfirmarPagamentoSalarioDialog({
   const { form } = useConfirmarPagamentoSalarioForm({
     open,
     contaBancariaInicialId,
+    dataPagamentoInicial,
   });
 
   const showLoading = isLoading || internalLoading;
@@ -82,10 +87,12 @@ export function ConfirmarPagamentoSalarioDialog({
     >
       <BaseDialog.Header
         icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-        title="Confirmar Pagamento de Salário"
+        title={isEditMode ? "Editar Pagamento de Salário" : "Confirmar Pagamento de Salário"}
         subtitle={
           colaboradorNome
             ? `${colaboradorNome}${referenciaLabel ? ` • Ref. ${referenciaLabel}` : ""}`
+            : isEditMode
+            ? "Atualize a conta bancária pagadora ou a data do pagamento."
             : "Confirme a conta bancária e a data para liquidar o fechamento mensal."
         }
         onClose={handleClose}
@@ -95,10 +102,12 @@ export function ConfirmarPagamentoSalarioDialog({
           <div className="p-4 rounded-[18px] bg-muted/40 border border-border flex items-center justify-between">
             <div>
               <span className="text-xs text-muted-foreground block">
-                Saldo Líquido a Pagar
+                {isEditMode ? "Saldo Líquido Pago" : "Saldo Líquido a Pagar"}
               </span>
               <span className="text-[11px] text-muted-foreground">
-                Valor calculado no fechamento (não editável)
+                {isEditMode
+                  ? "Valor liquidado no fechamento (não editável)"
+                  : "Valor calculado no fechamento (não editável)"}
               </span>
             </div>
             <span className="text-lg sm:text-xl font-bold tabular-nums text-foreground">
@@ -174,7 +183,13 @@ export function ConfirmarPagamentoSalarioDialog({
           type="button"
         />
         <BaseDialog.Action
-          label={showLoading ? "Processando..." : "Confirmar Pagamento"}
+          label={
+            showLoading
+              ? "Processando..."
+              : isEditMode
+              ? "Salvar Alterações"
+              : "Confirmar Pagamento"
+          }
           variant="primary"
           isLoading={showLoading}
           disabled={showLoading || contasAtivas.length === 0}

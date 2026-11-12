@@ -134,6 +134,8 @@ export interface OpenConfirmarAdiantamentoDialogProps {
   colaboradorNome?: string;
   referenciaLabel?: string;
   contaBancariaInicialId?: string | null;
+  dataPagamentoInicial?: string | null;
+  isEditMode?: boolean;
   onConfirm: (payload: { valor: number; contaBancariaId: string; dataPagamento: string }) => Promise<void>;
   isLoading?: boolean;
 }
@@ -143,6 +145,8 @@ export interface OpenConfirmarPagamentoSalarioDialogProps {
   colaboradorNome?: string;
   referenciaLabel?: string;
   contaBancariaInicialId?: string | null;
+  dataPagamentoInicial?: string | null;
+  isEditMode?: boolean;
   onConfirm: (payload: { contaBancariaId: string; dataPagamento: string }) => Promise<void>;
   isLoading?: boolean;
 }

@@ -19,6 +19,7 @@ import {
   Info,
   Store,
   CreditCard,
+  Edit2,
 } from "lucide-react";
 
 interface ExtratoKpisProps {
@@ -120,6 +121,15 @@ export function ExtratoKpis({
             extrato.status === FINANCEIRO_STATUS.PAGO &&
             can(PERMISSIONS.FINANCEIRO.PAGAR) && (
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  className="rounded-[18px] border-border text-foreground hover:bg-muted font-medium h-11 px-5 shadow-xs transition-all w-full sm:w-auto"
+                  disabled={isPaying}
+                  onClick={onPayment}
+                >
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  Editar Pagamento
+                </Button>
                 <Button
                   variant="outline"
                   className="rounded-[18px] border-destructive/20 text-destructive hover:bg-destructive/10 font-medium h-11 px-6 transition-all w-full sm:w-auto"

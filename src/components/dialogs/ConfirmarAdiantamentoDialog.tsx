@@ -32,6 +32,8 @@ export interface ConfirmarAdiantamentoDialogProps {
   colaboradorNome?: string;
   referenciaLabel?: string;
   contaBancariaInicialId?: string | null;
+  dataPagamentoInicial?: string | null;
+  isEditMode?: boolean;
   onConfirm: (payload: ConfirmarAdiantamentoSubmitPayload) => Promise<void>;
   isLoading?: boolean;
 }
@@ -43,6 +45,8 @@ export default function ConfirmarAdiantamentoDialog({
   colaboradorNome,
   referenciaLabel,
   contaBancariaInicialId,
+  dataPagamentoInicial,
+  isEditMode = false,
   onConfirm,
   isLoading = false,
 }: ConfirmarAdiantamentoDialogProps) {
@@ -54,6 +58,7 @@ export default function ConfirmarAdiantamentoDialog({
     open,
     valorSugerido,
     contaBancariaInicialId,
+    dataPagamentoInicial,
   });
 
   const showLoading = isLoading || internalLoading;
@@ -86,7 +91,11 @@ export default function ConfirmarAdiantamentoDialog({
     >
       <BaseDialog.Header
         icon={<Wallet className="w-5 h-5 text-foreground" />}
-        title={getMessage("financeiro.confirmacao.adiantamento.titulo")}
+        title={
+          isEditMode
+            ? "Editar Pagamento de Adiantamento"
+            : getMessage("financeiro.confirmacao.adiantamento.titulo")
+        }
         subtitle={
           colaboradorNome
             ? `${colaboradorNome}${referenciaLabel ? ` • Ref. ${referenciaLabel}` : ""}`
@@ -187,7 +196,13 @@ export default function ConfirmarAdiantamentoDialog({
           type="button"
         />
         <BaseDialog.Action
-          label={showLoading ? "Processando..." : "Confirmar Adiantamento"}
+          label={
+            showLoading
+              ? "Processando..."
+              : isEditMode
+              ? "Salvar Alterações"
+              : "Confirmar Adiantamento"
+          }
           variant="primary"
           isLoading={showLoading}
           disabled={showLoading || contasAtivas.length === 0}

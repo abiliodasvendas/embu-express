@@ -289,6 +289,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           colaboradorNome={confirmarAdiantamentoDialogState.props.colaboradorNome}
           referenciaLabel={confirmarAdiantamentoDialogState.props.referenciaLabel}
           contaBancariaInicialId={confirmarAdiantamentoDialogState.props.contaBancariaInicialId}
+          dataPagamentoInicial={confirmarAdiantamentoDialogState.props.dataPagamentoInicial}
+          isEditMode={confirmarAdiantamentoDialogState.props.isEditMode}
           onConfirm={confirmarAdiantamentoDialogState.props.onConfirm}
           isLoading={confirmarAdiantamentoDialogState.props.isLoading}
         />
@@ -301,6 +303,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           colaboradorNome={confirmarPagamentoSalarioDialogState.props.colaboradorNome}
           referenciaLabel={confirmarPagamentoSalarioDialogState.props.referenciaLabel}
           contaBancariaInicialId={confirmarPagamentoSalarioDialogState.props.contaBancariaInicialId}
+          dataPagamentoInicial={confirmarPagamentoSalarioDialogState.props.dataPagamentoInicial}
+          isEditMode={confirmarPagamentoSalarioDialogState.props.isEditMode}
           onConfirm={confirmarPagamentoSalarioDialogState.props.onConfirm}
           isLoading={confirmarPagamentoSalarioDialogState.props.isLoading}
         />

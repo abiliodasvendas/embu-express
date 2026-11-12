@@ -193,27 +193,34 @@ export function ContasPagarTable({
 
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
-                        {item.tipo === TIPO_CONTA_PAGAR.DESPESA && canEdit && (
-                          <>
+                        {(item.tipo === TIPO_CONTA_PAGAR.DESPESA ||
+                          (item.tipo === TIPO_CONTA_PAGAR.COLABORADOR && isPago)) &&
+                          canEdit && (
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => onEdit?.(item)}
-                              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground"
-                              title="Editar Despesa"
+                              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-foreground cursor-pointer"
+                              title={
+                                item.tipo === TIPO_CONTA_PAGAR.COLABORADOR
+                                  ? "Editar Pagamento"
+                                  : "Editar Despesa"
+                              }
                             >
                               <Edit2 className="h-3.5 w-3.5" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onDelete?.(item)}
-                              className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive"
-                              title="Excluir Despesa"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </>
+                          )}
+
+                        {item.tipo === TIPO_CONTA_PAGAR.DESPESA && canEdit && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onDelete?.(item)}
+                            className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive cursor-pointer"
+                            title="Excluir Despesa"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         )}
 
                         {!isPago ? (

@@ -15,6 +15,7 @@ import {
 import { useDateFilters } from "@/hooks/ui/useFilters";
 import { ExtratoMensal, ResumoClienteFinanceiro } from "@/types/financeiro";
 import { OccurrenceFormMode } from "@/types/enums";
+import { FINANCEIRO_STATUS } from "@/constants/financeiro.constants";
 import { getMessage } from "@/constants/messages";
 
 export type { OcorrenciaComTipo, LancamentoConvenioItem, LancamentoConsolidado };
@@ -137,9 +138,11 @@ export function useFinancialReportView({
       0;
 
     openConfirmarAdiantamentoDialog({
+      isEditMode: Boolean(extrato.adiantamento_confirmado),
       valorSugerido: valorTotalAdiantamento,
       referenciaLabel: `${String(selectedMonth).padStart(2, "0")}/${selectedYear}`,
       contaBancariaInicialId: extrato.adiantamento_conta_bancaria_id,
+      dataPagamentoInicial: extrato.adiantamento_data_pagamento,
       isLoading: confirmarAdiantamentoMutation.isPending,
       onConfirm: async ({ valor, contaBancariaId, dataPagamento }) => {
         await confirmarAdiantamentoMutation.mutateAsync({
@@ -174,9 +177,11 @@ export function useFinancialReportView({
   const handlePayment = () => {
     if (!extrato) return;
     openConfirmarPagamentoSalarioDialog({
+      isEditMode: extrato.status === FINANCEIRO_STATUS.PAGO,
       valorLiquido: extrato.totais?.saldo_final || 0,
       referenciaLabel: `${String(selectedMonth).padStart(2, "0")}/${selectedYear}`,
       contaBancariaInicialId: extrato.conta_bancaria_id,
+      dataPagamentoInicial: extrato.data_pagamento,
       isLoading: handlePaymentMutation.isPending,
       onConfirm: async ({ contaBancariaId, dataPagamento }) => {
         await handlePaymentMutation.mutateAsync({

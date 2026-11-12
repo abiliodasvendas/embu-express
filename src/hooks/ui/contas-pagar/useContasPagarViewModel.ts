@@ -7,9 +7,12 @@ import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { ContaPagarItem, CategoriaDespesa, StatusDespesa, ContasPagarKpis } from "@/types/database";
 import {
   CATEGORIA_COLABORADOR_CONTA_PAGAR,
-  STATUS_DESPESA,
   TIPO_CONTA_PAGAR,
 } from "@/constants/financeiro.constants";
+import {
+  calcularKpisContasPagar,
+  filtrarContasPagarPorStatusEPrazo,
+} from "@/hooks/business/contasPagarHelper";
 import { toast } from "sonner";
 
 export function useContasPagarViewModel() {
@@ -68,99 +71,15 @@ export function useContasPagarViewModel() {
     return list;
   }, [itens, tipoFiltro, busca]);
 
-  const kpis = useMemo<ContasPagarKpis | undefined>(() => {
-    if (!kpisBackend && itens.length === 0) return undefined;
+  const kpis = useMemo<ContasPagarKpis | undefined>(
+    () => calcularKpisContasPagar(itensBasePorTipoEBusca, Boolean(kpisBackend)),
+    [kpisBackend, itensBasePorTipoEBusca]
+  );
 
-    const hoje = new Date();
-    const hojeStr = hoje.toISOString().split("T")[0];
-
-    const dTemp = new Date(hoje);
-    const dayOfWeek = dTemp.getDay();
-    const diffToMonday = dTemp.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(dTemp.setDate(diffToMonday));
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    const mondayStr = monday.toISOString().split("T")[0];
-    const sundayStr = sunday.toISOString().split("T")[0];
-
-    let totalAPagarMes = 0;
-    let totalPagoMes = 0;
-    let totalVencendoHoje = 0;
-    let totalAtrasadas = 0;
-    let totalSemana = 0;
-    let qtdPendentes = 0;
-    let qtdPagas = 0;
-
-    for (const item of itensBasePorTipoEBusca) {
-      if (item.status === STATUS_DESPESA.CANCELADO) continue;
-
-      if (item.status === STATUS_DESPESA.PAGO) {
-        totalPagoMes += item.valor_pago || item.valor_previsto;
-        qtdPagas++;
-      } else {
-        if (item.valor_pago > 0) {
-          totalPagoMes += item.valor_pago;
-        }
-        totalAPagarMes += item.saldo_pendente;
-        qtdPendentes++;
-
-        if (item.data_vencimento === hojeStr) {
-          totalVencendoHoje += item.saldo_pendente;
-        } else if (item.data_vencimento < hojeStr) {
-          totalAtrasadas += item.saldo_pendente;
-        } else if (item.data_vencimento >= mondayStr && item.data_vencimento <= sundayStr) {
-          totalSemana += item.saldo_pendente;
-        }
-      }
-    }
-
-    return {
-      total_a_pagar_mes: parseFloat(totalAPagarMes.toFixed(2)),
-      total_pago_mes: parseFloat(totalPagoMes.toFixed(2)),
-      total_vencendo_hoje: parseFloat(totalVencendoHoje.toFixed(2)),
-      total_atrasadas: parseFloat(totalAtrasadas.toFixed(2)),
-      total_semana: parseFloat(totalSemana.toFixed(2)),
-      quantidade_pendentes: qtdPendentes,
-      quantidade_pagas: qtdPagas,
-    };
-  }, [kpisBackend, itens.length, itensBasePorTipoEBusca]);
-
-  const itensFiltrados = useMemo(() => {
-    let list = itensBasePorTipoEBusca;
-    if (status !== "TODOS") {
-      list = list.filter((i) => i.status === status);
-    }
-    if (filtroPrazo) {
-      const hoje = new Date();
-      const hojeStr = hoje.toISOString().split("T")[0];
-
-      const dTemp = new Date(hoje);
-      const dayOfWeek = dTemp.getDay();
-      const diffToMonday = dTemp.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-      const monday = new Date(dTemp.setDate(diffToMonday));
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
-      const mondayStr = monday.toISOString().split("T")[0];
-      const sundayStr = sunday.toISOString().split("T")[0];
-
-      if (filtroPrazo === "HOJE") {
-        list = list.filter((i) => i.status !== STATUS_DESPESA.PAGO && i.data_vencimento === hojeStr);
-      } else if (filtroPrazo === "SEMANA") {
-        list = list.filter(
-          (i) =>
-            i.status !== STATUS_DESPESA.PAGO &&
-            i.data_vencimento > hojeStr &&
-            i.data_vencimento >= mondayStr &&
-            i.data_vencimento <= sundayStr
-        );
-      } else if (filtroPrazo === "ATRASADAS") {
-        list = list.filter((i) => i.status !== STATUS_DESPESA.PAGO && i.data_vencimento < hojeStr);
-      } else if (filtroPrazo === "PROXIMAS") {
-        list = list.filter((i) => i.status !== STATUS_DESPESA.PAGO && i.data_vencimento > sundayStr);
-      }
-    }
-    return list;
-  }, [itensBasePorTipoEBusca, status, filtroPrazo]);
+  const itensFiltrados = useMemo(
+    () => filtrarContasPagarPorStatusEPrazo(itensBasePorTipoEBusca, status, filtroPrazo),
+    [itensBasePorTipoEBusca, status, filtroPrazo]
+  );
 
   const handleLiquidarItem = (item: ContaPagarItem) => {
     if (item.tipo === TIPO_CONTA_PAGAR.COLABORADOR) {
@@ -258,6 +177,62 @@ export function useContasPagarViewModel() {
   };
 
   const handleEditItem = (item: ContaPagarItem) => {
+    if (item.tipo === TIPO_CONTA_PAGAR.COLABORADOR) {
+      const refLabel =
+        item.mes_competencia && item.ano_competencia
+          ? `${String(item.mes_competencia).padStart(2, "0")}/${item.ano_competencia}`
+          : undefined;
+
+      if (item.categoria === CATEGORIA_COLABORADOR_CONTA_PAGAR.ADIANTAMENTO_SALARIAL) {
+        openConfirmarAdiantamentoDialog({
+          isEditMode: true,
+          valorSugerido: item.valor_pago || item.valor_previsto,
+          colaboradorNome: item.colaborador_nome || item.descricao,
+          referenciaLabel: refLabel,
+          contaBancariaInicialId: item.conta_bancaria_id,
+          dataPagamentoInicial: item.data_pagamento,
+          isLoading: liquidarMutation.isPending,
+          onConfirm: async ({ valor, contaBancariaId, dataPagamento }) => {
+            await liquidarMutation.mutateAsync({
+              id: item.id,
+              tipo: TIPO_CONTA_PAGAR.COLABORADOR,
+              payload: {
+                valor_pago: valor,
+                conta_bancaria_id: contaBancariaId,
+                data_pagamento: dataPagamento,
+              },
+            });
+            toast.success("Pagamento de adiantamento atualizado com sucesso!");
+            refetch();
+          },
+        });
+      } else {
+        openConfirmarPagamentoSalarioDialog({
+          isEditMode: true,
+          valorLiquido: item.valor_pago || item.valor_previsto,
+          colaboradorNome: item.colaborador_nome || item.descricao,
+          referenciaLabel: refLabel,
+          contaBancariaInicialId: item.conta_bancaria_id,
+          dataPagamentoInicial: item.data_pagamento,
+          isLoading: liquidarMutation.isPending,
+          onConfirm: async ({ contaBancariaId, dataPagamento }) => {
+            await liquidarMutation.mutateAsync({
+              id: item.id,
+              tipo: TIPO_CONTA_PAGAR.COLABORADOR,
+              payload: {
+                valor_pago: item.valor_pago || item.valor_previsto,
+                conta_bancaria_id: contaBancariaId,
+                data_pagamento: dataPagamento,
+              },
+            });
+            toast.success("Pagamento de salário atualizado com sucesso!");
+            refetch();
+          },
+        });
+      }
+      return;
+    }
+
     if (item.tipo === TIPO_CONTA_PAGAR.DESPESA) {
       openDespesaFormDialog({
         despesaToEdit: {

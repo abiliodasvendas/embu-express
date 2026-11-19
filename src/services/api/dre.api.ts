@@ -6,6 +6,13 @@ export interface DreItem {
   percentual?: number;
 }
 
+export interface DreGrupoDespesas {
+  total: number;
+  diretas: number;
+  rateio_holding: number;
+  itens: DreItem[];
+}
+
 export interface DreConsolidado {
   periodo: { mes: number; ano: number };
   tipo_visao?: "realizado" | "projetado";
@@ -21,12 +28,8 @@ export interface DreConsolidado {
   };
   lucro_bruto: number;
   margem_bruta_percentual: number;
-  despesas_fixas: {
-    total: number;
-    diretas: number;
-    rateio_holding: number;
-    itens: DreItem[];
-  };
+  despesas_fixas: DreGrupoDespesas;
+  despesas_variaveis: DreGrupoDespesas;
   tributos_correntes_das: {
     total: number;
     is_provisionado: boolean;

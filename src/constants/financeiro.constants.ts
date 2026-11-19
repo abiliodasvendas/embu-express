@@ -234,6 +234,7 @@ export type EscopoCategoriaFinanceiraType = typeof ESCOPO_CATEGORIA_FINANCEIRA[k
 export const GRUPO_DRE_CATEGORIA = {
     RECEITA_OPERACIONAL: 'RECEITA_OPERACIONAL',
     DESPESA_FIXA: 'DESPESA_FIXA',
+    DESPESA_VARIAVEL: 'DESPESA_VARIAVEL',
     TRIBUTO_DAS: 'TRIBUTO_DAS',
     PROLABORE: 'PROLABORE',
     PARCELAMENTO_FISCAL: 'PARCELAMENTO_FISCAL',
@@ -247,6 +248,7 @@ export type GrupoDreCategoriaType = typeof GRUPO_DRE_CATEGORIA[keyof typeof GRUP
 export const GRUPO_DRE_LABELS: Record<GrupoDreCategoriaType, string> = {
     RECEITA_OPERACIONAL: 'Receita Operacional (Soma no DRE)',
     DESPESA_FIXA: 'Despesa Fixa / Operacional (Entra no DRE)',
+    DESPESA_VARIAVEL: 'Despesa Variável (Entra no DRE)',
     TRIBUTO_DAS: 'Simples Nacional / DAS (Entra no DRE)',
     PROLABORE: 'Pró-Labore / Sócios (Entra no DRE)',
     PARCELAMENTO_FISCAL: 'Parcelamento Fiscal / Acordos (Entra no DRE)',

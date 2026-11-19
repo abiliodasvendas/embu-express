@@ -30,6 +30,7 @@ export const ROUTES = {
         CONTAS_PAGAR: "/contas-a-pagar",
         CONTAS_BANCARIAS: "/contas-bancarias",
         RESERVAS: "/retaguarda-reservas",
+        ANIVERSARIANTES: "/aniversariantes",
         INICIO: "/inicio"
     }
 } as const;

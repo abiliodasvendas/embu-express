@@ -45,6 +45,7 @@ const TimeTracking = lazyLoad(() => import("./pages/admin/TimeTracking"));
 const Inicio = lazyLoad(() => import("./pages/admin/Inicio.tsx"));
 const Collaborators = lazyLoad(() => import("./pages/admin/Collaborators"));
 const CollaboratorDetails = lazyLoad(() => import("./pages/admin/CollaboratorDetails"));
+const Aniversariantes = lazyLoad(() => import("./pages/admin/Aniversariantes"));
 const Clients = lazyLoad(() => import("./pages/admin/Clients"));
 const ClientDetails = lazyLoad(() => import("./pages/admin/ClientDetails"));
 const UnitDetails = lazyLoad(() => import("./pages/admin/UnitDetails"));
@@ -282,6 +283,10 @@ const App = () => {
                     <Route element={<RequirePermission permissions={[PERMISSIONS.USUARIOS.VER]} />}>
                       <Route path={ROUTES.PRIVATE.COLABORADORES.replace("/", "")} element={<Collaborators />} />
                       <Route path={ROUTES.PRIVATE.COLABORADOR_DETAILS.replace(/^\//, "")} element={<CollaboratorDetails />} />
+                    </Route>
+
+                    <Route element={<RequirePermission permissions={[PERMISSIONS.ANIVERSARIANTES.VER]} />}>
+                      <Route path={ROUTES.PRIVATE.ANIVERSARIANTES.replace("/", "")} element={<Aniversariantes />} />
                     </Route>
 
                     <Route element={<RequirePermission permissions={[PERMISSIONS.EQUIPAMENTOS.VER]} />}>

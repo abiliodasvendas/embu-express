@@ -94,6 +94,9 @@ export {
 export {
   useTimeMirrorView,
 } from "./ui/ponto";
+export {
+  useAniversariantesViewModel,
+} from "./ui/aniversariantes/useAniversariantesViewModel";
 
 export { useCreateClient, useDeleteClient, useToggleClientStatus, useUpdateClient } from "./api/useClientMutations";
 export { useClients } from "./api/useClients";

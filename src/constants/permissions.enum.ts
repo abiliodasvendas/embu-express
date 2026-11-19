@@ -91,6 +91,9 @@ export const PERMISSIONS = {
         VER: 'contas_bancarias:ver',
         EDITAR: 'contas_bancarias:editar',
     } as const,
+    ANIVERSARIANTES: {
+        VER: 'aniversariantes:ver',
+    } as const,
 } as const;
 
 export const ROLES = {

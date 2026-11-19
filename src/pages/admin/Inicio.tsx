@@ -1,3 +1,4 @@
+import { AniversariantesHojeBanner } from "@/components/features/aniversariantes/AniversariantesHojeBanner";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { PERMISSIONS, PermissionKey } from "@/constants/permissions.enum";
@@ -133,6 +134,8 @@ export default function Inicio() {
           </p>
         </div>
       </div>
+
+      <AniversariantesHojeBanner />
 
       <div className="space-y-4">
         <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">

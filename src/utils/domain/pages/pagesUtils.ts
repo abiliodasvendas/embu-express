@@ -6,6 +6,7 @@ import {
     Banknote,
     Briefcase,
     Building,
+    Cake,
     Clock,
     FileText,
     Home,
@@ -48,6 +49,13 @@ export const pagesItems: PageItem[] = [
         href: ROUTES.PRIVATE.COLABORADORES,
         icon: Users,
         permissionKey: PERMISSIONS.USUARIOS.VER,
+        category: MENU_CATEGORIES.COLABORADORES,
+    },
+    {
+        title: "Aniversariantes",
+        href: ROUTES.PRIVATE.ANIVERSARIANTES,
+        icon: Cake,
+        permissionKey: PERMISSIONS.ANIVERSARIANTES.VER,
         category: MENU_CATEGORIES.COLABORADORES,
     },
     {

@@ -74,7 +74,7 @@ export function ContasPagarTable({
                 <th className="py-3 px-4 w-[120px] text-right">Valor Previsto</th>
                 <th className="py-3 px-4 w-[110px] text-right">Valor Pago</th>
                 <th className="py-3 px-4 w-[120px] text-right">Saldo a Pagar</th>
-                <th className="py-3 px-4 w-[110px] text-right">Ação</th>
+                <th className="py-3 px-4 min-w-[180px] text-right">Ação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
@@ -245,13 +245,14 @@ export function ContasPagarTable({
                               canEdit &&
                               onDispensarVale && (
                                 <Button
-                                  variant="ghost"
-                                  size="icon"
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => onDispensarVale(item)}
-                                  className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                                  className="h-8 rounded-[18px] text-xs font-medium px-2.5 text-muted-foreground hover:text-destructive hover:border-destructive/30 border-border gap-1 cursor-pointer"
                                   title="Dispensar Vale no Mês"
                                 >
                                   <Ban className="h-3.5 w-3.5" />
+                                  Dispensar
                                 </Button>
                               )}
                             <Button

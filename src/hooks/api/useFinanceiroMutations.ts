@@ -84,6 +84,20 @@ export function useFinanceiroMutations() {
         },
     });
 
+    const dispensarAdiantamentoMutation = useMutation({
+        mutationFn: ({ usuarioId, mes, ano }: { usuarioId: string; mes: number; ano: number }) =>
+            financeiroApi.dispensarAdiantamento(usuarioId, mes, ano),
+        onSuccess: (_, variables) => {
+            invalidateFinanceiroQueries(variables.usuarioId, variables.mes, variables.ano);
+            toast.success("Adiantamento dispensado para esta competência!");
+        },
+        onError: (error: ApiError) => {
+            toast.error("Erro ao dispensar adiantamento", {
+                description: error.response?.data?.error || error.message,
+            });
+        },
+    });
+
     const desfazerPagamentoMutation = useMutation({
         mutationFn: ({ usuarioId, mes, ano }: { usuarioId: string; mes: number; ano: number }) =>
             financeiroApi.desfazerPagamento(usuarioId, mes, ano),
@@ -102,6 +116,7 @@ export function useFinanceiroMutations() {
         handlePaymentMutation,
         confirmarAdiantamentoMutation,
         desconfirmarAdiantamentoMutation,
+        dispensarAdiantamentoMutation,
         desfazerPagamentoMutation,
     };
 }

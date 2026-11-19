@@ -12,6 +12,7 @@ import { getMessage } from "@/constants/messages";
 import { ExtratoMensal } from "@/types/financeiro";
 import { LancamentoConvenioItem } from "@/hooks/ui/financeiro";
 import {
+  Ban,
   CheckCircle2,
   Wallet,
   X,
@@ -28,10 +29,12 @@ interface ExtratoKpisProps {
   can: (permission: string) => boolean;
   isLoading?: boolean;
   isConfirmingAdiantamento: boolean;
+  isDispensandoAdiantamento?: boolean;
   isPaying: boolean;
   isUndoingPayment: boolean;
   onConfirmarAdiantamento: () => void;
   onDesconfirmarAdiantamento: () => void;
+  onDispensarAdiantamento?: () => void;
   onPayment: () => void;
   onDesfazerPagamento: () => void;
 }
@@ -42,10 +45,12 @@ export function ExtratoKpis({
   can,
   isLoading = false,
   isConfirmingAdiantamento,
+  isDispensandoAdiantamento = false,
   isPaying,
   isUndoingPayment,
   onConfirmarAdiantamento,
   onDesconfirmarAdiantamento,
+  onDispensarAdiantamento,
   onPayment,
   onDesfazerPagamento,
 }: ExtratoKpisProps) {
@@ -84,17 +89,30 @@ export function ExtratoKpis({
           {!modoComprovanteRenda &&
             extrato.status === FINANCEIRO_STATUS.RASCUNHO &&
             can(PERMISSIONS.FINANCEIRO.PAGAR) && (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
                 {!extrato.adiantamento_confirmado ? (
-                  <Button
-                    variant="outline"
-                    className="rounded-[18px] border-border text-foreground hover:bg-muted font-medium h-11 px-6 shadow-xs transition-all w-full sm:w-auto"
-                    disabled={isConfirmingAdiantamento}
-                    onClick={onConfirmarAdiantamento}
-                  >
-                    <Wallet className="h-4 w-4 mr-2" />
-                    {getMessage("financeiro.confirmacao.adiantamento.titulo")}
-                  </Button>
+                  <>
+                    {onDispensarAdiantamento && (
+                      <Button
+                        variant="outline"
+                        className="rounded-[18px] border-border text-muted-foreground hover:text-destructive hover:border-destructive/30 font-medium h-11 px-4 shadow-xs transition-all w-full sm:w-auto"
+                        disabled={isDispensandoAdiantamento || isConfirmingAdiantamento}
+                        onClick={onDispensarAdiantamento}
+                      >
+                        <Ban className="h-4 w-4 mr-2" />
+                        Dispensar Vale
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="rounded-[18px] border-border text-foreground hover:bg-muted font-medium h-11 px-6 shadow-xs transition-all w-full sm:w-auto"
+                      disabled={isConfirmingAdiantamento || isDispensandoAdiantamento}
+                      onClick={onConfirmarAdiantamento}
+                    >
+                      <Wallet className="h-4 w-4 mr-2" />
+                      {getMessage("financeiro.confirmacao.adiantamento.titulo")}
+                    </Button>
+                  </>
                 ) : (
                   <Button
                     variant="outline"
@@ -102,7 +120,9 @@ export function ExtratoKpis({
                     onClick={onDesconfirmarAdiantamento}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    {getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo")}
+                    {(extrato.totais?.total_adiantamento || 0) === 0
+                      ? "Desfazer Dispensa do Vale"
+                      : getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo")}
                   </Button>
                 )}
 
@@ -120,7 +140,7 @@ export function ExtratoKpis({
           {!modoComprovanteRenda &&
             extrato.status === FINANCEIRO_STATUS.PAGO &&
             can(PERMISSIONS.FINANCEIRO.PAGAR) && (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   className="rounded-[18px] border-border text-foreground hover:bg-muted font-medium h-11 px-5 shadow-xs transition-all w-full sm:w-auto"

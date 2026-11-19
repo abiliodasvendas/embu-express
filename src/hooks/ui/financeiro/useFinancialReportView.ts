@@ -75,6 +75,7 @@ export function useFinancialReportView({
     handlePaymentMutation,
     confirmarAdiantamentoMutation,
     desconfirmarAdiantamentoMutation,
+    dispensarAdiantamentoMutation,
     desfazerPagamentoMutation,
   } = useFinanceiroMutations();
 
@@ -158,13 +159,40 @@ export function useFinancialReportView({
   };
 
   const handleDesconfirmarAdiantamento = () => {
+    if (!usuarioId) return;
+    const isDispensa = (extrato?.totais?.total_adiantamento || 0) === 0;
     openConfirmationDialog({
-      title: getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo"),
-      description: getMessage("financeiro.confirmacao.desfazer_adiantamento.descricao"),
-      confirmText: getMessage("financeiro.confirmacao.desfazer_adiantamento.botao"),
+      title: isDispensa
+        ? "Desfazer Dispensa do Vale"
+        : getMessage("financeiro.confirmacao.desfazer_adiantamento.titulo"),
+      description: isDispensa
+        ? "Deseja desfazer a dispensa do vale nesta competência? O adiantamento voltará a aparecer como pendente caso o colaborador seja elegível."
+        : getMessage("financeiro.confirmacao.desfazer_adiantamento.descricao"),
+      confirmText: isDispensa
+        ? "Desfazer Dispensa"
+        : getMessage("financeiro.confirmacao.desfazer_adiantamento.botao"),
       variant: "destructive",
       onConfirm: async () => {
         await desconfirmarAdiantamentoMutation.mutateAsync({
+          usuarioId,
+          mes: selectedMonth,
+          ano: selectedYear,
+        });
+        safeCloseDialog(closeConfirmationDialog);
+      },
+    });
+  };
+
+  const handleDispensarAdiantamento = () => {
+    if (!usuarioId) return;
+    openConfirmationDialog({
+      title: "Dispensar Adiantamento no Mês",
+      description:
+        "Deseja dispensar o adiantamento deste colaborador nesta competência? O lançamento sairá das pendências sem movimentar conta bancária e sem descontar do salário.",
+      confirmText: "Dispensar Vale",
+      variant: "destructive",
+      onConfirm: async () => {
+        await dispensarAdiantamentoMutation.mutateAsync({
           usuarioId,
           mes: selectedMonth,
           ano: selectedYear,
@@ -225,12 +253,14 @@ export function useFinancialReportView({
     can,
     isSuperAdmin,
     isConfirmingAdiantamento: confirmarAdiantamentoMutation.isPending,
+    isDispensandoAdiantamento: dispensarAdiantamentoMutation.isPending,
     isPaying: handlePaymentMutation.isPending,
     isUndoingPayment: desfazerPagamentoMutation.isPending,
     handleDeleteOcorrencia,
     handleEditOcorrencia,
     handleConfirmarAdiantamento,
     handleDesconfirmarAdiantamento,
+    handleDispensarAdiantamento,
     handlePayment,
     handleDesfazerPagamento,
     openOccurrenceDetailsDialog,

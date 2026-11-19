@@ -38,6 +38,9 @@ export const financeiroApi = {
     desconfirmarAdiantamento: (usuarioId: string, mes: number, ano: number): Promise<void> =>
         apiClient.delete(`/financeiro/desconfirmar-adiantamento/${usuarioId}`, { params: { mes, ano } }).then(() => undefined),
 
+    dispensarAdiantamento: (usuarioId: string, mes: number, ano: number): Promise<boolean> =>
+        apiClient.post(`/financeiro/dispensar-adiantamento/${usuarioId}`, { mes, ano }).then(res => res.data),
+
     desfazerPagamento: (usuarioId: string, mes: number, ano: number): Promise<void> =>
         apiClient.delete(`/financeiro/desfazer-pagamento/${usuarioId}`, { params: { mes, ano } }).then(() => undefined),
 

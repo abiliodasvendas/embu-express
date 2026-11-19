@@ -130,10 +130,12 @@ export function FinancialReportView({
                 can={vm.can}
                 isLoading={vm.isLoading}
                 isConfirmingAdiantamento={vm.isConfirmingAdiantamento}
+                isDispensandoAdiantamento={vm.isDispensandoAdiantamento}
                 isPaying={vm.isPaying}
                 isUndoingPayment={vm.isUndoingPayment}
                 onConfirmarAdiantamento={vm.handleConfirmarAdiantamento}
                 onDesconfirmarAdiantamento={vm.handleDesconfirmarAdiantamento}
+                onDispensarAdiantamento={vm.handleDispensarAdiantamento}
                 onPayment={vm.handlePayment}
                 onDesfazerPagamento={vm.handleDesfazerPagamento}
               />

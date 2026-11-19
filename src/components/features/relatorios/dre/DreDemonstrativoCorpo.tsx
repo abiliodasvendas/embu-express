@@ -1,9 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { DreConsolidado } from "@/services/api/dre.api";
+import { DreDespesasGrupoSection } from "./DreDespesasGrupoSection";
 
 interface DreDemonstrativoCorpoProps {
   dre?: DreConsolidado;
@@ -119,74 +118,29 @@ export function DreDemonstrativoCorpo({
             </span>
           </div>
 
-          <div className="px-6 py-2 bg-muted/40 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-            (-) CONTAS FIXAS E ESCRITÓRIO
-          </div>
-          {dre.despesas_fixas.itens.map((item, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center px-8 py-1.5 text-muted-foreground text-xs"
-            >
-              <span>• {item.descricao}</span>
-              <span className="text-rose-600 dark:text-rose-400 font-medium">
-                {formatCurrency(item.valor)}
-              </span>
-            </div>
-          ))}
-          {dre.despesas_fixas.itens.length === 0 && (
-            <div className="flex items-center justify-between px-8 py-2 text-xs">
-              <span className="text-muted-foreground italic">
-                {modoVisao === "realizado"
-                  ? "Nenhuma conta fixa paga no período"
-                  : "Nenhuma conta fixa lançada no período"}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onLancarDespesa}
-                className="h-7 text-xs text-foreground hover:bg-muted/40 font-medium gap-1"
-              >
-                <Plus className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>Lançar Conta Fixa</span>
-              </Button>
-            </div>
-          )}
-          <div className="flex justify-between items-center px-6 py-2.5 font-bold text-foreground bg-muted/20 text-xs">
-            <span>TOTAL CONTAS FIXAS E ESCRITÓRIO</span>
-            <span className="text-rose-600 dark:text-rose-400 font-bold">
-              (-) {formatCurrency(dre.despesas_fixas.total)}
-            </span>
-          </div>
+          <DreDespesasGrupoSection
+            titulo="(-) CONTAS FIXAS E ESCRITÓRIO"
+            tituloTotal="TOTAL CONTAS FIXAS E ESCRITÓRIO"
+            grupo={dre.despesas_fixas}
+            emptyMessage={
+              modoVisao === "realizado"
+                ? "Nenhuma conta fixa paga no período"
+                : "Nenhuma conta fixa lançada no período"
+            }
+            actionLabel="Lançar Conta Fixa"
+            onAction={onLancarDespesa}
+          />
 
-          <div className="px-6 py-2 bg-muted/40 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-            (-) DESPESAS VARIÁVEIS
-          </div>
-          {(dre.despesas_variaveis?.itens ?? []).map((item, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center px-8 py-1.5 text-muted-foreground text-xs"
-            >
-              <span>• {item.descricao}</span>
-              <span className="text-rose-600 dark:text-rose-400 font-medium">
-                {formatCurrency(item.valor)}
-              </span>
-            </div>
-          ))}
-          {(dre.despesas_variaveis?.itens?.length ?? 0) === 0 && (
-            <div className="flex items-center justify-between px-8 py-2 text-xs">
-              <span className="text-muted-foreground italic">
-                {modoVisao === "realizado"
-                  ? "Nenhuma despesa variável paga no período"
-                  : "Nenhuma despesa variável lançada no período"}
-              </span>
-            </div>
-          )}
-          <div className="flex justify-between items-center px-6 py-2.5 font-bold text-foreground bg-muted/20 text-xs">
-            <span>TOTAL DESPESAS VARIÁVEIS</span>
-            <span className="text-rose-600 dark:text-rose-400 font-bold">
-              (-) {formatCurrency(dre.despesas_variaveis?.total ?? 0)}
-            </span>
-          </div>
+          <DreDespesasGrupoSection
+            titulo="(-) DESPESAS VARIÁVEIS"
+            tituloTotal="TOTAL DESPESAS VARIÁVEIS"
+            grupo={dre.despesas_variaveis}
+            emptyMessage={
+              modoVisao === "realizado"
+                ? "Nenhuma despesa variável paga no período"
+                : "Nenhuma despesa variável lançada no período"
+            }
+          />
 
           <div className="flex justify-between items-center px-6 py-2.5 text-foreground text-xs font-medium">
             <span>

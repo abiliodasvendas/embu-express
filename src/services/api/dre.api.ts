@@ -6,11 +6,20 @@ export interface DreItem {
   percentual?: number;
 }
 
+export interface DreCategoriaAgrupada {
+  categoria_codigo: string;
+  categoria_nome: string;
+  total: number;
+  quantidade: number;
+  itens: DreItem[];
+}
+
 export interface DreGrupoDespesas {
   total: number;
   diretas: number;
   rateio_holding: number;
   itens: DreItem[];
+  por_categoria?: DreCategoriaAgrupada[];
 }
 
 export interface DreConsolidado {

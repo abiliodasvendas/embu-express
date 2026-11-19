@@ -60,4 +60,7 @@ export const contasPagarApi = {
     apiClient
       .post(`/contas-pagar/${id}/desfazer-liquidacao`, {}, { params: { tipo } })
       .then((res) => res.data),
+
+  dispensarVale: (id: string): Promise<unknown> =>
+    apiClient.post(`/contas-pagar/${id}/dispensar-vale`, {}).then((res) => res.data),
 };

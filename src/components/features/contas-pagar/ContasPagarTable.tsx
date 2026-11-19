@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { ContaPagarItem } from "@/types/database";
-import { CheckCircle2, CreditCard, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
+import { Ban, CheckCircle2, CreditCard, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { TableSkeleton } from "@/components/skeletons";
 import { ContasPagarMobileCard } from "./ContasPagarMobileCard";
 import {
+  CATEGORIA_COLABORADOR_CONTA_PAGAR,
   CATEGORIA_COLABORADOR_LABELS,
   STATUS_DESPESA,
   TIPO_CONTA_PAGAR,
@@ -19,6 +20,7 @@ interface ContasPagarTableProps {
   isLoading: boolean;
   onLiquidar: (item: ContaPagarItem) => void;
   onDesfazerLiquidacao?: (item: ContaPagarItem) => void;
+  onDispensarVale?: (item: ContaPagarItem) => void;
   onEdit?: (item: ContaPagarItem) => void;
   onDelete?: (item: ContaPagarItem) => void;
   onNovaDespesa?: () => void;
@@ -30,6 +32,7 @@ export function ContasPagarTable({
   isLoading,
   onLiquidar,
   onDesfazerLiquidacao,
+  onDispensarVale,
   onEdit,
   onDelete,
   onNovaDespesa,
@@ -236,6 +239,21 @@ export function ContasPagarTable({
                                 <RotateCcw className="h-3.5 w-3.5" />
                               </Button>
                             )}
+                            {item.tipo === TIPO_CONTA_PAGAR.COLABORADOR &&
+                              item.categoria ===
+                                CATEGORIA_COLABORADOR_CONTA_PAGAR.ADIANTAMENTO_SALARIAL &&
+                              canEdit &&
+                              onDispensarVale && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => onDispensarVale(item)}
+                                  className="h-8 w-8 rounded-[18px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                                  title="Dispensar Vale no Mês"
+                                >
+                                  <Ban className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
                             <Button
                               size="sm"
                               onClick={() => onLiquidar(item)}
@@ -276,6 +294,7 @@ export function ContasPagarTable({
             item={item}
             onLiquidar={onLiquidar}
             onDesfazerLiquidacao={onDesfazerLiquidacao}
+            onDispensarVale={onDispensarVale}
             onEdit={onEdit}
             onDelete={onDelete}
             canEdit={canEdit}

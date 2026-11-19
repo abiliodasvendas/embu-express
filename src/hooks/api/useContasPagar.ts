@@ -66,6 +66,13 @@ export function useContasPagar(filtros?: ListContasPagarFiltros) {
     },
   });
 
+  const dispensarValeMutation = useMutation({
+    mutationFn: (id: string) => contasPagarApi.dispensarVale(id),
+    onSuccess: () => {
+      invalidateAllRelated();
+    },
+  });
+
   return {
     ...query,
     itens: query.data?.itens || [],
@@ -73,6 +80,7 @@ export function useContasPagar(filtros?: ListContasPagarFiltros) {
     liquidarMutation,
     loteMutation,
     desfazerLiquidacaoMutation,
+    dispensarValeMutation,
   };
 }
 

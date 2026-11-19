@@ -38,6 +38,7 @@ export function useContasPagarViewModel() {
     refetch,
     liquidarMutation,
     desfazerLiquidacaoMutation,
+    dispensarValeMutation,
   } = useContasPagar({
     mes,
     ano,
@@ -311,6 +312,25 @@ export function useContasPagarViewModel() {
     });
   };
 
+  const handleDispensarValeItem = (item: ContaPagarItem) => {
+    openConfirmationDialog({
+      title: "Dispensar Adiantamento no Mês",
+      description: `Deseja dispensar o adiantamento de "${item.colaborador_nome || item.descricao}" nesta competência? O lançamento sairá das pendências sem movimentar conta bancária e sem descontar do salário.`,
+      confirmText: "Dispensar Vale",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await dispensarValeMutation.mutateAsync(item.id);
+          safeCloseDialog(closeConfirmationDialog);
+          toast.success("Adiantamento dispensado para esta competência!");
+          refetch();
+        } catch {
+          toast.error("Erro ao dispensar o adiantamento.");
+        }
+      },
+    });
+  };
+
   return {
     mes,
     setMes,
@@ -334,6 +354,7 @@ export function useContasPagarViewModel() {
     refetch,
     handleLiquidarItem,
     handleDesfazerLiquidacaoItem,
+    handleDispensarValeItem,
     handleEditItem,
     handleDeleteItem,
     handleNovaDespesa,

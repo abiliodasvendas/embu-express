@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { ContaPagarItem } from "@/types/database";
-import { CheckCircle2, AlertCircle, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
+import { Ban, CheckCircle2, AlertCircle, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
 import {
+  CATEGORIA_COLABORADOR_CONTA_PAGAR,
   CATEGORIA_COLABORADOR_LABELS,
   STATUS_DESPESA,
   TIPO_CONTA_PAGAR,
@@ -15,6 +16,7 @@ interface ContasPagarMobileCardProps {
   item: ContaPagarItem;
   onLiquidar: (item: ContaPagarItem) => void;
   onDesfazerLiquidacao?: (item: ContaPagarItem) => void;
+  onDispensarVale?: (item: ContaPagarItem) => void;
   onEdit?: (item: ContaPagarItem) => void;
   onDelete?: (item: ContaPagarItem) => void;
   canEdit?: boolean;
@@ -24,6 +26,7 @@ export function ContasPagarMobileCard({
   item,
   onLiquidar,
   onDesfazerLiquidacao,
+  onDispensarVale,
   onEdit,
   onDelete,
   canEdit = true,
@@ -182,6 +185,22 @@ export function ContasPagarMobileCard({
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
+
+        {!isPago &&
+          item.tipo === TIPO_CONTA_PAGAR.COLABORADOR &&
+          item.categoria === CATEGORIA_COLABORADOR_CONTA_PAGAR.ADIANTAMENTO_SALARIAL &&
+          canEdit &&
+          onDispensarVale && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDispensarVale(item)}
+              className="h-8 rounded-[18px] text-xs font-medium px-2.5 text-muted-foreground hover:text-destructive border-border gap-1"
+            >
+              <Ban className="h-3.5 w-3.5" />
+              <span>Dispensar</span>
+            </Button>
+          )}
 
         {!isPago && canEdit && (
           <Button

@@ -17,7 +17,20 @@ export function AniversariantesHojeBanner() {
   if (!canView || isLoading) return null;
 
   const aniversariantesHoje = data?.hoje ?? [];
-  if (aniversariantesHoje.length === 0) return null;
+  if (aniversariantesHoje.length === 0) {
+    return (
+      <Banner
+        variant="neutral"
+        icon={Cake}
+        title="Nenhum aniversariante hoje"
+        description="Nenhum colaborador ativo comemora aniversário hoje."
+        action={{
+          label: "Ver aniversariantes",
+          onClick: () => navigate(ROUTES.PRIVATE.ANIVERSARIANTES),
+        }}
+      />
+    );
+  }
 
   const total = aniversariantesHoje.length;
   const subtitulo =

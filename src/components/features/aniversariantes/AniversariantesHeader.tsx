@@ -49,7 +49,7 @@ export function AniversariantesHeader({
             value={termoBusca}
             onChange={(e) => onBuscaChange(e.target.value)}
             placeholder="Buscar colaborador..."
-            className="pl-9 rounded-[18px] bg-[#f5f5f5] border-transparent focus:bg-white focus:border-[#e5e5e5]"
+            className="pl-9 rounded-[18px] bg-card border-border shadow-xs focus:bg-white transition-all"
           />
         </div>
 

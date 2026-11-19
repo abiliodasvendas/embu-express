@@ -6,7 +6,9 @@ import { getPerfilLabel } from "@/utils/formatters/perfil";
 import { Cake } from "lucide-react";
 
 interface AniversariantesMonthListProps {
-  itens: AniversarianteItem[];
+  proximos: AniversarianteItem[];
+  passados: AniversarianteItem[];
+  isMesAtual: boolean;
   nomeMesSelecionado: string;
   isLoading: boolean;
   temBusca: boolean;
@@ -17,24 +19,30 @@ function formatarDiaMes(dia: number, mes: number): string {
 }
 
 export function AniversariantesMonthList({
-  itens,
+  proximos,
+  passados,
+  isMesAtual,
   nomeMesSelecionado,
   isLoading,
   temBusca,
 }: AniversariantesMonthListProps) {
+  const totalMes = proximos.length + passados.length;
+
   return (
-    <Card className="rounded-[24px] border border-[#e5e5e5] bg-white shadow-xs">
+    <Card className="rounded-[24px] border border-[#e5e5e5] bg-white shadow-xs overflow-hidden">
       <CardHeader className="px-5 py-4 border-b border-[#e5e5e5] flex flex-row items-center justify-between space-y-0">
         <div className="space-y-0.5">
           <CardTitle className="text-base font-semibold text-foreground">
             Aniversariantes de {nomeMesSelecionado}
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Colaboradores ativos ordenados pelo dia do mês
+            {isMesAtual
+              ? "Exibindo primeiro os aniversariantes de hoje em diante"
+              : "Colaboradores ativos ordenados pelo dia do mês"}
           </p>
         </div>
         <Badge variant="secondary" className="rounded-[18px]">
-          {itens.length}
+          {totalMes}
         </Badge>
       </CardHeader>
 
@@ -45,7 +53,7 @@ export function AniversariantesMonthList({
               <Skeleton key={idx} className="h-12 w-full rounded-[14px]" />
             ))}
           </div>
-        ) : itens.length === 0 ? (
+        ) : totalMes === 0 ? (
           <div className="px-5 py-10 text-center space-y-2">
             <div className="w-10 h-10 rounded-[14px] bg-[#f5f5f5] border border-[#e5e5e5] mx-auto flex items-center justify-center text-muted-foreground">
               <Cake className="w-4 h-4" />
@@ -62,48 +70,97 @@ export function AniversariantesMonthList({
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-[#e5e5e5]">
-            {itens.map((item) => (
-              <li
-                key={item.id}
-                className={
-                  item.eh_hoje
-                    ? "px-5 py-3.5 flex items-center justify-between gap-4 bg-[#fafafa]"
-                    : "px-5 py-3.5 flex items-center justify-between gap-4 hover:bg-[#fafafa] transition-colors"
-                }
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div
+          <>
+            {proximos.length > 0 ? (
+              <ul className="divide-y divide-[#e5e5e5]">
+                {proximos.map((item) => (
+                  <li
+                    key={item.id}
                     className={
                       item.eh_hoje
-                        ? "w-14 h-9 rounded-[18px] bg-[#171717] text-[#fafafa] text-xs font-semibold flex items-center justify-center shrink-0"
-                        : "w-14 h-9 rounded-[18px] bg-[#f5f5f5] text-foreground border border-[#e5e5e5] text-xs font-medium flex items-center justify-center shrink-0"
+                        ? "px-5 py-3.5 flex items-center justify-between gap-4 bg-[#fafafa]"
+                        : "px-5 py-3.5 flex items-center justify-between gap-4 hover:bg-[#fafafa] transition-colors"
                     }
                   >
-                    {formatarDiaMes(item.dia, item.mes)}
-                  </div>
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div
+                        className={
+                          item.eh_hoje
+                            ? "w-14 h-9 rounded-[18px] bg-[#171717] text-[#fafafa] text-xs font-semibold flex items-center justify-center shrink-0"
+                            : "w-14 h-9 rounded-[18px] bg-[#f5f5f5] text-foreground border border-[#e5e5e5] text-xs font-medium flex items-center justify-center shrink-0"
+                        }
+                      >
+                        {formatarDiaMes(item.dia, item.mes)}
+                      </div>
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {item.nome_completo}
-                      </p>
-                      {item.eh_hoje && (
-                        <Badge className="rounded-[18px] bg-[#171717] text-[#fafafa] hover:bg-[#171717] text-[11px] px-2 py-0.5">
-                          Hoje
-                        </Badge>
-                      )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {item.nome_completo}
+                          </p>
+                          {item.eh_hoje && (
+                            <Badge className="rounded-[18px] bg-[#171717] text-[#fafafa] hover:bg-[#171717] text-[11px] px-2 py-0.5">
+                              Hoje
+                            </Badge>
+                          )}
+                        </div>
+                        {item.perfil_nome && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {getPerfilLabel(item.perfil_nome)}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    {item.perfil_nome && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {getPerfilLabel(item.perfil_nome)}
-                      </p>
-                    )}
-                  </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="px-5 py-6 text-center">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Não há mais aniversariantes ativos a comemorar neste mês.
+                </p>
+              </div>
+            )}
+
+            {passados.length > 0 && (
+              <div className="border-t border-[#e5e5e5]">
+                <div className="px-5 py-2.5 bg-[#fafafa] border-b border-[#e5e5e5] flex items-center justify-between">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Anteriores neste mês
+                  </span>
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    {passados.length}
+                  </span>
                 </div>
-              </li>
-            ))}
-          </ul>
+
+                <ul className="divide-y divide-[#e5e5e5]/70">
+                  {passados.map((item) => (
+                    <li
+                      key={item.id}
+                      className="px-5 py-3 flex items-center justify-between gap-4 opacity-55 hover:opacity-80 transition-opacity"
+                    >
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-14 h-8 rounded-[18px] bg-[#f5f5f5] text-muted-foreground border border-[#e5e5e5] text-xs font-medium flex items-center justify-center shrink-0">
+                          {formatarDiaMes(item.dia, item.mes)}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="text-sm font-normal text-muted-foreground truncate">
+                            {item.nome_completo}
+                          </p>
+                          {item.perfil_nome && (
+                            <p className="text-xs text-muted-foreground/80 truncate">
+                              {getPerfilLabel(item.perfil_nome)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

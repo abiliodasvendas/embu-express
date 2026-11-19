@@ -43,6 +43,8 @@ export function useAniversariantesViewModel() {
   }, [setPageTitle]);
 
   const mesAtual = data?.mes_atual ?? mesAtualInicial;
+  const diaAtual = data?.dia_atual ?? new Date().getDate();
+  const isMesAtual = mesSelecionado === mesAtual;
 
   const nomeMesSelecionado = useMemo(() => {
     return (
@@ -62,6 +64,24 @@ export function useAniversariantesViewModel() {
       item.nome_completo.toLowerCase().includes(termoNormalizado)
     );
   }, [data?.aniversariantes_mes, termoNormalizado]);
+
+  const { aniversariantesProximos, aniversariantesPassados } = useMemo(() => {
+    if (!isMesAtual) {
+      return {
+        aniversariantesProximos: aniversariantesMesFiltrados,
+        aniversariantesPassados: [],
+      };
+    }
+
+    return {
+      aniversariantesProximos: aniversariantesMesFiltrados.filter(
+        (item) => item.dia >= diaAtual
+      ),
+      aniversariantesPassados: aniversariantesMesFiltrados.filter(
+        (item) => item.dia < diaAtual
+      ),
+    };
+  }, [aniversariantesMesFiltrados, isMesAtual, diaAtual]);
 
   const semDataFiltrados = useMemo(() => {
     const lista = data?.sem_data_nascimento ?? [];
@@ -108,6 +128,9 @@ export function useAniversariantesViewModel() {
     setTermoBusca,
     hoje: data?.hoje ?? [],
     aniversariantesMes: aniversariantesMesFiltrados,
+    aniversariantesProximos,
+    aniversariantesPassados,
+    isMesAtual,
     semDataNascimento: semDataFiltrados,
     resumo: data?.resumo ?? {
       total_hoje: 0,

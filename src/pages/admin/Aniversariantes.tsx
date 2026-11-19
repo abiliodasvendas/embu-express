@@ -13,7 +13,9 @@ export default function Aniversariantes() {
     nomeMesSelecionado,
     termoBusca,
     setTermoBusca,
-    aniversariantesMes,
+    aniversariantesProximos,
+    aniversariantesPassados,
+    isMesAtual,
     semDataNascimento,
     resumo,
     isLoading,
@@ -64,7 +66,9 @@ export default function Aniversariantes() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7">
           <AniversariantesMonthList
-            itens={aniversariantesMes}
+            proximos={aniversariantesProximos}
+            passados={aniversariantesPassados}
+            isMesAtual={isMesAtual}
             nomeMesSelecionado={nomeMesSelecionado}
             isLoading={isLoading}
             temBusca={temBusca}

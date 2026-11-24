@@ -12,9 +12,8 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import {
   CATEGORIA_COLABORADOR_CONTA_PAGAR,
   CATEGORIA_COLABORADOR_LABELS,
-  CATEGORIA_DESPESA_LABELS,
 } from "@/constants/financeiro.constants";
-import { CategoriaDespesa } from "@/types/database";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 import { ContaBancariaSelect } from "@/components/ui/ContaBancariaSelect";
 import { formatDateToBR } from "@/utils/formatters/date";
 import {
@@ -34,6 +33,7 @@ interface LiquidacaoLotePagamentoTabProps {
 
 export function LiquidacaoLotePagamentoTab({ onVoltar }: LiquidacaoLotePagamentoTabProps) {
   const vm = useLiquidacaoLotePagamentoVM();
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
 
   return (
     <div className="space-y-6">
@@ -263,8 +263,7 @@ export function LiquidacaoLotePagamentoTab({ onVoltar }: LiquidacaoLotePagamento
                             <span className="text-[10px] text-muted-foreground">
                               {item.empresa_nome ? `${item.empresa_nome} • ` : ""}
                               {CATEGORIA_COLABORADOR_LABELS[item.categoria] ||
-                                CATEGORIA_DESPESA_LABELS[item.categoria as CategoriaDespesa] ||
-                                item.categoria}
+                                getCategoriaLabel(item.categoria)}
                             </span>
                           </div>
                         </TableCell>

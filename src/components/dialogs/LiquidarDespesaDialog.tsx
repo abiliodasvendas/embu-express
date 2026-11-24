@@ -22,7 +22,7 @@ import { CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { formatDateToBR } from "@/utils/formatters/date";
 import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
-import { CATEGORIA_DESPESA_LABELS } from "@/constants/financeiro.constants";
+import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 
 export interface LiquidarDespesaDialogProps {
   open: boolean;
@@ -39,6 +39,7 @@ export function LiquidarDespesaDialog({
 }: LiquidarDespesaDialogProps) {
   const { pagarMutation } = useDespesas();
   const { contas = [] } = useContasBancarias();
+  const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
   const { form } = useLiquidarDespesaForm({ open, despesa });
 
   if (!despesa) return null;
@@ -72,7 +73,7 @@ export function LiquidarDespesaDialog({
     }
   };
 
-  const categoriaLabel = CATEGORIA_DESPESA_LABELS[despesa.categoria] || despesa.categoria;
+  const categoriaLabel = getCategoriaLabel(despesa.categoria);
 
   return (
     <BaseDialog

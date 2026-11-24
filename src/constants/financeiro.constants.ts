@@ -128,6 +128,7 @@ export const CATEGORIA_DESPESA = {
     TRIBUTO_DAS: 'TRIBUTO_DAS',
     PARCELAMENTO_FISCAL: 'PARCELAMENTO_FISCAL',
     INVESTIMENTO_FINANCIAMENTO: 'INVESTIMENTO_FINANCIAMENTO',
+    EMPRESTIMO: 'EMPRESTIMO',
     DESPESA_FINANCEIRA: 'DESPESA_FINANCEIRA',
     PROLABORE: 'PROLABORE',
     INVESTIMENTO_PATRIMONIAL: 'INVESTIMENTO_PATRIMONIAL',
@@ -139,16 +140,17 @@ export const CATEGORIA_DESPESA = {
 export type CategoriaDespesaType = typeof CATEGORIA_DESPESA[keyof typeof CATEGORIA_DESPESA];
 
 export const CATEGORIA_DESPESA_LABELS: Record<string, string> = {
-    DESPESA_FIXA: 'Despesa Operacional Fixa',
+    DESPESA_FIXA: 'Despesa Fixa (Aluguel, Contabilidade, Sistemas, Seguros)',
     DESPESA_ADMINISTRATIVA: 'Despesa Administrativa / Escritório / Contas',
     CARTAO_CREDITO: 'Cartão de Crédito Corporativo',
-    DESPESA_FROTA_DOCUMENTO: 'Frota: Documentação e IPVA',
-    TRIBUTO_DAS: 'Tributo DAS / Simples Nacional',
-    PROLABORE: 'Retirada de Pró-labore dos Sócios',
-    PARCELAMENTO_FISCAL: 'Parcelamentos Fiscais / Dívidas',
-    INVESTIMENTO_PATRIMONIAL: 'Investimentos e Patrimônio',
-    INVESTIMENTO_FINANCIAMENTO: 'Amortização de Empréstimos / Financiamentos',
-    DESPESA_FINANCEIRA: 'Juros e Tarifas Financeiras',
+    DESPESA_FROTA_DOCUMENTO: 'Frota / Documentação / Licenciamento / Multas',
+    TRIBUTO_DAS: 'Tributos / Simples Nacional (DAS)',
+    PROLABORE: 'Pró-Labore / Retirada de Sócios',
+    PARCELAMENTO_FISCAL: 'Parcelamento Fiscal (Acordos / PGFN / Receita)',
+    INVESTIMENTO_PATRIMONIAL: 'Investimento Patrimonial (Imóveis, Obras, Aquisições)',
+    INVESTIMENTO_FINANCIAMENTO: 'Investimento / Financiamento Bancário / Consórcio',
+    EMPRESTIMO: 'Empréstimos (Parcelas / Amortização)',
+    DESPESA_FINANCEIRA: 'Despesa Financeira (Tarifas, Juros, IOF)',
 };
 
 export const STATUS_DESPESA = {
@@ -175,6 +177,19 @@ export const TIPO_CONTA_PAGAR = {
 } as const;
 
 export type TipoContaPagarType = typeof TIPO_CONTA_PAGAR[keyof typeof TIPO_CONTA_PAGAR];
+
+export const FILTRO_CONTA_PAGAR = {
+    TODOS: 'TODOS',
+    VENCENDO_HOJE: 'VENCENDO_HOJE',
+    ATRASADAS: 'ATRASADAS',
+    ESTA_SEMANA: 'ESTA_SEMANA',
+    PROXIMAS: 'PROXIMAS',
+    PENDENTE: 'PENDENTE',
+    PAGO: 'PAGO',
+    CANCELADO: 'CANCELADO',
+} as const;
+
+export type FiltroContaPagarType = typeof FILTRO_CONTA_PAGAR[keyof typeof FILTRO_CONTA_PAGAR];
 
 export const CATEGORIA_COLABORADOR_CONTA_PAGAR = {
     ADIANTAMENTO_SALARIAL: 'ADIANTAMENTO_SALARIAL',
@@ -252,7 +267,7 @@ export const GRUPO_DRE_LABELS: Record<GrupoDreCategoriaType, string> = {
     TRIBUTO_DAS: 'Simples Nacional / DAS (Entra no DRE)',
     PROLABORE: 'Pró-Labore / Sócios (Entra no DRE)',
     PARCELAMENTO_FISCAL: 'Parcelamento Fiscal / Acordos (Entra no DRE)',
-    INVESTIMENTO_FINANCIAMENTO: 'Investimentos / Financiamentos (Entra no DRE)',
+    INVESTIMENTO_FINANCIAMENTO: 'Investimentos / Financiamentos / Empréstimos (Entra no DRE)',
     DESPESA_FINANCEIRA: 'Despesa Financeira / Tarifas (Entra no DRE)',
     NAO_AFETA_DRE: 'Movimentação Neutra / Não afeta o DRE',
 };

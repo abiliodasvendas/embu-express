@@ -189,7 +189,7 @@ export function DreDemonstrativoCorpo({
           </div>
 
           <div className="flex justify-between items-center px-6 py-2.5 text-foreground text-xs font-medium">
-            <span>(-) INVESTIMENTOS E FINANCIAMENTOS (Consórcio, Frota, Imóveis)</span>
+            <span>(-) INVESTIMENTOS, FINANCIAMENTOS E EMPRÉSTIMOS (Consórcio, Frota, Empréstimos)</span>
             <span className="text-rose-600 dark:text-rose-400 font-bold">
               (-) {formatCurrency(dre.investimentos_financiamentos)}
             </span>

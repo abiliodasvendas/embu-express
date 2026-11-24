@@ -16,8 +16,6 @@ interface ContasPagarToolbarProps {
   onEmpresaChange: (id: number | null) => void;
   tipoFiltro: "TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR";
   onTipoChange: (tipo: "TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR") => void;
-  status: string;
-  onStatusChange: (status: string) => void;
   empresas: Empresa[];
   onNovaDespesa: () => void;
   canEdit?: boolean;
@@ -36,8 +34,6 @@ export function ContasPagarToolbar({
   onEmpresaChange,
   tipoFiltro,
   onTipoChange,
-  status,
-  onStatusChange,
   empresas,
   onNovaDespesa,
   canEdit = true,
@@ -102,18 +98,6 @@ export function ContasPagarToolbar({
           <option value="DESPESA">Apenas Despesas</option>
           <option value="CONVENIO">Apenas Convênios</option>
           <option value="COLABORADOR">Apenas Colaboradores</option>
-        </NativeSelect>
-
-        <NativeSelect
-          value={status}
-          onChange={(e) => onStatusChange(e.target.value)}
-          className="h-10 w-[138px] rounded-[18px] bg-card border-border shadow-xs text-xs font-medium"
-        >
-          <option value="TODOS">Todos os Status</option>
-          <option value="PENDENTE">Pendentes</option>
-          <option value="PAGO">Pagas</option>
-          <option value="ADIADA">Adiada</option>
-          <option value="CANCELADO">Cancelada</option>
         </NativeSelect>
       </div>
 

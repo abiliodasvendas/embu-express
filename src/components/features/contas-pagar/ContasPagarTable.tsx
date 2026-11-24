@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { formatDateToBR } from "@/utils/formatters/date";
+import { formatDateToBR, toLocalDateString } from "@/utils/formatters/date";
 import { ContaPagarItem } from "@/types/database";
 import { Ban, CheckCircle2, CreditCard, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
@@ -57,7 +57,7 @@ export function ContasPagarTable({
     );
   }
 
-  const hoje = new Date().toISOString().split("T")[0];
+  const hoje = toLocalDateString();
 
   return (
     <div className="space-y-4">
@@ -80,8 +80,10 @@ export function ContasPagarTable({
             <tbody className="divide-y divide-border/60">
               {itens.map((item) => {
                 const isPago = item.status === STATUS_DESPESA.PAGO;
-                const isVencido = !isPago && item.data_vencimento < hoje;
-                const isHoje = !isPago && item.data_vencimento === hoje;
+                const isCancelado = item.status === STATUS_DESPESA.CANCELADO;
+                const isAdiada = item.status === STATUS_DESPESA.ADIADA;
+                const isVencido = !isPago && !isCancelado && item.data_vencimento < hoje;
+                const isHoje = !isPago && !isCancelado && item.data_vencimento === hoje;
 
                 return (
                   <tr key={`${item.tipo}_${item.id}`} className="hover:bg-muted/40 transition-colors">
@@ -92,6 +94,20 @@ export function ContasPagarTable({
                           className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 text-[11px] font-medium px-2.5 py-0.5 rounded-[18px]"
                         >
                           Quitado
+                        </Badge>
+                      ) : isCancelado ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-muted/50 text-muted-foreground border-border text-[11px] font-medium px-2.5 py-0.5 rounded-[18px]"
+                        >
+                          Cancelado
+                        </Badge>
+                      ) : isAdiada ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 text-[11px] font-medium px-2.5 py-0.5 rounded-[18px]"
+                        >
+                          Adiada
                         </Badge>
                       ) : isVencido ? (
                         <Badge
@@ -226,7 +242,7 @@ export function ContasPagarTable({
                           </Button>
                         )}
 
-                        {!isPago ? (
+                        {!isPago && !isCancelado ? (
                           <div className="flex items-center gap-1.5">
                             {item.valor_pago > 0 && canEdit && onDesfazerLiquidacao && (
                               <Button
@@ -264,9 +280,9 @@ export function ContasPagarTable({
                               Liquidar
                             </Button>
                           </div>
-                        ) : (
+                        ) : isPago &&
                           canEdit &&
-                          onDesfazerLiquidacao && (
+                          onDesfazerLiquidacao ? (
                             <Button
                               variant="ghost"
                               size="icon"
@@ -276,8 +292,7 @@ export function ContasPagarTable({
                             >
                               <RotateCcw className="h-3.5 w-3.5" />
                             </Button>
-                          )
-                        )}
+                          ) : null}
                       </div>
                     </td>
                   </tr>

@@ -7,11 +7,14 @@ import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { ContaPagarItem, CategoriaDespesa, StatusDespesa, ContasPagarKpis } from "@/types/database";
 import {
   CATEGORIA_COLABORADOR_CONTA_PAGAR,
+  FILTRO_CONTA_PAGAR,
+  FiltroContaPagarType,
   TIPO_CONTA_PAGAR,
 } from "@/constants/financeiro.constants";
 import {
+  calcularContadoresContasPagar,
   calcularKpisContasPagar,
-  filtrarContasPagarPorStatusEPrazo,
+  filtrarContasPagar,
 } from "@/hooks/business/contasPagarHelper";
 import { useCategoriasFinanceirasLabelMap } from "@/hooks/business/useCategoriasFinanceirasBusiness";
 import { toast } from "sonner";
@@ -21,10 +24,11 @@ export function useContasPagarViewModel() {
   const [mes, setMes] = useState<number>(currentDate.getMonth() + 1);
   const [ano, setAno] = useState<number>(currentDate.getFullYear());
   const [empresaId, setEmpresaId] = useState<number | null>(null);
-  const [status, setStatus] = useState<string>("TODOS");
   const [busca, setBusca] = useState<string>("");
   const [tipoFiltro, setTipoFiltro] = useState<"TODOS" | "DESPESA" | "CONVENIO" | "COLABORADOR">("TODOS");
-  const [filtroPrazo, setFiltroPrazo] = useState<string | null>(null);
+  const [filtroAtivo, setFiltroAtivo] = useState<FiltroContaPagarType>(
+    FILTRO_CONTA_PAGAR.TODOS
+  );
 
   const { data: empresas = [], isLoading: isLoadingEmpresas } = useEmpresas();
   const { deleteMutation: deleteDespesaMutation } = useDespesas();
@@ -80,9 +84,14 @@ export function useContasPagarViewModel() {
     [kpisBackend, itensBasePorTipoEBusca]
   );
 
+  const contadores = useMemo(
+    () => calcularContadoresContasPagar(itensBasePorTipoEBusca),
+    [itensBasePorTipoEBusca]
+  );
+
   const itensFiltrados = useMemo(
-    () => filtrarContasPagarPorStatusEPrazo(itensBasePorTipoEBusca, status, filtroPrazo),
-    [itensBasePorTipoEBusca, status, filtroPrazo]
+    () => filtrarContasPagar(itensBasePorTipoEBusca, filtroAtivo),
+    [itensBasePorTipoEBusca, filtroAtivo]
   );
 
   const handleLiquidarItem = (item: ContaPagarItem) => {
@@ -338,14 +347,13 @@ export function useContasPagarViewModel() {
     setAno,
     empresaId,
     setEmpresaId,
-    status,
-    setStatus,
     busca,
     setBusca,
     tipoFiltro,
     setTipoFiltro,
-    filtroPrazo,
-    setFiltroPrazo,
+    filtroAtivo,
+    setFiltroAtivo,
+    contadores,
     empresas,
     itens: itensFiltrados,
     kpis,

@@ -1,26 +1,51 @@
 import { ContaPagarItem, ContasPagarKpis } from "@/types/database";
-import { STATUS_DESPESA } from "@/constants/financeiro.constants";
+import {
+  FILTRO_CONTA_PAGAR,
+  FiltroContaPagarType,
+  STATUS_DESPESA,
+} from "@/constants/financeiro.constants";
+import { toLocalDateString } from "@/utils/formatters/date";
 
-function obterIntervaloSemanaAtual(): {
+export interface ContadoresContasPagar {
+  todos: number;
+  vencendoHoje: number;
+  atrasadas: number;
+  estaSemana: number;
+  proximas: number;
+  pendentes: number;
+  pagas: number;
+  canceladas: number;
+}
+
+export function obterIntervaloSemanaAtual(): {
   hojeStr: string;
   mondayStr: string;
   sundayStr: string;
 } {
-  const hoje = new Date();
-  const hojeStr = hoje.toISOString().split("T")[0];
+  const hojeStr = toLocalDateString();
+  const [ano, mes, dia] = hojeStr.split("-").map(Number);
+  const baseLocal = new Date(ano, mes - 1, dia, 12, 0, 0);
+  const dayOfWeek = baseLocal.getDay();
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
 
-  const dTemp = new Date(hoje);
-  const dayOfWeek = dTemp.getDay();
-  const diffToMonday = dTemp.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-  const monday = new Date(dTemp.setDate(diffToMonday));
+  const monday = new Date(baseLocal);
+  monday.setDate(baseLocal.getDate() + diffToMonday);
+
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
 
   return {
     hojeStr,
-    mondayStr: monday.toISOString().split("T")[0],
-    sundayStr: sunday.toISOString().split("T")[0],
+    mondayStr: toLocalDateString(monday),
+    sundayStr: toLocalDateString(sunday),
   };
+}
+
+function isItemEmAberto(item: ContaPagarItem): boolean {
+  return (
+    item.status !== STATUS_DESPESA.PAGO &&
+    item.status !== STATUS_DESPESA.CANCELADO
+  );
 }
 
 export function calcularKpisContasPagar(
@@ -76,39 +101,101 @@ export function calcularKpisContasPagar(
   };
 }
 
-export function filtrarContasPagarPorStatusEPrazo(
-  itensBase: ContaPagarItem[],
-  status: string,
-  filtroPrazo: string | null
-): ContaPagarItem[] {
-  let list = itensBase;
-  if (status !== "TODOS") {
-    list = list.filter((i) => i.status === status);
-  }
-  if (filtroPrazo) {
-    const { hojeStr, mondayStr, sundayStr } = obterIntervaloSemanaAtual();
+export function calcularContadoresContasPagar(
+  itensBase: ContaPagarItem[]
+): ContadoresContasPagar {
+  const { hojeStr, mondayStr, sundayStr } = obterIntervaloSemanaAtual();
 
-    if (filtroPrazo === "HOJE") {
-      list = list.filter(
-        (i) => i.status !== STATUS_DESPESA.PAGO && i.data_vencimento === hojeStr
-      );
-    } else if (filtroPrazo === "SEMANA") {
-      list = list.filter(
-        (i) =>
-          i.status !== STATUS_DESPESA.PAGO &&
-          i.data_vencimento > hojeStr &&
-          i.data_vencimento >= mondayStr &&
-          i.data_vencimento <= sundayStr
-      );
-    } else if (filtroPrazo === "ATRASADAS") {
-      list = list.filter(
-        (i) => i.status !== STATUS_DESPESA.PAGO && i.data_vencimento < hojeStr
-      );
-    } else if (filtroPrazo === "PROXIMAS") {
-      list = list.filter(
-        (i) => i.status !== STATUS_DESPESA.PAGO && i.data_vencimento > sundayStr
-      );
+  const contadores: ContadoresContasPagar = {
+    todos: itensBase.length,
+    vencendoHoje: 0,
+    atrasadas: 0,
+    estaSemana: 0,
+    proximas: 0,
+    pendentes: 0,
+    pagas: 0,
+    canceladas: 0,
+  };
+
+  for (const item of itensBase) {
+    if (item.status === STATUS_DESPESA.CANCELADO) {
+      contadores.canceladas++;
+      continue;
+    }
+
+    if (item.status === STATUS_DESPESA.PAGO) {
+      contadores.pagas++;
+      continue;
+    }
+
+    contadores.pendentes++;
+
+    if (item.data_vencimento === hojeStr) {
+      contadores.vencendoHoje++;
+    } else if (item.data_vencimento < hojeStr) {
+      contadores.atrasadas++;
+    } else if (
+      item.data_vencimento >= mondayStr &&
+      item.data_vencimento <= sundayStr
+    ) {
+      contadores.estaSemana++;
+    } else if (item.data_vencimento > sundayStr) {
+      contadores.proximas++;
     }
   }
-  return list;
+
+  return contadores;
+}
+
+export function filtrarContasPagar(
+  itensBase: ContaPagarItem[],
+  filtroAtivo: FiltroContaPagarType
+): ContaPagarItem[] {
+  if (filtroAtivo === FILTRO_CONTA_PAGAR.TODOS) {
+    return itensBase;
+  }
+
+  if (filtroAtivo === FILTRO_CONTA_PAGAR.PAGO) {
+    return itensBase.filter((i) => i.status === STATUS_DESPESA.PAGO);
+  }
+
+  if (filtroAtivo === FILTRO_CONTA_PAGAR.CANCELADO) {
+    return itensBase.filter((i) => i.status === STATUS_DESPESA.CANCELADO);
+  }
+
+  if (filtroAtivo === FILTRO_CONTA_PAGAR.PENDENTE) {
+    return itensBase.filter(isItemEmAberto);
+  }
+
+  const { hojeStr, mondayStr, sundayStr } = obterIntervaloSemanaAtual();
+
+  if (filtroAtivo === FILTRO_CONTA_PAGAR.VENCENDO_HOJE) {
+    return itensBase.filter(
+      (i) => isItemEmAberto(i) && i.data_vencimento === hojeStr
+    );
+  }
+
+  if (filtroAtivo === FILTRO_CONTA_PAGAR.ATRASADAS) {
+    return itensBase.filter(
+      (i) => isItemEmAberto(i) && i.data_vencimento < hojeStr
+    );
+  }
+
+  if (filtroAtivo === FILTRO_CONTA_PAGAR.ESTA_SEMANA) {
+    return itensBase.filter(
+      (i) =>
+        isItemEmAberto(i) &&
+        i.data_vencimento > hojeStr &&
+        i.data_vencimento >= mondayStr &&
+        i.data_vencimento <= sundayStr
+    );
+  }
+
+  if (filtroAtivo === FILTRO_CONTA_PAGAR.PROXIMAS) {
+    return itensBase.filter(
+      (i) => isItemEmAberto(i) && i.data_vencimento > sundayStr
+    );
+  }
+
+  return itensBase;
 }

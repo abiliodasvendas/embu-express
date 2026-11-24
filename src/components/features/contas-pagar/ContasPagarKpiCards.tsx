@@ -1,25 +1,32 @@
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { ContasPagarKpis } from "@/types/database";
+import {
+  FILTRO_CONTA_PAGAR,
+  FiltroContaPagarType,
+} from "@/constants/financeiro.constants";
+import { ContadoresContasPagar } from "@/hooks/business/contasPagarHelper";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Receipt, CheckCircle2, Clock, AlertCircle, Calendar } from "lucide-react";
 
 interface ContasPagarKpiCardsProps {
   kpis?: ContasPagarKpis;
+  contadores?: ContadoresContasPagar;
   mes: number;
   ano: number;
-  selectedFiltroPrazo: string | null;
-  onSelectFiltroPrazo: (filtro: string | null) => void;
+  filtroAtivo: FiltroContaPagarType;
+  onSelectFiltro: (filtro: FiltroContaPagarType) => void;
   isLoading?: boolean;
 }
 
 export function ContasPagarKpiCards({
   kpis,
+  contadores,
   mes,
   ano,
-  selectedFiltroPrazo,
-  onSelectFiltroPrazo,
+  filtroAtivo,
+  onSelectFiltro,
   isLoading = false,
 }: ContasPagarKpiCardsProps) {
   const totalMes = kpis?.total_a_pagar_mes || 0;
@@ -183,39 +190,70 @@ export function ContasPagarKpiCards({
           <button
             type="button"
             disabled={isLoading}
-            onClick={() => onSelectFiltroPrazo(selectedFiltroPrazo === "HOJE" ? null : "HOJE")}
+            onClick={() =>
+              onSelectFiltro(
+                filtroAtivo === FILTRO_CONTA_PAGAR.VENCENDO_HOJE
+                  ? FILTRO_CONTA_PAGAR.TODOS
+                  : FILTRO_CONTA_PAGAR.VENCENDO_HOJE
+              )
+            }
             className={cn(
               "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer disabled:cursor-default",
-              selectedFiltroPrazo === "HOJE"
-                ? "border-primary bg-primary/5 ring-1 ring-primary"
+              filtroAtivo === FILTRO_CONTA_PAGAR.VENCENDO_HOJE
+                ? "border-amber-500 bg-amber-500/10 ring-1 ring-amber-500"
+                : !isLoading && totalHoje > 0
+                ? "border-amber-500/30 bg-amber-500/[0.03] hover:bg-amber-500/10"
                 : "border-border bg-card hover:bg-muted/40"
             )}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-medium text-muted-foreground">Vencendo Hoje</span>
-              <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-medium border-border bg-muted/60">
-                Hoje
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[10px] h-4 px-1.5 font-medium",
+                  !isLoading && totalHoje > 0
+                    ? "border-amber-500/30 text-amber-700 dark:text-amber-400 bg-amber-500/10"
+                    : "border-border bg-muted/60"
+                )}
+              >
+                {contadores && contadores.vencendoHoje > 0
+                  ? `${contadores.vencendoHoje} ${contadores.vencendoHoje === 1 ? "conta" : "contas"}`
+                  : "Hoje"}
               </Badge>
             </div>
             {isLoading ? (
               <Skeleton className="h-5 w-24 rounded-[6px] my-1" />
             ) : (
-              <div className="text-base font-bold text-foreground">
+              <div
+                className={cn(
+                  "text-base font-bold",
+                  totalHoje > 0 ? "text-amber-600 dark:text-amber-400" : "text-foreground"
+                )}
+              >
                 {formatCurrency(totalHoje)}
               </div>
             )}
             <div className="text-[10px] text-muted-foreground mt-0.5">
-              {selectedFiltroPrazo === "HOJE" ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
+              {filtroAtivo === FILTRO_CONTA_PAGAR.VENCENDO_HOJE
+                ? "Filtro ativo (clique para limpar)"
+                : "Clique para filtrar"}
             </div>
           </button>
 
           <button
             type="button"
             disabled={isLoading}
-            onClick={() => onSelectFiltroPrazo(selectedFiltroPrazo === "SEMANA" ? null : "SEMANA")}
+            onClick={() =>
+              onSelectFiltro(
+                filtroAtivo === FILTRO_CONTA_PAGAR.ESTA_SEMANA
+                  ? FILTRO_CONTA_PAGAR.TODOS
+                  : FILTRO_CONTA_PAGAR.ESTA_SEMANA
+              )
+            }
             className={cn(
               "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer disabled:cursor-default",
-              selectedFiltroPrazo === "SEMANA"
+              filtroAtivo === FILTRO_CONTA_PAGAR.ESTA_SEMANA
                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                 : "border-border bg-card hover:bg-muted/40"
             )}
@@ -223,7 +261,9 @@ export function ContasPagarKpiCards({
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-medium text-muted-foreground">Esta Semana (Seg a Dom)</span>
               <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-medium border-border bg-muted/60">
-                Semana
+                {contadores && contadores.estaSemana > 0
+                  ? `${contadores.estaSemana} ${contadores.estaSemana === 1 ? "conta" : "contas"}`
+                  : "Semana"}
               </Badge>
             </div>
             {isLoading ? (
@@ -234,17 +274,25 @@ export function ContasPagarKpiCards({
               </div>
             )}
             <div className="text-[10px] text-muted-foreground mt-0.5">
-              {selectedFiltroPrazo === "SEMANA" ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
+              {filtroAtivo === FILTRO_CONTA_PAGAR.ESTA_SEMANA
+                ? "Filtro ativo (clique para limpar)"
+                : "Clique para filtrar"}
             </div>
           </button>
 
           <button
             type="button"
             disabled={isLoading}
-            onClick={() => onSelectFiltroPrazo(selectedFiltroPrazo === "PROXIMAS" ? null : "PROXIMAS")}
+            onClick={() =>
+              onSelectFiltro(
+                filtroAtivo === FILTRO_CONTA_PAGAR.PROXIMAS
+                  ? FILTRO_CONTA_PAGAR.TODOS
+                  : FILTRO_CONTA_PAGAR.PROXIMAS
+              )
+            }
             className={cn(
               "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer disabled:cursor-default",
-              selectedFiltroPrazo === "PROXIMAS"
+              filtroAtivo === FILTRO_CONTA_PAGAR.PROXIMAS
                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                 : "border-border bg-card hover:bg-muted/40"
             )}
@@ -252,7 +300,9 @@ export function ContasPagarKpiCards({
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-medium text-muted-foreground">Próximas Semanas</span>
               <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-medium border-border bg-muted/60">
-                Futuro
+                {contadores && contadores.proximas > 0
+                  ? `${contadores.proximas} ${contadores.proximas === 1 ? "conta" : "contas"}`
+                  : "Futuro"}
               </Badge>
             </div>
             {isLoading ? (
@@ -263,25 +313,35 @@ export function ContasPagarKpiCards({
               </div>
             )}
             <div className="text-[10px] text-muted-foreground mt-0.5">
-              {selectedFiltroPrazo === "PROXIMAS" ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
+              {filtroAtivo === FILTRO_CONTA_PAGAR.PROXIMAS
+                ? "Filtro ativo (clique para limpar)"
+                : "Clique para filtrar"}
             </div>
           </button>
 
           <button
             type="button"
             disabled={isLoading}
-            onClick={() => onSelectFiltroPrazo(selectedFiltroPrazo === "ATRASADAS" ? null : "ATRASADAS")}
+            onClick={() =>
+              onSelectFiltro(
+                filtroAtivo === FILTRO_CONTA_PAGAR.ATRASADAS
+                  ? FILTRO_CONTA_PAGAR.TODOS
+                  : FILTRO_CONTA_PAGAR.ATRASADAS
+              )
+            }
             className={cn(
               "text-left p-3.5 rounded-[16px] border transition-all cursor-pointer disabled:cursor-default",
-              selectedFiltroPrazo === "ATRASADAS"
-                ? "border-primary bg-primary/5 ring-1 ring-primary"
+              filtroAtivo === FILTRO_CONTA_PAGAR.ATRASADAS
+                ? "border-rose-600 bg-rose-500/10 ring-1 ring-rose-600"
                 : "border-border bg-card hover:bg-muted/40"
             )}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-medium text-muted-foreground">Em Atraso</span>
               <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-medium border-rose-200 text-rose-600 bg-rose-50/50">
-                Atrasadas
+                {contadores && contadores.atrasadas > 0
+                  ? `${contadores.atrasadas} ${contadores.atrasadas === 1 ? "conta" : "contas"}`
+                  : "Atrasadas"}
               </Badge>
             </div>
             {isLoading ? (
@@ -292,7 +352,9 @@ export function ContasPagarKpiCards({
               </div>
             )}
             <div className="text-[10px] text-muted-foreground mt-0.5">
-              {selectedFiltroPrazo === "ATRASADAS" ? "Filtro ativo (clique para limpar)" : "Clique para filtrar"}
+              {filtroAtivo === FILTRO_CONTA_PAGAR.ATRASADAS
+                ? "Filtro ativo (clique para limpar)"
+                : "Clique para filtrar"}
             </div>
           </button>
         </div>

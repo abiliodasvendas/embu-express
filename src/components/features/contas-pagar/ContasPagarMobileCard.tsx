@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { formatDateToBR } from "@/utils/formatters/date";
+import { formatDateToBR, toLocalDateString } from "@/utils/formatters/date";
 import { ContaPagarItem } from "@/types/database";
 import { Ban, CheckCircle2, AlertCircle, Edit2, Trash2, Repeat, RotateCcw } from "lucide-react";
 import {
@@ -32,10 +32,12 @@ export function ContasPagarMobileCard({
   canEdit = true,
 }: ContasPagarMobileCardProps) {
   const { getCategoriaLabel } = useCategoriasFinanceirasLabelMap();
-  const hoje = new Date().toISOString().split("T")[0];
+  const hoje = toLocalDateString();
   const isPago = item.status === STATUS_DESPESA.PAGO;
-  const isVencido = !isPago && item.data_vencimento < hoje;
-  const isHoje = !isPago && item.data_vencimento === hoje;
+  const isCancelado = item.status === STATUS_DESPESA.CANCELADO;
+  const isAdiada = item.status === STATUS_DESPESA.ADIADA;
+  const isVencido = !isPago && !isCancelado && item.data_vencimento < hoje;
+  const isHoje = !isPago && !isCancelado && item.data_vencimento === hoje;
 
   return (
     <div className="bg-card rounded-[24px] border border-border p-4 shadow-xs space-y-3">
@@ -90,6 +92,20 @@ export function ContasPagarMobileCard({
               className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 text-[11px] font-medium px-2.5 py-0.5 rounded-[18px]"
             >
               Quitado
+            </Badge>
+          ) : isCancelado ? (
+            <Badge
+              variant="outline"
+              className="bg-muted/50 text-muted-foreground border-border text-[11px] font-medium px-2.5 py-0.5 rounded-[18px]"
+            >
+              Cancelado
+            </Badge>
+          ) : isAdiada ? (
+            <Badge
+              variant="outline"
+              className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 text-[11px] font-medium px-2.5 py-0.5 rounded-[18px]"
+            >
+              Adiada
             </Badge>
           ) : isVencido ? (
             <Badge
@@ -187,6 +203,7 @@ export function ContasPagarMobileCard({
         )}
 
         {!isPago &&
+          !isCancelado &&
           item.tipo === TIPO_CONTA_PAGAR.COLABORADOR &&
           item.categoria === CATEGORIA_COLABORADOR_CONTA_PAGAR.ADIANTAMENTO_SALARIAL &&
           canEdit &&
@@ -202,7 +219,7 @@ export function ContasPagarMobileCard({
             </Button>
           )}
 
-        {!isPago && canEdit && (
+        {!isPago && !isCancelado && canEdit && (
           <Button
             size="sm"
             onClick={() => onLiquidar(item)}
